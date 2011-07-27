@@ -29,9 +29,9 @@ print "VWF Dialogues Patch v1.0 - (c) 2010 RPG Hacker"
 
 ; These have to be 24-Bit addresses!
 
-!varram	= $702000	; 200 bytes
-!backupram	= $730000	; 16 kb to backup L3 graphics and tilemap
-!tileram	= $734000	; 16 kb for VWF graphics and tilemap
+!varram	= $418000	; 200 bytes
+!backupram	= $410000	; 16 kb to backup L3 graphics and tilemap
+!tileram	= $414000	; 16 kb for VWF graphics and tilemap
 
 
 
@@ -189,22 +189,54 @@ endmacro
 
 
 
-
+; NEW: A macro for SA-1 DMA (ROM->BWRAM) transfer
+macro bwramtransfer(bytes, start, source, destination)
+	lda #$c4
+	sta $2230
+	
+	stz $2250
+	lda.b #<bytes>	; Calculate starting index
+	sta $2251
+	lda.b #<bytes>>>16
+	sta $2252
+	lda <start>
+	sta $2253
+	stz $2254
+	nop
+	rep #$20
+	lda $2306	; Add source address
+	clc	; to get new source address
+	adc.w #<source>
+	sta $2232
+	ldy.b #<source>>>16
+	sty $2234
+	lda.w #<bytes>
+	sta $2238
+	lda.w #<destination>
+	sta $2235
+	ldy.b #<destination>>>16
+	sty $2237
+	sep #$20
+	
+	stz $2230
+	stz $018C
+endmacro
 
 ; A macro for MVN transfers
 
 macro mvntransfer(bytes, start, source, destination)
 	phb
+	stz $2250
 	lda.b #<bytes>	; Calculate starting index
-	sta $211B
+	sta $2251
 	lda.b #<bytes>>>16
-	sta $211B
-	lda #$00
-	sta $211C
+	sta $2252
 	lda <start>
-	sta $211C
+	sta $2253
+	stz $2254
+	nop
 	rep #$30
-	lda $2134	; Add source address
+	lda $2306	; Add source address
 	clc	; to get new source address
 	adc.w #<source>
 	tax
@@ -321,9 +353,6 @@ org remap_rom($00A1DF)
 org remap_rom($00A2A9)
 	jml Buffer	; Buffer data before loading up to VRAM
 	nop #2	; in V-Blank
-
-org remap_rom($00FFD8)
-	db $07	; SRAM expansion ($07 => 2^7 kb)
 
 
 
@@ -534,11 +563,22 @@ NMIHijack:
 ; This buffers code to save time in V-Blank.
 
 Buffer:
-	phx
-	phy
+	lda.b #.Main
+	sta $3180
+	lda.b #.Main/256
+	sta $3181
+	lda.b #.Main/65536
+	sta $3182
+	jsr $1E80
+	
+	lda $1c
 	pha
+	lda $1d
+	pha
+	jml remap_rom($00A2AF)
+	
+.Main
 	phb
-	php
 	phk
 	plb
 
@@ -583,17 +623,8 @@ Buffer:
 	jml [remap_ram($0000)]
 
 .End
-	plp	; Return
 	plb
-	pla
-	ply
-	plx
-
-	lda $1C
-	pha
-	lda $1D
-	pha
-	jml remap_rom($00A2AF)
+	rtl
 
 .Routinetable
 	dw .End,.End,VWFSetup,BufferGraphics,.End
@@ -895,8 +926,8 @@ BufferGraphics:
 
 	; Copy text box graphics over to RAM
 
-	%mvntransfer($0010,!boxbg,Patterns,!tileram+16)
-	%mvntransfer($0090,!boxframe,Frames,!tileram+32)
+	%bwramtransfer($0010,!boxbg,Patterns,!tileram+16)
+	%bwramtransfer($0090,!boxframe,Frames,!tileram+32)
 
 	jmp Buffer_End
 
@@ -1205,18 +1236,18 @@ GetTilemapPos:
 	lda #$20
 
 .Store
-	sta $211B	; Multiply Y coordinate by $20/$40
-	lda #$00
-	sta $211B
-	sta $211C
+	stz $2250
+	sta $2251	; Multiply Y coordinate by $20/$40
+	stz $2252
 	lda $01
-	sta $211C
+	sta $2253
+	stz $2254
 	lda #$00
 	xba
 	lda $00
 	rep #$20
 	clc
-	adc $2134
+	adc $2306
 	sta $03
 	sep #$20
 	lda $02
@@ -1541,7 +1572,6 @@ CollapseWindow:
 
 .CollapseHorz
 	lda !currentwidth
-	cmp #$00
 	beq .SoMEnd
 
 	lda !currentx
@@ -1685,7 +1715,25 @@ ClearHoriz:
 VWFInit:
 	jsr GetMessage
 	jsr LoadHeader
+	
+	lda.b #.PaletteStuff
+	sta $0183
+	lda.b #.PaletteStuff/256
+	sta $0184
+	lda.b #.PaletteStuff/65536
+	sta $0185
+	lda #$d0
+	sta $2209
+-	lda $018A
+	beq -
+	stz $018A
 
+	jsr ClearBox
+.End
+	jmp Buffer_End
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+.PaletteStuff
 	lda !boxpalette	; Update letter color
 	asl #2
 	inc
@@ -1699,12 +1747,8 @@ VWFInit:
 	inx
 	cpx #$04
 	bne .BoxColorLoop
-
-	jsr ClearBox
-
-.End
-	jmp Buffer_End
-
+	rtl
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 InitLine:
 	lda #$01
@@ -1855,25 +1899,28 @@ InitLine:
 	lda.b #!tileram>>16
 	sta $0B
 
+	lda #$01
+	sta $2250
 	lda !currentpixel
-	sta $4204
+	sta $2251
 
 .NoNewTile
-	lda #$00
-	sta $4205
+	stz $2252
 	lda #$08
-	sta $4206
-	nop #8
-	lda $4216
+	sta $2253
+	stz $2254
+	nop
+	bra $00
+	lda $2308
 	sta !currentpixel
 	rep #$20
-	lda $4214
+	lda $2306
 	asl
 	clc
 	adc !tile
 	sta !tile
 	sep #$20
-	lda $4214
+	lda $2306
 	clc
 	adc !currentx
 	sta !currentx
@@ -1924,16 +1971,17 @@ ClearBox:
 
 
 GetMessage:
+	stz $2250
 	lda !message
-	sta $211B
+	sta $2251
 	lda !message+1
-	sta $211B
-	lda #$00
-	sta $211C
+	sta $2252
 	lda #$03
-	sta $211C
+	sta $2253
+	stz $2254
+	nop
 	rep #$20
-	lda $2134
+	lda $2306
 	clc
 	adc.w #Pointers
 	sta $00
@@ -2166,6 +2214,26 @@ TextCreation:
 	jmp TextCreation
 
 .EE_ChangeColor
+	lda.b #.EE_ChangeColor_SNES
+	sta $0183
+	lda.b #.EE_ChangeColor_SNES/256
+	sta $0184
+	lda.b #.EE_ChangeColor_SNES/65536
+	sta $0185
+	lda #$d0
+	sta $2209
+	ldy #$01
+-	lda $018A
+	beq -
+	stz $018A
+
+	jsr IncPointer
+	jsr IncPointer
+	jsr IncPointer
+	jsr IncPointer
+	jmp .NoButton
+
+.EE_ChangeColor_SNES
 	ldy #$01
 	lda [$00],y
 	sta $2121
@@ -2175,11 +2243,7 @@ TextCreation:
 	iny
 	lda [$00],y
 	sta $2122
-	jsr IncPointer
-	jsr IncPointer
-	jsr IncPointer
-	jsr IncPointer
-	jmp .NoButton
+	rtl
 
 .EF_Teleport
 	ldy #$01
@@ -2680,31 +2744,34 @@ TextCreation:
 	sbc !space
 	sta !vwfmaxwidth
 
+	lda #$01
+	sta $2250
 	lda !currentpixel
 	clc
 	adc !space
-	sta $4204
+	sta $2251
 	cmp #$08
 	bcc .NoNewTile
 	lda #$01
 	sta !firsttile
 
 .NoNewTile
-	lda #$00
-	sta $4205
+	stz $2252
 	lda #$08
-	sta $4206
-	nop #8
-	lda $4216
+	sta $2253
+	stz $2254
+	nop
+	bra $00
+	lda $2308
 	sta !currentpixel
 	rep #$20
-	lda $4214
+	lda $2306
 	asl
 	clc
 	adc !tile
 	sta !tile
 	sep #$20
-	lda $4214
+	lda $2306
 	clc
 	adc !currentx
 	sta !currentx
@@ -2859,15 +2926,16 @@ TextCreation:
 
 
 GetFont:
+	stz $2250
 	lda #$06	; Multiply font number with 6
-	sta $211B
-	lda #$00
-	sta $211B
-	sta $211C
+	sta $2251
+	stz $2252
 	lda !font
-	sta $211C
+	sta $2253
+	stz $2254
+	nop
 	rep #$20
-	lda $2134
+	lda $2306
 	clc
 	adc.w #Fonttable	; Add starting address
 	sta $00
@@ -2878,7 +2946,7 @@ GetFont:
 
 .Loop
 	lda [$00],y	; Load addresses from table
-	sta remap_ram($0003),y
+	sta $3003,y
 	iny
 	cpy #$06
 	bne .Loop
@@ -2940,7 +3008,7 @@ Beep:
 	lda !beepbank
 	sta $00
 	sep #$20
-	lda #$7E
+	lda #$40
 	sta $02
 	lda !beep
 	sta [$00]
@@ -2958,7 +3026,7 @@ EndBeep:
 	lda !beependbank
 	sta $00
 	sep #$20
-	lda #$7E
+	lda #$40
 	sta $02
 	lda !beepend
 	sta [$00]
@@ -2974,7 +3042,7 @@ CursorBeep:
 	lda !beepcursorbank
 	sta $00
 	sep #$20
-	lda #$7E
+	lda #$40
 	sta $02
 	lda !beepcursor
 	sta [$00]
@@ -2990,7 +3058,7 @@ ButtonBeep:
 	lda !beepchoicebank
 	sta $00
 	sep #$20
-	lda #$7E
+	lda #$40
 	sta $02
 	lda !beepchoice
 	sta [$00]
@@ -3712,16 +3780,16 @@ BackupEnd:
 
 
 SetupColor:
-	lda #$00	; Backup or restore layer 3 colors
-	sta $2121
+	stz $2121	; Backup or restore layer 3 colors
+	
 	lda !vwfmode
 	cmp #$04
 	beq .Backup
-	%dmatransfer(#$10,#$02,#$22,".b #$7E",".b #$07",".b #$03",#$0040)
+	%dmatransfer(#$10,#$02,#$22,".b #$40",".b #$07",".b #$03",#$0040)
 	jmp .End
 
 .Backup
-	%dmatransfer(#$10,#$82,#$3B,".b #$7E",".b #$07",".b #$03",#$0040)
+	%dmatransfer(#$10,#$82,#$3B,".b #$40",".b #$07",".b #$03",#$0040)
 
 
 	lda !boxpalette	; Set BG and letter color
@@ -4170,9 +4238,27 @@ BackupTilemap:
 	adc #$5C80
 	sta $00
 	sep #$20
+	
+	lda.b #.snes
+	sta $0183
+	lda.b #.snes>>8
+	sta $0184
+	lda.b #.snes>>16
+	sta $0185
+	lda #$D0
+	sta $2209
+-	lda $018A
+	beq -
+	stz $018A
+	rts
+.snes
+	lda #$80
+	sta $2100
 	%vramprepare(#$80,$00,"","")
 	%dmatransfer(#$10,#$01,#$18," $05"," $04"," $03",#$0046)
-	rts
+	lda #$0f
+	sta $2100
+	rtl
 
 
 
@@ -4241,14 +4327,15 @@ GenerateVWF:
 
 .Begin
 	lda !vwfchar	; Get letter offset into Y
-	sta $211B
-	lda #$00
-	sta $211B
-	sta $211C
+	stz $2250
+	sta $2251
+	stz $2252
 	lda #$40
-	sta $211C
+	sta $2253
+	stz $2254
+	nop
 	rep #$10
-	ldy $2134
+	ldy $2306
 	ldx #$0000
 
 .Draw
@@ -4308,37 +4395,41 @@ GenerateVWF:
 	cpx #$60
 	bne .Copy
 
+	lda #$01
+	sta $2250
 	lda !currentpixel	; Adjust destination address
 	clc
 	adc !vwfwidth
-	sta $4204
-	lda #$00
-	sta $4205
+	sta $2251
+	stz $2252
 	lda #$08
-	sta $4206
-	nop #8
-	lda $4216
+	sta $2253
+	stz $2254
+	nop
+	bra $00
+	lda $2308
 	sta !currentpixel
 	rep #$20
-	lda $4214
+	lda $2306
 	asl
 	clc
 	adc !tile
 	sta !tile
 	sep #$20
-	lda $4214
+	lda $2306
 	clc
 	adc !currentx
 	sta !currentx
-	lda $4214
-	sta $211B
-	lda #$00
-	sta $211B
-	sta $211C
+	lda $2306
+	stz $2250
+	sta $2251
+	stz $2252
 	lda #$20
-	sta $211C
+	sta $2253
+	stz $2254
+	nop
 	rep #$20
-	lda $2134
+	lda $2306
 	clc
 	adc $09
 	sta $09

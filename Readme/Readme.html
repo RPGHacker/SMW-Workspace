@@ -5,7 +5,7 @@
 
 	<head>
 		<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-		<title>VWF Dialogues Patch v1.0 - Readme</title>
+		<title>VWF Dialogues Patch v1.01 - Readme</title>
 		
 		<script type="text/javascript">
 			<!--
@@ -28,12 +28,12 @@
 			
 			<!-- Seperator Comment -->
 					
-			<font id="top" size ="6"><b>VWF Dialogues Patch v1.0</b></font><br />
-			<b>(c) 2010 RPG Hacker</b><br /><br />
+			<font id="top" size ="6"><b>VWF Dialogues Patch v1.01</b></font><br />
+			<b>(c) 2015 RPG Hacker</b><br /><br />
 			
-			<img src="Screenshots\Screen5.png" alt="Screenshot" width="256" height="224"/>
-			<img src="Screenshots\Screen4.png" alt="Screenshot" width="256" height="224"/>
-			<img src="Screenshots\Screen9.png" alt="Screenshot" width="256" height="224"/>
+			<img src="Screenshots/Screen5.png" alt="Screenshot" width="256" height="224"/>
+			<img src="Screenshots/Screen4.png" alt="Screenshot" width="256" height="224"/>
+			<img src="Screenshots/Screen9.png" alt="Screenshot" width="256" height="224"/>
 			
 			<br />
 			<br />
@@ -112,7 +112,7 @@
 			Unlike Romi's VWF Cutscene Tool (which is great, btw.) this patch is set up for easy
 			event creation, easy customization and compatibility with all kinds of languages. The cost
 			of this is a way harder usage. However, as long as you're somewhat familiar with
-			custom sprites/custom blocks and xkas patches and read this Readme carefully you should be fine.
+			custom sprites/custom blocks and Asar patches and read this Readme carefully you should be fine.
 		</p>
 		
 		<p>
@@ -150,39 +150,12 @@
 		<p>
 			The very first thing you'll have to do is take the files vwfdialogues.asm,
 			vwfmessagepointers.asm, vwfmessages1.asm, vwffont1.bin, vwffont1.asm, vwfpatterns.bin,
-			vwfframes.bin and vwftable.txt and copy them over to your xkas folder. Next you open up
+			vwfframes.bin and vwftable.txt and copy them over to your Asar folder. Next you open up
 			"vwfdialogues.asm" in a text editor of your choice.
 		</p>
 		
 		<p>
-			At the top you'll have to set up free space addresses at the labels "!freespace" and
-			"!textfreespace". You might wonder "Why two free space addresses?", but that's easy to explain.
-			The patch takes up a lot of free space. The bare patch code, the default font and all the other
-			graphics easily take up close to a full bank. Since the file with the actual messages and the
-			pointers to each messages increase in size whith each new message you write I decided to put those
-			into a new bank right away. By default !textfreespace will be in the bank right after !freespace,
-			but of course you can set it up to any free space address. Also you always HAVE to use the BEGINNING
-			of a bank and use a bank with 0x8000 bytes of free space, otherwise keeping track of bank borders
-			(which, as you will see later on, is very important) will just be a pain. A valid example could look
-			like this (assuming $248000 and $258000 have 0x8000 bytes of free space each):
-		</p>
-
-		<code>
-			!freespace = $248000			; Main code freespace<br />
-			!textfreespace = $258000		; Text freespace
-		</code>
-		
-		<p>
-			A bad example:
-		</p>
-		
-		<code>
-			!freespace = $24A4C6			; Main code freespace<br />
-			!textfreespace = $258010		; Text freespace
-		</code>
-		
-		<p>
-			Next are the labels !varram, !backupram and !tileram. I suggest you don't touch those
+			At the top you'll see the labels !varram, !backupram and !tileram. I suggest you don't touch those
 			at all, especially if you aren't too familiar with ASM. Those addresses are the SRAM locations
 			the patch uses. Of course you can also change them to RAM addresses, but you'll have trouble finding
 			enough free RAM in SMW. It's very unlikely you'll have to change them anyways. I tried to use addresses
@@ -250,10 +223,10 @@
 		</p>
 		
 		<p>
-			After you're done with setting up all the labels, save the file and patch it to your ROM with xkas.
+			After you're done with setting up all the labels, save the file and patch it to your ROM with Asar.
 			Make sure only to patch "vwfdialogues.asm" and nothing else. You should get a window that looks somewhat
 			like this: <br /><br />
-			<img src="Screenshots\Console1.png" alt="Screenshot" width="669" height="338" /><br /><br />
+			<img src="Screenshots/Console1.png" alt="Screenshot" width="668" height="331" /><br /><br />
 			If that's what you see you've applied the patch successfully. I'll explain all of those lines in detail
 			later on.
 		</p>
@@ -304,7 +277,7 @@
 		<p>
 			Let's start with background graphics, the easiest format. Open the file "vwfpatterns.bin" in your
 			tile editor and set it to 2BPP GB. You should get a window similiar to this:<br /><br />
-			<img src="Screenshots\YYCHR1.png" alt="Screenshot" width="638" height="486"/><br /><br />
+			<img src="Screenshots/YYCHR1.png" alt="Screenshot" width="638" height="486"/><br /><br />
 			As I said this format is pretty easy. You only have to rules to follow:<br />
 			1. One 8x8 tile = One BG pattern.<br />
 			2. Only use the second color of the palette for BG patterns.<br />
@@ -318,10 +291,10 @@
 		<p>
 			Next up are frame graphics. Open up "vwfframes.bin" in your tile editor and set it to 2BPP GB. You
 			should see something like this:<br /><br />
-			<img src="Screenshots\YYCHR2.png" alt="Screenshot" width="638" height="486"/><br /><br />
+			<img src="Screenshots/YYCHR2.png" alt="Screenshot" width="638" height="486"/><br /><br />
 			Now frame graphics are a little bit more complicated in that way that each frame set consits of nine
 			8x8 tiles this time. Here is how they're used:<br /><br />
-			<img src="Screenshots\Frames1.png" alt="Screenshot" width="506" height="329"/><br /><br />
+			<img src="Screenshots/Frames1.png" alt="Screenshot" width="506" height="329"/><br /><br />
 			As you can see tiles 1 to 6 of each set form the actual frame. The tiles may be X and Y flipped to get
 			the according parts of the text box. Tiles 7 and 8 are not used by the actual text box, but rather for
 			the creation of the text box and only if you use the the creation style of Secret of Mana. More on this
@@ -359,7 +332,7 @@
 			to edit them that way. Well, this is where YY-CHR v0.99 comes in handy. At the bottom it has a field labeled
 			"Pattern:". Simply select "FC/NES x16" here and the letters will be in the correct format. This is what
 			it looks like:<br /><br />
-			<img src="Screenshots\YYCHR3.png" alt="Screenshot" width="638" height="486"/><br /><br />
+			<img src="Screenshots/YYCHR3.png" alt="Screenshot" width="638" height="486"/><br /><br />
 			Each 16x16 tile is one character. Each font can have up to 256 characters. That's four pages in YY-CHR.
 			Just like BG patterns, fonts have their special rules.<br />
 			1. Only use the third and fourth color of the palette for fonts.<br />
@@ -414,7 +387,7 @@
 		<p>
 			So now to actually use my patch and display some text on the screen. Remember this window from
 			applying the patch to your ROM?<br /><br />
-			<img src="Screenshots\Console1.png" alt="Screenshot" width="669" height="338" /><br /><br />
+			<img src="Screenshots/Console1.png" alt="Screenshot" width="668" height="331" /><br /><br />
 			This is the first time it actually plays a role. Now if you're not familiar with ASM at all or don't
 			plan on using this patch in your own patches, custom sprites or custom blocks then this won't be
 			very interesting for you. For everyone else here is the general procedure of how to start a dialogue
@@ -715,8 +688,8 @@
 					is looking up the characters in the file "vwftable.txt" and converting them into the according
 					hex numbers when assembling the file. This makes writing texts a lot easier. Be careful, though.
 					It seems like many characters are incompatible with xkas. I've especially noticed this with
-					some special characters, like the German "ü" for example. Sometimes - if you're very unlucky -
-					they mess up the dialogues completely, but usually they just turn out as hex number $00. If that
+					some special characters, like the German "&uuml;" for example. Sometimes - if you're very unlucky
+					- they mess up the dialogues completely, but usually they just turn out as hex number $00. If that
 					ever happens to you something you can do is this:<br /><br />
 					<code>
 						db "Text 1 ",$34,"Text 2"
@@ -840,7 +813,7 @@
 							"Address" of course means the RAM address. Refer to the SMW Central RAM Map for this.
 							B is how many Bits the number has (0 means 8-Bit and 1 means 16-Bit) and Z defines
 							whether to display prefixed zeros or not (0 for yes, 1 for no; yeah, I switched the
-							order here :P ). Here is an example:br /><br />
+							order here :P ). Here is an example:<br /><br />
 							<code>
 								db $F7<br />
 								dl $7E0DBF<br />
@@ -877,8 +850,8 @@
 							$19 coins, $F6 would display "19", while $F5 would display character $19 from the
 							font file in use. In "vwffont1.bin" this would be a "P". Here are screenshots of
 							$F5, $F6 and $F7 all being used in the same text box.<br /><br />
-							<img src="Screenshots\Screen2.png" alt="Screenshot" width="256" height="224"/>
-							<img src="Screenshots\Screen3.png" alt="Screenshot" width="256" height="224"/>
+							<img src="Screenshots/Screen2.png" alt="Screenshot" width="256" height="224"/>
+							<img src="Screenshots/Screen3.png" alt="Screenshot" width="256" height="224"/>
 							<br /><br />
 							The timer uses $F5, the hexadecimal numbers use $F6 and the decimal numbers use
 							$F7.</dd>
@@ -1143,7 +1116,7 @@
 		<p>
 			Everything left now is to explain how to use the functions of this patch in your own patches. For this
 			we need the screenshot from xkas once again.<br /><br />
-			<img src="Screenshots\Console1.png" alt="Screenshot" width="669" height="338" /><br /><br />			
+			<img src="Screenshots/Console1.png" alt="Screenshot" width="668" height="331" /><br /><br />			
 		</p>
 		
 		<dl>
@@ -1238,130 +1211,19 @@
 		</ul><br />
 		
 		<center><font size ="4"><b>Bank Limits</b></font></center>
-		
 		<p>
-			Now to the biggest problem with this patch and the one which is also the hardest to handle. Bank
-			Limits. If you've ever used Addmusic you should have heared of banks by now. So what are banks? Banks
-			are basically the location of a game's ROM data. If using 24-Bit-Addressing, then the high byte of an
-			address is usually equal to the bank. $03A9CD for example would mean "Bank $03 - Offset $A9CD". There
-			are also differences between lorom games and hirom games. SMW is a lorom game. In lorom games, each
-			bank has $8000 (that's 32768 in decimal) bytes of space and goes from $XX8000 to $XXFFFF. In hirom
-			games it's double the space, so one bank goes from $XX0000 to $XXFFFF. Well that's not all there is to
-			it, but let's leave it at that. So what's the problem now? The problem is that the SNES can't handle
-			bank crossing code itself. Let me give you an example:<br /><br />
-			<code>				
-				Message0100:<br />
-				.header<br />
-				[...]<br /><br />
-				
-				org $25FFFF<br /><br />
-				
-				.body<br />
-				db "This is a test!",$FA,$FF
-			</code><br /><br />
-			Patching this code, xkas would attempt to insert the string "This is a test" at address $25FFFF.
-			As soon as it would write the first letter it would reach the end of the bank, though. Xkas - if using
-			lorom addressing - jumps to address $268000 then and continues from there. The SNES, however, usually
-			does it differently. The SNES in many cases would continue at $250000 instead of $268000. Of course,
-			having the wrong address, the game would also read text, graphics etc. from the wrong location. The
-			results would be glitches. In an old version of this patch I had actually programmed bank border
-			checking, but that slowed down the whole patch by a whole lot. Because of this I redid the patch and
-			excluded bank border checking in the new version. This means you'll have keep track of banks yourself.
-			In this section I'll help you with that.			
+			If you make your message list long enough (around 200 messages), it is possible that you'll get an
+			error like this:
+			<br /><br />
+			<img src="Screenshots/Console2.png" alt="Screenshot" width="668" height="331" /><br /><br />
+			As Asar says, this is caused by crossing a bank border. What a bank is is out of scope for this
+			document, but the solution is easy: Just add <tt>%nextbank()</tt> before the last message in the file,
+			and the errors should go away (until you add two hundred more messages). If they don't, move the
+			<tt>%nextbank()</tt>s around until the problems disappear.
 		</p>
 		
 		<p>
-			Let's start with a basic rule: Always make sure data you insert into your ROM for this patch doesn't
-			cross any bank borders/fits into one bank. No files - whether it's font graphics, width tables or
-			text - have bank border checking. With font files it's kind of easy to follow this rule: Font files -
-			if being maximum size - take up half a bank. A width table takes up 256 additional bytes. So as long
-			as you always make sure to put font files with their width tables at the beginning of a new bank with
-			$8000 bytes of free space you will never cross bank borders or cause any type of conflict. The main
-			problem is the file with the actual dialogue text, as this one is constantly growing. Well, for this
-			problem I've included a file size output to the patch. See this screenshot once again:<br /><br />
-			<img src="Screenshots\Console1.png" alt="Screenshot" width="669" height="338" /><br /><br />
-			At the bottom of the window you can see how xkas tells you exactly how many bytes it has written at
-			each address. The first one is the address for the patch, the main font, the text box graphics and
-			a few other things. The second one is the address for "vwfmessagepointers.asm" and "vwfmessages1.asm".
-			Remember how I told you that one bank has 32768 bytes? Well, if you always put your stuff at the
-			beginning of banks you can simply check for bank border crossing by looking at the number of bytes
-			written. If xkas writes more than 32768 bytes you're defenitly crossing a bank border. This - as
-			already mentioned - is most likely to happen with the dialogue text (or "vwfmessages1.asm" to be more
-			precise). In this case you can simply create a new asm-file. Call it "vwfmessages2.asm" for example.
-			In this file, put the following code:<br /><br />
-			<code>
-				%textstart()<br />
-				;----------------------------------------------------------<br /><br />
-				
-
-				;----------------------------------------------------------<br />
-				%textend()
-			</code><br /><br />
-			Now you can continue by simply pasting all of your new dialogues here. They have to go between
-			"%textstart()" and "%textend()", though. I also recommend moving the dialogue from
-			"vwfmessages1.asm" which caused the bank border crossing over to "vwfmessages2.asm". In fact: Make sure
-			to already create a "vwfmessages2.asm" BEFORE a bank border is crossed. Otherwise you might accidently
-			overwrite some code in a new bank without knowing it. In the worst case scenario this might cause
-			game crashes. So whenever you're getting close to 30000 bytes of text in a bank it's a wise
-			decision to create a new file already. But how do you insert this new ASM file into your game now?
-			Do you have to write your own patch? No, I've thought of this problem and therefore provided a few
-			macros to simplify the process for you. First of all open "vwfdialogues.asm" and scroll to the bottom.
-			You'll see two horizontal lines and the comment "INSERT DATA HERE!". This is the space to put the new
-			files in. Here are the macros to use for this:<br /><br />
-			<code>
-				%newbank("bankidentifier",freespace)<br />
-				%binary("dataidentifier","filename")<br />
-				%source("dataidentifier","filename")<br />
-				%endbank()
-			</code><br /><br />
-			The macros %newbank and %endbank define a new bank. %newbank always marks the beginning of a bank
-			with "bankidentifier" being a random name for the bank (which has to go in quotations and can't be
-			used twice), while freespace is the free space address. I recommend using nubers starting with 0 for
-			the identifier. %endbank marks the end of a bank. Using those two macros together will automatically
-			write a rats tag at the free space address you entered to prevent the data from being recognised
-			as free space by smkdan's freespace logger. Those two macros also add another byte output to the patch
-			to help you keep track of the new bank when patching it. Now the macros %binary and %source always
-			go BETWEEN those two macros and actually insert the desired data into the defined bank. You use
-			the %binary macro for binary files (like font graphics) and the %source macro for source files
-			(like width tables or new dialogue text). For "dataidentifier" you have to enter a random name, which
-			can't be used twice inside the same bank. For "filename" you enter the filename of the file to insert
-			(like "vwffont2.bin" or whatever). Both of these inputs have to go inside quotations. You can use
-			as many %binary and %source macros in a bank as you want. Your only limit is the file space in that
-			bank. So here is an example of inserting a new dialogue text file into the rom:<br /><br />
-			<code>
-				%newbank("0",$278000)<br />
-				%source("0","vwfmessages2.asm")<br />
-				%endbank()
-			</code><br /><br />
-			Now let's say we also wanted to add a new font to the game. The clue here: We have to enter the font
-			address to the font table. Since these macros automatically add a rats tag the location of the
-			font file inside the bank has shifted by a few bytes. Well, here is another feature of those macros:
-			The %binary and %source macro automatically add a label to the data they're inserting. The label 
-			naming goes like this:<br /><br />
-			<code>
-				Bank[bankidentifier]Data[dataidentifier]:
-			</code><br /><br />
-			This is what it could look like in the actual patch:<br /><br />
-			<code>
-				%newbank("0",$278000)<br />
-				%source("0","vwfmessages2.asm")<br />
-				%endbank()<br /><br />
-				
-				%newbank("1",$288000)<br />
-				%binary("0","vwffont2.bin")<br />
-				%source("1","vwffont2.asm")<br />
-				%endbank()
-			</code><br /><br />
-			As for the font table:<br /><br />
-			<code>
-				Fonttable:<br />
-				dl Font1,Font1_Width<br />
-				dl Bank1Data0,Bank1Data1
-			</code><br /><br />
-			And when patching the file:<br /><br />
-			<img src="Screenshots\Console2.png" alt="Screenshot" width="669" height="338" /><br /><br />
-			Got it? I know it's complicated, but as of now there is no easier way of keeping track of bank borders.
-			Sorry for that. Also one important thing to add: There is no way to split the file
+			Also one important thing to add: There is no way to split the pointer table to multiple banks. file
 			"vwfmessagepointers.asm" into multiple files. At first I wanted to add bank border checking for this
 			one file only, but then I figured that even without bank border checking you can still get up to
 			$2AAA (that's 10922) pointers in a single bank. And let's be serious: Who is EVER going to put that
@@ -1473,6 +1335,24 @@
 				<li>Initial Release</li>
 			</ul>
 
+		</p>
+		
+		<p>
+				
+			<b>Version 1.0B - 01/16/2012</b> by Alcaro
+			<ul>
+				<li>Converted to Asar format</li>
+			</ul>
+
+		</p>
+		
+		<p>
+			<b>Version 1.01 - 07/06/2014</b> by Vitor Vilela
+			<ul>
+				<li>Fixed palette issues with accurate emulators</li>
+				<li>Changed the channel used in DMA transfers to 0.</li>
+				<li>Fixed cursor sometimes not disappearing when moving.</li>
+			</ul>
 		</p>
 			
 		<p>

@@ -11,14 +11,7 @@ incsrc ../shared/shared.asm
 
 print ""
 print ""
-print "VWF Dialogues Patch v1.0 - (c) 2010 RPG Hacker"
-
-
-
-!freespace	= $248000	; Main code freespace
-!textfreespace	= !freespace+$010000	; Text freespace
-
-
+print "VWF Dialogues Patch v1.01 - (c) 2014 RPG Hacker"
 
 
 
@@ -29,7 +22,7 @@ print "VWF Dialogues Patch v1.0 - (c) 2010 RPG Hacker"
 
 ; These have to be 24-Bit addresses!
 
-!varram	= $702000	; 200 bytes
+!varram	= $702000	; 270 bytes
 !backupram	= $730000	; 16 kb to backup L3 graphics and tilemap
 !tileram	= $734000	; 16 kb for VWF graphics and tilemap
 
@@ -49,8 +42,8 @@ print "VWF Dialogues Patch v1.0 - (c) 2010 RPG Hacker"
 !defframe	= #$07
 !framepalette	= #$03
 
-!bitmode	= 0
-!hijackbox	= 1
+!bitmode	= !8
+!hijackbox	= !true
 
 
 
@@ -137,9 +130,20 @@ print "VWF Dialogues Patch v1.0 - (c) 2010 RPG Hacker"
 !cursorupload	= !varram+198	; 1 byte
 !cursorend	= !varram+199	; 1 byte
 
-!8bit	= "rep 0-!bitmode :"
-!16bit	= "rep !bitmode-1 :"
-!hijack	= "rep !hijackbox-1 :"
+!paletteupload	= !varram+200	; 1 byte
+!palbackup	= !varram+201	; 64 bytes
+!cursorfix	= !varram+265	; 1 byte
+!cursorvram	= !varram+266	; 2 bytes
+!cursorsrc	= !varram+268	; 2 bytes
+
+!8	= 0
+!16	= 1
+!false	= 0
+!true	= 1
+
+!8bit	= "if !bitmode	== !8 :"
+!16bit	= "if !bitmode	== !16 :"
+!hijack	= "if !hijackbox	== !true :"
 
 
 
@@ -170,18 +174,18 @@ endmacro
 
 macro dmatransfer(channel, dmasettings, destination, sourcebank, sourcehigh, sourcelow, bytes)
 	lda <dmasettings>
-	sta $4340
+	sta $4300
 	lda <destination>
-	sta $4341
+	sta $4301
 	lda<sourcelow>	; I put the label close to the opcode
-	sta $4342	; to allow length definitions
+	sta $4302	; to allow length definitions
 	lda<sourcehigh>
-	sta $4343
+	sta $4303
 	lda<sourcebank>
-	sta $4344
+	sta $4304
 	rep #$20
 	lda <bytes>
-	sta $4345
+	sta $4305
 	sep #$20
 	lda <channel>
 	sta $420B
@@ -223,47 +227,24 @@ endmacro
 
 ; Macros for new banks
 
-macro newbank(identifier, freespace)
-	!currentfreespace = <freespace>
-	!currentbank = "<identifier>"
-	org !currentfreespace
-	reset bytes
+!PrevFreespace	= AutoFreespaceCleaner
 
-	Bank<identifier>:
-
+macro nextbank()
+	freedata : prot !PrevFreespace
 	cleartable
-
-	db "STAR"
-	dw Bank<identifier>End-.Begin
-	dw Bank<identifier>End-.Begin^#$FFFF
-
-	.Begin
-endmacro
-
-
-macro endbank()
-	!banklabel = Bank!currentbank
-	!endlabel = End
-	!banklabel!endlabel:
-
-	org !currentfreespace
-
-	print bytes," bytes written at address $",pc,"."
+	!PrevFreespace += a
+	!PrevFreespace:
 endmacro
 
 
 macro binary(identifier, data)
-	!banklabel = Bank!currentbank
-	!datalabel = Data<identifier>
-	!banklabel!datalabel:
+	Data<identifier>:
 	incbin <data>
 endmacro
 
 
 macro source(identifier, data)
-	!banklabel = Bank!currentbank
-	!datalabel = Data<identifier>
-	!banklabel!datalabel:
+	Data<identifier>:
 	incsrc <data>
 endmacro
 
@@ -301,8 +282,8 @@ endmacro
 
 
 org remap_rom($008064)
-	jml InitCall	; Initialize RAM to prevent glitches
-	nop	; or game crashes
+	autoclean jml InitCall	; Initialize RAM to prevent glitches
+	nop ; workaround for Asar bug	; or game crashes
 
 org remap_rom($0081F2)
 	jml VBlank	; V-Blank code goes here
@@ -334,16 +315,9 @@ org remap_rom($00FFD8)
 ;;;;;;;;;;;;;;;;;
 
 
-org remap_rom(!freespace)
+freecode : prot Kleenex
 
-reset bytes
-
-	db "STAR"	; Protect patch data
-	dw Codeend-Codestart
-	dw Codeend-Codestart^#$FFFF
-
-
-Codestart:
+FreecodeStart:
 
 
 
@@ -390,7 +364,7 @@ InitRAM:
 .InitVarRAM
 	sta !varram,x	; Initialize RAM
 	inx #2
-	cpx #$00C8	; Number of bytes
+	cpx #$010E	; Number of bytes
 	bne .InitVarRAM
 	sep #$30
 
@@ -489,7 +463,7 @@ NMIHijack:
 	phx
 	lda !vwfmode
 	tax
-	lda .NMITable,x
+	lda.l .NMITable,x
 	bne .SpecialNMI	; If NMITable = $00 load regular NMI
 	sty $4209
 	stz $420A
@@ -947,10 +921,10 @@ BufferWindow:
 	lda !boxcreate	; Prepare jump to routine
 	asl
 	tax
-	lda .Routinetable,x
+	lda.l .Routinetable,x
 	sta $00
 	inx
-	lda .Routinetable,x
+	lda.l .Routinetable,x
 	sta $01
 	phk
 	pla
@@ -1096,12 +1070,12 @@ SoMLine:
 	sta $05
 
 	ldy #$00
-	lda.b #!framepalette<<2|$20
+	lda.b !framepalette<<2|$20
 	xba
 	jsr LineLoop
 
 	ldy #$40
-	lda.b #!framepalette<<2|$A0
+	lda.b !framepalette<<2|$A0
 	xba
 	jsr LineLoop
 	rts
@@ -1418,7 +1392,7 @@ SetPos:
 ; Draw one or two tiles in a line
 
 DrawTile:
-	lda.b #!framepalette<<2|$20
+	lda.b !framepalette<<2|$20
 	ora $0B	; Vertical flip?
 	xba
 	lda $0A	; Tile number
@@ -1457,10 +1431,10 @@ CollapseWindow:
 	lda !boxcreate	; Prepare jump to routine
 	asl
 	tax
-	lda .Routinetable,x
+	lda.l .Routinetable,x
 	sta $00
 	inx
-	lda .Routinetable,x
+	lda.l .Routinetable,x
 	sta $01
 	phk
 	pla
@@ -1690,15 +1664,22 @@ VWFInit:
 	asl #2
 	inc
 	inc
-	sta $2121
+	asl
+	phy
+	tay
 	ldx #$00
 
 .BoxColorLoop
 	lda !boxcolor+2,x
-	sta $2122
+	sta remap_ram($0703),y
 	inx
+	iny
 	cpx #$04
 	bne .BoxColorLoop
+
+	ply
+	lda #$01
+	sta !paletteupload
 
 	jsr ClearBox
 
@@ -2113,10 +2094,10 @@ TextCreation:
 	!16bit sep #$20
 	asl
 	tax
-	lda .Routinetable,x
+	lda.l .Routinetable,x
 	sta $0C
 	inx
-	lda .Routinetable,x
+	lda.l .Routinetable,x
 	sta $0D
 	phk
 	pla
@@ -2166,15 +2147,20 @@ TextCreation:
 	jmp TextCreation
 
 .EE_ChangeColor
+	phx
 	ldy #$01
 	lda [$00],y
-	sta $2121
+	asl
+	tax
 	iny
 	lda [$00],y
-	sta $2122
+	sta remap_ram($0703),x
 	iny
 	lda [$00],y
-	sta $2122
+	sta remap_ram($0704),x
+	plx
+	lda #$01
+	sta !paletteupload
 	jsr IncPointer
 	jsr IncPointer
 	jsr IncPointer
@@ -2438,14 +2424,20 @@ TextCreation:
 	lda [$00],y
 	asl #2
 	inc
-	sta $2121
-	dec
+	asl
+	phx
+	tax
+	lda [$00],y
+	asl #2
 	ora !property
 	sta !property
 	lda !boxcolor
-	sta $2122
+	sta remap_ram($0703),x
 	lda !boxcolor+1
-	sta $2122
+	sta remap_ram($0704),x
+	lda #$01
+	sta !paletteupload
+	plx
 	jsr IncPointer
 	jsr IncPointer
 	jmp .NoButton
@@ -2567,13 +2559,13 @@ TextCreation:
 	stz $00
 	stz $01
 	lda $04
-	bne .16Bit
+	bne .SixteenBit
 	inc $00
 	inc $00
 	!16bit inc $00
 	!16bit inc $00
 
-.16Bit
+.SixteenBit
 	pla
 	and #$0F
 	beq .NoZeros
@@ -3241,10 +3233,10 @@ WordWidth:
 	!16bit sep #$20
 	asl
 	tax
-	lda .Routinetable,x
+	lda.l .Routinetable,x
 	sta $0C
 	inx
-	lda .Routinetable,x
+	lda.l .Routinetable,x
 	sta $0D
 	phk
 	pla
@@ -3394,13 +3386,13 @@ WordWidth:
 	stz $00
 	stz $01
 	lda $04
-	bne .16Bit
+	bne .SixteenBit
 	inc $00
 	inc $00
 	!16bit inc $00
 	!16bit inc $00
 
-.16Bit
+.SixteenBit
 	pla
 	and #$0F
 	beq .NoZeros
@@ -3502,6 +3494,16 @@ VBlank:
 .NoPause
 	lda !vwfmode	; Prepare jump to routine
 	beq .End
+
+	lda !paletteupload	; This code takes care of palette upload requests
+	beq .skip
+	lda #$00
+	sta !paletteupload
+	sta $2121
+	%dmatransfer(#$01,#$02,#$22,".b #$7E",".b #$07",".b #$03",#$0040)
+.skip
+
+	lda !vwfmode
 	asl
 	tax
 	lda .Routinetable,x
@@ -3642,11 +3644,10 @@ PrepareBackup:
 Backup:
 	rep #$20
 
-	lda.w #!backupram	; Adjust destination address
+	lda !vrampointer
+	asl a
 	clc
-	adc !vrampointer
-	clc
-	adc !vrampointer
+	adc.w #!backupram	; Adjust destination address
 	sta $00
 
 	lda #$4000	; Adjust VRAM address
@@ -3663,12 +3664,12 @@ Backup:
 
 .Backup
 	%vramprepare(#$80,$02,"lda $2139","")
-	%dmatransfer(#$10,#$81,#$39,".b #!backupram>>16",".b $01",".b $00",#$0800)
+	%dmatransfer(#$01,#$81,#$39,".b #!backupram>>16",".b $01",".b $00",#$0800)
 	jmp .Continue
 
 .Restore
 	%vramprepare(#$80,$02,"","")
-	%dmatransfer(#$10,#$01,#$18,".b #!backupram>>16",".b $01",".b $00",#$0800)
+	%dmatransfer(#$01,#$01,#$18,".b #!backupram>>16",".b $01",".b $00",#$0800)
 
 .Continue
 	rep #$20	; Adjust pointer
@@ -3712,36 +3713,42 @@ BackupEnd:
 
 
 SetupColor:
-	lda #$00	; Backup or restore layer 3 colors
-	sta $2121
+	stz $2121	; Backup or restore layer 3 colors
 	lda !vwfmode
 	cmp #$04
 	beq .Backup
-	%dmatransfer(#$10,#$02,#$22,".b #$7E",".b #$07",".b #$03",#$0040)
+.Restore
+	%mvntransfer($0040, #$00, !palbackup, $7E0703)
+	%dmatransfer(#$01,#$02,#$22,".b #$7E",".b #$07",".b #$03",#$0040)
 	jmp .End
 
 .Backup
-	%dmatransfer(#$10,#$82,#$3B,".b #$7E",".b #$07",".b #$03",#$0040)
-
+	%dmatransfer(#$01,#$82,#$3B,".b #$7E",".b #$07",".b #$03",#$0040)
+	%mvntransfer($0040, #$00, $7E0703, !palbackup)
 
 	lda !boxpalette	; Set BG and letter color
 	asl #2
 	inc
-	sta $2121
+	asl
+	phy
+	tay
 	ldx #$00
 
 .BoxColorLoop
 	lda !boxcolor,x
-	sta $2122
+	sta remap_ram($0703),y
+	iny
 	inx
 	cpx #$06
 	bne .BoxColorLoop
 
-	
+	ply
 	lda !framepalette	; Set frame color
 	asl #2
 	inc
-	sta $2121
+	asl
+	phx
+	tax
 	phk
 	pla
 	sta $02
@@ -3762,10 +3769,15 @@ SetupColor:
 
 .FrameColorLoop
 	lda [$00],y
-	sta $2122
+	sta remap_ram($0703),x
+	inx
 	iny
 	cpy #$06
 	bne .FrameColorLoop
+	plx
+
+	lda #$01
+	sta !paletteupload
 
 .End
 	lda !vwfmode
@@ -3779,10 +3791,10 @@ SetupColor:
 
 PrepareScreen:
 	%vramprepare(#$80,#$4000,"","")	; Upload graphics and tilemap to VRAM
-	%dmatransfer(#$10,#$01,#$18,".b #!tileram>>16",".b #!tileram>>8",".b #!tileram",#$00B0)
+	%dmatransfer(#$01,#$01,#$18,".b #!tileram>>16",".b #!tileram>>8",".b #!tileram",#$00B0)
 
 	%vramprepare(#$80,#$5C80,"","")
-	%dmatransfer(#$10,#$01,#$18,".b #!tileram+$3900>>16",".b #!tileram+$3900>>8",".b #!tileram+$3900",#$0700)
+	%dmatransfer(#$01,#$01,#$18,".b #!tileram+$3900>>16",".b #!tileram+$3900>>8",".b #!tileram+$3900",#$0700)
 
 .End
 	lda !vwfmode
@@ -3796,7 +3808,7 @@ PrepareScreen:
 
 CreateWindow:
 	%vramprepare(#$80,#$5C80,"","")
-	%dmatransfer(#$10,#$01,#$18,".b #!tileram+$3900>>16",".b #!tileram+$3900>>8",".b #!tileram+$3900",#$0700)
+	%dmatransfer(#$01,#$01,#$18,".b #!tileram+$3900>>16",".b #!tileram+$3900>>8",".b #!tileram+$3900",#$0700)
 
 	lda !counter
 	cmp #$02
@@ -3813,10 +3825,16 @@ CreateWindow:
 	jmp VBlank_End
 
 
-
-
-
 TextUpload:
+	lda !cursorfix
+	beq .SkipCursor
+	dec
+	sta !cursorfix
+
+	%vramprepare(#$80,!cursorvram,"","")
+	%dmatransfer(#$01,#$01,#$18,".b #!tileram+$3900>>16"," !cursorsrc+1"," !cursorsrc",#$0046)
+
+.SkipCursor
 	lda !wait	; Wait for frames?
 	beq .NoFrames
 	lda !wait
@@ -3840,7 +3858,7 @@ TextUpload:
 	sta !cursorupload
 
 	%vramprepare(#$80,#$5C50,"","")
-	%dmatransfer(#$10,#$01,#$18,".b #!vwftileram>>16",".b #!vwftileram>>8",".b #!vwftileram",#$0060)
+	%dmatransfer(#$01,#$01,#$18,".b #!vwftileram>>16",".b #!vwftileram>>8",".b #!vwftileram",#$0060)
 
 	lda !edge
 	lsr #3
@@ -3885,7 +3903,7 @@ TextUpload:
 	sta $00
 	sep #$20
 	%vramprepare(#$80,$00,"","")
-	%dmatransfer(#$10,#$01,#$18," !vwftilemapdest+2"," !vwftilemapdest+1"," !vwftilemapdest",#$0046)
+	%dmatransfer(#$01,#$01,#$18," !vwftilemapdest+2"," !vwftilemapdest+1"," !vwftilemapdest",#$0046)
 
 	jmp .Return
 
@@ -4016,7 +4034,7 @@ TextUpload:
 	lda #$00
 	sta !clearbox
 	%vramprepare(#$80,#$5C80,"","")
-	%dmatransfer(#$10,#$01,#$18,".b #!tileram+$3900>>16",".b #!tileram+$3900>>8",".b #!tileram+$3900",#$0700)
+	%dmatransfer(#$01,#$01,#$18,".b #!tileram+$3900>>16",".b #!tileram+$3900>>8",".b #!tileram+$3900",#$0700)
 	jmp .Return
 
 .Begin
@@ -4030,7 +4048,7 @@ TextUpload:
 	sta $00
 	sep #$20
 	%vramprepare(#$80,$00,"","")
-	%dmatransfer(#$10,#$01,#$18," !vwfgfxdest+2"," !vwfgfxdest+1"," !vwfgfxdest",#$0060)
+	%dmatransfer(#$01,#$01,#$18," !vwfgfxdest+2"," !vwfgfxdest+1"," !vwfgfxdest",#$0060)
 
 	rep #$20	; Upload Tilemap
 	lda !vwftilemapdest
@@ -4042,7 +4060,7 @@ TextUpload:
 	sta $00
 	sep #$20
 	%vramprepare(#$80,$00,"","")
-	%dmatransfer(#$10,#$01,#$18," !vwftilemapdest+2"," !vwftilemapdest+1"," !vwftilemapdest",#$0046)
+	%dmatransfer(#$01,#$01,#$18," !vwftilemapdest+2"," !vwftilemapdest+1"," !vwftilemapdest",#$0046)
 
 	jsr Beep
 
@@ -4168,10 +4186,23 @@ BackupTilemap:
 	lsr
 	clc
 	adc #$5C80
-	sta $00
+	sta !cursorvram
+	lda $03
+	sta !cursorsrc
+	lda #$01
+	sta !cursorfix
 	sep #$20
-	%vramprepare(#$80,$00,"","")
-	%dmatransfer(#$10,#$01,#$18," $05"," $04"," $03",#$0046)
+	;%vramprepare(#$80,$00,"","")
+	;%dmatransfer(#$01,#$01,#$18," $05"," $04"," $03",#$0046)
+	;Vitor Vilela's note:
+	;Here is one big issue with the cursor.
+	;This code actually is outside V-Blank and now I have to upload the following:
+	;VRAM: $00-$01
+	;Source: $03-$05
+	;Bytes: #$0046
+	;I don't know if the tile gets preserved or not for the current frame.
+	;But for now I will have to preverse at least, $00-$01 and $03-$04, which means more 4 bytes
+	;of free ram, plus the upload flag, so 5 more bytes of free ram.
 	rts
 
 
@@ -4450,56 +4481,31 @@ incbin vwffont1.bin
 .Width
 incsrc vwffont1.asm
 
-
-
-Codeend:
-
 print ""
 
-org !vwfmode
-print "VWF State register at address $",pc,"."
-
-org !message
-print "Message register at address $",pc,"."
-
-org !boxbg
-print "BG GFX register at address $",pc,"."
-
-org !boxcolor
-print "BG Color register at address $",pc,"."
-
-org !boxframe
-print "Frame GFX register at address $",pc,"."
-
-
-org remap_rom(!freespace)
+print "VWF State register at address $",hex(!vwfmode),"."
+print "Message register at address $",hex(!message),"."
+print "BG GFX register at address $",hex(!boxbg),"."
+print "BG Color register at address $",hex(!boxcolor),"."
+print "Frame GFX register at address $",hex(!boxframe),"."
 
 print ""
 print "See Readme for details!"
 print ""
-print bytes," bytes written at address $",pc,"."
+print "Patch inserted at $",hex(FreecodeStart),", ",freespaceuse," bytes of free space used."
 
-
-org !textfreespace
-reset bytes
-
-	db "STAR"
-	dw Textend-Textstart
-	dw Textend-Textstart^#$FFFF
-
-Textstart:
+freedata
+!PrevFreespace:
 
 Pointers:
 incsrc vwfmessagepointers.asm
 
+%nextbank()
+
 Text:
-incsrc vwfmessages1.asm
+incsrc vwfmessages.asm
 
-Textend:
-
-org !textfreespace
-
-print bytes," bytes written at address $",pc,"."
+print "Text data insterted at $",hex(Text),"."
 
 ;-------------------------------------------------------------
 ;INSERT DATA HERE!
@@ -4512,3 +4518,4 @@ print bytes," bytes written at address $",pc,"."
 ;-------------------------------------------------------------
 print ""
 print ""
+freedata : prot !PrevFreespace : Kleenex: db $00;ignore this line, it must be last in the patch for technical reasons

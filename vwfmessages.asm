@@ -1,7 +1,5 @@
 ; Actual dialogues go here.
 
-
-
 %textstart()
 
 

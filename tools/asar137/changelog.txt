@@ -1,0 +1,17 @@
+v1.37 (by Raidenthequick):
+- Super FX short addressing fixed, and added error checking for valid short address.
+  For example, lms r0,($00D4) used to output 3D A0 D4, which is actually incorrect
+  because short addressing doubles the byte supplied by the instruction to give a range from
+  $0000-$01FE with just one byte (since Super FX reads words). This now outputs
+  3D A0 6A which is correct. Also, asar now throws an error for anything outside $0000-$01FE
+  as well as all odd-numbered addresses for both sms and lms instructions. (Odd-numbered
+  addresses cannot be accessed using short addressing due to the multiplying by 2.)
+- New freespace argument added; a $xx byte that will search the ROM for contiguous sections
+  of that byte. Before it was hardcoded to only search for $00. Default is still $00 if
+  not supplied, so past patches should not be broken.
+- In line with this, autoclean was hardcoded to clean using $00. This was fixed also to clean
+  with the byte supplied by freecode, or $00 if not supplied.
+- Super FX and SPC700 labels were broken if used within freespace. This has been fixed by
+  doing what 65816 does: mask the address with 0xFFFFFF because freespace addresses use
+  a high byte to indicate that they're freespace.
+- Fixed SA-1 mapping using wrong Super MMC banks range.

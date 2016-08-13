@@ -2,3 +2,20 @@
 *.smc
 *.srm
 *.sfc
+
+!tools/asar137/help.sfc #Aside from this one (which is empty, anyways)
+
+# User settings and other unwanted stuff
+tools/higan_v101-windows/settings.bml
+tools/snes9x1.51.ep10r2/snes9x.debugger.cfg
+tools/snes9x1.51.ep10r2/stderr.txt
+tools/snes9x1.51.ep10r2/stdout.txt
+tools/snes9x1.51.ep10r2/Valid.Ext
+tools/snes9x1.51.ep10r2/Cheats
+tools/snes9x1.51.ep10r2/Logs
+tools/snes9x1.51.ep10r2/Roms
+tools/snes9x1.51.ep10r2/Saves
+tools/zsnesw151-FuSoYa-8MB_R2/zinput.cfg
+tools/zsnesw151-FuSoYa-8MB_R2/zmovie.cfg
+tools/zsnesw151-FuSoYa-8MB_R2/zsnesw.cfg
+*.log

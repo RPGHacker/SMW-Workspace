@@ -1,4 +1,4 @@
-# Base ROM directory
+# Base ROM Directory
 Put all your base ROMs in here for testing convenience. The .gitignore file in the parent directory automatically makes sure that none of them is ever commited. I suggest adding the following files:
 
 - clean.smc - Unmodified, clean SMW ROM

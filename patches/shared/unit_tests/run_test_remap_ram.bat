@@ -12,18 +12,22 @@ IF %ERRORLEVEL% NEQ 0 (
 ) ELSE (
 	echo Copied "lm1mb.smc" to "patched.smc".
 	echo.
+	echo.
 )
 
-.\..\..\..\tools\asar137\asar.exe .\..\free_7F4000.asm .\patched.smc
+.\..\..\..\tools\asar137\asar.exe .\test_remap_ram.asm .\patched.smc
 
+echo.
 echo.
 
 IF %ERRORLEVEL% NEQ 0 (
-	echo Patching "free_7F4000.asm" to "patched.smc" failed.
+	echo Patching "test_remap_ram.asm" to "patched.smc" failed.
 	echo.
 	pause
 	exit %ERRORLEVEL%
 ) ELSE (
-	echo Patched "free_7F4000.asm" to "patched.smc".
+	echo Patched "test_remap_ram.asm" to "patched.smc".
 	echo.
 )
+
+pause

@@ -5,11 +5,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;
 
 
-math pri on
-
-
 incsrc ttconfig.cfg
 incsrc ../shared/shared.asm
+
+
+print "Tolerance Timer v1.0 - (c) RPG Hacker"
+
+
+math pri on
 
 
 namespace tolerance_timer_
@@ -59,6 +62,8 @@ endif
 
 
 freecode
+
+FreecodeStart:
 
 
 
@@ -298,3 +303,13 @@ OnCheckJumpButtonPressed:
 .Return:
 	jml remap_rom($00D61C)
 endif
+
+
+
+
+	
+;;;;;;;;;;;;;;;
+;MAIN CODE END;
+;;;;;;;;;;;;;;;
+
+print "Patch inserted at $",hex(FreecodeStart),", ",freespaceuse," bytes of free space used."

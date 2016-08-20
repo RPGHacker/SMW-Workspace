@@ -12,8 +12,12 @@ if !shared_asm_included == 0
 
 	!use_sa1_mapping = 0
 	
+	!num_sprite_table_slots = 12		; The number of sprite slots available (12 in regular ROM, 22 in SA-1 ROM)
+	
 	if read1($00FFD5) == $23
 		!use_sa1_mapping = 1
+		
+		!num_sprite_table_slots = 22
 		
 		sa1rom
 	endif
@@ -49,6 +53,32 @@ if !shared_asm_included == 0
 	
 	
 	
+	; Returns 1 if (val_a != 0) && (val_b != 0) and 0 otherwise
+	
+	function logical_and(val_a, val_b) = not(not(val_a*val_b))
+	
+	
+	; Returns 0 if (val_a != 0) && (val_b != 0) and 1 otherwise
+	
+	function logical_nand(val_a, val_b) = not(logical_and(val_a, val_b))
+	
+	
+	; Returns 1 if (val_a != 0) || (val_b != 0) and 0 ohterwise
+	
+	function logical_or(val_a, val_b) = logical_nand(logical_nand(val_a, val_a), logical_nand(val_b, val_b))
+	
+	
+	; Returns 0 if (val_a != 0) || (val_b != 0) and 1 ohterwise
+	
+	function logical_nor(val_a, val_b) = logical_nand(logical_nand(val_a, val_a), logical_nand(val_b, val_b))
+	
+	
+	; Returns 1 if ((val_a != 0) && (val_b == 0)) || ((val_a == 0) && (val_b != 0)) and 0 otherwise
+	
+	function logical_xor(val_a, val_b) = logical_and(logical_or(val_a, val_b), not(logical_and(val_a, val_b)))
+	
+	
+	
 	; Returns 1 if val_a < val_b and 0 otherwise
 	
 	function less(val_a, val_b) = 1-gr_equ_zero(val_a-val_b)
@@ -70,6 +100,12 @@ if !shared_asm_included == 0
 	
 	
 	
+	; Returns the bank byte of an address (e.g. returns $24 for address $2482FA)
+	
+	function get_bank_byte(address) = (address&$FF0000)>>16
+	
+	
+	
 	; Remaps address to new_base if range_start <= address <= range_end
 	
 	function remap_range(address, range_start, range_end, new_base) = select(greater_equal(address, range_start), select(less_equal(address, range_end), address-range_start+new_base, address), address)
@@ -81,9 +117,47 @@ if !shared_asm_included == 0
 	
 	
 	
+	; Returns 1 if bank_byte lies in a range of banks where mirrors exist from $0000 to $7FFF and 0 otherwise
+	
+	function has_mirrors(bank_byte) = not(logical_or(logical_and(greater_equal(bank_byte, $40), less_equal(bank_byte, $7F)), logical_and(greater_equal(bank_byte, $C0), less_equal(bank_byte, $FF))))
+	
+	
+	
+	; Returns 1 if current_pc lies within a bank where RAM mirrors exist from $0000 to $1FFF and address lies between $7E0000 and $7E1FFF, otherwise returns 0
+	
+	function has_ram_mirrors(current_pc, address) = logical_and(has_mirrors(get_bank_byte(current_pc)), logical_and(greater_equal(address, $7E0000), less_equal(address, $7E1FFF)))
+	
+	
+	
+	; Shortens an address if its bank byte lies within range bank_range_start to bank_range_end and its word address lies within range mirror_range_start to mirror_range_end and mirrors exist inside the bank current_pc lies in
+	
+	function shorten_if_in_range(current_pc, address, bank_range_start, bank_range_end, mirror_range_start, mirror_range_end) =	select(logical_and(logical_or(has_mirrors(get_bank_byte(current_pc)), has_ram_mirrors(current_pc, address)), logical_and(greater_equal(get_bank_byte(address), bank_range_start), less_equal(get_bank_byte(address), bank_range_end))), remap_range(address, (address&$FF0000)|mirror_range_start, (address&$FF0000)|mirror_range_end, $000000|mirror_range_start), address)
+	
+	
+	
+	; Shortens a long address if it lies within a range where mirrors exist for it inside the bank current_pc lies in
+	; (e.g. current_pc is $008000 and address is in range $7E0000 to $7E1FFF, $010000 to $017FFF, $810000 to $81FFFF etc.)
+	
+	function shorten_if_mirrored(current_pc, address) = shorten_if_in_range(current_pc, shorten_if_in_range(current_pc, shorten_if_in_range(current_pc, address, $7E, $7E, $0000, $1FFF), $80, $BF, $0000, $7FFF), $00, $3F, $0000, $7FFF)
+	
+	
+	
+	; Originally, the code was meant to automatically detect what bank it's in and do some remapping if running from inside a bank that doesn't have mirrors
+	; However, due to Asar limitations, this is either not possible or just not very practical, so let's just do away with it and always assume we're in bank $00
+	
+	!current_pc ?= $008000
+	
+	
+	
+	; Maps a RAM address from a sprite table correctly, depending on whether we need SA-1 mapping or not
+	
+	function remap_sprite_table_ram(address) = select(!use_sa1_mapping, remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(shorten_if_mirrored(!current_pc, address), $00AA, $00B5, $309E), $00B6, $00C1, $30B6), $00C2, $00CD, $30D8), $009E, $00A9, $3200), $00D8, $00E3, $3216), $00E4, $00EF, $322C), $14C8, $14D3, $3242), $14D4, $14DF, $3258), $14E0, $14EB, $326E), $151C, $1527, $3284), $1528, $1533, $329A), $1534, $153F, $32B0), $1540, $154B, $32C6), $154C, $1557, $32DC), $1558, $1563, $32F2), $1564, $156F, $3308), $1570, $157B, $331E), $157C, $1587, $3334), $1588, $1593, $334A), $1594, $159F, $3360), $15A0, $15AB, $3376), $15AC, $15B7, $338C), $15EA, $15F5, $33A2), $15F6, $1601, $33B8), $1602, $160D, $33CE), $160E, $1619, $33E4), $163E, $1649, $33FA), $187B, $1886, $3410), $14EC, $14F7, $74C8), $14F8, $1503, $74DE), $1504, $150F, $74F4), $1510, $151B, $750A), $15B8, $15C3, $7520), $15C4, $15CF, $7536), $15D0, $15DB, $754C), $15DC, $15E7, $7562), $161A, $1625, $7578), $1626, $1631, $758E), $1632, $163D, $75A4), $190F, $191A, $7658), $1FD6, $1FE1, $766E), $1FE2, $1FED, $7FD6), $164A, $1655, $75BA), $1656, $1661, $75D0), $1662, $166D, $75EA), $166E, $1679, $7600), $167A, $1685, $7616), $1686, $1691, $762C), $186C, $1877, $7642), address)
+
+	
+	
 	; Maps a RAM address correctly, depending on whether we need SA-1 mapping or not
 	
-	function remap_ram(address) = select(!use_sa1_mapping, remap_address(remap_address(remap_address(remap_address(remap_address(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(address, $0000, $00FF, $3000), $0100, $1FFF, $6100), $7EC800, $7EFFFF, $40C800), $7FC800, $7FFFFF, $41C800), $7F9A7B, $7F9C7A, $418800), $700000, $7007FF, $41C000), $700800, $7027FF, $41A000), $7FAB10, $6040), $7FAB1C, $6056), $7FAB28, $6057), $7FAB34, $606D), $7FAB9E, $6083), address)
+	function remap_ram(address) = select(!use_sa1_mapping, remap_address(remap_address(remap_address(remap_address(remap_address(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_sprite_table_ram(shorten_if_mirrored(!current_pc, address)), $0000, $00FF, $3000), $0100, $1FFF, $6100), $7EC800, $7EFFFF, $40C800), $7FC800, $7FFFFF, $41C800), $7F9A7B, $7F9C7A, $418800), $700000, $7007FF, $41C000), $700800, $7027FF, $41A000), $7FAB10, $6040), $7FAB1C, $6056), $7FAB28, $6057), $7FAB34, $606D), $7FAB9E, $6083), address)
 	
 	
 	
@@ -104,7 +178,7 @@ if !shared_asm_included == 0
 	; Resolves to "stz address" if address lies in an address range supported by stz and otherwise to "lda #$00 : sta address"
 	
 	macro sta_zero_or_stz(address)
-		if less(<address>, $10000)
+		if less(<address>, $010000)
 			stz <address>		
 		else
 			lda #$00
@@ -116,7 +190,7 @@ if !shared_asm_included == 0
 	; Resolves to "inc address" if address lies in an address range supported by inc and otherwise to "lda #$01 : sta address"
 	
 	macro sta_one_or_inc(address)
-		if less(<address>, $10000)
+		if less(<address>, $010000)
 			inc <address>		
 		else
 			lda #$01

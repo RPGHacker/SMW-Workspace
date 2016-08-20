@@ -11,6 +11,7 @@ IF %ERRORLEVEL% NEQ 0 (
 	exit %ERRORLEVEL%
 ) ELSE (
 	echo Copied "lm1mb.smc" to "patched.smc".
+	echo.
 )
 
 .\..\..\..\tools\asar137\asar.exe .\..\tolerance_timer.asm .\patched.smc

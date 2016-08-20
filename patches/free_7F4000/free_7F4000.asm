@@ -5,11 +5,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-math pri on
-
-
 incsrc freeconfig.cfg
 incsrc ../shared/shared.asm
+
+
+print "Free 7F4000 v1.0 - (c) RPG Hacker"
+
+
+math pri on
 
 
 namespace free_7F4000_
@@ -40,6 +43,8 @@ org remap_rom($00A0B9)
 
 freecode
 
+FreecodeStart:
+
 
 
 
@@ -69,3 +74,13 @@ endif
 
 .Return:
 	rtl
+
+
+
+
+	
+;;;;;;;;;;;;;;;
+;MAIN CODE END;
+;;;;;;;;;;;;;;;
+
+print "Patch inserted at $",hex(FreecodeStart),", ",freespaceuse," bytes of free space used."

@@ -13,6 +13,7 @@ print "Tolerance Timer v1.0 - (c) RPG Hacker"
 
 
 math pri on
+math round off
 
 
 namespace tolerance_timer_
@@ -124,12 +125,12 @@ if !allow_early_jumps == 1
 		
 	.NoButtonPressed:
 		lda remap_ram(!early_jump_timer)
-		sec
-		sbc #$01	; Why does dec not modify the carry flag? Oh well...
-		bcc .DontStoreTimer
+		; cmp #$00
+		beq .DontStoreTimer
 		
 		{
-		.StoreTimer:
+		.StoreTimer:		
+			dec
 			sta remap_ram(!early_jump_timer)
 		}
 		

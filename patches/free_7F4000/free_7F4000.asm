@@ -13,6 +13,7 @@ print "Free 7F4000 v1.0 - (c) RPG Hacker"
 
 
 math pri on
+math round off
 
 
 namespace free_7F4000_

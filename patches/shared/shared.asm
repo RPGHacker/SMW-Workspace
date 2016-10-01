@@ -284,19 +284,24 @@ if !shared_asm_included == 0
 	function frac(decimal_number) = sawtooth(decimal_number)*select(less(decimal_number, 0), -1, 1)
 	
 	
+	; Returns the truncated value of a decimal number
+	
+	function trunc(decimal_number) = decimal_number|0
+	
+	
 	; Returns the floor of a decimal number
 	
-	function floor(decimal_number) = select(less(decimal_number, 0), decimal_number-(1-frac(decimal_number)), decimal_number-frac(decimal_number))
+	function floor(decimal_number) = select(less(decimal_number, 0), trunc(decimal_number-!magic_zero), trunc(decimal_number))
 	
 	
 	; Returns the ceiling of a decimal number
 	
-	function ceiling(decimal_number) = select(less(decimal_number, 0), decimal_number+frac(decimal_number), decimal_number+(1-frac(decimal_number)))
+	function ceiling(decimal_number) = select(less(decimal_number, 0), trunc(decimal_number), trunc(decimal_number+!magic_zero))
 	
 	
-	; Returns the truncated value of a decimal number
+	; Returns decimal_number rounded to nearest integer value
 	
-	function trunc(decimal_number) = decimal_number-sawtooth(decimal_number)
+	function round(decimal_number) = trunc(decimal_number+(sign(decimal_number)*0.5))
 	
 	
 	
@@ -313,7 +318,7 @@ if !shared_asm_included == 0
 	
 	; Public section
 	
-	; Converts a decimal number to a 16-bit fixed point representation
+	; Converts a decimal number to a 16-bit signed fixed point representation (such as used by mode 7)
 	
 	function decimal_to_fixed_16(decimal_number) = (min(((clamp(decimal_number, -128, 128)+128)*$100)|0, $FFFF)+$8000)&$FFFF
 	
@@ -321,6 +326,11 @@ if !shared_asm_included == 0
 	; Converts a 16-bit fixed point representation to a decimal number
 	
 	function fixed_16_to_decimal(fixed_representation) = fixed_16_to_decimal_positive(select(less(fixed_representation, $8000), fixed_representation, (fixed_representation-1)^$FFFF))*select(less(fixed_representation, $8000), 1, -1)
+	
+	
+	; Converts a decimal number to a 13-bit signed int (such as used by mode 7)
+	
+	function decimal_to_int_13(decimal_number) = (((clamp(decimal_number, -4096, 4095)&$80000000)>>19)&$1000)|(clamp(decimal_number, -4096, 4095)&$0FFF)
 	
 	
 	

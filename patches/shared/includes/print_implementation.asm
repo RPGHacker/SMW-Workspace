@@ -82,12 +82,35 @@ else
 			; Called by functions working with decimal numbers to get the fractional part
 			; For internal use only
 			
-			macro get_fractional_part_internal(decimal_number, decimal_places, out_var)
-				!get_fractional_part_next_digit = floor(frac(<decimal_number>)*10)
-				if <decimal_places> > 0 && !get_fractional_part_next_digit+!magic_zero != 0
-					!<out_var> #= (!<out_var>*10)+!get_fractional_part_next_digit
-					%get_fractional_part_internal(<decimal_number>*10, <decimal_places>-1, "<out_var>")
+			macro get_fractional_part_internal_recursive(decimal_number, decimal_places_start, decimal_places, out_var)
+				!get_remaining_fractional_part = frac(<decimal_number>)*10
+				!get_fractional_part_next_digit #= trunc(!get_remaining_fractional_part)
+				
+				if <decimal_places> > 0 && !get_remaining_fractional_part+!magic_zero != 0
+					; We're not done yet and can add more decimal places
+					!<out_var> := !<out_var>!get_fractional_part_next_digit
+					%get_fractional_part_internal_recursive(<decimal_number>*10, <decimal_places_start>, <decimal_places>-1, "<out_var>")
+				else
+					if <decimal_places> = 0 && !get_remaining_fractional_part+!magic_zero != 0
+						; We're not done yet, but can't add more decimal places, so add "..."
+						!<out_var> := "!<out_var>..."
+					else
+						; We're done and have no more decimal places to add
+						if <decimal_places_start> == <decimal_places>
+							; If we didn't add any decimal places at all, add a 0
+							; Or rather just replace with 0, because it doesn't really make a difference and putting "!<out_var>0" here will just confuse Asar
+							!<out_var> := "0"
+						endif
+					endif
 				endif
+			endmacro
+			
+		
+			; Called by functions working with decimal numbers to get the fractional part
+			; For internal use only
+			
+			macro get_fractional_part_internal(decimal_number, decimal_places, out_var)
+				%get_fractional_part_internal_recursive(<decimal_number>, <decimal_places>, <decimal_places>, <out_var>)
 			endmacro
 			
 			
@@ -103,11 +126,11 @@ else
 					!dec_internal_sign = "-"
 				endif
 				
-				!dec_fractional_part = 0
+				!dec_fractional_part = ""
 				
 				%get_fractional_part_internal(abs(<decimal_number>), <decimal_places>, "dec_fractional_part")
 				
-				!print_arg<arg_num> = """!dec_internal_sign"",dec(!dec_internal_val),""."",dec(!dec_fractional_part),"
+				!print_arg<arg_num> = """!dec_internal_sign"",dec(!dec_internal_val),""."",""!dec_fractional_part"","
 			endmacro
 		}
 		

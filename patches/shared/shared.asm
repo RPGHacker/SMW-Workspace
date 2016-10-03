@@ -34,51 +34,41 @@ if !shared_asm_included == 0
 			
 			sa1rom
 		endif
-	
-	
-	
-		; A constant which we use in a few places where we need to apply int logic to doubles
-		; Take this as the maximum double we can add to 0.0 without reaching 1.0 yet
-		!magic_zero = 0.999999999
 		
-	
-	
-		; Returns 1 if value >= 0 and 0 otherwise
-		; Note that we subtract !magic_zero from value, because >> casts our expression to an unsigned int,
-		; which means that this function would otherwise not work accurately for values between -1.0 and 0.0,
-		; because they would be truncated to 0.0 and thus result in 1 instead of 0
-		; This may not be 100% accurate, because we're working with doubles here, but it was the best solution I could find
-		function is_greater_equal_zero(value) = 1-((value-!magic_zero)>>31)
+
 		
+
 		
-		; Returns 1 if value is 0 and 0 otherwise
-		; We use 1-!magic_zero here to test value against the next-smallest possible double below value
-		; If both function calls return different results, value must be 0
-		; This may not be 100% accurate, because we're working with doubles here, but it was the best solution I could find
+		; Returns 1 if value <= 0 and 0 otherwise
 		; For internal use only
 		
-		function is_zero(value) = is_greater_equal_zero(value)^is_greater_equal_zero(value-(1-!magic_zero))
+		function is_less_equal_zero(value) = (value-1)>>31
+		
+		
+		; Returns 1 if value > 0 and 0 otherwise
+		; For internal use only
+		
+		function is_greater_zero(value) = 1-((value-1)>>31)
 	}
 	
 	
 	
-	; Public section
-	
-	
-	; Returns false if statement == 0 and true otherwise, but only works reliably for integers
-	
-	function select(statement, true, false) = false+((true-false)*(1-is_zero(statement)))
-	
+	; Public section	
 	
 	
 	; Returns the absolute value of value
 	
-	function abs(value) = select(is_greater_equal_zero(value), value, -value)
+	function abs(value) = (is_greater_zero(value)*value)+(is_less_equal_zero(value)*(-value))
+	
+	
+	; Returns false if statement == 0 and true otherwise, but only works reliably for integers
+	
+	function select(statement, true, false) = false+((true-false)*is_greater_zero(abs(statement)))
 	
 	
 	; Returns 1 if value > 0, -1 if value < 0 and 0 otherwise
 	
-	function sign(value) = value/abs(select(is_zero(value), 1, value))
+	function sign(value) = value/abs(select(value, value, 1))
 	
 	
 	; Returns 0 if value < 0, 1 if value > 0 and 0.5 otherwise
@@ -90,38 +80,33 @@ if !shared_asm_included == 0
 	
 	
 	; Returns 1 if value == 0 and 0 otherwise
-	; Original version abused the fact that certain operations like "or" cast their operands to an unsigned int in Asar
-	; Replaced by is_zero() function, which I consider more reliable (I think the original version would have stopped
-	; working, anyways, once setting math round to off, in which case values like -2*Pi etc. should have resulted in 1)
-	; Leaving the original implementation here just in case, though
 	
-	; function not(value) = cos(value)|0
-	function not(value) = is_zero(value)
+	function not(value) = 1-is_greater_zero(abs(value))
 	
 	
 	; Returns 1 if val_a == val_b and 0 otherwise
 	
-	function equal(val_a, val_b) = not(val_a-val_b)	
+	function equal(val_a, val_b) = not(val_a-val_b)
 	
 	
 	; Returns 1 if val_a < val_b and 0 otherwise
 	
-	function less(val_a, val_b) = 1-is_greater_equal_zero(val_a-val_b)
+	function less(val_a, val_b) = is_greater_zero(val_b-val_a)
 	
 	
 	; Returns 1 if val_a > val_b and 0 otherwise
 	
-	function greater(val_a, val_b) = 1-is_greater_equal_zero(val_b-val_a)
+	function greater(val_a, val_b) = is_greater_zero(val_a-val_b)
 	
 	
 	; Returns 1 if val_a <= val_b and 0 otherwise
 	
-	function less_equal(val_a, val_b) = not(greater(val_a, val_b))
+	function less_equal(val_a, val_b) = is_less_equal_zero(val_a-val_b)
 	
 	
 	; Returns 1 if val_a >= val_b and 0 otherwise
 	
-	function greater_equal(val_a, val_b) = not(less(val_a, val_b))
+	function greater_equal(val_a, val_b) = is_less_equal_zero(val_b-val_a)
 	
 	
 	
@@ -285,18 +270,19 @@ if !shared_asm_included == 0
 	
 	
 	; Returns the truncated value of a decimal number
+	; Note that pure unsigned int conversion acts weirdly on most negative numbers here, which is why we actually need the select()
 	
-	function trunc(decimal_number) = decimal_number|0
+	function trunc(decimal_number) = select(less(decimal_number, 0), -(abs(decimal_number)|0), decimal_number|0)
 	
 	
 	; Returns the floor of a decimal number
 	
-	function floor(decimal_number) = select(less(decimal_number, 0), trunc(decimal_number-!magic_zero), trunc(decimal_number))
+	function floor(decimal_number) = trunc(decimal_number)-select(less(decimal_number, trunc(decimal_number)), 1, 0)
 	
 	
 	; Returns the ceiling of a decimal number
 	
-	function ceiling(decimal_number) = select(less(decimal_number, 0), trunc(decimal_number), trunc(decimal_number+!magic_zero))
+	function ceiling(decimal_number) = -floor(-decimal_number)
 	
 	
 	; Returns decimal_number rounded to nearest integer value
@@ -318,6 +304,12 @@ if !shared_asm_included == 0
 	
 	; Public section
 	
+	
+	; Some accurate PI representation, always useful
+	
+	!math_pi = 3.14159265358979323846264338327950288419716939937510582
+	
+	
 	; Converts a decimal number to a 16-bit signed fixed point representation (such as used by mode 7)
 	
 	function decimal_to_fixed_16(decimal_number) = (min(((clamp(decimal_number, -128, 128)+128)*$100)|0, $FFFF)+$8000)&$FFFF
@@ -331,6 +323,17 @@ if !shared_asm_included == 0
 	; Converts a decimal number to a 13-bit signed int (such as used by mode 7)
 	
 	function decimal_to_int_13(decimal_number) = (((clamp(decimal_number, -4096, 4095)&$80000000)>>19)&$1000)|(clamp(decimal_number, -4096, 4095)&$0FFF)
+	
+	
+	
+	; Converts degrees to radians
+	
+	function deg_to_rad(angle_in_degress) = (angle_in_degress*!math_pi)/180
+	
+	
+	; Converts radians to degrees
+	
+	function rad_to_deg(angle_in_radians) = (angle_in_radians*180)/!math_pi
 	
 	
 	

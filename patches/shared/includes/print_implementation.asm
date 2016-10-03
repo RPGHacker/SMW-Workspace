@@ -86,12 +86,12 @@ else
 				!get_remaining_fractional_part = frac(<decimal_number>)*10
 				!get_fractional_part_next_digit #= trunc(!get_remaining_fractional_part)
 				
-				if <decimal_places> > 0 && !get_remaining_fractional_part+!magic_zero != 0
+				if <decimal_places> > 0 && equal(!get_remaining_fractional_part, 0) == 0
 					; We're not done yet and can add more decimal places
 					!<out_var> := !<out_var>!get_fractional_part_next_digit
-					%get_fractional_part_internal_recursive(<decimal_number>*10, <decimal_places_start>, <decimal_places>-1, "<out_var>")
+					%get_fractional_part_internal_recursive(frac(<decimal_number>)*10, <decimal_places_start>, <decimal_places>-1, "<out_var>")
 				else
-					if <decimal_places> = 0 && !get_remaining_fractional_part+!magic_zero != 0
+					if <decimal_places> = 0 && equal(!get_remaining_fractional_part, 0) == 0
 						; We're not done yet, but can't add more decimal places, so add "..."
 						!<out_var> := "!<out_var>..."
 					else
@@ -110,7 +110,7 @@ else
 			; For internal use only
 			
 			macro get_fractional_part_internal(decimal_number, decimal_places, out_var)
-				%get_fractional_part_internal_recursive(<decimal_number>, <decimal_places>, <decimal_places>, <out_var>)
+				%get_fractional_part_internal_recursive(frac(<decimal_number>), <decimal_places>, <decimal_places>, <out_var>)
 			endmacro
 			
 			
@@ -121,7 +121,7 @@ else
 				!dec_internal_val = floor(abs(<decimal_number>))
 				!dec_internal_sign = ""
 				
-				if <decimal_number>-!magic_zero < 0
+				if less(<decimal_number>, 0) == 1
 					; Negative numbers
 					!dec_internal_sign = "-"
 				endif

@@ -255,24 +255,17 @@ if !shared_asm_included == 0
 	
 	
 	
-	; Now some helper functions for working with fixed point values (as used by mode 7, for example)
-	; When working with decimal numbers, make sure to put "math round off" somewhere at the top of your patch, otherwise you'll get ridiculous results
-	
-	
-	; Returns the fractional part of a decimal number as a negative or positive number
-	
-	function sawtooth(decimal_number) = decimal_number%1
-	
-	
-	; Returns the fractional part of a decimal number
-	
-	function frac(decimal_number) = sawtooth(decimal_number)*select(less(decimal_number, 0), -1, 1)
-	
-	
 	; Returns the truncated value of a decimal number
 	; Note that pure unsigned int conversion acts weirdly on most negative numbers here, which is why we actually need the select()
 	
 	function trunc(decimal_number) = select(less(decimal_number, 0), -(abs(decimal_number)|0), decimal_number|0)
+	
+	
+	; Returns the fractional part of a decimal number
+	; This originally used (decimal_number%1) internally, but that ended up being ridiculously inaccurate in some cases
+	; This version actually seems to work better in those cases, so I hope it's also the overall better solution
+	
+	function frac(decimal_number) = decimal_number-trunc(decimal_number)
 	
 	
 	; Returns the floor of a decimal number
@@ -291,6 +284,10 @@ if !shared_asm_included == 0
 	
 	
 	
+	; Now some helper functions for working with fixed point values (as used by mode 7, for example)
+	; When working with decimal numbers, make sure to put "math round off" somewhere at the top of your patch, otherwise you'll get ridiculous results
+	; Heck, this goes for almost all functions in here, anyways
+	
 	; Private section
 	
 	{
@@ -302,17 +299,11 @@ if !shared_asm_included == 0
 	
 	
 	
-	; Public section
-	
-	
-	; Some accurate PI representation, always useful
-	
-	!math_pi = 3.14159265358979323846264338327950288419716939937510582
-	
+	; Public section	
 	
 	; Converts a decimal number to a 16-bit signed fixed point representation (such as used by mode 7)
 	
-	function decimal_to_fixed_16(decimal_number) = (min(((clamp(decimal_number, -128, 128)+128)*$100)|0, $FFFF)+$8000)&$FFFF
+	function decimal_to_fixed_16(decimal_number) = (min(round((clamp(decimal_number, -128, 128)+128)*$100)|0, $FFFF)+$8000)&$FFFF
 	
 	
 	; Converts a 16-bit fixed point representation to a decimal number
@@ -323,6 +314,14 @@ if !shared_asm_included == 0
 	; Converts a decimal number to a 13-bit signed int (such as used by mode 7)
 	
 	function decimal_to_int_13(decimal_number) = (((clamp(decimal_number, -4096, 4095)&$80000000)>>19)&$1000)|(clamp(decimal_number, -4096, 4095)&$0FFF)
+	
+	
+	
+	
+	
+	; Some accurate PI representation, always useful
+	
+	!math_pi = 3.14159265358979323846264338327950288419716939937510582
 	
 	
 	

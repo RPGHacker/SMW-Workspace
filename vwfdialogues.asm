@@ -136,6 +136,8 @@ print "VWF Dialogues Patch v1.01 - (c) 2014 RPG Hacker"
 !cursorvram	= !varram+266	; 2 bytes
 !cursorsrc	= !varram+268	; 2 bytes
 
+!rambank	= select(!use_sa1_mapping,$40,$7E)
+
 !8	= 0
 !16	= 1
 !false	= 0
@@ -193,24 +195,61 @@ endmacro
 
 
 
+; NEW: A macro for SA-1 DMA (ROM->BWRAM) transfer
+macro bwramtransfer(bytes, start, source, destination)
+	if !use_sa1_mapping
+		lda #$C4
+		sta $2230
 
+		stz $2250
+		lda.b #<bytes>	; Calculate starting index
+		sta $2251
+		lda.b #<bytes>>>16
+		sta $2252
+		lda <start>
+		sta $2253
+		stz $2254
+		nop
+		rep #$20
+		lda $2306	; Add source address
+		clc	; to get new source address
+		adc.w #<source>
+		sta $2232
+		ldy.b #<source>>>16
+		sty $2234
+		lda.w #<bytes>
+		sta $2238
+		lda.w #<destination>
+		sta $2235
+		ldy.b #<destination>>>16
+		sty $2237
+		sep #$20
+
+		stz $2230
+		stz $018C
+	else
+		%mvntransfer(<bytes>,<start>,<source>,<destination>)
+	endif
+endmacro
 
 ; A macro for MVN transfers
 
 macro mvntransfer(bytes, start, source, destination)
 	phb
 	lda.b #<bytes>	; Calculate starting index
-	sta $211B
+	sta select(!use_sa1_mapping,$2251,$211B)
 	lda.b #<bytes>>>16
-	sta $211B
-	lda #$00
-	sta $211C
+	sta select(!use_sa1_mapping,$2252,$211B)
+	stz select(!use_sa1_mapping,$2250,$211C)
 	lda <start>
-	sta $211C
+	sta select(!use_sa1_mapping,$2253,$211C)
+	if !use_sa1_mapping
+		stz $2254
+		nop
+	endif
 	rep #$30
-	lda $2134	; Add source address
-	clc	; to get new source address
-	adc.w #<source>
+	lda select(!use_sa1_mapping,$2306,$2134)	; Add source address
+	clc : adc.w #<source>	; to get new source address
 	tax
 	ldy.w #<destination>	; Destination address
 	lda.w #<bytes>-1	; Number of bytes
@@ -302,9 +341,6 @@ org remap_rom($00A1DF)
 org remap_rom($00A2A9)
 	jml Buffer	; Buffer data before loading up to VRAM
 	nop #2	; in V-Blank
-
-org remap_rom($00FFD8)
-	db $07	; SRAM expansion ($07 => 2^7 kb)
 
 
 
@@ -508,6 +544,26 @@ NMIHijack:
 ; This buffers code to save time in V-Blank.
 
 Buffer:
+if !use_sa1_mapping
+	lda.b #.Main
+	sta $3180
+	lda.b #.Main/256
+	sta $3181
+	lda.b #.Main/65536
+	sta $3182
+	jsr $1E80
+
+	lda $1C
+	pha
+	lda $1D
+	pha
+	jml remap_rom($00A2AF)
+
+.Main
+	phb
+	phk
+	plb
+else
 	phx
 	phy
 	pha
@@ -515,6 +571,7 @@ Buffer:
 	php
 	phk
 	plb
+endif
 
 	lda remap_ram($13D4)
 	beq .NoPause
@@ -557,6 +614,10 @@ Buffer:
 	jml [remap_ram($0000)]
 
 .End
+if !use_sa1_mapping
+	plb
+	rtl
+else
 	plp	; Return
 	plb
 	pla
@@ -568,6 +629,7 @@ Buffer:
 	lda $1D
 	pha
 	jml remap_rom($00A2AF)
+endif
 
 .Routinetable
 	dw .End,.End,VWFSetup,BufferGraphics,.End
@@ -869,8 +931,8 @@ BufferGraphics:
 
 	; Copy text box graphics over to RAM
 
-	%mvntransfer($0010,!boxbg,Patterns,!tileram+16)
-	%mvntransfer($0090,!boxframe,Frames,!tileram+32)
+	%bwramtransfer($0010,!boxbg,Patterns,!tileram+16)
+	%bwramtransfer($0090,!boxframe,Frames,!tileram+32)
 
 	jmp Buffer_End
 
@@ -1179,18 +1241,18 @@ GetTilemapPos:
 	lda #$20
 
 .Store
-	sta $211B	; Multiply Y coordinate by $20/$40
-	lda #$00
-	sta $211B
-	sta $211C
+	sta select(!use_sa1_mapping,$2251,$211B)	; Multiply Y coordinate by $20/$40
+	stz select(!use_sa1_mapping,$2252,$211B)
+	stz select(!use_sa1_mapping,$2250,$211C)
 	lda $01
-	sta $211C
+	sta select(!use_sa1_mapping,$2253,$211C)
+	if !use_sa1_mapping : stz $2254
 	lda #$00
 	xba
 	lda $00
 	rep #$20
 	clc
-	adc $2134
+	adc select(!use_sa1_mapping,$2306,$2134)
 	sta $03
 	sep #$20
 	lda $02
@@ -1327,7 +1389,7 @@ AddFrame:
 DrawLine:
 	lda #$04	; Prepare filling
 	sta $0A
-	jsr SetPos	
+	jsr SetPos
 	lda $06
 	beq .ZeroWidth
 	inc
@@ -1458,7 +1520,7 @@ CollapseWindow:
 
 
 
-.SoEBox	
+.SoEBox
 	lda !xpos
 	sta !currentx
 	lda !ypos
@@ -1515,7 +1577,6 @@ CollapseWindow:
 
 .CollapseHorz
 	lda !currentwidth
-	cmp #$00
 	beq .SoMEnd
 
 	lda !currentx
@@ -1660,6 +1721,26 @@ VWFInit:
 	jsr GetMessage
 	jsr LoadHeader
 
+if !use_sa1_mapping
+	lda.b #.PaletteStuff
+	sta $0183
+	lda.b #.PaletteStuff/256
+	sta $0184
+	lda.b #.PaletteStuff/65536
+	sta $0185
+	lda #$d0
+	sta $2209
+-	lda $018A
+	beq -
+	stz $018A
+
+	jsr ClearBox
+.End
+	jmp Buffer_End
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+.PaletteStuff
+endif
 	lda !boxpalette	; Update letter color
 	asl #2
 	inc
@@ -1681,11 +1762,14 @@ VWFInit:
 	lda #$01
 	sta !paletteupload
 
+if !use_sa1_mapping
+	rtl
+else
 	jsr ClearBox
 
 .End
 	jmp Buffer_End
-
+endif
 
 InitLine:
 	lda #$01
@@ -1836,25 +1920,34 @@ InitLine:
 	lda.b #!tileram>>16
 	sta $0B
 
+if !use_sa1_mapping
+	lda #$01
+	sta $2250
+endif
 	lda !currentpixel
-	sta $4204
+	sta select(!use_sa1_mapping,$2251,$4204)
 
 .NoNewTile
-	lda #$00
-	sta $4205
+	stz select(!use_sa1_mapping,$2252,$4205)
 	lda #$08
-	sta $4206
+	sta select(!use_sa1_mapping,$2253,$4206)
+if !use_sa1_mapping
+	stz $2254
+	nop
+	bra $00
+else
 	nop #8
-	lda $4216
+endif
+	lda select(!use_sa1_mapping,$2308,$4216)
 	sta !currentpixel
 	rep #$20
-	lda $4214
+	lda select(!use_sa1_mapping,$2306,$4214)
 	asl
 	clc
 	adc !tile
 	sta !tile
 	sep #$20
-	lda $4214
+	lda select(!use_sa1_mapping,$2306,$4214)
 	clc
 	adc !currentx
 	sta !currentx
@@ -1906,15 +1999,18 @@ ClearBox:
 
 GetMessage:
 	lda !message
-	sta $211B
+	sta select(!use_sa1_mapping,$2251,$211B)
 	lda !message+1
-	sta $211B
-	lda #$00
-	sta $211C
+	sta select(!use_sa1_mapping,$2252,$211B)
+	stz select(!use_sa1_mapping,$2250,$211C)
 	lda #$03
-	sta $211C
+	sta select(!use_sa1_mapping,$2253,$211C)
+if !use_sa1_mapping
+	stz select(!use_sa1_mapping,$2254,$2306)
+	nop
+endif
 	rep #$20
-	lda $2134
+	lda select(!use_sa1_mapping,$2306,$2134)
 	clc
 	adc.w #Pointers
 	sta $00
@@ -2147,6 +2243,28 @@ TextCreation:
 	jmp TextCreation
 
 .EE_ChangeColor
+if !use_sa1_mapping
+	lda.b #.EE_ChangeColor_SNES
+	sta $0183
+	lda.b #.EE_ChangeColor_SNES/256
+	sta $0184
+	lda.b #.EE_ChangeColor_SNES/65536
+	sta $0185
+	lda #$d0
+	sta $2209
+	ldy #$01
+-	lda $018A
+	beq -
+	stz $018A
+
+	jsr IncPointer
+	jsr IncPointer
+	jsr IncPointer
+	jsr IncPointer
+	jmp .NoButton
+
+.EE_ChangeColor_SNES
+endif
 	phx
 	ldy #$01
 	lda [$00],y
@@ -2161,11 +2279,15 @@ TextCreation:
 	plx
 	lda #$01
 	sta !paletteupload
+if !use_sa1_mapping
+	rtl
+else
 	jsr IncPointer
 	jsr IncPointer
 	jsr IncPointer
 	jsr IncPointer
 	jmp .NoButton
+endif
 
 .EF_Teleport
 	ldy #$01
@@ -2672,31 +2794,40 @@ TextCreation:
 	sbc !space
 	sta !vwfmaxwidth
 
+if !use_sa1_mapping
+	lda #$01
+	sta $2250
+endif
 	lda !currentpixel
 	clc
 	adc !space
-	sta $4204
+	sta select(!use_sa1_mapping,$2251,$4204)
 	cmp #$08
 	bcc .NoNewTile
 	lda #$01
 	sta !firsttile
 
 .NoNewTile
-	lda #$00
-	sta $4205
+	stz select(!use_sa1_mapping,$2252,$4205)
 	lda #$08
-	sta $4206
+	sta select(!use_sa1_mapping,$2253,$4206)
+if !use_sa1_mapping
+	stz $2254
+	nop
+	bra $00
+else
 	nop #8
-	lda $4216
+endif
+	lda select(!use_sa1_mapping,$2308,$4216)
 	sta !currentpixel
 	rep #$20
-	lda $4214
+	lda select(!use_sa1_mapping,$2306,$4214)
 	asl
 	clc
 	adc !tile
 	sta !tile
 	sep #$20
-	lda $4214
+	lda select(!use_sa1_mapping,$2306,$4214)
 	clc
 	adc !currentx
 	sta !currentx
@@ -2852,14 +2983,17 @@ TextCreation:
 
 GetFont:
 	lda #$06	; Multiply font number with 6
-	sta $211B
-	lda #$00
-	sta $211B
-	sta $211C
+	sta select(!use_sa1_mapping,$2251,$211B)
+	stz select(!use_sa1_mapping,$2252,$211B)
+	stz select(!use_sa1_mapping,$2250,$211C)
 	lda !font
-	sta $211C
+	sta select(!use_sa1_mapping,$2253,$211C)
+if !use_sa1_mapping
+	stz $2254
+	nop
+endif
 	rep #$20
-	lda $2134
+	lda select(!use_sa1_mapping,$2306,$2134)
 	clc
 	adc.w #Fonttable	; Add starting address
 	sta $00
@@ -2932,7 +3066,7 @@ Beep:
 	lda !beepbank
 	sta $00
 	sep #$20
-	lda #$7E
+	lda.b #!rambank
 	sta $02
 	lda !beep
 	sta [$00]
@@ -2950,7 +3084,7 @@ EndBeep:
 	lda !beependbank
 	sta $00
 	sep #$20
-	lda #$7E
+	lda.b #!rambank
 	sta $02
 	lda !beepend
 	sta [$00]
@@ -2966,7 +3100,7 @@ CursorBeep:
 	lda !beepcursorbank
 	sta $00
 	sep #$20
-	lda #$7E
+	lda.b #!rambank
 	sta $02
 	lda !beepcursor
 	sta [$00]
@@ -2982,7 +3116,7 @@ ButtonBeep:
 	lda !beepchoicebank
 	sta $00
 	sep #$20
-	lda #$7E
+	lda.b #!rambank
 	sta $02
 	lda !beepchoice
 	sta [$00]
@@ -3500,7 +3634,7 @@ VBlank:
 	lda #$00
 	sta !paletteupload
 	sta $2121
-	%dmatransfer(#$01,#$02,#$22,".b #$7E",".b #$07",".b #$03",#$0040)
+	%dmatransfer(#$01,#$02,#$22,".b #!rambank",".b #$07",".b #$03",#$0040)
 .skip
 
 	lda !vwfmode
@@ -3718,13 +3852,13 @@ SetupColor:
 	cmp #$04
 	beq .Backup
 .Restore
-	%mvntransfer($0040, #$00, !palbackup, $7E0703)
-	%dmatransfer(#$01,#$02,#$22,".b #$7E",".b #$07",".b #$03",#$0040)
+	%mvntransfer($0040, #$00, !palbackup, select(!use_sa1_mapping,$400703,$7E0703))
+	%dmatransfer(#$01,#$02,#$22,".b #!rambank",".b #$07",".b #$03",#$0040)
 	jmp .End
 
 .Backup
-	%dmatransfer(#$01,#$82,#$3B,".b #$7E",".b #$07",".b #$03",#$0040)
-	%mvntransfer($0040, #$00, $7E0703, !palbackup)
+	%dmatransfer(#$01,#$82,#$3B,".b #!rambank",".b #$07",".b #$03",#$0040)
+	%mvntransfer($0040, #$00, select(!use_sa1_mapping,$400703,$7E0703), !palbackup)
 
 	lda !boxpalette	; Set BG and letter color
 	asl #2
@@ -4272,14 +4406,14 @@ GenerateVWF:
 
 .Begin
 	lda !vwfchar	; Get letter offset into Y
-	sta $211B
-	lda #$00
-	sta $211B
-	sta $211C
+	sta select(!use_sa1_mapping,$2251,$211B)
+	stz select(!use_sa1_mapping,$2252,$211B)
+	stz select(!use_sa1_mapping,$2250,$211C)
 	lda #$40
-	sta $211C
+	sta select(!use_sa1_mapping,$2253,$211C)
+	if !use_sa1_mapping : stz $2254
 	rep #$10
-	ldy $2134
+	ldy select(!use_sa1_mapping,$2306,$2134)
 	ldx #$0000
 
 .Draw
@@ -4339,37 +4473,49 @@ GenerateVWF:
 	cpx #$60
 	bne .Copy
 
+if !use_sa1_mapping
+	lda #$01
+	sta $2250
+endif
 	lda !currentpixel	; Adjust destination address
 	clc
 	adc !vwfwidth
-	sta $4204
-	lda #$00
-	sta $4205
+	sta select(!use_sa1_mapping,$2251,$4204)
+	stz select(!use_sa1_mapping,$2252,$4205)
 	lda #$08
-	sta $4206
+	sta select(!use_sa1_mapping,$2253,$4206)
+if !use_sa1_mapping
+	stz $2254
+	nop
+	bra $00
+else
 	nop #8
-	lda $4216
+endif
+	lda select(!use_sa1_mapping,$2308,$4216)
 	sta !currentpixel
 	rep #$20
-	lda $4214
+	lda select(!use_sa1_mapping,$2306,$4214)
 	asl
 	clc
 	adc !tile
 	sta !tile
 	sep #$20
-	lda $4214
+	lda select(!use_sa1_mapping,$2306,$4214)
 	clc
 	adc !currentx
 	sta !currentx
-	lda $4214
-	sta $211B
-	lda #$00
-	sta $211B
-	sta $211C
+	lda select(!use_sa1_mapping,$2306,$4214)
+	sta select(!use_sa1_mapping,$2251,$211B)
+	stz select(!use_sa1_mapping,$2250,$211B)
+	stz select(!use_sa1_mapping,$2252,$211C)
 	lda #$20
-	sta $211C
+	sta select(!use_sa1_mapping,$2253,$211C)
+if !use_sa1_mapping
+	stz $2254
+	nop
+endif
 	rep #$20
-	lda $2134
+	lda select(!use_sa1_mapping,$2306,$2134)
 	clc
 	adc $09
 	sta $09
@@ -4518,4 +4664,4 @@ print "Text data insterted at $",hex(Text),"."
 ;-------------------------------------------------------------
 print ""
 print ""
-freedata : prot !PrevFreespace : Kleenex: db $00;ignore this line, it must be last in the patch for technical reasons
+freedata : prot !PrevFreespace : Kleenex: db $00	;ignore this line, it must be last in the patch for technical reasons

@@ -1,51 +1,21 @@
+@asar 1.50
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;VWF Dialogues Patch by RPG Hacker;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-header
-lorom
 
-
+incsrc vwf_dialogues.cfg
 incsrc ../shared/shared.asm
 
 
-print ""
-print ""
-print "VWF Dialogues Patch v1.01 - (c) 2014 RPG Hacker"
+print "VWF Dialogues Patch v1.2 - (c) 2018 RPG Hacker"
 
 
-
-;;;;;;;;;;;;;;;;
-;Adress Defines;
-;;;;;;;;;;;;;;;;
+math pri on
+math round off
 
 
-; These have to be 24-Bit addresses!
-
-!varram	= $702000	; 270 bytes
-!backupram	= $730000	; 16 kb to backup L3 graphics and tilemap
-!tileram	= $734000	; 16 kb for VWF graphics and tilemap
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;
-;Default Settings;
-;;;;;;;;;;;;;;;;;;
-
-
-; These are the default values to use if not changed ingame.
-
-!defbg	= #$08
-!bgcolor	= #$44C4
-!defframe	= #$07
-!framepalette	= #$03
-
-!bitmode	= !8
-!hijackbox	= !true
-
-
+namespace vwf_dialogues_
 
 
 
@@ -57,7 +27,11 @@ print "VWF Dialogues Patch v1.01 - (c) 2014 RPG Hacker"
 
 ; DO NOT EDIT THOSE!!!
 
-
+if !use_sa1_mapping
+	!varram	= !varramSA1
+	!backupram	= !backupramSA1
+	!tileram	= !tileramSA1
+endif
 
 !vwfmode	= !varram	; 1 byte
 !message	= !varram+1	; 2 bytes
@@ -405,14 +379,14 @@ InitRAM:
 	sep #$30
 
 .SetDefaults
-	lda !defbg	; Set default values
+	lda #!defbg	; Set default values
 	sta !boxbg
-	lda !defframe
+	lda #!defframe
 	sta !boxframe
 
-	lda.b !bgcolor
+	lda.b #!bgcolor
 	sta !boxcolor
-	lda.b !bgcolor>>8
+	lda.b #!bgcolor>>8
 	sta !boxcolor+1
 
 .End
@@ -1132,12 +1106,12 @@ SoMLine:
 	sta $05
 
 	ldy #$00
-	lda.b !framepalette<<2|$20
+	lda.b #!framepalette<<2|$20
 	xba
 	jsr LineLoop
 
 	ldy #$40
-	lda.b !framepalette<<2|$A0
+	lda.b #!framepalette<<2|$A0
 	xba
 	jsr LineLoop
 	rts
@@ -1454,7 +1428,7 @@ SetPos:
 ; Draw one or two tiles in a line
 
 DrawTile:
-	lda.b !framepalette<<2|$20
+	lda.b #!framepalette<<2|$20
 	ora $0B	; Vertical flip?
 	xba
 	lda $0A	; Tile number
@@ -3877,7 +3851,7 @@ SetupColor:
 	bne .BoxColorLoop
 
 	ply
-	lda !framepalette	; Set frame color
+	lda #!framepalette	; Set frame color
 	asl #2
 	inc
 	asl
@@ -4588,25 +4562,10 @@ Emptytile:
 ;;;;;;;;;;;;;;;;
 
 Fonttable:
-	dl Font1,Font1_Width
+incsrc vwffontpointers.asm
 
 Palettes:
-dw $0000,$FFFF,$0000
-dw $0A56,$04ED,$0044
-dw $45ED,$24E6,$0C41
-dw $477D,$2E55,$214D
-dw $00C4,$1F7F,$15D1
-dw $739C,$5250,$0000
-dw $473F,$3EDC,$3258
-dw $5235,$290A,$679F
-dw $3250,$2D09,$0C63
-dw $3250,$2D09,$0C63
-dw $3250,$2D09,$0C63
-dw $45ED,$24E6,$0C41
-dw $0A56,$04ED,$0044
-dw $19F0,$00CB,$0044
-dw $3250,$2D09,$0C63
-dw $3250,$2D09,$0C63
+incsrc vwfframes.asm
 
 
 

@@ -1,0 +1,38 @@
+.video {
+	width:	100%;
+	height:	360px;
+}
+
+.ir-crisp {
+	image-rendering: pixelated;
+	image-rendering: -webkit-optimize-contrast;
+	image-rendering: -moz-crisp-edges;
+	image-rendering: -o-crisp-edges;
+	image-rendering: crisp-edges;
+}
+
+table.kv-map > tbody > tr > th::after {
+	content:	":";
+	margin-left:	2px;
+	margin-right:	8px;
+}
+
+dd {
+	margin-left:	16px;
+}
+
+dt {
+	margin-top:	24px
+}
+
+dt code {
+	font-size:	100%;
+}
+
+pre > code > table {
+	white-space: pre-line;
+}
+
+pre > code > table > tbody > tr > td:not(:last-child) {
+	padding-right:	1ch;
+}

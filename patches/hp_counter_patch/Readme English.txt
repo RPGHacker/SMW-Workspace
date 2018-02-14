@@ -1,4 +1,4 @@
-RPG-Styled HP and MP Counter Version 1.2
+RPG-Styled HP and MP Counter Version 1.3
 by RPG Hacker
 
 
@@ -9,26 +9,26 @@ by RPG Hacker
 This patch installs an RPG-styled HP and MP Counter to your Super Mario World ROM.
 The counter was inspired by old SNES RPGs like Secret of Mana or Seiken Densetsu 3.
 You can have up to 999 HP and 99 MP. Some actions (like shooting Fireballs,
-Flying etc.) can be set up to cost MP. In that case you can't use them if your
+Flying etc.) can be set up to cost MP. In that case you can’t use them if your
 MP are too low.
 
 This patch rearranges the Status Bar. The Yoshi Coin Counter, the Star Counter,
-the Lifes Counter and "Mario"/"Luigi" are removed from the Status Bar in order
+the Lifes Counter and “Mario”/“Luigi” are removed from the Status Bar in order
 to make room for the HP and MP Counter (they still work as normal, though). The Status Bar
-Item is replaced with Mario's head as seen in Secret of Mana (I've also added a frame that
-you can easily remove with the Status Bar Editor if you don't like it). To display the head
+Item is replaced with Mario’s head as seen in Secret of Mana (I’ve also added a frame that
+you can easily remove with the Status Bar Editor if you don’t like it). To display the head
 correctly the Item Fix patch is used. The head replaces the graphic of the Smiley Coin,
 since that one is rarely used in SMW anyways, but it can pretty easy be set up to
 replace any other graphic as well (just go to the ItemTable and edit the second value).
 
-With this patch you won't lose your Powerup when you get hit, you only lose it when
+With this patch you won’t lose your Powerup when you get hit, you only lose it when
 you die (you always start as Super Mario, though). The items have also been changed.
 A regular Mushroom restores XXX HP, a 1UP-Mushroom restores XX MP. If you get a
 Feather as Cape Mario or a Flower as Fire Mario they recover half the MP a 1UP-Mushroom
 recovers. So if your 1UP-Mushroom is set to recover 10 MP, Feahther and Flower recover
 5 MP.
 
-I've added SRAM capability to this patch. Your HP, Max HP, MP, Max MP, Powerup and
+I’ve added SRAM capability to this patch. Your HP, Max HP, MP, Max MP, Powerup and
 Item are saved to SRAM. Your Lifes are also saved to SRAM, but only if your current Lifes
 are higher then the lifes you start with.
 
@@ -39,7 +39,7 @@ In any case:
 
 MAKE A BACKUP BEFORE APPLYING THIS PATCH TO YOUR ROM!
 
-Use this patch on your own risk, I'm not responsible for any damage you take. I've just started
+Use this patch on your own risk, I’m not responsible for any damage you take. I’ve just started
 making ASM patches a while ago and this is one of my first patches ever.
 The code may be written badly, it may contain bugs and even corrupt your ROM. I gave it my
 best, though, to avoids errors like this.
@@ -47,7 +47,7 @@ best, though, to avoids errors like this.
 This patch should be compatible with the 6 Digit Coin Counter Patch, but you have to
 apply the Coin Counter Patch first and this patch second.
 
-You don't have to give me credits when using this patch. Just do as you like.
+You don’t have to give me credits when using this patch. Just do as you like.
 
 
 ;;;;;;;
@@ -58,12 +58,12 @@ First of all you should insert the ExGFX Files to your ROM, else you will get tr
 Status Bar.
 
 After that you have to open the ASM-file and specify the starting values under the
-section "Value Defines" as well as a Freespace Adress.
+section “Value Defines” as well as a Freespace Adress.
 
 
 !IntroLevel
 This is the Intro Level + #$24, so setting it to $E9 will load C5 as Intro Level. Setting
-it to $00 will disable the Intro Level, I don't recommend this, though, since it creates
+it to $00 will disable the Intro Level, I don’t recommend this, though, since it creates
 a little bug on the overworld
 
 
@@ -88,9 +88,9 @@ beginnings of those lines:
 
 !Damage
 This is the damage a regular Sprite takes away. You can also set custom Sprite damage.
-I've included a modified version of ICB's Poison Goomba as a demonstration. Unlike with his
+I’ve included a modified version of ICB’s Poison Goomba as a demonstration. Unlike with his
 patch you have to add the code ABOVE the Mario <-> Sprite Interaction Routine, that was the
-only location where it worked for me. Don't ask me why. I don't have any experience
+only location where it worked for me. Don’t ask me why. I don’t have any experience
 with Custom Sprites. Anyways, this is the code you have to use:
 
 lda #$02
@@ -102,15 +102,15 @@ sta FreeramLow         ;by default $0060
 
 
 !StartMaxHealth
-These are the Max HP to start with in Hex. You can't go above 999 ($03E7).
+These are the Max HP to start with in Hex. You can’t go above 999 ($03E7).
 
 
 !StartMaxMP
-These are the Max MP to start with in Hex. You can't go above 99 ($63).
+These are the Max MP to start with in Hex. You can’t go above 99 ($63).
 
 
 !RefillMPAfterDeath
-Set this to $00 and your MP aren't refilled after death, otherwise set it to any other
+Set this to $00 and your MP aren’t refilled after death, otherwise set it to any other
 number.
 
 
@@ -135,8 +135,8 @@ This is how much MP Flying takes away. Set to $00 to disable.
 
 
 !FloatRequiresMP
-Set this to $00 and Floating doesn't require any MP, otherwise set it to any other number
-and Floating requires the same MP as set under !CapeMP (but you still don't lose MP when
+Set this to $00 and Floating doesn’t require any MP, otherwise set it to any other number
+and Floating requires the same MP as set under !CapeMP (but you still don’t lose MP when
 floating)
 
 
@@ -161,15 +161,15 @@ MP are reduced. $32 is about one second.
 ;Future Plans;
 ;;;;;;;;;;;;;;
 
-There is quite some stuff that I didn't implement yet, that I still want to add in a future
+There is quite some stuff that I didn’t implement yet, that I still want to add in a future
 version of this patch.
 
--Switching through your Powerups by pressing select if you've already gotten them
+-Switching through your Powerups by pressing select if you’ve already gotten them
  This would be useful since the Status Bar Item is disabled and the Select Button is unused
  in this game anyways. Also it would make the game more like an RPG.
 -Adding more stuff that takes away MP (probably Spin-Jumping, Invincibility or
  summoning Yoshi?)
--Adding an EXP System (After you've killed a certain amount of monsters your Max HP and
+-Adding an EXP System (After you’ve killed a certain amount of monsters your Max HP and
  Max MP will be raised slightly)
 -Tolerance system (Damge you take varies in a range of +/-15%)
 
@@ -199,6 +199,19 @@ YouTube:     RPGHacker86
 ;;;;;;;;;;;;;;;;;
 ;Version History;
 ;;;;;;;;;;;;;;;;;
+Version 1.3 - 14. February 2018 by ExE Boss
+
+-Optimised a lot of code
+-Added SA-1 support
+-Added Sprite Status Bar to the Bowser battle, can be turned off if another patch already handles this
+-Added support for VWF Dialogues and Free $7F4000
+-Made it so that spin-jumping doesn’t auto-shoot fireballs everywhere
+-Fireballs can now only be shot using the X button if they cost MP, this is to prevent wasteful usage of MP
+-Knockback is now customisable
+-Added support for more than 2 fireballs (requires the Shoot More Fireballs patch (https://www.smwcentral.net/?p=section&a=details&id=4469))
+-The Player head can now be moved around or removed altogether
+-The status bar can now display MP values of up to 255, but the rest of the code still only supports values up to 99
+
 Version 1.2 - 2015/11/1
 i converted it to asar (medic)
 
@@ -207,9 +220,9 @@ Version 1.1 - 2009/07/21
 -Fixed Bowser bug (glitched Mario head)
 -Fixed Iggy/Larry bug (instant death when getting hit)
 -Fixed some Wii and DS related problems
--Added "No MP refill when dead" option
--Added "No Powerup lose when dead" option
--Added "Floating doesn't require MP" option
+-Added “No MP refill when dead” option
+-Added “No Powerup lose when dead” option
+-Added “Floating doesn’t require MP” option
 -Added new GFX Files
 -Introlevel now has to be set in the ASM-file
 -Improved Flying Routine

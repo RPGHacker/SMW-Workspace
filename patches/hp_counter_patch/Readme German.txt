@@ -1,4 +1,4 @@
-HP und MP Counter im RPG-Stil Version 1.2
+HP und MP Counter im RPG-Stil Version 1.3
 von RPG Hacker
 
 
@@ -210,6 +210,8 @@ YouTube:     RPGHacker86
 ;;;;;;;;;;;;;;;;;
 ;Version History;
 ;;;;;;;;;;;;;;;;;
+Version 1.3 - 14. Februar 2018 von ExE Boss
+
 Version 1.2 - 1.11.2015
 -asar (medic)
 Version 1.1 - 21.07.2009

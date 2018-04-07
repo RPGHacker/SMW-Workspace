@@ -1,4 +1,4 @@
-@asar 1.37
+@asar 1.50
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 ;Tolerance Timer Patch;
@@ -14,6 +14,9 @@ print "Tolerance Timer v1.0 - (c) RPG Hacker"
 
 math pri on
 math round off
+
+pushtable
+cleartable
 
 
 namespace tolerance_timer_
@@ -314,3 +317,9 @@ endif
 ;;;;;;;;;;;;;;;
 
 print "Patch inserted at $",hex(FreecodeStart),", ",freespaceuse," bytes of free space used."
+
+namespace off
+
+
+
+pulltable

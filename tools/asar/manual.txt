@@ -14,6 +14,21 @@ New features:
 - If you're in a namespace and a label isn't found, Asar looks in the global namespace.
 - If a line ends in a comma, the next line will be appended to it. This allows infinite macro
   arguments in practice, not just in theory (300 character lines gets annoying pretty quickly).
+- Similarly, if a line ends in a backslash, the next line will be appended to it. The only difference
+  to a comma is that unlike the comma, the backslah won't appear in the concatenated string.
+  This is useful to split long function definitions into multiple lines.  Note that all whitespace
+  following the \ is ignored, whereas whitespace preceeding the \ isn't. Therefore  
+      db\
+ 	  $FF 	   
+  becomes 
+      db$FF 	
+  for example, whereas  
+      db \
+ 	  $FF 	   
+  becomes
+      db $FF
+  This is by design, since some statements in Asar require spaces inbetween, whereas other statements
+  (such as math or function definitions) don't allow spaces at all.
 - This technically isn't a change, but Label = Address is now a well defined operation. While it
   exists in xkas6, the only ways to find it are by inspecting the output of export.label, by
   inspecting the source code, and by mistake (I've seen it done thrice, leading to odd bugs in
@@ -43,7 +58,41 @@ New features:
   freedata, and external incbin. That's everything print bytes is used for anyways, and pushpc makes
   print bytes completely confused, so here's an accurate counter.
 - print can now accept dec(math) and hex(math), which prints the contents in base 10 or 16 (no zero
-  padding). The contents may be any piece of math, including labels.
+  padding). The contents may be any piece of math, including labels. Additionally, print accepts
+  double(num) and double(num, precision) in case you want to print a double variable with its
+  fractional part. You can specify the number of decimal places to print (0 to 100) as the second
+  argument. If you only pass a single argument, a default of 5 decimal places are printed.
+  Note that, like everything else, double() is affected by your "math round" setting, so unless
+  you set math round to off, double() will behave just like dec().
+- Besides the regular define operator "=", Asar also supports a number of additional define
+  operators with varying functionality. Here is a run-down of all define operators supported:
+   Operator:         | Description:                           | Example:
+  -------------------------------------------------------------------------------------------------
+   =                 | Your regular define operator. Sets the | !define = 10
+                     | contents of a define to whatever is to | !anotherdefine = !define+1
+                     | right of it.                           | ; !anotherdefine now contains "!define+1"
+  -------------------------------------------------------------------------------------------------
+  +=                 | Appends whatever is to the right of it | !define = 10
+                     | to the contents of a define.           | !define += 1
+                     |                                        | ; !define now contains "101"
+  -------------------------------------------------------------------------------------------------
+  :=                 | Equal to regular "=", but resolves     | !define = 10
+                     | whatever is to the right of it before  | !define := !define+1
+                     | setting the contents of a define.      | ; !define now contains "10+1"
+                     | This makes recursive defines possible. |
+  -------------------------------------------------------------------------------------------------
+  #=                 | Does math with whatever is to the      | !define = 10
+                     | right of it and then sets the contents | !anotherdefine #= !define+1
+                     | of a define to the result of the       | ; !anotherdefine now contains "11"
+                     | calculation. The math is done in-place |
+                     | on the same line the operator is used  |
+                     | on.                                    |
+  -------------------------------------------------------------------------------------------------
+  ?=                 | Sets the contents of a define just     | !define ?= 10
+                     | like the regular "=" operator, but     | !define ?= 1
+                     | only when no define of that name       | ; !define now contains "10"
+                     | exists yet.                            |
+  -------------------------------------------------------------------------------------------------
 
 (Potentially) xkas incompatible bugfixes and changes:
 If any of these dissatisfies you, put ;@xkas at the top of your patch and Asar will enter maximum
@@ -139,6 +188,7 @@ New commands:
 - pushpc/pullpc: In case you want to put code at one place instead of two.
 - function: Defines a function. For details, see below.
 - if/elseif/else/endif: For conditional compilation. See section "Conditionals" below for details.
+- while: For repeated compilation of the same code. See section "Loops" below for details.
 - assert: Accepts an if-like condition; if the condition is false, it prints an error message.
 - arch: Assembles for another architecture. Valid values are the following:
    65816 - default, the one you want in most circumstances.
@@ -176,12 +226,17 @@ New commands:
 - sa1rom: Implements the SA-1 mapper. To tell which banks are mapped in, use sa1rom 0,1,4,6 (maximum
   is 7); the default is 0,1,2,3.
 - sfxrom: Tells Asar to use the SuperFX mapper.
+- exlorom: Implements the ExLoROM mapper.
+- exhirom: Implements the ExHiROM mapper.
 - @asar: Demands a minimum version of Asar for assembling the patch. Since Asar is constantly
   evolving, this is a way to tell the user why the patch breaks.
 - @include, @includefrom: Tells that an asm file may not be assembled directly, but must be included
   from another file. @includefrom tells which file it's supposed to be included from, though it
   doesn't verify that it really is included from this file. It's just a sanity check.
 - ;@xkas: Enters xkas emulation mode.
+- struct/endstruct: used to define a struct, which are basically just a convenient and easier-to-read way
+  of accessing tables. The code for this was written by p4plus2 and I really can't explain it well, so
+  just take a look at src/tests/structs.asm for usage examples.
 
 Conditionals:
 Conditionals allow a piece of code to only be assembled under certain circumstances. The syntax of a
@@ -193,6 +248,16 @@ The commands that accept conditionals are if, elseif, else, and endif (and asser
   doesn't skip any code). The behaviour should be obvious.
 You generally want a couple of readN or user-changeable defines in a condition, but if 0 is a way to
   comment out large blocks of code at once.
+  
+Loops:
+The syntax and functionality are very similar to if conditionals, except you use "while" instead
+  of "if" and the condition is evaluated repeatedly until it becomes < 1 instead of just once.
+  The code block inside the while loop is assembled as many times as the condition remains >= 1.
+  This can be used to generate big data tables without having to rely on macro recursion.
+  Internally, while loops are implemented as a variation of if conditionals for reasons of
+  simplicity and compatibility, so they always need to end on an endif. Note that else and elseif
+  statements are not allowed in combination with a while loop, though. When using while loops, be
+  careful not to cause an infinite loop, as Asar won't make any effort to detect those.
 
 Functions:
 Functions are what they sound like: They take zero or more arguments, and return another value. They
@@ -208,11 +273,49 @@ read1, read2, read3, read4 - Reads a few bytes from the ROM at the indicated SNE
   installed (assert and read1 is probably the best combination for this, though if may also be
   useful). If you give it a second argument, it'll return that instead of throwing an error if the
   address is invalid.
+readfile1, readfile2, readfile3, readfile4 - Same as above, except bytes are read from another file.
+  Pass the filename of the file to read as the first argument (wrapped in double quotes) and the
+  offset into that file as the second argument. Can also be passed a third argument which is returned
+  as a default value if reading fails.
+  Usage example:
+    readfile1("mydatafile.bin", 512)
 canread1 through 4, canread - Returns 1 if read1 through 4 from the specified address will succeed;
   canread takes a second argument telling how many bytes you need to read.
+canreadfile1 through 4, canreadfile - Same as above, but for external files. Pass the filename
+  as the first argument (wrapped in double quotes), the offset into the file as the second
+  argument and the number of bytes to read as the third argument (in the case of canreadfile).
 sqrt, sin, cos, tan, asin, acos, atan, arcsin, arccos, arctan, log, log10, log2 - Some random
   functions. I'm pretty sure they're totally useless in an assembler, but I felt that just four
   functions is a bit too little. (They're older than canread#.)
+snestopc, pctosnes - Manually convert an address from PC to SNES format or vice versa.
+  Both functions are dependent on the ROM's current mapping mode, so use them with caution.
+max, min, clamp - max() and min() return the maximum or minimum of two values, whereas
+  clamp is passed three arguments and assures that the first argument is >= the second argument
+  and <= the third argument.
+  Examples:
+    clamp(5, 0, 10)   =>  5
+	clamp(15, 0, 10)  =>  10
+	clamp(-5, 0, 10)  =>  0
+safediv - Performs division with first and second argument, except if second argument is zero, in
+  which case it returns the third argument. Useful to prevent "division by zero" errors.
+  Example:
+    safediv(10, 0, 1)  =>  1
+select - Functions very similar to if/else conditionals, except it can be used insied functions
+  and calculations. The first argument passed to it as treated as a statement. If this argument
+  resolves to anything non-zero, the second argument passed to select is returned. If the statement
+  resolves to zero, the third argument passed to select is returned. Please note that unlike
+  blocks in if/else conditionals, function arguments in Asar are always evaluated before a function
+  is called. In other words: if you do select(1, 1/1, 1/0), Asar will throw a "division by zero"
+  error, even though the function would return 1/1 and disregard the 1/0. In this particular case,
+  it's recommended to simply use the safediv() function in place of a regular division.
+not - Returns 1 if passed a 0 and 0 in any other case.
+equal, notequal, less, lessequal, greater, greaterequal - Rather self-explanatory, return 1 if the
+  respective comparison is true and 0 otherwise. Primarily intended for being passed as statement
+  to the select() function.
+and, or, nand, nor, xor - Also self-explanatory, return 1 if the respective logical operation is
+  true and 0 otherwise. Primarily intended for being passed as statement to the select() function.
+round - Rounds the first argument to the number of decimal places specified by the second argument.
+  Pass 0 as the second argument to round to the nearest integer.
 All built-in functions can be overridden by user-defined functions if you want. Prepending an
   underscore (for example _read3()) leads to the same function; this is so you can override read3
   with a function that calls _read3.

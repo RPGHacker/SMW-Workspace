@@ -1,4 +1,5 @@
-@asar 1.37
+@asar 1.50
+@includefrom "../shared.asm"
 
 ; This file is included by shared.asm and should not be included directly
 

@@ -15,7 +15,7 @@ IF %ERRORLEVEL% NEQ 0 (
 	echo.
 )
 
-.\..\..\..\tools\asar137\asar.exe .\test_remap_ram.asm .\patched.smc
+.\..\..\..\tools\asar\asar.exe .\test_remap_ram.asm .\patched.smc
 
 echo.
 echo.

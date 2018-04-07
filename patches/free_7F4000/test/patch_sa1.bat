@@ -14,7 +14,7 @@ IF %ERRORLEVEL% NEQ 0 (
 	echo.
 )
 
-.\..\..\..\tools\asar137\asar.exe .\..\free_7F4000.asm .\patched.smc
+.\..\..\..\tools\asar\asar.exe .\..\free_7F4000.asm .\patched.smc
 
 echo.
 

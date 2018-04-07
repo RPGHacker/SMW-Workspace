@@ -20,12 +20,14 @@ if !shared_asm_included == 0
 	; Private section
 		
 	{	
-		; Check if we're in an SA-1 ROM
-		; If so, enable SA-1 mapping
+		; Check if we're in a SuperFX or SA-1 ROM
+		; If so, enable the respective mapping
 	
 		!use_sa1_mapping = 0
+		!use_sfx_mapping = 0
+		!disable_fastrom_remap ?= 0			; Using ?= here so that someone can disable it from the outside if they desire so
 		
-		!num_sprite_table_slots = 12		; The number of sprite slots available (12 in regular ROM, 22 in SA-1 ROM)
+		!num_sprite_table_slots = 12		; The number of sprite slots available (12 in regular or SuperFX ROM, 22 in SA-1 ROM)
 		
 		if read1($00FFD5) == $23
 			!use_sa1_mapping = 1
@@ -33,7 +35,13 @@ if !shared_asm_included == 0
 			!num_sprite_table_slots = 22
 			
 			sa1rom
+		elseif read1($00FFD6) > $02 && read1($00FFD6)&$F0 == $10
+			!use_sfx_mapping = 1
+			
+			sfxrom
 		endif
+		
+		!disable_fastrom_remap #= or(!disable_fastrom_remap,or(!use_sa1_mapping,!use_sfx_mapping))
 	}
 	
 	
@@ -138,22 +146,22 @@ if !shared_asm_included == 0
 	
 	; Public section
 	
-	; Maps a RAM address correctly, depending on whether we need SA-1 mapping or not
+	; Maps a RAM address correctly, depending on whether we need SA-1/SuperFX mapping or not
 	
-	function remap_ram(address) = select(!use_sa1_mapping, remap_address(remap_address(remap_address(remap_address(remap_address(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_sprite_table_ram(shorten_if_mirrored(!current_pc, address)), $0000, $00FF, $3000), $0100, $1FFF, $6100), $7EC800, $7EFFFF, $40C800), $7FC800, $7FFFFF, $41C800), $7F9A7B, $7F9C7A, $418800), $700000, $7007FF, $41C000), $700800, $7027FF, $41A000), $7FAB10, $6040), $7FAB1C, $6056), $7FAB28, $6057), $7FAB34, $606D), $7FAB9E, $6083), address)
+	function remap_ram(address) = select(!use_sa1_mapping, remap_address(remap_address(remap_address(remap_address(remap_address(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_sprite_table_ram(shorten_if_mirrored(!current_pc, address)), $0000, $00FF, $3000), $0100, $1FFF, $6100), $7EC800, $7EFFFF, $40C800), $7FC800, $7FFFFF, $41C800), $7F9A7B, $7F9C7A, $418800), $700000, $7007FF, $41C000), $700800, $7027FF, $41A000), $7FAB10, $6040), $7FAB1C, $6056), $7FAB28, $6057), $7FAB34, $606D), $7FAB9E, $6083), select(!use_sfx_mapping, remap_range(remap_range(remap_range(shorten_if_mirrored(!current_pc, address), $0000, $1FFF, $6000), $7EC800, $7EFFFF, $70C800), $7FC800, $7FFFFF, $71C800), address))
 	
 	
 	
-	; Maps a ROM address correctly, depending on whether we need SA-1 mapping or not
+	; Maps a ROM address correctly, depending on whether we need SA-1/SuperFX mapping or not
 	; NOTE: This doesn't work in conjunction with autoclean, because autoclean is lazy and just treats the function as a label instead of resolving it
 	
-	function remap_rom(address) = address|select(!use_sa1_mapping, $000000, $800000)
+	function remap_rom(address) = address|select(!disable_fastrom_remap, $000000, $800000)
 	
 	
 	
-	; Maps a bank correctly, depending on whether we need SA-1 mapping or not
+	; Maps a bank correctly, depending on whether we need SA-1/SuperFX mapping or not
 	
-	function remap_bank(bankbyte) = bankbyte|select(!use_sa1_mapping, $00, $80)
+	function remap_bank(bankbyte) = bankbyte|select(!disable_fastrom_remap, $00, $80)
 	
 	
 	

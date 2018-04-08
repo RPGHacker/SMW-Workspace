@@ -146,22 +146,23 @@
 
 		<h2 id="start" class="text-center">2. Getting Started</h2>
 		<p>
-			The very first thing you'll have to do is take the files vwfdialogues.asm,
+			The very first thing you'll have to do is take the files vwf_dialogues.asm,
 			vwfmessagepointers.asm, vwfmessages1.asm, vwffont1.bin, vwffont1.asm, vwfpatterns.bin,
 			vwfframes.bin and vwftable.txt and copy them over to your Asar folder. Next you open up
-			"vwfdialogues.asm" in a text editor of your choice.
+			"vwf_dialogues.cfg" in a text editor of your choice.
 		</p>
 
 		<p>
-			At the top you'll see the labels !varram, !backupram and !tileram. I suggest you don't touch those
+			Here you'll see the defines !varram, !backupram, !tileram, !varramSA1, !backupramSA1, !tileramSA1. I suggest you don't touch those
 			at all, especially if you aren't too familiar with ASM. Those addresses are the SRAM locations
-			the patch uses. Of course you can also change them to RAM addresses, but you'll have trouble finding
-			enough free RAM in SMW. It's very unlikely you'll have to change them anyways. I tried to use addresses
-			at the very end of the game's SRAM in an attempt to prevent any possible conflict with another patch.
+			the patch uses (the defines with an SA1 prefix are for SA-1-enabled ROMs). Of course you can also change them to RAM addresses,
+			but to do that you will likely have to apply additional patches to free up RAM in SMW. If you decide to do so, you can set the !patch_sram_expansion define
+			further down in the cfg file to !false to prevent this patch from automatically expanding your SRAM. Normally you don't have to bother, though, as the patch's default settings should
+			work just fine for most hacks. I tried to use addresses at the very end of the game's SRAM area in an attempt to prevent potential conflicts with other patches.
 		</p>
 
 		<p>
-			Scroll further down for a group of labels that define the default settings of your text boxes.
+			Scroll further down for a group of defines that determine the default settings of your text boxes.
 			"!defbg" is the graphic from the file "vwfpatterns.bin" to use as the default text box background.
 			More details on the format of each bin-file later on. Everything you have to know for now is that this
 			number is in hex and by default you can use any number from $00 to $0D.
@@ -181,7 +182,7 @@
 		</p>
 
 		<p>
-			The label "!framepalette" sets up which palette to use for the frame of the text box. This can not be
+			The define "!framepalette" sets up which palette to use for the frame of the text box. This can not be
 			changed ingame. Since we're using Layer 3 for our dialogues only the first two rows of the palette
 			in Lunar Magic can be used for this. Each Layer 3 palette uses four colors. For example: $00 uses the
 			first four colors, $01 the next four colors etc. Since the first two rows together have 32 colors this
@@ -195,7 +196,7 @@
 		</p>
 
 		<p>
-			Next is the label "!bitmode". With this label you set up the bitmode of the patch. Put in a 0 for
+			Next is the define "!bitmode". With this define you set up the bitmode of the patch. Put in a 0 for
 			8-Bit-Mode and a 1 for 16-Bit-Mode. In 16-Bit-Mode each letter in your dialogues takes up double the
 			space, but the high byte is always treated as the font to use. In other words: $01FF would be
 			"Font $01, Character $FF". I figured this might be useful for complex languages like Japanese or
@@ -205,7 +206,7 @@
 		</p>
 
 		<p>
-			The next and final label is "!hijackbox" and sets up whether you want to hijack SMW's original message
+			The next define is "!hijackbox" and determines whether you want to hijack SMW's original message
 			boxes or not. Put a 0 here if you don't want to lose the original SMW message boxes. In this case this
 			patch can still be used with custom sprites or custom blocks. Put a 1 here to hijack SMW's message
 			boxes to automatically use this patch. In this case you can never use SMW's original message boxes
@@ -219,10 +220,17 @@
 			displaying related function to display the dialogues from this patch instead. This can be really useful,
 			considering I've barely included any custom sprites or blocks.
 		</p>
+		
+		<p>
+			As mentioned further above, you can change the !patch_sram_expansion define in the cfg file to !false
+			to prevent this patch from applying its automatic SRAM expansion. Normally you don't have to do this,
+			but there may be situations where advanced users want to use RAM as working memory instead of SRAM, in which
+			case the SRAM expansion won't be needed and can be disabled.
+		</p>
 
 		<p>
-			After you're done with setting up all the labels, save the file and patch it to your ROM with Asar.
-			Make sure only to patch "vwfdialogues.asm" and nothing else. You should get a window that looks somewhat
+			After you're done with setting up all the defines, save the file and patch it to your ROM with Asar.
+			Make sure only to patch "vwf_dialogues.asm" and nothing else. You should get a window that looks somewhat
 			like this: 
 			<img class="d-block m-1 my-2" src="screenshots/console-1.png" alt="Screenshot" width="668" height="331" />
 			If that's what you see you've applied the patch successfully. I'll explain all of those lines in detail
@@ -302,8 +310,8 @@
 
 		<p>
 			Another thing you have to do for frames is setting up palettes for each frame set. Specifially you
-			have to set up the second, third and fourth color of the frame palette declared in "vvwfdialogues.asm"
-			in section 2 of this Readme. To find the table containing the palettes open up "vwfdialogues.asm", hit
+			have to set up the second, third and fourth color of the frame palette declared in "vwf_dialogues.asm"
+			in section 2 of this Readme. To find the table containing the palettes open up "vwf_dialogues.asm", hit
 			CTRL + F and search for "CUSTOMTABLES". You'll get to a section with two different tables of which one
 			table, called "Palettes:", is the table we're looking for. It looks somewhat like this:<br /><br />
 			<pre><code>dw $0000,$FFFF,$0000
@@ -349,23 +357,22 @@ db $0B,$07,$07,$07,$07,$07,$06,$07,$07,$06,$07,$07,$03,$06,$07,$03
 		</p>
 
 		<p>
-			To create a new font file simply copy "vwffont1.bin" and "vwffont1.asm", rename them accordingly and
-			edit them. Then insert both files into your ROM using xkas and a new free space address at the
-			beginning of a bank. I'll show you an "easy" way for doing this in section 4 of this Readme.
-			Anyways, what you have to do next is opening "vwfdialogues.asm", pressing CTRL + F, jumping to the
-			section "CUSTOMTABLES" and editing the table labeled "Fonttable:" in here. By default there is only
+			To create a new font file, simply copy "vwffont1.bin" and "vwffont1.asm", rename them accordingly and
+			edit them. To insert this new font into your game, press CTRL + F inside "vwf_dialogues.asm", search for "INSERT DATA HERE!" and paste the following code just below it
+			<pre><code>%nextbank()
+%binary(Font2, "vwffont2.bin")
+%source(Font2_Width, "vwffont2.asm")</code></pre>
+			where "Font2" and "Font2_Width" are unique names which you will use to identify your new font and width table (only use alpha-numeric characters and underscores here, no spaces or special characters)
+			and where "vwffont2.bin" and "vwffont2.asm" are the names of the files you want to insert. What you have to do next is opening and editing "vwffontpointers.asm". By default, there is only
 			one font in here and it looks like this:<br /><br />
-			<pre><code>Fonttable:
-dl Font1,Font1_Width</code></pre>
-			Each line here is for one font. Start each line with a "dl", followed by a comma, then the address of
-			the font graphics and the address of the width table, seperated by a comma. So let's say we were
-			inserting a new font file and it's width table at $268000. A font file can take up to $4000 bytes in hex,
-			so if we were using a complete font file here and inserting the width table right after it, that would
-			be address $268000+$4000 for our width table. A valid table would look like this:<br /><br />
+			<pre><code>dl Font1,Font1_Width</code></pre>
+			Each line in here is for a single font. Start each line with a "dl", followed by a comma, then the address of
+			the font graphics and the address of the width table, seperated by a comma. If you have followed the steps above to insert the new font into your game, then adding it to this table becomes very simple.
+			Remember the unique names you passed to <tt>%binary()</tt> and <tt>%source()</tt> to identify your font? Those are the names you have to enter into this table. So in our example, you would end up with<br /><br />
 			<pre><code>Fonttable:
 dl Font1,Font1_Width
-dl $268000,$268000+$4000</code></pre>
-			This may sound very complicated right now, but eventually you'll get used to it.
+dl Font2,Font2_Width</code></pre>
+			Adding a new font is as simple as that, thanks to Asar's automatic freespace management.
 		</p><br />
 
 		<h3 class="text-center">Actual Dialogues</h3>
@@ -428,7 +435,7 @@ dl Message000F,Message0010,Message0011,Message0012,Message0013
 <tr><td>dl Message0005,</td><td>Message0006,</td><td>Randomname1,</td><td>Message0008,</td><td>Message0009</tr>
 <tr><td>dl Message000A,</td><td>Randomname2,</td><td>$268000,</td><td>Message000D,</td><td>Message000E</tr>
 <tr><td>dl Message000F,</td><td>MessageABCD,</td><td>Message0011,</td><td>Message0012,</td><td>Message0000</tr></table>[...]</code></pre>
-			By default there are labels for 256 messages in this table. In theory you can use up to 65536 different
+			By default there are labels for 256 messages in this table. In theory you can use up to 10922 different
 			messages with this patch, but since SNES ROMs are rather limited in file space it's unlikely you'll ever get
 			to use that many, especially since my patch doesn't compress text in any way. It's not very likely that you'll
 			ever get to have that many messages in your game, anyways. If 256 messages aren't enough for you, simply add
@@ -452,7 +459,7 @@ dl Message000F,Message0010,Message0011,Message0012,Message0013
 			not having it will cause glitches in the game. It allows you to easily set up position, width, height
 			and other settings of the text box during that one specific dialogue. Let's say we wanted to edit
 			Message0005. The first thing I always do is adding .header- and .body-sublables to each message.
-			Sublables are a special kind of labels in xkas which can be reused inside the same patch, as long as
+			Sublables are a special kind of labels in Asar which can be reused inside the same patch, as long as
 			they're not used under the same main label. The main label in this case would be "Message0005:". After
 			adding sublabels we'd have:<br /><br />
 			<pre><code>Message0005:	; Message 002-2
@@ -673,10 +680,10 @@ db %rrssttuu,$vv,$ww,$xx,$yy
 				Always putting in everything as hex characters would become really annoying after a while.
 				Therefore there is an easier way of doing it. It goes like this:<br /><br />
 				<pre><code>db "Hi there! Put some text here!"</code></pre>
-				So basically you just put the text you want to display in quotations. What xkas does then
+				So basically you just put the text you want to display in quotations. What Asar does then
 				is looking up the characters in the file "vwftable.txt" and converting them into the according
 				hex numbers when assembling the file. This makes writing texts a lot easier. Be careful, though.
-				It seems like many characters are incompatible with xkas. I've especially noticed this with
+				It seems like many characters are incompatible with Asar. I've especially noticed this with
 				some special characters, like the German "ü" for example. Sometimes - if you're very unlucky
 				- they mess up the dialogues completely, but usually they just turn out as hex number $00. If that
 				ever happens to you something you can do is this:<br /><br />
@@ -1061,7 +1068,7 @@ db "Hi there!",$FA,$FF</code></pre>
 
 		<p>
 			Everything left now is to explain how to use the functions of this patch in your own patches. For this
-			we need the screenshot from xkas once again.
+			we need the screenshot from Asar once again.
 			<img class="d-block m-1 my-2" src="screenshots/console-1.png" alt="Screenshot" width="668" height="331" />
 		</p>
 
@@ -1160,7 +1167,7 @@ db "Hi there!",$FA,$FF</code></pre>
 				If you can’t use the SA-1 chip for whatever reason, then the following should provide a useable alternative:
 				<ul>
 					<li>
-						Use the newest version of Lunar Magic and active the FastROM patch and FastROM addressing. This
+						Use the newest version of Lunar Magic and activate the FastROM patch and FastROM addressing. This
 						speeds up the game by a whole lot. Enough to make use of this feature reasonable.
 					</li>
 					<li>
@@ -1174,7 +1181,7 @@ db "Hi there!",$FA,$FF</code></pre>
 					</li>
 					<li>
 						Avoid putting lots of sprites on the screen, especially big ones. Pretty much all of the slow downs
-						are caused by sprites. Two or three small sprites on a screen should be fine, but you any
+						are caused by sprites. Two or three small sprites on a screen should be fine, but any
 						additional sprite will most likely slow it down.
 					</li>
 					<li>
@@ -1190,19 +1197,18 @@ db "Hi there!",$FA,$FF</code></pre>
 			If you make your message list long enough (around 200 messages), it is possible that you'll get an
 			error like this:
 			<img class="d-block m-1 my-2" src="screenshots/console-2.png" alt="Screenshot" width="668" height="331" />
-			As Asar says, this is caused by crossing a bank border. What a bank is is out of scope for this
-			document, but the solution is easy: Just add <tt>%nextbank()</tt> before the last message in the file,
-			and the errors should go away (until you add two hundred more messages). If they don't, move the
-			<tt>%nextbank()</tt>s around until the problems disappear.
+			As Asar states, this is caused by crossing a bank border. More specifically, your message data has gotten too
+			long to fit inside a single bank. There is a simple solution to this problem: Just add <tt>%nextbank()</tt> above the last message in the file,
+			and the errors should disappear (until you add around two hundred more messages). If they don't, keep moving the
+			<tt>%nextbank()</tt> up (always make sure it's just above a message) until they do.
 		</p>
 
 		<p>
-			Also one important thing to add: There is no way to split the pointer table to multiple banks. file
-			"vwfmessagepointers.asm" into multiple files. At first I wanted to add bank border checking for this
-			one file only, but then I figured that even without bank border checking you can still get up to
-			$2AAA (that's 10922) pointers in a single bank. And let's be serious: Who is EVER going to put that
-			many messages in a single SNES game? Noone. Therefore this one limitation should be a limitation you
-			can bear.
+			Another important thing to note: It's impossible to split the pointer table file
+			"vwfmessagepointers.asm" into multiple banks. Originally, I wanted to add bank border checking to this file,
+			but I figured that even without bank border checking, you can still get up to
+			$2AAA (that's 10922) pointers into a single bank, and let's be serious here: It's rather unlikely for a single SNES game
+			to ever contain this many messages. Therefore this one limitation shouldn't really matter.
 		</p><br />
 
 		<h4 class="text-center">Conflicts With HDMA Effects</h4>
@@ -1212,14 +1218,6 @@ db "Hi there!",$FA,$FF</code></pre>
 			use channel 0 (%00000001). If you experience problems with an HDMA effect while displaying a
 			dialogue box, just make sure not to use channel 0 for that effect. Read an HDMA tutorial for
 			further information on this subject.
-		</p><br />
-
-		<h4 class="text-center">Duplicate Cursors (fixed by Vitor Vilela)</h4>
-		<p style="text-decoration:line-through;">
-			Using the option function and getting duplicate cursors? This can happen when VBlank time is
-			exceeded. Usually this is caused by many patches hijacking VBLank routines for loading up graphics
-			or something similiar. This can easily be fixed by applying Lunar Magic's FastROM patch and
-			FastROM addressing.
 		</p>
 
 		<p>
@@ -1251,6 +1249,9 @@ db "Hi there!",$FA,$FF</code></pre>
 
 		<h2 id="plans" class="text-center">6. Planned Features</h2>
 		<p>
+			<p class="text-center"><small>LOL, I wrote this patch almost eight years ago and none of this is likely going to happen anymore. Sorry to disappoint you. :(
+			<br />
+			Sincerly, RPG Hacker</small></p>
 			<ul>
 				<li>Creating a GUI application to make setting up the patch a lot easier for the user.</li>
 				<li>Adding a feature to the patch that allows the player to easily customise the text box
@@ -1302,6 +1303,7 @@ db "Hi there!",$FA,$FF</code></pre>
 				<li>Converted to a hybrid patch.</li>
 				<li>Updated code style to match the rest of RPG Hacker’s patches.</li>
 				<li>Updated the Readme to look good.</li>
+				<li>Fixed a few things in the Readme and updated some of the outdated information.</li>
 			</ul>
 		</p>
 		

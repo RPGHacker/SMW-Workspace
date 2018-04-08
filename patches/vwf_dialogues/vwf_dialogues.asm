@@ -257,13 +257,13 @@ endmacro
 
 
 macro binary(identifier, data)
-	Data<identifier>:
+	<identifier>:
 	incbin <data>
 endmacro
 
 
 macro source(identifier, data)
-	Data<identifier>:
+	<identifier>:
 	incsrc <data>
 endmacro
 

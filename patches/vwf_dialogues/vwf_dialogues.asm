@@ -1,4 +1,5 @@
 @asar 1.50
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;VWF Dialogues Patch by RPG Hacker;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -14,8 +15,13 @@ print "VWF Dialogues Patch v1.2 - (c) 2018 RPG Hacker"
 math pri on
 math round off
 
+pushtable
+cleartable
+
 
 namespace vwf_dialogues_
+
+
 
 
 
@@ -294,27 +300,39 @@ endmacro
 ;;;;;;;;;
 
 
+; Initialize RAM to prevent glitches or game crashes
 org remap_rom($008064)
-	autoclean jml InitCall	; Initialize RAM to prevent glitches
-	nop ; workaround for Asar bug	; or game crashes
-
-org remap_rom($0081F2)
-	jml VBlank	; V-Blank code goes here
+	autoclean jml InitCall		; workaround for Asar bug
 	nop
 
+; V-Blank code goes here
+org remap_rom($0081F2)
+	jml VBlank
+	nop
+
+; Hijack NMI for various things
 org remap_rom($008297)
-	jml NMIHijack	; Hijack NMI for various things
+	jml NMIHijack
 	nop #$2
 
+; Call RAM Init Routine on Title Screen
 org remap_rom($0086E2)
-	jml InitMode	; Call RAM Init Routine on Title Screen
+	jml InitMode
 
+; Hijack message box to call VWF dialogue
 org remap_rom($00A1DF)
-!hijack jsl MessageBox	; Hijack message box to call VWF dialogue
+!hijack jsl MessageBox
 
+; Buffer data before loading up to VRAM in V-Blank
 org remap_rom($00A2A9)
-	jml Buffer	; Buffer data before loading up to VRAM
-	nop #2	; in V-Blank
+	jml Buffer
+	nop #2
+	
+; SRAM expansion ($07 => 2^7 kb = 128 kb)
+if !patch_sram_expansion != 0
+	org remap_rom($00FFD8)
+		db $07
+endif
 
 
 
@@ -4621,6 +4639,12 @@ print "Text data insterted at $",hex(Text),"."
 
 ;END
 ;-------------------------------------------------------------
+
 print ""
 print ""
-freedata : prot !PrevFreespace : Kleenex: db $00	;ignore this line, it must be last in the patch for technical reasons
+freedata : prot !PrevFreespace : Kleenex: db $00	;ignore this line, it must be at the end of the patch for technical reasons
+
+namespace off
+
+
+pulltable

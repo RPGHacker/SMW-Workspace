@@ -329,7 +329,7 @@ org remap_rom($00A2A9)
 	nop #2
 
 ; SRAM expansion ($07 => 2^7 kb = 128 kb)
-if !patch_sram_expansion != !false
+if !patch_sram_expansion != !false && read1(remap_rom($00FFD8)) < $07
 	org remap_rom($00FFD8)
 		db $07
 endif

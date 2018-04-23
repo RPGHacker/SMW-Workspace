@@ -9,7 +9,7 @@ incsrc vwf_dialogues.cfg
 incsrc ../shared/shared.asm
 
 
-print "VWF Dialogues Patch v1.2 - (c) 2018 RPG Hacker"
+print "VWF Dialogues Patch v1.3 - (c) 2018 RPG Hacker"
 
 
 math pri on
@@ -327,9 +327,9 @@ org remap_rom($00A1DF)
 org remap_rom($00A2A9)
 	jml Buffer
 	nop #2
-	
+
 ; SRAM expansion ($07 => 2^7 kb = 128 kb)
-if !patch_sram_expansion != 0
+if !patch_sram_expansion != !false
 	org remap_rom($00FFD8)
 		db $07
 endif

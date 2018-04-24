@@ -194,12 +194,17 @@
 
 		<p>
 			Next is the define <code>!bitmode</code>. With this define you set up the bitmode of the patch.
-			Put in <code>!8</code> for 8-Bit-Mode and <code>!16</code> for 16-Bit-Mode. In 16-Bit-Mode, each
+			Put in <code>!8</code> for 8-Bit mode and <code>!16</code> for 16-Bit mode. In 16-Bit mode, each
 			letter in your dialogues takes up double the space, with the high byte being treated as the font to use.
 			In other words: $01FF would be "Font $01, Character $FF". I figured this might be useful for complex languages like Japanese or
 			something. Then again as long as most of the used characters are inside the same font file it is
-			recommended to continue using 8-Bit-Mode. For anyone not using a complex language it is anyways.
-			More details on this will be given whereever 16-Bit-Mode has an effect.
+			recommended to continue using 8-Bit mode. For anyone not using a complex language it is anyways.
+			More details on this will be given whereever 16-Bit mode has an effect.
+		</p>
+
+		<p>
+			<b>Notice:</b> 16-Bit mode has been deprecated due to a lack of testing, some long standing bugs
+			and bad developer UX in general.
 		</p>
 
 		<p>
@@ -487,11 +492,11 @@ db %rrssttuu,$vv,$ww,$xx,$yy
 			<dd><p>
 				This is the font to use for the dialogue. By default only one font will be inserted
 				in the game and you’ll have to put in "00" here. Also here we have the first difference
-				between 8-Bit- and 16-Bit-Mode: In 16-Bit-Mode you MUST skip this line. Otherwise you’ll
-				get glitches. Why? Well in 16-Bit-Mode the high byte of each character is used as the font
+				between 8-Bit- and 16-Bit mode: In 16-Bit mode you MUST skip this line. Otherwise you’ll
+				get glitches. Why? Well in 16-Bit mode the high byte of each character is used as the font
 				number, so I figured this byte in the header would be redundant. On a second thought I realise
 				that this just causes additional confusion for just one single byte you save per message,
-				but I did it like this anyways, so keep it in mind if you’re ever going to use 16-Bit-Mode.
+				but I did it like this anyways, so keep it in mind if you’re ever going to use 16-Bit mode.
 			</p></dd>
 			<dt><code>bbbbb</code></dt>
 			<dd><p>
@@ -569,7 +574,9 @@ db %rrssttuu,$vv,$ww,$xx,$yy
 					<tr><th><code>0</code></th><td>Don’t freeze sprites.</td></tr>
 					<tr><th><code>1</code></th><td>Freeze sprites.</td></tr>
 				</tbody></table>
-				I recommend 1. 0 can lead to glitches in the current version if - for example - you die
+				I recommend <code>1</code>.
+			</p><p>
+				<code>0</code> can lead to glitches in the current version if - for example - you die
 				while a dialogue is being processed. Also it is pretty slow. If you really want to use it
 				I recommend using Lunar Magic 1.8X or later and using the FastROM patch and addressing.
 				This actually makes the result quite decent.
@@ -662,11 +669,11 @@ db %rrssttuu,$vv,$ww,$xx,$yy
 			<dt>Regular Text</dt>
 			<dd><p>
 				The first thing you’ll obviously want to do is using regular text. Here we have a difference
-				between 8-Bit- and 16-Bit-Mode. In 8-Bit-Mode, regular text goes like this:
+				between 8-Bit- and 16-Bit mode. In 8-Bit mode, regular text goes like this:
 				<pre><code>db $03,$AF,$34,$CD,$A3,$5B
 [...]</code></pre>
 				So basically you just write the hex value of whatever character from the font file you want
-				to display in a table. In 16-Bit-Mode it works like this:
+				to display in a table. In 16-Bit mode it works like this:
 				<pre><code>dw $0003,$00AF,$0034,$01CD,$00A3,$025B
 [...]</code></pre>
 				The main difference here of course is that you need two bytes per character and the high byte
@@ -700,8 +707,10 @@ db $AB,$54,$DF
 				enough to create proper dialogues. You’ll need a bunch of special characters to cause certain
 				events during a dialogue. Some of them are mandatory to use in each dialogue, others are
 				optional. To use these special commands simply put their hex codes into the text where they
-				should be activated. In 16-Bit-Mode you need to use $FF as a high byte for each special character
-				(like "$FFFA" for example). Here is a list of each and every special character available.
+				should be activated. Here is a list of each and every special character available.
+			</p><p>
+				<b>Notice:</b> In 16-Bit mode you need to use $FF as a high byte for each special character
+				(like "$FFFA" for example) and you can’t put the text in quotes.
 			</p></dd>
 			<dt id="text-command-ff"><code>$FF</code> - End Dialogue</dt>
 			<dd><p>
@@ -829,10 +838,10 @@ dl Address</code></pre>
 			<dt id="text-command-f4"><code>$F4</code> - Display Character</dt>
 			<dd><p>
 				This displays character $XX. Usage is like this:
-				<pre><code>; 8-Bit-Mode
+				<pre><code>; 8-Bit mode
 db $F4,$XX
 
-; 16-Bit-Mode
+; 16-Bit mode
 dw $FFF4,$XXXX</code></pre>
 				You may wonder what the point of this function is. Well, let’s say you had a font file
 				with 256 characters and you wanted to display character $FF. How would you do that?
@@ -860,13 +869,13 @@ dw $FFF4,$XXXX</code></pre>
 				also means that you ALWAYS have to use a space before using this command. NEVER change
 				the text palette in the middle of a word.
 			</p><p>
-				Note that the <a href="#text-command-ed"><code>$ED</code> - Clear Text Box</a>
-				command will reset the currently used pallete to the default for the current message.
+				Note that the <a href="#text-command-ed"><code>$ED</code> - Clear Text Box</a> command
+				will reset the currently used pallete to the default settings for the current message.
 			</p></dd>
 			<dt id="text-command-f2"><code>$F2</code> - Change Font</dt>
 			<dd><p>
 				Changes the number of the Font in use to $XX. In short, the same stuff as the first
-				option in the header. Also in 16-Bit-Mode this command is redundant as it does
+				option in the header. Also in 16-Bit mode this command is redundant as it does
 				nothing. Usage:
 				<pre><code>db $F2,$XX</code></pre>
 			</p></dd>
@@ -946,8 +955,8 @@ rtl</code></pre>
 				option the player selected. Usage is like this:
 				<pre><code>db $F0,$ns
 <table class="border-0" style="line-height:19px;"><tbody>
-<tr><td>db $cc	</td><td>; If in 8-Bit-Mode	</td></tr>
-<tr><td>dw $cccc	</td><td>; If in 16-Bit-Mode	</td></tr>
+<tr><td>db $cc	</td><td>; If in 8-Bit mode	</td></tr>
+<tr><td>dw $cccc	</td><td>; If in 16-Bit mode	</td></tr>
 </tbody></table>
 dl .option_1
 [...]
@@ -970,7 +979,7 @@ db "You selected option 1!",$FA,$FF
 				into it at the same time, the text box will be cleared. Oh, did I already mention that
 				this command automatically causes a Line Break if not already at the beginning of a
 				line? Anyways, next is s, which is the space to leave between cursor and the following
-				letter. I usually put a 4 here. The next thing, cc (or cccc in 16-Bit-Mode) is the
+				letter. I usually put a 4 here. The next thing, cc (or cccc in 16-Bit mode) is the
 				character from the font to use as the cursor. The default font has a very decent
 				cursor as character $A8, so I recommend using this. Next are dl tables according
 				to the value you used for n. To give a few examples: If n = 3, put 3 dl tables here.
@@ -1019,16 +1028,26 @@ db "Too bad. Come again later!",$FA,$FF</code></pre>
 dw $-lll
 db %----w-s-</code></pre>
 				lll is the level to teleport to or the secondary exit number to use. This can be
-				anything from 000 to 1FF. Set w to 1 if the destination level is a water level,
-				otherwise set it to 0. Set s to 1 if lll should be used as a secondary exit number,
-				otherwise set it t0 0 to use lll as the destination level number. An example:
+				anything from <code>$000</code> to <code>$1FF</code>. Set <code>w</code> to <code>1</code>
+				if the destination level is a water level, otherwise set it to <code>0</code>.
+				Set <code>s</code> to <code>1</code> if <code>lll</code> should be used as a secondary exit number,
+				otherwise set it to <code>0</code> to use <code>lll</code> as the destination level number.
+			</p><p>
+				<h6>Example:</h6>
 				<pre><code>db $EF
 dw $010D
 db %00000000</code></pre>
+			</p><p>
+				<b>Notice:</b> The teleport command currently doesn’t support Lunar Magic’s
+				expanded secondary entrances (<code>$0200</code> - <code>$1FFF</code>), and has
+				issues with levels that are configured to use separate settings for the midway
+				entrace when using the <code>w</code> flag, as it will teleport to the midway
+				entrace and make the level a water level.
 			</p></dd>
 			<dt id="text-command-ee"><code>$EE</code> - Edit Color</dt>
 			<dd><p>
-				This command sets color $XX to SNES RGB $YYYY and is to be used together with $F3.
+				This command sets color <code>$XX</code> to SNES RGB <code>$YYYY</code> and	is to be used
+				together with <a href="#text-command-f3"><code>$F3</code> - Change Text Palette</a>.
 				Usage is like this:
 				<pre><code>db $XX
 dw $YYYY</code></pre>
@@ -1262,6 +1281,11 @@ db "Hi there!",$FA,$FF</code></pre>
 				<li>Sometimes the teleporting command doesn’t work properly and doesn’t
 					teleport you to the specified level. I couldn’t find the cause of this so far.
 					Maybe the code is just executed at the wrong place.</li>
+				<li>When using the water level flag and teleporting to a level which uses
+					separate settings for the midway entrace, then you’ll end up at the
+					midway point instead of the level entrance.</li>
+				<li>If you die while a dialogue is being processed without freezing sprites, then this leads
+					to the aforementioned issues in the <a href="#advanced">Problem Solving</a> section.</li>
 			</ul>
 		</p>
 		<p class="text-center my-4"><a href="#index">Return to Index</a></p>
@@ -1278,11 +1302,15 @@ db "Hi there!",$FA,$FF</code></pre>
 				Sincerly, RPG Hacker
 			</small>
 			<ul>
-				<li>Creating a GUI application to make setting up the patch a lot easier for the user.</li>
-				<li>Adding a feature to the patch that allows the player to easily customise the text box ingame.</li>
-				<li>Adding a command to jump to a certain pixel inside the text box.</li>
-				<li>Fixing teleport bug.</li>
-				<li>Adding support for the expanded secondary entrances (<code>$0200</code> - <code>$1FFF</code>).</li>
+				<li>Create a GUI application to make setting up the patch a lot easier for the user.</li>
+				<li>Add a feature to the patch that allows the player to easily customise the text box ingame.</li>
+				<li>Add a command to jump to a certain pixel inside the text box.</li>
+				<li>Fix the <a href="#bugs">aforementioned teleport bugs</a>.</li>
+				<li>Add support for the expanded secondary entrances (<code>$0200</code> - <code>$1FFF</code>).</li>
+				<li>Allow customising which button is used for advancing the dialogue.</li>
+				<li>Add a feature to allow closing the dialogue mid-message, this might also help with fixing
+					<a href="#bugs">the aforementioned death bug</a>.</li>
+				<li>Implement UTF-8 mode to replace the deprecated 16-Bit mode.</li>
 				<li>Lots of optimizations.</li>
 			</ul>
 		</p>

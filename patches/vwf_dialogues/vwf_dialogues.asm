@@ -4305,6 +4305,15 @@ BackupTilemap:
 	sta [$03],y
 	sep #$20
 
+	;Vitor Vilela's note:
+	;Here is one big issue with the cursor.
+	;This code actually is outside V-Blank and now I have to upload the following:
+	;VRAM: $00-$01
+	;Source: $03-$05
+	;Bytes: #$0046
+	;I don't know if the tile gets preserved or not for the current frame.
+	;But for now I will have to preverse at least, $00-$01 and $03-$04, which means more 4 bytes
+	;of free ram, plus the upload flag, so 5 more bytes of free ram.
 	rep #$20
 	lda $03
 	sec
@@ -4315,20 +4324,10 @@ BackupTilemap:
 	sta !cursorvram
 	lda $03
 	sta !cursorsrc
+	sep #$20
 	lda #$01
 	sta !cursorfix
-	sep #$20
-	;%vramprepare(#$80,$00,"","")
-	;%dmatransfer(#$01,#$01,#$18," $05"," $04"," $03",#$0046)
-	;Vitor Vilela's note:
-	;Here is one big issue with the cursor.
-	;This code actually is outside V-Blank and now I have to upload the following:
-	;VRAM: $00-$01
-	;Source: $03-$05
-	;Bytes: #$0046
-	;I don't know if the tile gets preserved or not for the current frame.
-	;But for now I will have to preverse at least, $00-$01 and $03-$04, which means more 4 bytes
-	;of free ram, plus the upload flag, so 5 more bytes of free ram.
+
 	rts
 
 

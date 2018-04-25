@@ -64,3 +64,10 @@ p + h4 {
 	margin-top: 1.5rem;
 	margin-block-start: 1.5rem;
 }
+
+[id]::before {
+	content:	"";
+	display:	block;
+	margin-top:	-5rem;
+	height:	5rem;
+}

@@ -73,11 +73,15 @@
 						</button>
 					</div>
 					<div class="row">
-						<div id="video1" class="col-6 collapse mt-3">
-							<iframe class="video" src="https://www.youtube.com/embed/wEWhCg-UCm0?rel=0" allow="autoplay; encrypted-media" allowfullscreen="true"></iframe>
+						<div class="col-12 col-md-6 mt-3">
+							<div id="video1" class="collapse nobefore">
+								<iframe class="video" src="https://www.youtube.com/embed/wEWhCg-UCm0?rel=0" allow="autoplay; encrypted-media" allowfullscreen="true"></iframe>
+							</div>
 						</div>
-						<div id="video2" class="col-6 collapse mt-3">
-							<iframe class="video" src="https://www.youtube.com/embed/M2glDLSeITo?rel=0" allow="autoplay; encrypted-media" allowfullscreen="true"></iframe>
+						<div class="col-12 col-md-6 mt-3">
+							<div id="video2" class="collapse nobefore">
+								<iframe class="video" src="https://www.youtube.com/embed/M2glDLSeITo?rel=0" allow="autoplay; encrypted-media" allowfullscreen="true"></iframe>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -86,7 +90,34 @@
 				<ol>
 					<li><a href="#intro">Introduction</a></li>
 					<li><a href="#start">Getting Started</a></li>
-					<li><a href="#main">Main Functions (Basic)</a></li>
+					<li><a href="#main">Main Functions (Basic)</a><ul>
+						<li><a href="#main-gfx">Graphics, Palettes and Fonts</a></li>
+						<li><a href="#main-dialog">Setting Up and Calling Dialogues</a></li>
+						<li><a href="#dialog-header">Dialogue Headers</a></li>
+						<details>
+							<summary><a href="#dialog-body">Dialogue Texts</a></summary><ul>
+							<li><a href="#text-command-ff"><code>$FF</code> - End Dialogue</a></li>
+							<li><a href="#text-command-fe"><code>$FE</code> - Space</a></li>
+							<li><a href="#text-command-fd"><code>$FD</code> - Force Line Break</a></li>
+							<li><a href="#text-command-fc"><code>$FC</code> - Set Message Number</a></li>
+							<li><a href="#text-command-fb"><code>$FB</code> - Modify Text Pointer</a></li>
+							<li><a href="#text-command-fa"><code>$FA</code> - Wait for A Button</a></li>
+							<li><a href="#text-command-f9"><code>$F9</code> - Wait for <code>$XX</code> frames</a></li>
+							<li><a href="#text-command-f8"><code>$F8</code> - Change Text Speed</a></li>
+							<li><a href="#text-command-f7"><code>$F7</code> - Display Decimal Number</a></li>
+							<li><a href="#text-command-f6"><code>$F6</code> - Display Hexadecimal Number</a></li>
+							<li><a href="#text-command-f5"><code>$F5</code> - Display RAM Character</a></li>
+							<li><a href="#text-command-f4"><code>$F4</code> - Display Character</a></li>
+							<li><a href="#text-command-f3"><code>$F3</code> - Change Text Palette</a></li>
+							<li><a href="#text-command-f2"><code>$F2</code> - Change Font</a></li>
+							<li><a href="#text-command-f1"><code>$F1</code> - Execute Code</a></li>
+							<li><a href="#text-command-f0"><code>$F0</code> - Display Options</a></li>
+							<li><a href="#text-command-ef"><code>$EF</code> - Setup Teleport</a></li>
+							<li><a href="#text-command-ee"><code>$EE</code> - Edit Color</a></li>
+							<li><a href="#text-command-ed"><code>$ED</code> - Clear Text Box</a></li>
+							<li><a href="#text-command-ec"><code>$EC</code> - Play BGM</a></li>
+						</ul></details>
+					</ul></li>
 					<li><a href="#advanced">Problem Solving (Advanced)</a></li>
 					<li><a href="#bugs">Known Bugs</a></li>
 					<li><a href="#plans">Planned Features</a></li>
@@ -250,7 +281,7 @@
 			(including fonts) and how to use this patch’s features for your own patches.
 		</p>
 
-		<h3 class="text-center">Graphics, Palettes and Fonts</h3>
+		<h3 id="main-gfx" class="text-center">Graphics, Palettes and Fonts</h3>
 		<p>
 			The first and easiest thing you’ll have to learn is how all the different graphic formats this patch
 			uses work. Among them are the following ones:
@@ -381,7 +412,7 @@ dl Font2,Font2_Width</code></pre>
 			Adding a new font is as simple as that, thanks to Asar’s automatic freespace management.
 		</p>
 
-		<h3 class="text-center">Actual Dialogues</h3>
+		<h3 id="main-dialog" class="text-center">Actual Dialogues</h3>
 		<h4 class="text-center">Setting Up and Calling Dialogues</h4>
 		<p>
 			So now to actually use my patch and display some text on the screen.
@@ -462,7 +493,7 @@ sta.l $702000
 			After we’re done with this we can finally get to actually write messages. YAY!
 		</p>
 
-		<h4 class="text-center">Dialogue Headers</h4>
+		<h4 id="dialog-header" class="text-center">Dialogue Headers</h4>
 		<p>
 			The first thing to do when setting up a dialogue is creating a header for it. This header is mandatory;
 			not having it will cause glitches in the game. It allows you to easily set up position, width, height
@@ -665,7 +696,7 @@ db %rrssttuu,$vv,$ww,$xx,$yy
 			for your dialogues.
 		</p>
 
-		<h4 class="text-center">Dialogue Texts</h4>
+		<h4 id="dialog-body" class="text-center">Dialogue Texts</h4>
 		<p>
 			So if you’re using the same labels as I suggested in this Readme then what you’re going to edit now is
 			the part under the <code>.body</code> sublabel, which is the actual dialogue.

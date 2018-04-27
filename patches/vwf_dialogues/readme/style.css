@@ -65,9 +65,17 @@ p + h4 {
 	margin-block-start: 1.5rem;
 }
 
-[id]::before {
+h1[id]::before, h2[id]::before, h3[id]::before,
+h4[id]::before, h5[id]::before, h6[id]::before,
+dt[id]::before {
 	content:	"";
 	display:	block;
 	margin-top:	-5rem;
 	height:	5rem;
+}
+
+ol > details > summary,
+ul > details > summary {
+	display:	list-item	flex;
+	list-style-position:	outside;
 }

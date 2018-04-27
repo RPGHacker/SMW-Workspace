@@ -130,384 +130,384 @@
 		<!-- Seperator Comment -->
 
 		<section class="container">
-		<h2 id="intro" class="text-center">1. Introduction</h2>
-		<p>
-			Welcome to the VWF Dialogues Patch! Since you got here by yourself you most likely
-			already know what this patch does, but let me give you a general overview anyways.
-		</p>
+			<h2 id="intro" class="text-center">1. Introduction</h2>
+			<p>
+				Welcome to the VWF Dialogues Patch! Since you got here by yourself you most likely
+				already know what this patch does, but let me give you a general overview anyways.
+			</p>
 
-		<p>
-			The aim of this patch is to give a useful alternative to SMW’s native text boxes.
-			Unlike Romi’s VWF Cutscene Tool (which is great, btw.) this patch is set up for easy
-			event creation, easy customization and compatibility with all kinds of languages. The cost
-			of this is that it’s way harder to use. However, as long as you’re somewhat familiar with
-			custom sprites/custom blocks and Asar patches and read this Readme carefully you should be fine.
-		</p>
+			<p>
+				The aim of this patch is to give a useful alternative to SMW’s native text boxes.
+				Unlike Romi’s VWF Cutscene Tool (which is great, btw.) this patch is set up for easy
+				event creation, easy customization and compatibility with all kinds of languages. The cost
+				of this is that it’s way harder to use. However, as long as you’re somewhat familiar with
+				custom sprites/custom blocks and Asar patches and read this Readme carefully you should be fine.
+			</p>
 
-		<p>
-			I’ve also included a custom block that utilizes this patch. I wanted to include more blocks and also
-			a few custom sprites, but I figured that any custom block or custom sprite from SMW Central which
-			displays a level message is compatible with this if you enable the Message Box Hijack (see
-			section 2). I might add a few customized sprites and blocks in a future version. The one block I
-			included gives a general idea on how to utilize this patch, though.
-			Additionally I’ve included a few alternative fonts if you don’t like the default one. The default font
-			has the most characters, though. If you’re using any language that is not English and has some special
-			characters you might have to draw them yourself.
-		</p>
+			<p>
+				I’ve also included a custom block that utilizes this patch. I wanted to include more blocks and also
+				a few custom sprites, but I figured that any custom block or custom sprite from SMW Central which
+				displays a level message is compatible with this if you enable the Message Box Hijack (see
+				section 2). I might add a few customized sprites and blocks in a future version. The one block I
+				included gives a general idea on how to utilize this patch, though.
+				Additionally I’ve included a few alternative fonts if you don’t like the default one. The default font
+				has the most characters, though. If you’re using any language that is not English and has some special
+				characters you might have to draw them yourself.
+			</p>
 
-		<p>
-			Be aware that this patch does some modifications to the ROM that might seem to be unrelated to the
-			patch itself and aren’t mentioned anywhere in this Readme. For example: It automatically expands
-			the SRAM of your ROM to 128 KB since it needs over 32 KB of free RAM during dialogues.
-		</p>
+			<p>
+				Be aware that this patch does some modifications to the ROM that might seem to be unrelated to the
+				patch itself and aren’t mentioned anywhere in this Readme. For example: It automatically expands
+				the SRAM of your ROM to 128 KB since it needs over 32 KB of free RAM during dialogues.
+			</p>
 
-		<p>
-			Anyways, let’s get started now with the first steps to setting up the patch now.
-		</p>
-		<p class="text-center my-4"><a href="#index">Return to Index</a></p>
+			<p>
+				Anyways, let’s get started now with the first steps to setting up the patch now.
+			</p>
+			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
 		</section>
 
 		<!-- Seperator Comment -->
 
 		<section class="container">
-		<h2 id="start" class="text-center">2. Getting Started</h2>
-		<p>
-			The very first thing you’ll have to do is take the <code>vwf_dialogues</code> and <code>shared</code>
-			folders and copy them over to your hack’s <code>patches</code> folder.
-			Next you open up <code>vwf_dialogues.cfg</code> in a text editor of your choice.
-		</p>
+			<h2 id="start" class="text-center">2. Getting Started</h2>
+			<p>
+				The very first thing you’ll have to do is take the <code>vwf_dialogues</code> and <code>shared</code>
+				folders and copy them over to your hack’s <code>patches</code> folder.
+				Next you open up <code>vwf_dialogues.cfg</code> in a text editor of your choice.
+			</p>
 
-		<p>
-			Here you’ll see the defines <code>!varram</code>, <code>!backupram</code>, <code>!tileram</code>,
-			<code>!varramSA1</code>, <code>!backupramSA1</code>, <code>!tileramSA1</code>. I suggest you don’t touch those
-			at all, especially if you aren’t too familiar with ASM. Those addresses are the SRAM locations
-			the patch uses (the defines with the SA1 suffix are for SA-1 enabled ROMs). Of course you can also change them to RAM addresses,
-			but to do that you will likely have to apply additional patches to free up RAM in SMW. If you decide to do so, you can set the
-			<code>!patch_sram_expansion</code> define further down in the cfg file to <code>!false</code> to prevent this patch from automatically
-			expanding your SRAM. Normally you don’t have to bother, though, as the patch’s default settings should work just fine for most hacks.
-			I tried to use addresses at the very end of the game’s SRAM area in an attempt to prevent potential conflicts with other patches.
-		</p>
+			<p>
+				Here you’ll see the defines <code>!varram</code>, <code>!backupram</code>, <code>!tileram</code>,
+				<code>!varramSA1</code>, <code>!backupramSA1</code>, <code>!tileramSA1</code>. I suggest you don’t touch those
+				at all, especially if you aren’t too familiar with ASM. Those addresses are the SRAM locations
+				the patch uses (the defines with the SA1 suffix are for SA-1 enabled ROMs). Of course you can also change them to RAM addresses,
+				but to do that you will likely have to apply additional patches to free up RAM in SMW. If you decide to do so, you can set the
+				<code>!patch_sram_expansion</code> define further down in the cfg file to <code>!false</code> to prevent this patch from automatically
+				expanding your SRAM. Normally you don’t have to bother, though, as the patch’s default settings should work just fine for most hacks.
+				I tried to use addresses at the very end of the game’s SRAM area in an attempt to prevent potential conflicts with other patches.
+			</p>
 
-		<p>
-			Scroll further down for a group of defines that determine the default settings of your text boxes.
-			<code>!defbg</code> is the graphic from the file <code>vwfpatterns.bin</code> to use as the default text box background.
-			More details on the format of each bin-file later on. Everything you have to know for now is that this
-			number is in hex and by default you can use any number from <code>$00</code> to <code>$0D</code>.
-		</p>
+			<p>
+				Scroll further down for a group of defines that determine the default settings of your text boxes.
+				<code>!defbg</code> is the graphic from the file <code>vwfpatterns.bin</code> to use as the default text box background.
+				More details on the format of each bin-file later on. Everything you have to know for now is that this
+				number is in hex and by default you can use any number from <code>$00</code> to <code>$0D</code>.
+			</p>
 
-		<p>
-			Next on the list is <code>!bgcolor</code>,
-			the default color of the text box background in SNES RGB format. To find out what a color is in SNES
-			RGB format simply open the palette editor in Lunar Magic and move the cursor over whatever color
-			you’re looking for. Lunar Magic will display the value of that color in various formats, including
-			the SNES RGB format.
-		</p>
+			<p>
+				Next on the list is <code>!bgcolor</code>,
+				the default color of the text box background in SNES RGB format. To find out what a color is in SNES
+				RGB format simply open the palette editor in Lunar Magic and move the cursor over whatever color
+				you’re looking for. Lunar Magic will display the value of that color in various formats, including
+				the SNES RGB format.
+			</p>
 
-		<p>
-			<code>!defframe</code> is the group of graphics from the file <code>vwfframes.bin</code> to use as the default text box frame.
-			More on this later. By default <code>$00</code> to <code>$0F</code> are valid.
-		</p>
+			<p>
+				<code>!defframe</code> is the group of graphics from the file <code>vwfframes.bin</code> to use as the default text box frame.
+				More on this later. By default <code>$00</code> to <code>$0F</code> are valid.
+			</p>
 
-		<p>
-			The define <code>!framepalette</code> sets up which palette to use for the frame of the text box.
-			This can not currently be changed ingame. Since we’re using Layer 3 for our dialogues only the first two rows of the palette
-			in Lunar Magic can be used for this. Each Layer 3 palette uses four colors. For example: <code>$00</code> uses the
-			first four colors, <code>$01</code> the next four colors etc. Since the first two rows together have 32 colors this
-			means you have the choice between 8 different palettes. In other words: <code>$00</code> to <code>$07</code> are valid inputs
-			here. One thing is very important, though: During dialogue processing the colors in that palette get
-			overwritten by new colors, so never use a palette that is used by the level background. I recommend
-			using a palette which is only used by the status bar, since the status bar is invisible during
-			dialogues. You don’t have to worry here: My patch restores all 32 original colors of the first two
-			rows of the palette after the dialogue is done, so any palette that is used only for the status bar
-			is save to use here.
-		</p>
+			<p>
+				The define <code>!framepalette</code> sets up which palette to use for the frame of the text box.
+				This can not currently be changed ingame. Since we’re using Layer 3 for our dialogues only the first two rows of the palette
+				in Lunar Magic can be used for this. Each Layer 3 palette uses four colors. For example: <code>$00</code> uses the
+				first four colors, <code>$01</code> the next four colors etc. Since the first two rows together have 32 colors this
+				means you have the choice between 8 different palettes. In other words: <code>$00</code> to <code>$07</code> are valid inputs
+				here. One thing is very important, though: During dialogue processing the colors in that palette get
+				overwritten by new colors, so never use a palette that is used by the level background. I recommend
+				using a palette which is only used by the status bar, since the status bar is invisible during
+				dialogues. You don’t have to worry here: My patch restores all 32 original colors of the first two
+				rows of the palette after the dialogue is done, so any palette that is used only for the status bar
+				is save to use here.
+			</p>
 
-		<p>
-			Next is the define <code>!bitmode</code>. With this define you set up the bitmode of the patch.
-			Put in <code>!8</code> for 8-Bit mode and <code>!16</code> for 16-Bit mode. In 16-Bit mode, each
-			letter in your dialogues takes up double the space, with the high byte being treated as the font to use.
-			In other words: <code>$01FF</code> would be "Font <code>$01</code>, Character <code>$FF</code>".
-			I figured this might be useful for complex languages like Japanese or something.
-			Then again as long as most of the used characters are inside the same font file it is
-			recommended to continue using 8-Bit mode. For anyone not using a complex language it is anyways.
-			More details on this will be given whereever 16-Bit mode has an effect.
-		</p>
+			<p>
+				Next is the define <code>!bitmode</code>. With this define you set up the bitmode of the patch.
+				Put in <code>!8</code> for 8-Bit mode and <code>!16</code> for 16-Bit mode. In 16-Bit mode, each
+				letter in your dialogues takes up double the space, with the high byte being treated as the font to use.
+				In other words: <code>$01FF</code> would be "Font <code>$01</code>, Character <code>$FF</code>".
+				I figured this might be useful for complex languages like Japanese or something.
+				Then again as long as most of the used characters are inside the same font file it is
+				recommended to continue using 8-Bit mode. For anyone not using a complex language it is anyways.
+				More details on this will be given whereever 16-Bit mode has an effect.
+			</p>
 
-		<p>
-			<b>Notice:</b> 16-Bit mode has been deprecated due to a lack of testing, some long standing bugs
-			and bad developer UX in general.
-		</p>
+			<p>
+				<b>Notice:</b> 16-Bit mode has been deprecated due to a lack of testing, some long standing bugs
+				and bad developer UX in general.
+			</p>
 
-		<p>
-			The next define is <code>!hijackbox</code> and determines whether you want to hijack SMW’s original message
-			boxes or not. Put a <code>!false</code> here if you don’t want to lose the original SMW message boxes. In this case this
-			patch can still be used with custom sprites or custom blocks. Put a <code>!true</code> here to hijack SMW’s message
-			boxes to automatically use this patch. In this case you can never use SMW’s original message boxes
-			again, though. Editing the message boxes in the Lunar Magic Overworld Editor also won’t have any
-			effect anymore since the messages will use the text from this patch instead.
-			More details on editing the text in the next section. I highly recommend installing this hijack btw.,
-			because if you do you can use <code>$7E1426</code> the same way as in original SMW. In other words: Setting it to
-			<code>$01</code> will display message 1 from the current level, setting it to <code>$02</code> will display message 2 from the
-			level and setting it to <code>$03</code> will display the Yoshi thanks message. Also you can use ANY sprite from
-			the custom sprites section and ANY block from the custom blocks section on SMW Central with a message
-			displaying related function to display the dialogues from this patch instead. This can be really useful,
-			considering I’ve barely included any custom sprites or blocks.
-		</p>
+			<p>
+				The next define is <code>!hijackbox</code> and determines whether you want to hijack SMW’s original message
+				boxes or not. Put a <code>!false</code> here if you don’t want to lose the original SMW message boxes. In this case this
+				patch can still be used with custom sprites or custom blocks. Put a <code>!true</code> here to hijack SMW’s message
+				boxes to automatically use this patch. In this case you can never use SMW’s original message boxes
+				again, though. Editing the message boxes in the Lunar Magic Overworld Editor also won’t have any
+				effect anymore since the messages will use the text from this patch instead.
+				More details on editing the text in the next section. I highly recommend installing this hijack btw.,
+				because if you do you can use <code>$7E1426</code> the same way as in original SMW. In other words: Setting it to
+				<code>$01</code> will display message 1 from the current level, setting it to <code>$02</code> will display message 2 from the
+				level and setting it to <code>$03</code> will display the Yoshi thanks message. Also you can use ANY sprite from
+				the custom sprites section and ANY block from the custom blocks section on SMW Central with a message
+				displaying related function to display the dialogues from this patch instead. This can be really useful,
+				considering I’ve barely included any custom sprites or blocks.
+			</p>
 
-		<p>
-			As mentioned further above, you can change the <code>!patch_sram_expansion</code> define in the cfg file to <code>!false</code>
-			to prevent this patch from applying its automatic SRAM expansion. Normally you don’t have to do this,
-			but there may be situations where advanced users want to use RAM as working memory instead of SRAM, in which
-			case the SRAM expansion won’t be needed and can be disabled.
-		</p>
+			<p>
+				As mentioned further above, you can change the <code>!patch_sram_expansion</code> define in the cfg file to <code>!false</code>
+				to prevent this patch from applying its automatic SRAM expansion. Normally you don’t have to do this,
+				but there may be situations where advanced users want to use RAM as working memory instead of SRAM, in which
+				case the SRAM expansion won’t be needed and can be disabled.
+			</p>
 
-		<p>
-			After you’re done with setting up all the defines, save the file and patch it to your ROM with Asar.
-			Make sure only to patch <code>vwf_dialogues.asm</code> and nothing else. You should get a window that
-			looks somewhat like this:
-			<img class="d-block m-1 my-2" src="screenshots/console-1.png" alt="Screenshot" width="668" height="331" />
-			If that’s what you see you’ve applied the patch successfully. I’ll explain all of those lines in detail
-			later on.
-		</p>
-		<p class="text-center my-4"><a href="#index">Return to Index</a></p>
+			<p>
+				After you’re done with setting up all the defines, save the file and patch it to your ROM with Asar.
+				Make sure only to patch <code>vwf_dialogues.asm</code> and nothing else. You should get a window that
+				looks somewhat like this:
+				<img class="d-block m-1 my-2" src="screenshots/console-1.png" alt="Screenshot" width="668" height="331" />
+				If that’s what you see you’ve applied the patch successfully. I’ll explain all of those lines in detail
+				later on.
+			</p>
+			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
 		</section>
 
 		<!-- Seperator Comment -->
 
 		<section class="container">
-		<h2 id="main" class="text-center">3. Main Functions (Basic)</h2>
-		<p>
-			In this section I will explain how to create and display dialogues, how to edit and add new graphics
-			(including fonts) and how to use this patch’s features for your own patches.
-		</p>
+			<h2 id="main" class="text-center">3. Main Functions (Basic)</h2>
+			<p>
+				In this section I will explain how to create and display dialogues, how to edit and add new graphics
+				(including fonts) and how to use this patch’s features for your own patches.
+			</p>
 
-		<h3 id="main-gfx" class="text-center">Graphics, Palettes and Fonts</h3>
-		<p>
-			The first and easiest thing you’ll have to learn is how all the different graphic formats this patch
-			uses work. Among them are the following ones:
-			<ul>
-				<li>Text box background graphics</li>
-				<li>Text box frame graphics
-					<ul>
-						<li>Text box frame palettes</li>
-					</ul>
-				</li>
-				<li>Font graphics
-					<ul>
-						<li>Font width tables</li>
-						<li>Font tables</li>
-					</ul>
-				</li>
-			</ul>
-			For all of the graphics you’ll need a tile editor that supports 2BPP GB graphics. Theoretically every
-			tile editor will do. If you plan to edit (or create) fonts I really recommend you get YY-CHR v0.99,
-			though. Nope, YY-CHR v0.98 won’t do in this case. YY-CHR v0.99 has a very special and useful feature
-			which YY-CHR v0.98 doesn’t have and which is needed for editing fonts. I’ll use YY-CHR v0.99 for all
-			tile editor references in this Readme.
-		</p>
+			<h3 id="main-gfx" class="text-center">Graphics, Palettes and Fonts</h3>
+			<p>
+				The first and easiest thing you’ll have to learn is how all the different graphic formats this patch
+				uses work. Among them are the following ones:
+				<ul>
+					<li>Text box background graphics</li>
+					<li>Text box frame graphics
+						<ul>
+							<li>Text box frame palettes</li>
+						</ul>
+					</li>
+					<li>Font graphics
+						<ul>
+							<li>Font width tables</li>
+							<li>Font tables</li>
+						</ul>
+					</li>
+				</ul>
+				For all of the graphics you’ll need a tile editor that supports 2BPP GB graphics. Theoretically every
+				tile editor will do. If you plan to edit (or create) fonts I really recommend you get YY-CHR v0.99,
+				though. Nope, YY-CHR v0.98 won’t do in this case. YY-CHR v0.99 has a very special and useful feature
+				which YY-CHR v0.98 doesn’t have and which is needed for editing fonts. I’ll use YY-CHR v0.99 for all
+				tile editor references in this Readme.
+			</p>
 
-		<h4 class="text-center">Background graphics</h4>
-		<p>
-			Let’s start with background graphics, the easiest format. Open the file "vwfpatterns.bin" in your
-			tile editor and set it to 2BPP GB. You should get a window similiar to this:
-			<img class="d-block m-1 my-2" src="screenshots/yychr-1.png" alt="Screenshot" width="638" height="486"/>
-			As I said this format is pretty easy. You only have two rules to follow:
-			<ul>
-				<li>One 8×8 tile = One BG pattern.</li>
-				<li>Only use color <code>$01</code> of the palette for BG patterns,
-					this is because colors <code>$02</code> and <code>$03</code> are used by the letters.</li>
-			</ul>
-			That’s all there is to it. If you want to add more graphics simply put them into the empty space next
-			to the last graphic. Make sure to expand the bin-file by at least 16 bytes before you do this, though.
-			You can use HxD or any other hex editor for this. Otherwise your new graphic won’t get saved.
-		</p>
+			<h4 class="text-center">Background graphics</h4>
+			<p>
+				Let’s start with background graphics, the easiest format. Open the file "vwfpatterns.bin" in your
+				tile editor and set it to 2BPP GB. You should get a window similiar to this:
+				<img class="d-block m-1 my-2" src="screenshots/yychr-1.png" alt="Screenshot" width="638" height="486"/>
+				As I said this format is pretty easy. You only have two rules to follow:
+				<ul>
+					<li>One 8×8 tile = One BG pattern.</li>
+					<li>Only use color <code>$01</code> of the palette for BG patterns,
+						this is because colors <code>$02</code> and <code>$03</code> are used by the letters.</li>
+				</ul>
+				That’s all there is to it. If you want to add more graphics simply put them into the empty space next
+				to the last graphic. Make sure to expand the bin-file by at least 16 bytes before you do this, though.
+				You can use HxD or any other hex editor for this. Otherwise your new graphic won’t get saved.
+			</p>
 
-		<h4 class="text-center">Frame graphics and palettes</h4>
-		<p>
-			Next up are frame graphics. Open up <code>vwfframes.bin</code> in your tile editor and set it to 2BPP GB. You
-			should see something like this:
-			<img class="d-block m-1 my-2" src="screenshots/yychr-2.png" alt="Screenshot" width="638" height="486"/>
-			Now frame graphics are a little bit more complicated in that way that each frame set consits of nine
-			8×8 tiles this time. Here is how they’re used:
-			<img class="d-block m-1 my-2 ir-crisp" src="screenshots/frames-1.png" alt="Screenshot" width="506" height="329"/>
-			As you can see tiles 1 to 6 of each set form the actual frame. The tiles may be X and Y flipped to get
-			the according parts of the text box. Tiles 7 and 8 are not used by the actual text box, but rather for
-			the creation of the text box and only if you use the the creation style of Secret of Mana. More on this
-			later. Tile 9 is the blinking cursor that is displayed when the game is waiting for the player to
-			press the A button. It is X and Y flipped, so consider this when you’re drawing this. Luckily X- and
-			Y-flipping each is just one click in YY-CHR. Also for frames you can use all colors of the palette.
-			Just like with background graphics you’ll have the expand the bin-file before you can add more graphics,
-			this time by at least 144 bytes.
-		</p>
+			<h4 class="text-center">Frame graphics and palettes</h4>
+			<p>
+				Next up are frame graphics. Open up <code>vwfframes.bin</code> in your tile editor and set it to 2BPP GB. You
+				should see something like this:
+				<img class="d-block m-1 my-2" src="screenshots/yychr-2.png" alt="Screenshot" width="638" height="486"/>
+				Now frame graphics are a little bit more complicated in that way that each frame set consits of nine
+				8×8 tiles this time. Here is how they’re used:
+				<img class="d-block m-1 my-2 ir-crisp" src="screenshots/frames-1.png" alt="Screenshot" width="506" height="329"/>
+				As you can see tiles 1 to 6 of each set form the actual frame. The tiles may be X and Y flipped to get
+				the according parts of the text box. Tiles 7 and 8 are not used by the actual text box, but rather for
+				the creation of the text box and only if you use the the creation style of Secret of Mana. More on this
+				later. Tile 9 is the blinking cursor that is displayed when the game is waiting for the player to
+				press the A button. It is X and Y flipped, so consider this when you’re drawing this. Luckily X- and
+				Y-flipping each is just one click in YY-CHR. Also for frames you can use all colors of the palette.
+				Just like with background graphics you’ll have the expand the bin-file before you can add more graphics,
+				this time by at least 144 bytes.
+			</p>
 
-		<p>
-			Another thing you have to do for frames is setting up palettes for each frame set. Specifially you
-			have to set up the second, third and fourth color of the frame palette declared in <code>vwfframes.asm</code>
-			in section 2 of this Readme. The file looks somewhat like this:
-			<pre><code><table class="border-0" style="line-height:19px;"><tbody><tr><td>dw $0000,$FFFF,$0000	</td><td>; Frame $00</td></tr>
+			<p>
+				Another thing you have to do for frames is setting up palettes for each frame set. Specifially you
+				have to set up the second, third and fourth color of the frame palette declared in <code>vwfframes.asm</code>
+				in section 2 of this Readme. The file looks somewhat like this:
+				<pre><code><table class="border-0" style="line-height:19px;"><tbody><tr><td>dw $0000,$FFFF,$0000	</td><td>; Frame $00</td></tr>
 <tr><td>dw $0A56,$04ED,$0044	</td><td>; Frame $01</td></tr>
 <tr><td>dw $45ED,$24E6,$0C41	</td><td>; Frame $02</td></tr>
 <tr><td>dw $477D,$2E55,$214D	</td><td>; Frame $03</td></tr>
 </tbody></table>[...]</code></pre>
-			Each line here sets the palette for 9 tiles in <code>vwfframes.bin</code>. You should start each line with
-			<code>dw</code>, followed by a space and then the values of the three colors in SNES RGB prefixed with
-			<code>$</code> (hex values are always prefixed with <code>$</code> in assembly, keep that in mind)
-			and seperated by commas. If you forgot about the SNES RGB format look in section 2 again.
-			I explained how to find a SNES RGB value using Lunar Magic there.
-		</p>
+				Each line here sets the palette for 9 tiles in <code>vwfframes.bin</code>. You should start each line with
+				<code>dw</code>, followed by a space and then the values of the three colors in SNES RGB prefixed with
+				<code>$</code> (hex values are always prefixed with <code>$</code> in assembly, keep that in mind)
+				and seperated by commas. If you forgot about the SNES RGB format look in section 2 again.
+				I explained how to find a SNES RGB value using Lunar Magic there.
+			</p>
 
-		<h4 class="text-center">Font graphics and width tables</h4>
-		<p>
-			Font graphics are the most complicated of all the graphic formats. First of all open up <code>vwffont1.bin</code> in
-			YY-CHR and set it to 2BBP GB. Now you’ll notice that the letters are all messed up and it’s nearly impossible
-			to edit them that way. Well, this is where YY-CHR v0.99 comes in handy. At the bottom it has a field labeled
-			"Pattern:". Simply select "FC/NES x16" here and the letters will be in the correct format. This is what
-			it looks like:
-			<img class="d-block m-1 my-2" src="screenshots/yychr-3.png" alt="Screenshot" width="638" height="486"/>
-			Each 16×16 tile is one character. Each font can have up to 256 characters. That’s four pages in YY-CHR.
-			Just like BG patterns, fonts have their special rules.
-			<ul>
-				<li>Only use the third and fourth color of the palette for fonts.</li>
-				<li>Make each letter touch the left border of it’s 16×16 tile. This is important for the VWF system.</li>
-			</ul>
-			Everything else here is pretty simple. Just draw the hell out of yourself. I recommend using the third
-			color for the letters and the fourth color for their shading (if using any that is).
-		</p>
+			<h4 class="text-center">Font graphics and width tables</h4>
+			<p>
+				Font graphics are the most complicated of all the graphic formats. First of all open up <code>vwffont1.bin</code> in
+				YY-CHR and set it to 2BBP GB. Now you’ll notice that the letters are all messed up and it’s nearly impossible
+				to edit them that way. Well, this is where YY-CHR v0.99 comes in handy. At the bottom it has a field labeled
+				"Pattern:". Simply select "FC/NES x16" here and the letters will be in the correct format. This is what
+				it looks like:
+				<img class="d-block m-1 my-2" src="screenshots/yychr-3.png" alt="Screenshot" width="638" height="486"/>
+				Each 16×16 tile is one character. Each font can have up to 256 characters. That’s four pages in YY-CHR.
+				Just like BG patterns, fonts have their special rules.
+				<ul>
+					<li>Only use the third and fourth color of the palette for fonts.</li>
+					<li>Make each letter touch the left border of it’s 16×16 tile. This is important for the VWF system.</li>
+				</ul>
+				Everything else here is pretty simple. Just draw the hell out of yourself. I recommend using the third
+				color for the letters and the fourth color for their shading (if using any that is).
+			</p>
 
-		<p>
-			Next thing is the width table. Open <code>vwffont1.asm</code>. As you can see the width table file and the actual
-			font file share the same file name. This is not required, but recommended. You’ll see something like this now:
-			<pre><code>;Char00to0F:
+			<p>
+				Next thing is the width table. Open <code>vwffont1.asm</code>. As you can see the width table file and the actual
+				font file share the same file name. This is not required, but recommended. You’ll see something like this now:
+				<pre><code>;Char00to0F:
 db $07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$06,$06
 ;Char10to1F:
 db $07,$07,$05,$07,$08,$06,$09,$08,$07,$07,$07,$07,$06,$07,$07,$07
 ;Char20to2F:
 db $0B,$07,$07,$07,$07,$07,$06,$07,$07,$06,$07,$07,$03,$06,$07,$03
 [...]</code></pre>
-			This table contains the width of each character in the font file in pixel. This should be quite self
-			explanatory. Just use YY-CHR to count the pixels. This may be pretty annoying, but so far this is
-			the only way to do it.
-		</p>
+				This table contains the width of each character in the font file in pixel. This should be quite self
+				explanatory. Just use YY-CHR to count the pixels. This may be pretty annoying, but so far this is
+				the only way to do it.
+			</p>
 
-		<p>
-			To create a new font file, simply copy <code>vwffont1.bin</code> and <code>vwffont1.asm</code>, rename them accordingly and
-			edit them. To insert this new font into your game, press CTRL + F inside <code>vwf_dialogues.asm</code>,
-			search for "INSERT DATA HERE!" and paste the following code just below it
-			<pre><code>%nextbank()
+			<p>
+				To create a new font file, simply copy <code>vwffont1.bin</code> and <code>vwffont1.asm</code>, rename them accordingly and
+				edit them. To insert this new font into your game, press CTRL + F inside <code>vwf_dialogues.asm</code>,
+				search for "INSERT DATA HERE!" and paste the following code just below it
+				<pre><code>%nextbank()
 %binary(Font2, "vwffont2.bin")
 %source(Font2_Width, "vwffont2.asm")</code></pre>
-			where <code>Font2</code> and <code>Font2_Width</code> are unique names which you will use to identify your new font and width table
-			(only use alpha-numeric characters and underscores here, no spaces or special characters)
-			and where <code>vwffont2.bin</code> and <code>vwffont2.asm</code> are the names of the files you want to insert.
-			What you have to do next is opening and editing <code>vwffontpointers.asm</code>.
-			By default, there is only one font in here and it looks like this:
-			<pre><code>dl Font1,Font1_Width</code></pre>
-			Each line in here is for a single font. Start each line with a <code>dl</code>, followed by a comma, then the address of
-			the font graphics and the address of the width table, seperated by a comma. If you have followed the steps above
-			to insert the new font into your game, then adding it to this table becomes very simple.
-			Remember the unique names you passed to <code>%binary()</code> and <code>%source()</code> to identify your font?
-			Those are the names you have to enter into this table. So in our example, you would end up with
-			<pre><code>dl Font1,Font1_Width
+				where <code>Font2</code> and <code>Font2_Width</code> are unique names which you will use to identify your new font and width table
+				(only use alpha-numeric characters and underscores here, no spaces or special characters)
+				and where <code>vwffont2.bin</code> and <code>vwffont2.asm</code> are the names of the files you want to insert.
+				What you have to do next is opening and editing <code>vwffontpointers.asm</code>.
+				By default, there is only one font in here and it looks like this:
+				<pre><code>dl Font1,Font1_Width</code></pre>
+				Each line in here is for a single font. Start each line with a <code>dl</code>, followed by a comma, then the address of
+				the font graphics and the address of the width table, seperated by a comma. If you have followed the steps above
+				to insert the new font into your game, then adding it to this table becomes very simple.
+				Remember the unique names you passed to <code>%binary()</code> and <code>%source()</code> to identify your font?
+				Those are the names you have to enter into this table. So in our example, you would end up with
+				<pre><code>dl Font1,Font1_Width
 dl Font2,Font2_Width</code></pre>
-			Adding a new font is as simple as that, thanks to Asar’s automatic freespace management.
-		</p>
+				Adding a new font is as simple as that, thanks to Asar’s automatic freespace management.
+			</p>
 
-		<h3 id="main-dialog" class="text-center">Actual Dialogues</h3>
-		<h4 class="text-center">Setting Up and Calling Dialogues</h4>
-		<p>
-			So now to actually use my patch and display some text on the screen.
-			Remember this window from applying the patch to your ROM?
-			<img class="d-block m-1 my-2" src="screenshots/console-1.png" alt="Screenshot" width="668" height="331" />
-			This is the first time it actually plays a role. Now if you’re not familiar with ASM at all or don’t
-			plan on using this patch in your own patches, custom sprites or custom blocks then this won’t be
-			very interesting for you. For everyone else here is the general procedure of how to start a dialogue
-			ingame using this patch:
-			<ol>
-				<li>
-					Write the number of the message to display to the Message register. This is a 2-Byte address.
-					So let’s say you’d want to display message <code>$002D</code>.
-					Using the example from the screenshot this would go somewhat like this:
-					<pre><code>rep #$20
+			<h3 id="main-dialog" class="text-center">Actual Dialogues</h3>
+			<h4 class="text-center">Setting Up and Calling Dialogues</h4>
+			<p>
+				So now to actually use my patch and display some text on the screen.
+				Remember this window from applying the patch to your ROM?
+				<img class="d-block m-1 my-2" src="screenshots/console-1.png" alt="Screenshot" width="668" height="331" />
+				This is the first time it actually plays a role. Now if you’re not familiar with ASM at all or don’t
+				plan on using this patch in your own patches, custom sprites or custom blocks then this won’t be
+				very interesting for you. For everyone else here is the general procedure of how to start a dialogue
+				ingame using this patch:
+				<ol>
+					<li>
+						Write the number of the message to display to the Message register. This is a 2-Byte address.
+						So let’s say you’d want to display message <code>$002D</code>.
+						Using the example from the screenshot this would go somewhat like this:
+						<pre><code>rep #$20
 lda.w #$002D
 sta.l $702001
 sep #$20</code></pre>
-				</li>
-				<li>
-					Write <code>$01</code> to the VWF State register. One thing is very important here: Before you do this
-					you’ll have to check if a dialogue is already being processed. Why? Well, if you don’t this might
-					lead to unexpected results, like Layer 3 glitiching up for example. If the VWF State register equals
-					<code>$00</code> then no dialogue is being processed. This leads to the following code:
-					<pre><code>lda.l $702000
+					</li>
+					<li>
+						Write <code>$01</code> to the VWF State register. One thing is very important here: Before you do this
+						you’ll have to check if a dialogue is already being processed. Why? Well, if you don’t this might
+						lead to unexpected results, like Layer 3 glitiching up for example. If the VWF State register equals
+						<code>$00</code> then no dialogue is being processed. This leads to the following code:
+						<pre><code>lda.l $702000
 bne .SkipDialogue
 lda #$01
 sta.l $702000
 
 .SkipDialogue</code></pre>
-				</li>
-			</ol>
-		</p>
+					</li>
+				</ol>
+			</p>
 
-		<p>
-			Whenever a dialogue is currently active, the Status Bar and the level’s Layer 3 are hidden. They’ll
-			return at the end of the dialogue. I still recommend not using dialogues in Layer 3 levels.
-			Alright. Let’s move on. By now you’re probably wondering what that number we have written to the
-			Message register corresponds to. Well, open the file <code>vwfmessagepointers.asm</code> and find out.
-			You’ll see something like this:
-			<pre><code><table class="border-0" style="line-height:19px;"><tbody><tr><td>dl Message0000,	</td><td>Message0001,	</td><td>Message0002,	</td><td>Message0003</td></tr>
+			<p>
+				Whenever a dialogue is currently active, the Status Bar and the level’s Layer 3 are hidden. They’ll
+				return at the end of the dialogue. I still recommend not using dialogues in Layer 3 levels.
+				Alright. Let’s move on. By now you’re probably wondering what that number we have written to the
+				Message register corresponds to. Well, open the file <code>vwfmessagepointers.asm</code> and find out.
+				You’ll see something like this:
+				<pre><code><table class="border-0" style="line-height:19px;"><tbody><tr><td>dl Message0000,	</td><td>Message0001,	</td><td>Message0002,	</td><td>Message0003</td></tr>
 <tr><td>dl Message0004,	</td><td>Message0005,	</td><td>Message0006,	</td><td>Message0007</td></tr>
 <tr><td>dl Message0008,	</td><td>Message0009,	</td><td>Message000A,	</td><td>Message000B</td></tr>
 <tr><td>dl Message000C,	</td><td>Message000D,	</td><td>Message000E,	</td><td>Message000F</td></tr>
 <tr><td>dl Message0010,	</td><td>Message0011,	</td><td>Message0012,	</td><td>Message0013</td></tr>
 </tbody></table>[...]</code></pre>
-			This is the table that points to the text for each dialogue. By now you should know how tables work:
-			A "dl" at the beginning, a space after that and a bunch of labels seperated by commas. In this case the
-			table works like this: If the Message register is $0000, use the first address in this table. If the
-			Message register is $0001, use the second address in this table. Etc.
-		</p>
+				This is the table that points to the text for each dialogue. By now you should know how tables work:
+				A "dl" at the beginning, a space after that and a bunch of labels seperated by commas. In this case the
+				table works like this: If the Message register is $0000, use the first address in this table. If the
+				Message register is $0001, use the second address in this table. Etc.
+			</p>
 
-		<p>
-			As you can see I’ve always used the required value of the Message register as the name of the according
-			label. This is not required, but it’s recommended for orientation. Basically you can put any
-			24-Bit-Address here, even RAM addresses, which can be useful if you’re using this in your own patches. Let’s
-			have a table with a few valid examples:
-			<pre><code><table class="border-0" style="line-height:19px;"><tbody><tr><td>dl Message0000,	</td><td>$7F0000,	</td><td>Message0002,	</td><td>Message0003</td></tr>
+			<p>
+				As you can see I’ve always used the required value of the Message register as the name of the according
+				label. This is not required, but it’s recommended for orientation. Basically you can put any
+				24-Bit-Address here, even RAM addresses, which can be useful if you’re using this in your own patches. Let’s
+				have a table with a few valid examples:
+				<pre><code><table class="border-0" style="line-height:19px;"><tbody><tr><td>dl Message0000,	</td><td>$7F0000,	</td><td>Message0002,	</td><td>Message0003</td></tr>
 <tr><td>dl $05A5D9,	</td><td>Message0005,	</td><td>Message0006,	</td><td>Randomname1</td></tr>
 <tr><td>dl Message0008,	</td><td>Message0009,	</td><td>Message000A,	</td><td>Randomname2</td></tr>
 <tr><td>dl $268000,	</td><td>Message000D,	</td><td>Message000E,	</td><td>Message000F</td></tr>
 <tr><td>dl MessageABCD,	</td><td>Message0011,	</td><td>Message0012,	</td><td>Message0000</td></tr></tbody></table>[...]</code></pre>
-			By default there are labels for 256 messages in this table. In theory you can use up to 10922 different
-			messages with this patch, but since SNES ROMs are rather limited in file space it’s unlikely you’ll ever get
-			to use that many, especially since my patch doesn’t compress text in any way. It’s not very likely that you’ll
-			ever get to have that many messages in your game, anyways. If 256 messages aren’t enough for you, simply add
-			more labels at the end of this file. It’s as simple as that. By now you might be wondering "OK OK, but where
-			the hell do I put the text now?". Let’s head to the next point and clear this question.
-		</p>
+				By default there are labels for 256 messages in this table. In theory you can use up to 10922 different
+				messages with this patch, but since SNES ROMs are rather limited in file space it’s unlikely you’ll ever get
+				to use that many, especially since my patch doesn’t compress text in any way. It’s not very likely that you’ll
+				ever get to have that many messages in your game, anyways. If 256 messages aren’t enough for you, simply add
+				more labels at the end of this file. It’s as simple as that. By now you might be wondering "OK OK, but where
+				the hell do I put the text now?". Let’s head to the next point and clear this question.
+			</p>
 
-		<p>
-			Open <code>vwfmessages.asm</code>. As you can see labels for each label in the table are already in here.
-			Most of them are ununsed and can be used by yourself. If you chose to replace SMW’s original messages
-			by this patch in section 2 then the comments at the end of each label also tell you which original
-			message the according labels are replacing. <code>Message0009:</code> replaces SMW’s original message 004-2 for
-			example. To edit a dialogue simply put text under the according label. To add new ones simply paste
-			them at the end of the file, but ABOVE <code>%textend()</code>. This is important to prevent glitches.
-			After we’re done with this we can finally get to actually write messages. YAY!
-		</p>
+			<p>
+				Open <code>vwfmessages.asm</code>. As you can see labels for each label in the table are already in here.
+				Most of them are ununsed and can be used by yourself. If you chose to replace SMW’s original messages
+				by this patch in section 2 then the comments at the end of each label also tell you which original
+				message the according labels are replacing. <code>Message0009:</code> replaces SMW’s original message 004-2 for
+				example. To edit a dialogue simply put text under the according label. To add new ones simply paste
+				them at the end of the file, but ABOVE <code>%textend()</code>. This is important to prevent glitches.
+				After we’re done with this we can finally get to actually write messages. YAY!
+			</p>
 
-		<h4 id="dialog-header" class="text-center">Dialogue Headers</h4>
-		<p>
-			The first thing to do when setting up a dialogue is creating a header for it. This header is mandatory;
-			not having it will cause glitches in the game. It allows you to easily set up position, width, height
-			and other settings of the text box during that one specific dialogue. Let’s say we wanted to edit
-			<code>Message0005</code>. The first thing I always do is adding <code>.header</code> and <code>.body</code>
-			sublables to each message. Sublables are a special kind of labels in Asar which can be reused inside the same patch,
-			as long as they’re not used under the same main label. The main label in this case would be <code>Message0005:</code>.
-			After adding sublabels we’d have:
-			<pre><code>Message0005:	; Message 002-2
+			<h4 id="dialog-header" class="text-center">Dialogue Headers</h4>
+			<p>
+				The first thing to do when setting up a dialogue is creating a header for it. This header is mandatory;
+				not having it will cause glitches in the game. It allows you to easily set up position, width, height
+				and other settings of the text box during that one specific dialogue. Let’s say we wanted to edit
+				<code>Message0005</code>. The first thing I always do is adding <code>.header</code> and <code>.body</code>
+				sublables to each message. Sublables are a special kind of labels in Asar which can be reused inside the same patch,
+				as long as they’re not used under the same main label. The main label in this case would be <code>Message0005:</code>.
+				After adding sublabels we’d have:
+				<pre><code>Message0005:	; Message 002-2
 .header
 .body</code></pre>
-			Now we can put the dialogue header under the <code>.header</code> sublabel and the actual text under the
-			<code>.body</code> sublabel for easier orientation. Let’s get to the basic format of headers now.
-			<pre><code>Message0005:	; Message 002-2
+				Now we can put the dialogue header under the <code>.header</code> sublabel and the actual text under the
+				<code>.body</code> sublabel for easier orientation. Let’s get to the basic format of headers now.
+				<pre><code>Message0005:	; Message 002-2
 .header
 db $aa
 db %bbbbbccc,%ccddddee,%eeffffgg,%gghhhhhh,$ii,%jjjj----
@@ -516,423 +516,423 @@ db %mnnnop-q
 db %rrssttuu,$vv,$ww,$xx,$yy
 
 .body</code></pre>
-			Simply copy and paste this header for the start. All numbers prefixed with <code>%</code> require binary digits,
-			while numbers prefixed with <code>$</code> require digits in hex. Simply set the Windows calculator to Programmer
-			mode for this using <code>Alt+3</code>.
-		</p>
+				Simply copy and paste this header for the start. All numbers prefixed with <code>%</code> require binary digits,
+				while numbers prefixed with <code>$</code> require digits in hex. Simply set the Windows calculator to Programmer
+				mode for this using <code>Alt+3</code>.
+			</p>
 
-		<dl>
-			<dt id="dialog-header-aa"><code>aa</code></dt>
-			<dd><p>
-				This is the font to use for the dialogue. By default only one font will be inserted
-				in the game and you’ll have to put in <code>00</code> here. Also here we have the first difference
-				between 8-Bit and 16-Bit mode: In 16-Bit mode you MUST skip this line. Otherwise you’ll
-				get glitches. Why? Well in 16-Bit mode the high byte of each character is used as the font
-				number, so I figured this byte in the header would be redundant. On a second thought I realise
-				that this just causes additional confusion for just one single byte you save per message,
-				but I did it like this anyways, so keep it in mind if you’re ever going to use 16-Bit mode.
-			</p></dd>
-			<dt id="dialog-header-bbbbb"><code>bbbbb</code></dt>
-			<dd><p>
-				The text box <b>X</b> position. As I mentioned: In binary, since this is prefixed with <code>%</code>.
-				The maximum here is <code>%11100</code>, but don’t worry if you enter an invalid value here. For certain
-				values in the header - like the text box position and size - I programmed in validation
-				checks to prevent nasty effects. Depending on the text box size the maximum for this value
-				might change. If you were using the full width of the screen for the text box the maximum
-				here would be <code>%00000</code> for example. Limitations like this apply for a few other settings as well.
-			</p></dd>
-			<dt id="dialog-header-ccccc"><code>ccccc</code></dt>
-			<dd><p>
-				Same as <code>bbbbb</code>, but for the <b>Y</b> position. Maximum here is <code>%11000</code>.
-			</p></dd>
-			<dt id="dialog-header-dddd"><code>dddd</code></dt>
-			<dd><p>
-				The <b>width</b> of the text box. This only counts the inside of the box, not the frame. It also
-				counts 16×16 tiles, not 8×8 tiles. So <code>%0010</code> would mean "2 16×16 tiles + frame"
-				for example. The maximum input here is <code>%1111</code>.
-			</p></dd>
-			<dt id="dialog-header-eeee"><code>eeee</code></dt>
-			<dd><p>
-				Same as <code>dddd</code>, except for the <b>height</b>. The maximum input here is <code>%1101</code>.
-			</p></dd>
-			<dt id="dialog-header-ffff"><code>ffff</code></dt>
-			<dd><p>
-				How many pixels of space to leave at the left and right edge of the text box. I usually
-				use <code>4</code> pixels (<code>%0100</code>) here.
-			</p></dd>
-			<dt id="dialog-header-gggg"><code>gggg</code></dt>
-			<dd><p>
-				The pixel width of a space. I recommend to use at least 7 pixels (<code>%0111</code>) here.
-				The reason for this has to do with the "change palette" command in dialogues.
-				I’ll go more into detail there.
-			</p></dd>
-			<dt id="dialog-header-hhhhhh"><code>hhhhhh</code></dt>
-			<dd><p>
-				The text speed. This is interpreted as "frames to wait between letters". I usually use
-				<code>%000000</code> here (for the fastest text speed).
-			</p></dd>
-			<dt id="dialog-header-ii"><code>ii</code></dt>
-			<dd><p>
-				Auto wait options. In other words:"What to do if using a Line Break while at the bottom
-				of the text box".
-				<table class="kv-map"><tbody>
-					<tr><th><code>$00</code></th><td>Instantly clear the text box and continue.</td></tr>
-					<tr><th><code>$01</code></th><td>Wait for the player to press the A button.</td></tr>
-					<tr><th><code>$02</code>-<code>$FF</code></th><td>Wait that many frames.</td></tr>
-				</tbody></table>
-			</p></dd>
-			<dt id="dialog-header-jjjj"><code>jjjj</code></dt>
-			<dd><p>
-				Text box creation options.
-				<table class="kv-map"><tbody>
-					<tr><th><code>%0000</code></th><td>Don’t use a text box.</td></tr>
-					<tr><th><code>%0001</code></th><td>Secret of Evermore style. Expand box from top to bottom.</td></tr>
-					<tr><th><code>%0010</code></th><td>Secret of Mana style. Expand box from the middle.</td></tr>
-					<tr><th><code>%0011</code></th><td>Mega Man Zero style. Expand box from left to right.</td></tr>
-					<tr><th><code>%0100</code></th><td>Instantly show complete box.</td></tr>
-				</tbody></table>
-			</p></dd>
-			<dt id="dialog-header-kkkk"><code>kkkk</code></dt>
-			<dd><p>
-				Third color of the palette selected using <a href="#dialog-header-nnn"><code>nnn</code></a>
-				in SNES RGB. Usually the color of your letters.
-			</p></dd>
-			<dt id="dialog-header-llll"><code>llll</code></dt>
-			<dd><p>
-				Same as <code>kkkk</code>, but for the fourth color. Usually the color of the shading of your letters.
-			</p></dd>
-			<dt id="dialog-header-m"><code>m</code></dt>
-			<dd><p>
-				Whether to freeze sprites or not.
-				<table class="kv-map"><tbody>
-					<tr><th><code>%0</code></th><td>Don’t freeze sprites.</td></tr>
-					<tr><th><code>%1</code></th><td>Freeze sprites.</td></tr>
-				</tbody></table>
-				I recommend <code>%1</code>.
-			</p><p>
-				<code>0</code> can lead to glitches in the current version if - for example - you die
-				while a dialogue is being processed. Also it is pretty slow. If you really want to use it
-				I recommend using the SA-1 patch. This actually makes the result run at full speed.
-				See the <a href="#advanced">Problem Solving</a> section for more information.
-			</p></dd>
-			<dt id="dialog-header-nnn"><code>nnn</code></dt>
-			<dd><p>
-				The palette to use for the inside of the text box. Read: The text box background and the
-				letters. This has the same restrictions as <code>!framepalette</code> from section 2.
-				Never use the same palette for the frame and for the letters. Both palettes will be changed
-				during dialogue processing, so doing that would most likely cause weird color changes,
-				unless you use the exact same colors for them.
-			</p></dd>
-			<dt id="dialog-header-o"><code>o</code></dt>
-			<dd><p>
-				The text layout.
-				<table class="kv-map"><tbody>
-					<tr><th><code>%0</code></th><td>Regular layout.</td></tr>
-					<tr><th><code>%1</code></th><td>Centered layout.</td></tr>
-				</tbody></table>
-			</p></dd>
-			<dt id="dialog-header-p"><code>p</code></dt>
-			<dd><p>
-				Speedup options.
-				<table class="kv-map"><tbody>
-					<tr><th><code>%0</code></th><td>Don’t allow speedup.</td></tr>
-					<tr><th><code>%1</code></th><td>Allow speedup.</td></tr>
-				</tbody></table>
-				Speedup only applies if a dialogue uses a text speed which is slower than <code>%000000</code>. In that case,
-				if you put a <code>%1</code> here, the player can speedup dialogues by holding the A button.
-			</p></dd>
-			<dt id="dialog-header-q"><code>q</code></dt>
-			<dd><p>
-				Disable all text box sound effects.
-				<table class="kv-map"><tbody>
-					<tr><th><code>0</code></th><td>Don’t disable.</td></tr>
-					<tr><th><code>1</code></th><td>Disable.</td></tr>
-				</tbody></table>
-				Warning: If you put a <code>1</code> here, then it’s mandatory to skip the next line
-				(that means everything from <code>rr</code> to <code>yy</code>) completely,
-				otherwise this will cause glitches.
-			</p></dd>
-			<dt id="dialog-header-rr"><code>rr</code></dt>
-			<dd><p>
-				The bank to use for the letter sound effect.
-				<table class="kv-map"><tbody>
-					<tr><th><code>%00</code></th><td><code>$1DF9</code></td></tr>
-					<tr><th><code>%01</code></th><td><code>$1DFA</code></td></tr>
-					<tr><th><code>%10</code></th><td><code>$1DFB</code> (Not recommended to use)</td></tr>
-					<tr><th><code>%11</code></th><td><code>$1DFC</code></td></tr>
-				</tbody></table>
-			</p></dd>
-			<dt id="dialog-header-ss"><code>ss</code></dt>
-			<dd><p>
-				Same as <code>rr</code>, but for the "waiting for A button" sound effect.
-			</p></dd>
-			<dt id="dialog-header-tt"><code>tt</code></dt>
-			<dd><p>
-				Same as <code>rr</code>, but for the cursor sound effect.
-			</p></dd>
-			<dt id="dialog-header-uu"><code>uu</code></dt>
-			<dd><p>
-				Same as <code>rr</code> but for the "pressed A" sound effect.
-			</p></dd>
-			<dt id="dialog-header-vv"><code>vv</code></dt>
-			<dd><p>
-				The actual sound effect to use for letters.
-			</p></dd>
-			<dt id="dialog-header-ww"><code>ww</code></dt>
-			<dd><p>
-				Same as <code>vv</code>, but for the "waiting for A button" sound effect.
-			</p></dd>
-			<dt id="dialog-header-xx"><code>xx</code></dt>
-			<dd><p>
-				Same as <code>vv</code>, but for the cursor sound effect.
-			</p></dd>
-			<dt id="dialog-header-yy"><code>yy</code></dt>
-			<dd><p>
-				Same as <code>vv</code>, but for the "pressed A" sound effect.
-			</p></dd>
-		</dl>
-		<p>
-			WHEW! After being done with the header you’ll now finally get to really, really, really write some text
-			for your dialogues.
-		</p>
+			<dl>
+				<dt id="dialog-header-aa"><code>aa</code></dt>
+				<dd><p>
+					This is the font to use for the dialogue. By default only one font will be inserted
+					in the game and you’ll have to put in <code>00</code> here. Also here we have the first difference
+					between 8-Bit and 16-Bit mode: In 16-Bit mode you MUST skip this line. Otherwise you’ll
+					get glitches. Why? Well in 16-Bit mode the high byte of each character is used as the font
+					number, so I figured this byte in the header would be redundant. On a second thought I realise
+					that this just causes additional confusion for just one single byte you save per message,
+					but I did it like this anyways, so keep it in mind if you’re ever going to use 16-Bit mode.
+				</p></dd>
+				<dt id="dialog-header-bbbbb"><code>bbbbb</code></dt>
+				<dd><p>
+					The text box <b>X</b> position. As I mentioned: In binary, since this is prefixed with <code>%</code>.
+					The maximum here is <code>%11100</code>, but don’t worry if you enter an invalid value here. For certain
+					values in the header - like the text box position and size - I programmed in validation
+					checks to prevent nasty effects. Depending on the text box size the maximum for this value
+					might change. If you were using the full width of the screen for the text box the maximum
+					here would be <code>%00000</code> for example. Limitations like this apply for a few other settings as well.
+				</p></dd>
+				<dt id="dialog-header-ccccc"><code>ccccc</code></dt>
+				<dd><p>
+					Same as <code>bbbbb</code>, but for the <b>Y</b> position. Maximum here is <code>%11000</code>.
+				</p></dd>
+				<dt id="dialog-header-dddd"><code>dddd</code></dt>
+				<dd><p>
+					The <b>width</b> of the text box. This only counts the inside of the box, not the frame. It also
+					counts 16×16 tiles, not 8×8 tiles. So <code>%0010</code> would mean "2 16×16 tiles + frame"
+					for example. The maximum input here is <code>%1111</code>.
+				</p></dd>
+				<dt id="dialog-header-eeee"><code>eeee</code></dt>
+				<dd><p>
+					Same as <code>dddd</code>, except for the <b>height</b>. The maximum input here is <code>%1101</code>.
+				</p></dd>
+				<dt id="dialog-header-ffff"><code>ffff</code></dt>
+				<dd><p>
+					How many pixels of space to leave at the left and right edge of the text box. I usually
+					use <code>4</code> pixels (<code>%0100</code>) here.
+				</p></dd>
+				<dt id="dialog-header-gggg"><code>gggg</code></dt>
+				<dd><p>
+					The pixel width of a space. I recommend to use at least 7 pixels (<code>%0111</code>) here.
+					The reason for this has to do with the "change palette" command in dialogues.
+					I’ll go more into detail there.
+				</p></dd>
+				<dt id="dialog-header-hhhhhh"><code>hhhhhh</code></dt>
+				<dd><p>
+					The text speed. This is interpreted as "frames to wait between letters". I usually use
+					<code>%000000</code> here (for the fastest text speed).
+				</p></dd>
+				<dt id="dialog-header-ii"><code>ii</code></dt>
+				<dd><p>
+					Auto wait options. In other words:"What to do if using a Line Break while at the bottom
+					of the text box".
+					<table class="kv-map"><tbody>
+						<tr><th><code>$00</code></th><td>Instantly clear the text box and continue.</td></tr>
+						<tr><th><code>$01</code></th><td>Wait for the player to press the A button.</td></tr>
+						<tr><th><code>$02</code>-<code>$FF</code></th><td>Wait that many frames.</td></tr>
+					</tbody></table>
+				</p></dd>
+				<dt id="dialog-header-jjjj"><code>jjjj</code></dt>
+				<dd><p>
+					Text box creation options.
+					<table class="kv-map"><tbody>
+						<tr><th><code>%0000</code></th><td>Don’t use a text box.</td></tr>
+						<tr><th><code>%0001</code></th><td>Secret of Evermore style. Expand box from top to bottom.</td></tr>
+						<tr><th><code>%0010</code></th><td>Secret of Mana style. Expand box from the middle.</td></tr>
+						<tr><th><code>%0011</code></th><td>Mega Man Zero style. Expand box from left to right.</td></tr>
+						<tr><th><code>%0100</code></th><td>Instantly show complete box.</td></tr>
+					</tbody></table>
+				</p></dd>
+				<dt id="dialog-header-kkkk"><code>kkkk</code></dt>
+				<dd><p>
+					Third color of the palette selected using <a href="#dialog-header-nnn"><code>nnn</code></a>
+					in SNES RGB. Usually the color of your letters.
+				</p></dd>
+				<dt id="dialog-header-llll"><code>llll</code></dt>
+				<dd><p>
+					Same as <code>kkkk</code>, but for the fourth color. Usually the color of the shading of your letters.
+				</p></dd>
+				<dt id="dialog-header-m"><code>m</code></dt>
+				<dd><p>
+					Whether to freeze sprites or not.
+					<table class="kv-map"><tbody>
+						<tr><th><code>%0</code></th><td>Don’t freeze sprites.</td></tr>
+						<tr><th><code>%1</code></th><td>Freeze sprites.</td></tr>
+					</tbody></table>
+					I recommend <code>%1</code>.
+				</p><p>
+					<code>0</code> can lead to glitches in the current version if - for example - you die
+					while a dialogue is being processed. Also it is pretty slow. If you really want to use it
+					I recommend using the SA-1 patch. This actually makes the result run at full speed.
+					See the <a href="#advanced">Problem Solving</a> section for more information.
+				</p></dd>
+				<dt id="dialog-header-nnn"><code>nnn</code></dt>
+				<dd><p>
+					The palette to use for the inside of the text box. Read: The text box background and the
+					letters. This has the same restrictions as <code>!framepalette</code> from section 2.
+					Never use the same palette for the frame and for the letters. Both palettes will be changed
+					during dialogue processing, so doing that would most likely cause weird color changes,
+					unless you use the exact same colors for them.
+				</p></dd>
+				<dt id="dialog-header-o"><code>o</code></dt>
+				<dd><p>
+					The text layout.
+					<table class="kv-map"><tbody>
+						<tr><th><code>%0</code></th><td>Regular layout.</td></tr>
+						<tr><th><code>%1</code></th><td>Centered layout.</td></tr>
+					</tbody></table>
+				</p></dd>
+				<dt id="dialog-header-p"><code>p</code></dt>
+				<dd><p>
+					Speedup options.
+					<table class="kv-map"><tbody>
+						<tr><th><code>%0</code></th><td>Don’t allow speedup.</td></tr>
+						<tr><th><code>%1</code></th><td>Allow speedup.</td></tr>
+					</tbody></table>
+					Speedup only applies if a dialogue uses a text speed which is slower than <code>%000000</code>. In that case,
+					if you put a <code>%1</code> here, the player can speedup dialogues by holding the A button.
+				</p></dd>
+				<dt id="dialog-header-q"><code>q</code></dt>
+				<dd><p>
+					Disable all text box sound effects.
+					<table class="kv-map"><tbody>
+						<tr><th><code>0</code></th><td>Don’t disable.</td></tr>
+						<tr><th><code>1</code></th><td>Disable.</td></tr>
+					</tbody></table>
+					Warning: If you put a <code>1</code> here, then it’s mandatory to skip the next line
+					(that means everything from <code>rr</code> to <code>yy</code>) completely,
+					otherwise this will cause glitches.
+				</p></dd>
+				<dt id="dialog-header-rr"><code>rr</code></dt>
+				<dd><p>
+					The bank to use for the letter sound effect.
+					<table class="kv-map"><tbody>
+						<tr><th><code>%00</code></th><td><code>$1DF9</code></td></tr>
+						<tr><th><code>%01</code></th><td><code>$1DFA</code></td></tr>
+						<tr><th><code>%10</code></th><td><code>$1DFB</code> (Not recommended to use)</td></tr>
+						<tr><th><code>%11</code></th><td><code>$1DFC</code></td></tr>
+					</tbody></table>
+				</p></dd>
+				<dt id="dialog-header-ss"><code>ss</code></dt>
+				<dd><p>
+					Same as <code>rr</code>, but for the "waiting for A button" sound effect.
+				</p></dd>
+				<dt id="dialog-header-tt"><code>tt</code></dt>
+				<dd><p>
+					Same as <code>rr</code>, but for the cursor sound effect.
+				</p></dd>
+				<dt id="dialog-header-uu"><code>uu</code></dt>
+				<dd><p>
+					Same as <code>rr</code> but for the "pressed A" sound effect.
+				</p></dd>
+				<dt id="dialog-header-vv"><code>vv</code></dt>
+				<dd><p>
+					The actual sound effect to use for letters.
+				</p></dd>
+				<dt id="dialog-header-ww"><code>ww</code></dt>
+				<dd><p>
+					Same as <code>vv</code>, but for the "waiting for A button" sound effect.
+				</p></dd>
+				<dt id="dialog-header-xx"><code>xx</code></dt>
+				<dd><p>
+					Same as <code>vv</code>, but for the cursor sound effect.
+				</p></dd>
+				<dt id="dialog-header-yy"><code>yy</code></dt>
+				<dd><p>
+					Same as <code>vv</code>, but for the "pressed A" sound effect.
+				</p></dd>
+			</dl>
+			<p>
+				WHEW! After being done with the header you’ll now finally get to really, really, really write some text
+				for your dialogues.
+			</p>
 
-		<h4 id="dialog-body" class="text-center">Dialogue Texts</h4>
-		<p>
-			So if you’re using the same labels as I suggested in this Readme then what you’re going to edit now is
-			the part under the <code>.body</code> sublabel, which is the actual dialogue.
-		</p>
-		<dl>
-			<dt>Regular Text</dt>
-			<dd><p>
-				The first thing you’ll obviously want to do is using regular text. Here we have a difference
-				between 8-Bit and 16-Bit mode. In 8-Bit mode, regular text goes like this:
-				<pre><code>db $03,$AF,$34,$CD,$A3,$5B
+			<h4 id="dialog-body" class="text-center">Dialogue Texts</h4>
+			<p>
+				So if you’re using the same labels as I suggested in this Readme then what you’re going to edit now is
+				the part under the <code>.body</code> sublabel, which is the actual dialogue.
+			</p>
+			<dl>
+				<dt>Regular Text</dt>
+				<dd><p>
+					The first thing you’ll obviously want to do is using regular text. Here we have a difference
+					between 8-Bit and 16-Bit mode. In 8-Bit mode, regular text goes like this:
+					<pre><code>db $03,$AF,$34,$CD,$A3,$5B
 [...]</code></pre>
-				So basically you just write the hex value of whatever character from the font file you want
-				to display in a table. In 16-Bit mode it works like this:
-				<pre><code>dw $0003,$00AF,$0034,$01CD,$00A3,$025B
+					So basically you just write the hex value of whatever character from the font file you want
+					to display in a table. In 16-Bit mode it works like this:
+					<pre><code>dw $0003,$00AF,$0034,$01CD,$00A3,$025B
 [...]</code></pre>
-				The main difference here of course is that you need two bytes per character and the high byte
-				is interpreted as the font file to use. So in this case it would be something like this:
-				<table><tbody>
-					<tr><th>Font <code>$00</code></th><td class="pl-1">– Charcter <code>$03</code></td></tr>
-					<tr><th>Font <code>$00</code></th><td class="pl-1">– Charcter <code>$AF</code></td></tr>
-					<tr><th>Font <code>$00</code></th><td class="pl-1">– Charcter <code>$34</code></td></tr>
-					<tr><th>Font <code>$01</code></th><td class="pl-1">– Charcter <code>$CD</code></td></tr>
-					<tr><td colspan="2"><pre><code>[...]</code></pre></td></tr>
-				</tbody></table>
-				Always putting in everything as hex characters would become really annoying after a while.
-				Therefore there is an easier way of doing it. It goes like this:
-				<pre><code>db "Hi there! Put some text here!"</code></pre>
-				So basically you just put the text you want to display in quotations. What Asar does then
-				is looking up the characters in the file <code>vwftable.txt</code> and converting them into the according
-				hex numbers when assembling the file. This makes writing texts a lot easier. Be careful, though.
-				It seems like many characters are incompatible with Asar. I’ve especially noticed this with
-				some special characters, like the German “ü” for example. Sometimes - if you’re very unlucky
-				- they mess up the dialogues completely, but usually they just turn out as hex number $00. If that
-				ever happens to you something you can do is this:
-				<pre><code>db "Text 1 ",$34,"Text 2"</code></pre>
-				This should be self explanatory. So here are a few valid examples:
-				<pre><code>db "Hello there!"
+					The main difference here of course is that you need two bytes per character and the high byte
+					is interpreted as the font file to use. So in this case it would be something like this:
+					<table><tbody>
+						<tr><th>Font <code>$00</code></th><td class="pl-1">– Charcter <code>$03</code></td></tr>
+						<tr><th>Font <code>$00</code></th><td class="pl-1">– Charcter <code>$AF</code></td></tr>
+						<tr><th>Font <code>$00</code></th><td class="pl-1">– Charcter <code>$34</code></td></tr>
+						<tr><th>Font <code>$01</code></th><td class="pl-1">– Charcter <code>$CD</code></td></tr>
+						<tr><td colspan="2"><pre><code>[...]</code></pre></td></tr>
+					</tbody></table>
+					Always putting in everything as hex characters would become really annoying after a while.
+					Therefore there is an easier way of doing it. It goes like this:
+					<pre><code>db "Hi there! Put some text here!"</code></pre>
+					So basically you just put the text you want to display in quotations. What Asar does then
+					is looking up the characters in the file <code>vwftable.txt</code> and converting them into the according
+					hex numbers when assembling the file. This makes writing texts a lot easier. Be careful, though.
+					It seems like many characters are incompatible with Asar. I’ve especially noticed this with
+					some special characters, like the German “ü” for example. Sometimes - if you’re very unlucky
+					- they mess up the dialogues completely, but usually they just turn out as hex number $00. If that
+					ever happens to you something you can do is this:
+					<pre><code>db "Text 1 ",$34,"Text 2"</code></pre>
+					This should be self explanatory. So here are a few valid examples:
+					<pre><code>db "Hello there!"
 db "Pi ",$35," 3.141..."     ; The $35 here could be an equal sign or something
 db $03,$40,$AF,"More text!"
 db $AB,$54,$DF
 [...]</code></pre>
-				Make sure never to forget the commas in your tables and the quotations around text inputs.
-				So that’s it for regular text. As much as you can do with regular text, this alone won’t be
-				enough to create proper dialogues. You’ll need a bunch of special characters to cause certain
-				events during a dialogue. Some of them are mandatory to use in each dialogue, others are
-				optional. To use these special commands simply put their hex codes into the text where they
-				should be activated. Here is a list of each and every special character available.
-			</p><p>
-				<b>Notice:</b> In 16-Bit mode you need to use $FF as a high byte for each special character
-				(like "$FFFA" for example) and you can’t put the text in quotes.
-			</p></dd>
-			<dt id="text-command-ff"><code>$FF</code> - End Dialogue</dt>
-			<dd><p>
-				This character ends a dialogue and is mandatory to put at the end of EVERY dialogue.
-				Not using it means the dialogue will continue forever and eventually start to display
-				random text. After the patch reads an <code>$FF</code> the dialogue will end and the text box will
-				vanish, using the style defined in the dialogue header.
-			</p></dd>
-			<dt id="text-command-fe"><code>$FE</code> - Space</dt>
-			<dd><p>
-				This puts a space into your text (using as many pixels as defined in the dialogue
-				header. It does something else, too. It activates the Word Wrap function.
-				At first it calculates the length of the next word, then, if that word doesn’t fit into
-				the current line anymore, it automatically causes a Line Break. Also, if you look at the bottom of
-				<code>vwftable.txt</code>, you can see that a space inside quotations is automatically converted
-				to <code>$FE</code>. I recommend not to change this.
-			</p></dd>
-			<dt id="text-command-fd"><code>$FD</code> - Force Line Break</dt>
-			<dd><p>
-				This - as the name suggests - forces a Line Break. Don’t forget: If using a Line Break
-				while already at the bottom line of the text box, the patch will do whatever you’ve
-				defined in the Auto wait options in the dialogue header.
-			</p></dd>
-			<dt id="text-command-fc"><code>$FC</code> - Set Message Number</dt>
-			<dd><p>
-				This clears the text box, loads message $XXXX, loads the header from the new message
-				and then displays the new message. Usage:
-				<pre><code>db $FC
+					Make sure never to forget the commas in your tables and the quotations around text inputs.
+					So that’s it for regular text. As much as you can do with regular text, this alone won’t be
+					enough to create proper dialogues. You’ll need a bunch of special characters to cause certain
+					events during a dialogue. Some of them are mandatory to use in each dialogue, others are
+					optional. To use these special commands simply put their hex codes into the text where they
+					should be activated. Here is a list of each and every special character available.
+				</p><p>
+					<b>Notice:</b> In 16-Bit mode you need to use $FF as a high byte for each special character
+					(like "$FFFA" for example) and you can’t put the text in quotes.
+				</p></dd>
+				<dt id="text-command-ff"><code>$FF</code> - End Dialogue</dt>
+				<dd><p>
+					This character ends a dialogue and is mandatory to put at the end of EVERY dialogue.
+					Not using it means the dialogue will continue forever and eventually start to display
+					random text. After the patch reads an <code>$FF</code> the dialogue will end and the text box will
+					vanish, using the style defined in the dialogue header.
+				</p></dd>
+				<dt id="text-command-fe"><code>$FE</code> - Space</dt>
+				<dd><p>
+					This puts a space into your text (using as many pixels as defined in the dialogue
+					header. It does something else, too. It activates the Word Wrap function.
+					At first it calculates the length of the next word, then, if that word doesn’t fit into
+					the current line anymore, it automatically causes a Line Break. Also, if you look at the bottom of
+					<code>vwftable.txt</code>, you can see that a space inside quotations is automatically converted
+					to <code>$FE</code>. I recommend not to change this.
+				</p></dd>
+				<dt id="text-command-fd"><code>$FD</code> - Force Line Break</dt>
+				<dd><p>
+					This - as the name suggests - forces a Line Break. Don’t forget: If using a Line Break
+					while already at the bottom line of the text box, the patch will do whatever you’ve
+					defined in the Auto wait options in the dialogue header.
+				</p></dd>
+				<dt id="text-command-fc"><code>$FC</code> - Set Message Number</dt>
+				<dd><p>
+					This clears the text box, loads message $XXXX, loads the header from the new message
+					and then displays the new message. Usage:
+					<pre><code>db $FC
 dw $XXXX</code></pre>
-				This is the command you have to use if you want to change the position and size of
-				the text box during a dialogue (as seen in the beginning of Video 2).
-			</p></dd>
-			<dt id="text-command-fb"><code>$FB</code> - Modify Text Pointer</dt>
-			<dd><p>
-				This makes the patch read text from another address. Usage is like this:
-				<pre><code>db $FB
+					This is the command you have to use if you want to change the position and size of
+					the text box during a dialogue (as seen in the beginning of Video 2).
+				</p></dd>
+				<dt id="text-command-fb"><code>$FB</code> - Modify Text Pointer</dt>
+				<dd><p>
+					This makes the patch read text from another address. Usage is like this:
+					<pre><code>db $FB
 dl Address</code></pre>
-				Here is an example:
-				<pre><code>db "Hey you!",$FD,$FB
+					Here is an example:
+					<pre><code>db "Hey you!",$FD,$FB
 dl .part2
 
 db "Bla bla bla..."
 
 .part2
 db "What are you doing there?"</code></pre>
-				This will display the text "Hey you!", then cause a Line Break ($FD) and then display
-				the text "What are you doing there?". As you can see, the part in the middle is skipped
-				completely. You could also use this to create infinite loops:
-				<pre><code>db "Bla "
+					This will display the text "Hey you!", then cause a Line Break ($FD) and then display
+					the text "What are you doing there?". As you can see, the part in the middle is skipped
+					completely. You could also use this to create infinite loops:
+					<pre><code>db "Bla "
 
 .loop
 db "bla ",$FB
 dl .loop</code></pre>
-				This will display infinite "bla"s.
-			</p></dd>
-			<dt id="text-command-fa"><code>$FA</code> - Wait for A Button</dt>
-			<dd><p>
-				This is a command which you’ll use a lot in your messages. It makes the game wait
-				for the player to press the A button. Usually you’ll at least put it in front of the
-				$FF at the end of each dialogue, otherwise the text box would just be closed and the
-				player wouldn’t even get to read everything in time. Of course, if you need to, you can
-				also put it inbetween text. Here is an example:
-				<pre><code>db "I like you a lot... ",$FA
+					This will display infinite "bla"s.
+				</p></dd>
+				<dt id="text-command-fa"><code>$FA</code> - Wait for A Button</dt>
+				<dd><p>
+					This is a command which you’ll use a lot in your messages. It makes the game wait
+					for the player to press the A button. Usually you’ll at least put it in front of the
+					$FF at the end of each dialogue, otherwise the text box would just be closed and the
+					player wouldn’t even get to read everything in time. Of course, if you need to, you can
+					also put it inbetween text. Here is an example:
+					<pre><code>db "I like you a lot... ",$FA
 db "NOOOT!",$FA,$FF</code></pre>
-				Also, whenver the game reads this character, it starts displaying that blinking cursor
-				at the bottom of the text box until the player presses the A button.
-			</p></dd>
-			<dt id="text-command-f9"><code>$F9</code> - Wait for <code>$XX</code> frames</dt>
-			<dd><p>
-				This makes the patch wait for <code>$XX</code> frames. Usage is like this:
-				<pre><code>db $F9,$XX</code></pre>
-			</p></dd>
-			<dt id="text-command-f8"><code>$F8</code> - Change Text Speed</dt>
-			<dd><p>
-				This changes the text speed to <code>$XX</code>. Usage is like this:
-				<pre><code>db $F8,$XX</code></pre>
-				I went more into detail on this in the explanation of dialogue headers.
-			</p></dd>
-			<dt id="text-command-f7"><code>$F7</code> - Display Decimal Number</dt>
-			<dd><p>
-				The first somewhat complex function. It takes the content of a RAM address, converts
-				it to a decimal number and then displays it. Usage is like this:
-				<pre><code>db $F7
+					Also, whenver the game reads this character, it starts displaying that blinking cursor
+					at the bottom of the text box until the player presses the A button.
+				</p></dd>
+				<dt id="text-command-f9"><code>$F9</code> - Wait for <code>$XX</code> frames</dt>
+				<dd><p>
+					This makes the patch wait for <code>$XX</code> frames. Usage is like this:
+					<pre><code>db $F9,$XX</code></pre>
+				</p></dd>
+				<dt id="text-command-f8"><code>$F8</code> - Change Text Speed</dt>
+				<dd><p>
+					This changes the text speed to <code>$XX</code>. Usage is like this:
+					<pre><code>db $F8,$XX</code></pre>
+					I went more into detail on this in the explanation of dialogue headers.
+				</p></dd>
+				<dt id="text-command-f7"><code>$F7</code> - Display Decimal Number</dt>
+				<dd><p>
+					The first somewhat complex function. It takes the content of a RAM address, converts
+					it to a decimal number and then displays it. Usage is like this:
+					<pre><code>db $F7
 dl Address
 db $BZ</code></pre>
-				"Address" of course means the RAM address. Refer to the SMW Central RAM Map for this.
-				B is how many Bits the number has (<code>0</code> means 8-Bit and <code>1</code> means 16-Bit)
-				and <code>Z</code> defines whether to display prefixed zeros or not (<code>0</code> for yes, <code>1</code> for no).
-				Here is an example:
-				<pre><code>db $F7
+					"Address" of course means the RAM address. Refer to the SMW Central RAM Map for this.
+					B is how many Bits the number has (<code>0</code> means 8-Bit and <code>1</code> means 16-Bit)
+					and <code>Z</code> defines whether to display prefixed zeros or not (<code>0</code> for yes, <code>1</code> for no).
+					Here is an example:
+					<pre><code>db $F7
 dl $7E0DBF
 db $01</code></pre>
-				<code>$7E0DBF</code> contains the current player’s coins. Since this is an 8-Bit value,
-				<code>B = 0</code>. We want to wipe any prefixed zeros, so <code>Z = 1</code>.
-				Also, in order for this function to work, the digits <code>0</code> to <code>9</code>
-				have to be the first characters in your font file and in the correct order.
-				Look into <code>vwffont1.bin</code> to see what I mean.
-			</p></dd>
-			<dt id="text-command-f6"><code>$F6</code> - Display Hexadecimal Number</dt>
-			<dd><p>
-				Takes the content of a RAM address and displays it as a hex number.
-				Usage is like this:
-				<pre><code>db $F6
+					<code>$7E0DBF</code> contains the current player’s coins. Since this is an 8-Bit value,
+					<code>B = 0</code>. We want to wipe any prefixed zeros, so <code>Z = 1</code>.
+					Also, in order for this function to work, the digits <code>0</code> to <code>9</code>
+					have to be the first characters in your font file and in the correct order.
+					Look into <code>vwffont1.bin</code> to see what I mean.
+				</p></dd>
+				<dt id="text-command-f6"><code>$F6</code> - Display Hexadecimal Number</dt>
+				<dd><p>
+					Takes the content of a RAM address and displays it as a hex number.
+					Usage is like this:
+					<pre><code>db $F6
 dl Address</code></pre>
-				This one is a lot simpler then the decimal one, which is mainly for the reason that
-				the SNES uses hex addressing and values natively. In order for this function to work,
-				the digits <code>0</code> to <code>F</code> have to be the first characters in your
-				font file and in the correct order. Look into <code>vwffont1.bin</code> to see what I mean.
-			</p></dd>
-			<dt id="text-command-f5"><code>$F5</code> - Display RAM Character</dt>
-			<dd><p>
-				Takes the content of a RAM address as the next character to display.
-				Usage is like this:
-				<pre><code>db $F5
+					This one is a lot simpler then the decimal one, which is mainly for the reason that
+					the SNES uses hex addressing and values natively. In order for this function to work,
+					the digits <code>0</code> to <code>F</code> have to be the first characters in your
+					font file and in the correct order. Look into <code>vwffont1.bin</code> to see what I mean.
+				</p></dd>
+				<dt id="text-command-f5"><code>$F5</code> - Display RAM Character</dt>
+				<dd><p>
+					Takes the content of a RAM address as the next character to display.
+					Usage is like this:
+					<pre><code>db $F5
 dl Address</code></pre>
-				The difference to <code>$F6</code> is that <code>$F6</code> displays the actual hex value,
-				while <code>$F5</code> displays the character of the value. So if we were using <code>$7E0DBF</code>
-				once again and the player had <code>$19</code> coins, <code>$F6</code> would display <code>19</code>,
-				while <code>$F5</code> would display character <code>$19</code> from the font file in use.
-				In <code>vwffont1.bin</code> this would be a <b>P</b>. Here are screenshots of
-				<code>$F5</code>, <code>$F6</code> and <code>$F7</code> all being used in the same text box:
-				<img class="d-block m-1 my-2 ir-crisp" src="screenshots/screen-2.png" alt="Screenshot" width="256" height="224"/>
-				<img class="d-block m-1 my-2 ir-crisp" src="screenshots/screen-3.png" alt="Screenshot" width="256" height="224"/>
-				The timer uses <code>$F5</code>, the hexadecimal numbers use <code>$F6</code>
-				and the decimal numbers use <code>$F7</code>.
-			</p></dd>
-			<dt id="text-command-f4"><code>$F4</code> - Display Character</dt>
-			<dd><p>
-				This displays character <code>$XX</code>. Usage is like this:
-				<pre><code>; 8-Bit mode
+					The difference to <code>$F6</code> is that <code>$F6</code> displays the actual hex value,
+					while <code>$F5</code> displays the character of the value. So if we were using <code>$7E0DBF</code>
+					once again and the player had <code>$19</code> coins, <code>$F6</code> would display <code>19</code>,
+					while <code>$F5</code> would display character <code>$19</code> from the font file in use.
+					In <code>vwffont1.bin</code> this would be a <b>P</b>. Here are screenshots of
+					<code>$F5</code>, <code>$F6</code> and <code>$F7</code> all being used in the same text box:
+					<img class="d-block m-1 my-2 ir-crisp" src="screenshots/screen-2.png" alt="Screenshot" width="256" height="224"/>
+					<img class="d-block m-1 my-2 ir-crisp" src="screenshots/screen-3.png" alt="Screenshot" width="256" height="224"/>
+					The timer uses <code>$F5</code>, the hexadecimal numbers use <code>$F6</code>
+					and the decimal numbers use <code>$F7</code>.
+				</p></dd>
+				<dt id="text-command-f4"><code>$F4</code> - Display Character</dt>
+				<dd><p>
+					This displays character <code>$XX</code>. Usage is like this:
+					<pre><code>; 8-Bit mode
 db $F4,$XX
 
 ; 16-Bit mode
 dw $FFF4,$XXXX</code></pre>
-				You may wonder what the point of this function is. Well, let’s say you had a font file
-				with 256 characters and you wanted to display character <code>$FF</code>. How would you do that?
-				If you used <code>db $FF</code>, the game would treat this as special character <code>$FF</code>
-				and end the dialogue. Using <code>db $F4,$FF</code>, however, it would display character
-				<code>$FF</code> instead. So basically this function is for displaying characters that
-				would otherwise be treated as special characters.
-			</p></dd>
-			<dt id="text-command-f3"><code>$F3</code> - Change Text Palette</dt>
-			<dd><p>
-				This changes the palette currently in use for text to <code>XXX</code>
-				(Maximum: <code>%111</code> = <code>7</code>). Usage is like this:
-				<pre><code>db $F3,%-----XXX</code></pre>
-				What is this useful for? It allows you to use multiple colors for your text inside
-				the same text box. Be careful as this overwrites the second color of whatever palette
-				you’re going to use with the background color of the text box. Therefore, this has the
-				same restrictions as the letter palette from the dialogue header. This function is also
-				the reason why you should always use at least <code>$07</code> pixel for spaces. How so?
-				Well, natively Layer 3 on the SNES only supports 8×8 tiles. To have VWF text new graphics
-				are created in RAM that have multiple letters on one 8×8 tile. Palettes, however, are
-				connected with 8×8 tiles, not with letters. Therefore, if two or more letters end up
-				on one tile and you’re using this command, all these letters will change their color,
-				even if you only planned to change the color of one of them. If there are at least
-				<code>$07</code> pixels of space between letters they will never end up on the same tile,
-				though. This also means that you should use a space before using this command, as changing
-				the text palette in the middle of a word will lead to minor graphical glitches affecting
-				the two or more letters present on the same 8×8 tile.
-			</p><p>
-				Note that the <a href="#text-command-ed"><code>$ED</code> - Clear Text Box</a> command
-				will reset the currently used pallete to the default settings for the current message.
-			</p></dd>
-			<dt id="text-command-f2"><code>$F2</code> - Change Font</dt>
-			<dd><p>
-				Changes the number of the Font in use to <code>$XX</code>. In short, the same stuff
-				as the first option in the header. Also in 16-Bit mode this command is redundant
-				as it does nothing. Usage:
-				<pre><code>db $F2,$XX</code></pre>
-			</p></dd>
-			<dt id="text-command-f1"><code>$F1</code> - Execute Code</dt>
-			<dd><p>
-				Executes ASM code at whatever address you use. It does that by <code>JSL</code>ing to it,
-				so the code should end on an <code>RTL</code>. This is one of the most useful commands
-				in the patch, but only for people experienced with ASM. Usage is like this:
-				<pre><code>db $F1
+					You may wonder what the point of this function is. Well, let’s say you had a font file
+					with 256 characters and you wanted to display character <code>$FF</code>. How would you do that?
+					If you used <code>db $FF</code>, the game would treat this as special character <code>$FF</code>
+					and end the dialogue. Using <code>db $F4,$FF</code>, however, it would display character
+					<code>$FF</code> instead. So basically this function is for displaying characters that
+					would otherwise be treated as special characters.
+				</p></dd>
+				<dt id="text-command-f3"><code>$F3</code> - Change Text Palette</dt>
+				<dd><p>
+					This changes the palette currently in use for text to <code>XXX</code>
+					(Maximum: <code>%111</code> = <code>7</code>). Usage is like this:
+					<pre><code>db $F3,%-----XXX</code></pre>
+					What is this useful for? It allows you to use multiple colors for your text inside
+					the same text box. Be careful as this overwrites the second color of whatever palette
+					you’re going to use with the background color of the text box. Therefore, this has the
+					same restrictions as the letter palette from the dialogue header. This function is also
+					the reason why you should always use at least <code>$07</code> pixel for spaces. How so?
+					Well, natively Layer 3 on the SNES only supports 8×8 tiles. To have VWF text new graphics
+					are created in RAM that have multiple letters on one 8×8 tile. Palettes, however, are
+					connected with 8×8 tiles, not with letters. Therefore, if two or more letters end up
+					on one tile and you’re using this command, all these letters will change their color,
+					even if you only planned to change the color of one of them. If there are at least
+					<code>$07</code> pixels of space between letters they will never end up on the same tile,
+					though. This also means that you should use a space before using this command, as changing
+					the text palette in the middle of a word will lead to minor graphical glitches affecting
+					the two or more letters present on the same 8×8 tile.
+				</p><p>
+					Note that the <a href="#text-command-ed"><code>$ED</code> - Clear Text Box</a> command
+					will reset the currently used pallete to the default settings for the current message.
+				</p></dd>
+				<dt id="text-command-f2"><code>$F2</code> - Change Font</dt>
+				<dd><p>
+					Changes the number of the Font in use to <code>$XX</code>. In short, the same stuff
+					as the first option in the header. Also in 16-Bit mode this command is redundant
+					as it does nothing. Usage:
+					<pre><code>db $F2,$XX</code></pre>
+				</p></dd>
+				<dt id="text-command-f1"><code>$F1</code> - Execute Code</dt>
+				<dd><p>
+					Executes ASM code at whatever address you use. It does that by <code>JSL</code>ing to it,
+					so the code should end on an <code>RTL</code>. This is one of the most useful commands
+					in the patch, but only for people experienced with ASM. Usage is like this:
+					<pre><code>db $F1
 dl Address</code></pre>
-				So what makes this function so special? Well aside from the fact that (with some ASM
-				knowledge) you can basically do everything during dialogues this - just like character
-				<code>$FB</code> - also lets you modify the text pointer. In combination with the ASM code this makes
-				conditional text jumps possible. In other words: It allows you to display different
-				text if certain conditions are met. This is demonstrated in video 2 by the Toad who sells
-				star power. If you answer his question with “Yes”, he only sells the star power to you if you
-				have enough coins. Some code that does just that can be seen here:
-				<pre><code>.body
+					So what makes this function so special? Well aside from the fact that (with some ASM
+					knowledge) you can basically do everything during dialogues this - just like character
+					<code>$FB</code> - also lets you modify the text pointer. In combination with the ASM code this makes
+					conditional text jumps possible. In other words: It allows you to display different
+					text if certain conditions are met. This is demonstrated in video 2 by the Toad who sells
+					star power. If you answer his question with “Yes”, he only sells the star power to you if you
+					have enough coins. Some code that does just that can be seen here:
+					<pre><code>.body
 db "Here you go!",$F1
 dl .checkcoins
 
@@ -966,39 +966,39 @@ rtl
 <tr><td>sta !vwftextsource+2	</td><td>; Text pointer bank byte	</td></tr>
 </tbody></table>
 rtl</code></pre>
-				What this will do is first display the text <q>Here you go!</q>. Then it will execute
-				the code at <code>.checkcoins</code>. Here it will compare the address <code>$0DBF</code>
-				(the current player’s coins) with <code>40</code>. If it is bigger or equal,
-				it will simply return without changing the text pointer and display <q>Thank you very much!</q>.
-				Otherwise it will change the text pointer to <code>.notenough</code> and display
-				<q>Wait, you don’t even have enough coins!</q>.
-			</p><p>
-				Also as you can see here you modify the text pointer by writing to <code>!vwftextsource</code>,
-				with <code>!vwftextsource</code> being the low byte and <code>!vwftextsource+2</code> being the bank byte.
-				You can also see that I simply put the code under the text. This is OK and recommended as long as the
-				code is in a place where it can not be reached by the VWF system.
-			</p><p>
-				<b>In other words:</b> After an <code>$FF</code> should be fine,
-				in the middle of a message should be avoided.
-			</p><p>
-				Another thing I recommend is always putting a space or line break after this command
-				(in this case it’s the space in front of <q>Thank you</q>. The reason for this is that
-				this command is ignored by the word wrap function. This function gets the correct widt
-				by counting the width of all characters between a space and some other special character
-				(like a Line Break or another space). So in this case: If you don’t put a space (or whatever
-				other character is suitable) after this command, the word wrap function will count the
-				<q>Thank</q> as part of the same word, even if eventually that word won’t even be written at
-				all. This might lead to automatic line breaks at the wrong places.
-			</p><p>
-				<b>In short:</b> Always put a space after this command.
-			</p></dd>
-			<dt id="text-command-f0"><code>$F0</code> - Display Options</dt>
-			<dd><p>
-				This is - without any doubt - the most complex of all special commands. This function
-				gives the player various options in the text box, which he can then select with a
-				cursor. After that the text pointer is changed to another address depending on the
-				option the player selected. Usage is like this:
-				<pre><code>db $F0,$ns
+					What this will do is first display the text <q>Here you go!</q>. Then it will execute
+					the code at <code>.checkcoins</code>. Here it will compare the address <code>$0DBF</code>
+					(the current player’s coins) with <code>40</code>. If it is bigger or equal,
+					it will simply return without changing the text pointer and display <q>Thank you very much!</q>.
+					Otherwise it will change the text pointer to <code>.notenough</code> and display
+					<q>Wait, you don’t even have enough coins!</q>.
+				</p><p>
+					Also as you can see here you modify the text pointer by writing to <code>!vwftextsource</code>,
+					with <code>!vwftextsource</code> being the low byte and <code>!vwftextsource+2</code> being the bank byte.
+					You can also see that I simply put the code under the text. This is OK and recommended as long as the
+					code is in a place where it can not be reached by the VWF system.
+				</p><p>
+					<b>In other words:</b> After an <code>$FF</code> should be fine,
+					in the middle of a message should be avoided.
+				</p><p>
+					Another thing I recommend is always putting a space or line break after this command
+					(in this case it’s the space in front of <q>Thank you</q>. The reason for this is that
+					this command is ignored by the word wrap function. This function gets the correct widt
+					by counting the width of all characters between a space and some other special character
+					(like a Line Break or another space). So in this case: If you don’t put a space (or whatever
+					other character is suitable) after this command, the word wrap function will count the
+					<q>Thank</q> as part of the same word, even if eventually that word won’t even be written at
+					all. This might lead to automatic line breaks at the wrong places.
+				</p><p>
+					<b>In short:</b> Always put a space after this command.
+				</p></dd>
+				<dt id="text-command-f0"><code>$F0</code> - Display Options</dt>
+				<dd><p>
+					This is - without any doubt - the most complex of all special commands. This function
+					gives the player various options in the text box, which he can then select with a
+					cursor. After that the text pointer is changed to another address depending on the
+					option the player selected. Usage is like this:
+					<pre><code>db $F0,$ns
 <table class="border-0" style="line-height:19px;"><tbody>
 <tr><td>db $cc	</td><td>; If in 8-Bit mode</td></tr>
 <tr><td>dw $cccc	</td><td>; If in 16-Bit mode</td></tr>
@@ -1016,57 +1016,57 @@ db "You selected option 1!",$FA,$FF
 [...]
 [..option_n]
 [db "You selected option n!",$FA,FF]</code></pre>
-				Yup, I told you this function was complex. So let’s go through everything step by step.
-			</p><p>
-				<code>n</code> is the number of options to give the player. <code>1</code> is the minimum
-				and the text box height the maximum number of options you can have. If you put more options
-				here than fit into a complete text box of the current height the game will simply ignore them.
-			</p><p>
-				If there is some text in the text box already and because of that not all options would fit
-				into it at the same time, the text box will be cleared. Oh, did I already mention that
-				this command automatically causes a Line Break if not already at the beginning of a
-				line?
-			</p><p>
-				<code>s</code> is the space to leave between cursor and the following letter.
-				I usually put a 4 here. The next thing, <code>cc</code> (or <code>cccc</code> in 16-Bit mode)
-				is the character from the font to use as the cursor. The default font has a very decent
-				cursor as character <code>$A8</code>, so I recommend using this.
-			</p><p>
-				Next is the label table with a length equal to the value you used for <code>n</code>.
-				To give a few examples: If <code>n</code> = <code>3</code>, put 3 <code>dl</code>
-				entries here. If <code>n</code> = <code>5</code>, put 5 <code>dl</code> entries here.
-				Don’t mess this up; doing so here can easily cause glitches.
-			</p><p>
-				This table contains the labels to set the text pointer to for each of the options.
-				So if the player selects the first option, the first label will be used.
-				If the player selects the third option, the third label will be used.
-				Because of this the number of entries always has to match <code>n</code>.
-			</p><p>
-				Next up are the lines for the actual text of each option. What is important here is
-				that whenever a Line Break occurs - whether it’s a forced or an automatic Line Break
-				- the next new line will automatically be treated as the next option. This will continue
-				until until as many Line Breaks as there are options have occured. After that the player
-				will be able to move the cursor. This also means: Always make sure that all the text for
-				one option fits in one line and always have as many Line Breaks as you have options.
-			</p><p>
-				So if your <code>n</code> is 2, have 2 Line Breaks. If your <code>n</code> is 5, have 5 Line Breaks.
-				It’s very important to follow this rule. And don’t - by all means - put any obscure character in the
-				middle of option text.
-			</p><p>
-				<code>$FF</code>, for example, counts as an obscure character here.
-				As using this character inside option text would most likely cause unexpected effects
-				I’ve made it so that <code>$FF</code> is treated as <code>$FD</code> during option processing.
-				Still it’s not recommended to use it. The best thing is to simply stick to <code>$FD</code> here and not use any
-				other special character.
-			</p><p>
-				So yeah, that’s basically it. All you have to do now is set up some text for each entry
-				in the label table and you’re done. After the player has selected an option, the text box
-				will automatically be cleared. I know this is very, very complicated but I didn’t see any
-				other way to implement this feature and if you just play around with it a bit you’ll get
-				used to it faster than you think.
-			</p><p>
-				Anyways, here is an example of some valid code:
-				<pre><code>db "Do you want to buy a 1-UP?"
+					Yup, I told you this function was complex. So let’s go through everything step by step.
+				</p><p>
+					<code>n</code> is the number of options to give the player. <code>1</code> is the minimum
+					and the text box height the maximum number of options you can have. If you put more options
+					here than fit into a complete text box of the current height the game will simply ignore them.
+				</p><p>
+					If there is some text in the text box already and because of that not all options would fit
+					into it at the same time, the text box will be cleared. Oh, did I already mention that
+					this command automatically causes a Line Break if not already at the beginning of a
+					line?
+				</p><p>
+					<code>s</code> is the space to leave between cursor and the following letter.
+					I usually put a 4 here. The next thing, <code>cc</code> (or <code>cccc</code> in 16-Bit mode)
+					is the character from the font to use as the cursor. The default font has a very decent
+					cursor as character <code>$A8</code>, so I recommend using this.
+				</p><p>
+					Next is the label table with a length equal to the value you used for <code>n</code>.
+					To give a few examples: If <code>n</code> = <code>3</code>, put 3 <code>dl</code>
+					entries here. If <code>n</code> = <code>5</code>, put 5 <code>dl</code> entries here.
+					Don’t mess this up; doing so here can easily cause glitches.
+				</p><p>
+					This table contains the labels to set the text pointer to for each of the options.
+					So if the player selects the first option, the first label will be used.
+					If the player selects the third option, the third label will be used.
+					Because of this the number of entries always has to match <code>n</code>.
+				</p><p>
+					Next up are the lines for the actual text of each option. What is important here is
+					that whenever a Line Break occurs - whether it’s a forced or an automatic Line Break
+					- the next new line will automatically be treated as the next option. This will continue
+					until until as many Line Breaks as there are options have occured. After that the player
+					will be able to move the cursor. This also means: Always make sure that all the text for
+					one option fits in one line and always have as many Line Breaks as you have options.
+				</p><p>
+					So if your <code>n</code> is 2, have 2 Line Breaks. If your <code>n</code> is 5, have 5 Line Breaks.
+					It’s very important to follow this rule. And don’t - by all means - put any obscure character in the
+					middle of option text.
+				</p><p>
+					<code>$FF</code>, for example, counts as an obscure character here.
+					As using this character inside option text would most likely cause unexpected effects
+					I’ve made it so that <code>$FF</code> is treated as <code>$FD</code> during option processing.
+					Still it’s not recommended to use it. The best thing is to simply stick to <code>$FD</code> here and not use any
+					other special character.
+				</p><p>
+					So yeah, that’s basically it. All you have to do now is set up some text for each entry
+					in the label table and you’re done. After the player has selected an option, the text box
+					will automatically be cleared. I know this is very, very complicated but I didn’t see any
+					other way to implement this feature and if you just play around with it a bit you’ll get
+					used to it faster than you think.
+				</p><p>
+					Anyways, here is an example of some valid code:
+					<pre><code>db "Do you want to buy a 1-UP?"
 db $F0,$24,$A8
 dl .yes
 dl .no
@@ -1078,45 +1078,45 @@ db "Thank you very much!",$FA,$FF
 
 .no
 db "Too bad. Come again later!",$FA,$FF</code></pre>
-				See? It only LOOKS complicated, but it’s actually rather simple.
-			</p></dd>
-			<dt id="text-command-ef"><code>$EF</code> - Setup Teleport</dt>
-			<dd><p>
-				This sets up a teleport which will occur as soon as dialogue processing is over.
-				Usage is like this:
-				<pre><code>db $EF
+					See? It only LOOKS complicated, but it’s actually rather simple.
+				</p></dd>
+				<dt id="text-command-ef"><code>$EF</code> - Setup Teleport</dt>
+				<dd><p>
+					This sets up a teleport which will occur as soon as dialogue processing is over.
+					Usage is like this:
+					<pre><code>db $EF
 dw $-lll
 db %----w-s-</code></pre>
-				<code>lll</code> is the level to teleport to or the secondary exit number to use. This can be
-				anything from <code>$000</code> to <code>$1FF</code>. Set <code>w</code> to <code>1</code>
-				if the destination level is a water level, otherwise set it to <code>0</code>.
-				Set <code>s</code> to <code>1</code> if <code>lll</code> should be used as a secondary exit number,
-				otherwise set it to <code>0</code> to use <code>lll</code> as the destination level number.
-			</p><p>
-				<h6>Example:</h6>
-				<pre><code>db $EF
+					<code>lll</code> is the level to teleport to or the secondary exit number to use. This can be
+					anything from <code>$000</code> to <code>$1FF</code>. Set <code>w</code> to <code>1</code>
+					if the destination level is a water level, otherwise set it to <code>0</code>.
+					Set <code>s</code> to <code>1</code> if <code>lll</code> should be used as a secondary exit number,
+					otherwise set it to <code>0</code> to use <code>lll</code> as the destination level number.
+				</p><p>
+					<h6>Example:</h6>
+					<pre><code>db $EF
 dw $010D
 db %00000000</code></pre>
-			</p><p>
-				<b>Notice:</b> The teleport command currently doesn’t support Lunar Magic’s
-				expanded secondary entrances (<code>$0200</code> - <code>$1FFF</code>), and has
-				issues with levels that are configured to use separate settings for the midway
-				entrace when using the <code>w</code> flag, as it will teleport to the midway
-				entrace and make the level a water level.
-			</p></dd>
-			<dt id="text-command-ee"><code>$EE</code> - Edit Color</dt>
-			<dd><p>
-				This command sets color <code>$XX</code> to SNES RGB <code>$YYYY</code> and	is to be used
-				together with <a href="#text-command-f3"><code>$F3</code> - Change Text Palette</a>.
-				Usage is like this:
-				<pre><code>db $XX
+				</p><p>
+					<b>Notice:</b> The teleport command currently doesn’t support Lunar Magic’s
+					expanded secondary entrances (<code>$0200</code> - <code>$1FFF</code>), and has
+					issues with levels that are configured to use separate settings for the midway
+					entrace when using the <code>w</code> flag, as it will teleport to the midway
+					entrace and make the level a water level.
+				</p></dd>
+				<dt id="text-command-ee"><code>$EE</code> - Edit Color</dt>
+				<dd><p>
+					This command sets color <code>$XX</code> to SNES RGB <code>$YYYY</code> and	is to be used
+					together with <a href="#text-command-f3"><code>$F3</code> - Change Text Palette</a>.
+					Usage is like this:
+					<pre><code>db $XX
 dw $YYYY</code></pre>
-				I recommend only to use <code>$00</code> to <code>$1F</code> for <code>$XX</code>,
-				as these are the only colors that are restored at the end of the dialogue.
-				Also once again avoid using colors that are used by the background or anything
-				else that is visible during dialogue processing.
-			</p><p>
-				Here is an example of it being used:
+					I recommend only to use <code>$00</code> to <code>$1F</code> for <code>$XX</code>,
+					as these are the only colors that are restored at the end of the dialogue.
+					Also once again avoid using colors that are used by the background or anything
+					else that is visible during dialogue processing.
+				</p><p>
+					Here is an example of it being used:
 <pre><code><table class="border-0" style="line-height:19px;"><tbody>
 <tr><td>db $EE,$1A	</td><td>; Palette $06, Third Color	</td></tr>
 <tr><td>dw $031F	</td><td>; Dark Yellow	</td></tr>
@@ -1127,347 +1127,347 @@ db $F3,%00000110
 db "Mario:",$FD
 db $F3,%00000111
 db "Hi there!",$FA,$FF</code></pre>
-			</p></dd>
-			<dt id="text-command-ed"><code>$ED</code> - Clear Text Box</dt>
-			<dd><p>
-				This command clears the text box, resets the text position to the top of the text box
-				and resets the current text palette to the default for this message.
-			</p></dd>
-			<dt id="text-command-ec"><code>$EC</code> - Play BGM</dt>
-			<dd><p>
-				This changes the background music to <code>$XX</code>. Usage is like this:
-				<pre><code>db $EC,$XX</code></pre>
-				Of course it has the usual music restrictions, like "only using custom music
-				from the same bank" if using carol’s or Romi’s Addmusic and stuff like that. That’s
-				all there is to say about this command.
-			</p></dd>
-		</dl>
+				</p></dd>
+				<dt id="text-command-ed"><code>$ED</code> - Clear Text Box</dt>
+				<dd><p>
+					This command clears the text box, resets the text position to the top of the text box
+					and resets the current text palette to the default for this message.
+				</p></dd>
+				<dt id="text-command-ec"><code>$EC</code> - Play BGM</dt>
+				<dd><p>
+					This changes the background music to <code>$XX</code>. Usage is like this:
+					<pre><code>db $EC,$XX</code></pre>
+					Of course it has the usual music restrictions, like "only using custom music
+					from the same bank" if using carol’s or Romi’s Addmusic and stuff like that. That’s
+					all there is to say about this command.
+				</p></dd>
+			</dl>
 
-		<p>
-			And with that another section of this ridiculously long Readme is done and you’re finally able to
-			write your own dialogues. WOO HOO!
-		</p>
+			<p>
+				And with that another section of this ridiculously long Readme is done and you’re finally able to
+				write your own dialogues. WOO HOO!
+			</p>
 
-		<h3 class="text-center">Custom Patches</h3>
+			<h3 class="text-center">Custom Patches</h3>
 
-		<p>
-			Everything left now is to explain how to use the functions of this patch in your own patches.
-			For this we need the screenshot from Asar once again.
-			<img class="d-block m-1 my-2" src="screenshots/console-1.png" alt="Screenshot" width="668" height="331" />
-		</p>
+			<p>
+				Everything left now is to explain how to use the functions of this patch in your own patches.
+				For this we need the screenshot from Asar once again.
+				<img class="d-block m-1 my-2" src="screenshots/console-1.png" alt="Screenshot" width="668" height="331" />
+			</p>
 
-		<dl>
-			<dt>VWF Creation Routine</dt>
-			<dd><p>
-				This routine creates VWF text graphics in RAM when JSLed to. You use SMW’s Scratch RAM to
-				set it up.
-				<table class="kv-map"><tbody>
-					<tr><th><code>$00</code>-<code>$02</code></th><td>Text source address.</td></tr>
-					<tr><th><code>$03</code>-<code>$05</code></th><td>Font graphics address (2BPP GB format).</td></tr>
-					<tr><th><code>$06</code>-<code>$08</code></th><td>Font width table address.</td></tr>
-					<tr><th><code>$09</code>-<code>$0B</code></th><td>Destination address.</td></tr>
-					<tr><th><code>$0C</code>-<code>$0D</code></th><td>Number of characters.</td></tr>
-					<tr><th><code>$0E</code></th><td>Pixel to start on.</td></tr>
-					<tr><th><code>$0F</code></th><td>Set to $01 if the destination address doesn’t contain VWF text graphics yet.</td></tr>
-				</tbody></table>
-				Note that the special characters explained before are not actually used by this routine.
-			</p></dd>
-			<dt>Pattern Addition Routine</dt>
-			<dd><p>
-				This routine adds a background pattern to VWF text previously created in RAM when
-				JSLed to. This assumes that the text only uses the third and fourth colors of the palette
-				and that the background pattern graphic only uses the second color. Otherwise the result
-				may not turn out as expected. You use SMW’s Scratch RAM to set it up.
-				<table class="kv-map"><tbody>
-					<tr><th><code>$00</code>-<code>$02</code></th><td>Pattern graphic source address (2BPP GB format).</td></tr>
-					<tr><th><code>$03</code>-<code>$05</code></th><td>VWF text graphics address = destination address (2BPP GB format).</td></tr>
-					<tr><th><code>$06</code></th><td>Number of tiles.</td></tr>
-				</tbody></table>
-			</p></dd>
-			<dt>BG GFX register</dt>
-			<dd><p>
-				Which graphic to use for the background pattern of the text box.
-			</p></dd>
-			<dt>BG Color register</dt>
-			<dd><p>
-				Which color to use for the background of the text box in SNES RGB. This is a 2-Byte address.
-			</p></dd>
-			<dt>Frame GFX register</dt>
-			<dd><p>
-				Which set of graphics to use for the text box frame.
-			</p></dd>
-		</dl>
-		<p class="text-center my-4"><a href="#index">Return to Index</a></p>
+			<dl>
+				<dt>VWF Creation Routine</dt>
+				<dd><p>
+					This routine creates VWF text graphics in RAM when JSLed to. You use SMW’s Scratch RAM to
+					set it up.
+					<table class="kv-map"><tbody>
+						<tr><th><code>$00</code>-<code>$02</code></th><td>Text source address.</td></tr>
+						<tr><th><code>$03</code>-<code>$05</code></th><td>Font graphics address (2BPP GB format).</td></tr>
+						<tr><th><code>$06</code>-<code>$08</code></th><td>Font width table address.</td></tr>
+						<tr><th><code>$09</code>-<code>$0B</code></th><td>Destination address.</td></tr>
+						<tr><th><code>$0C</code>-<code>$0D</code></th><td>Number of characters.</td></tr>
+						<tr><th><code>$0E</code></th><td>Pixel to start on.</td></tr>
+						<tr><th><code>$0F</code></th><td>Set to $01 if the destination address doesn’t contain VWF text graphics yet.</td></tr>
+					</tbody></table>
+					Note that the special characters explained before are not actually used by this routine.
+				</p></dd>
+				<dt>Pattern Addition Routine</dt>
+				<dd><p>
+					This routine adds a background pattern to VWF text previously created in RAM when
+					JSLed to. This assumes that the text only uses the third and fourth colors of the palette
+					and that the background pattern graphic only uses the second color. Otherwise the result
+					may not turn out as expected. You use SMW’s Scratch RAM to set it up.
+					<table class="kv-map"><tbody>
+						<tr><th><code>$00</code>-<code>$02</code></th><td>Pattern graphic source address (2BPP GB format).</td></tr>
+						<tr><th><code>$03</code>-<code>$05</code></th><td>VWF text graphics address = destination address (2BPP GB format).</td></tr>
+						<tr><th><code>$06</code></th><td>Number of tiles.</td></tr>
+					</tbody></table>
+				</p></dd>
+				<dt>BG GFX register</dt>
+				<dd><p>
+					Which graphic to use for the background pattern of the text box.
+				</p></dd>
+				<dt>BG Color register</dt>
+				<dd><p>
+					Which color to use for the background of the text box in SNES RGB. This is a 2-Byte address.
+				</p></dd>
+				<dt>Frame GFX register</dt>
+				<dd><p>
+					Which set of graphics to use for the text box frame.
+				</p></dd>
+			</dl>
+			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
 		</section>
 
 		<!-- Seperator Comment -->
 
 		<section class="container">
-		<h2 id="advanced" class="text-center">4. Problem Solving (Advanced)</h2>
-		<p>
-			In this section I’ll go over a few problems that may or may not be more complicated than most of the
-			other stuff here so far.
-		</p>
+			<h2 id="advanced" class="text-center">4. Problem Solving (Advanced)</h2>
+			<p>
+				In this section I’ll go over a few problems that may or may not be more complicated than most of the
+				other stuff here so far.
+			</p>
 
-		<h4 class="text-center">Dialogues Without Freezing Sprites</h4>
-		<p>
-			So you’re planning to use a dialogue in your game without freezing sprites? Dialogues like that can
-			be found in various RPGs as system messages. First of all there are certain things you have to note
-			when using this option:
-		</p>
-		<ul>
-			<li>
-				Currently the patch doesn’t contain any hijack to end a dialogue when the level is ended.
-				When going from a level to the overworld with a dialogue still active, the graphics on the
-				overworld will be glitched. Therefore you shouldn’t use this feature in any level in which you
-				can die or leave the level by pressing START + SELECT. Might include a fix for this in future
-				versions.
-			</li>
-			<li>
-				When teleporting from one level to another the palette is changed and the Layer 3 tilemap is
-				cleared. This means that you’ll get glitches if teleporting to another level with a dialogue
-				active. Might include a fix for this in another version as well.
-			</li>
-		</ul>
-		<p>
-			Well, if you plan to use this feature anyways you may notice that it can be pretty slow in certain
-			situations, so here are a few tips to help you speed it up:
-		</p>
-		<ul>
-			<li>
-				Use the SA-1 Enhancement Chip.
-				<a tabindex="0" role="button" data-toggle="collapse" data-target="#video-sa1" aria-expanded="false" aria-controls="video-sa1">Case in point.</a>
-				<div id="video-sa1" class="collapse mt-3">
-					<iframe class="video" style="height:640px;" src="https://www.youtube.com/embed/hGmuaMoVO9I?rel=0&amp;start=71" allow="autoplay; encrypted-media" allowfullscreen="true"></iframe>
-				</div>
-			</li>
-			<li>
-				If you can’t use the SA-1 chip for whatever reason, then the following should provide a useable alternative:
-				<ul>
-					<li>
-						Use the newest version of Lunar Magic and activate the FastROM patch and FastROM addressing. This
-						speeds up the game by a whole lot. Enough to make use of this feature reasonable.
-					</li>
-					<li>
-						Use slower text speeds. The slower the text speed, the more frames between each letter. The
-						more frames between each letter, the less the player will notice any slowdown.
-					</li>
-					<li>
-						Show only small parts of text at the same time. In Secret of Mana for example system messages
-						always consisted of only one line of text. If you do it like that and put waits at the end of
-						each line, then the "lag phases" will be a lot shorter and won’t be noticed that much.
-					</li>
-					<li>
-						Avoid putting lots of sprites on the screen, especially big ones. Pretty much all of the slow downs
-						are caused by sprites. Two or three small sprites on a screen should be fine, but any
-						additional sprite will most likely slow it down.
-					</li>
-					<li>
-						Use Text Box Creation Style 0 (=No Text Box). This will skip the Pattern Addition Routine and
-						therefore save a good amount of cycles.
-					</li>
-				</ul>
-			</li>
-		</ul>
-
-		<h4 class="text-center">Bank Limits</h4>
-		<p>
-			If you make your message list long enough (around 200 messages), it is possible that you’ll get an
-			error like this:
-			<img class="d-block m-1 my-2" src="screenshots/console-2.png" alt="Screenshot" width="668" height="331" />
-			As Asar states, this is caused by crossing a bank border. More specifically, your message data has gotten too
-			long to fit inside a single bank. There is a simple solution to this problem: Just add <code>%nextbank()</code> above the last message in the file,
-			and the errors should disappear (until you add around two hundred more messages). If they don’t, keep moving the
-			<code>%nextbank()</code> up (always make sure it’s just above a message) until they do.
-		</p>
-
-		<p>
-			Another important thing to note: It’s impossible to split the pointer table file
-			"vwfmessagepointers.asm" into multiple banks. Originally, I wanted to add bank border checking to this file,
-			but I figured that even without bank border checking, you can still get up to
-			$2AAA (that’s 10922) pointers into a single bank, and let’s be serious here: It’s rather unlikely for a single SNES game
-			to ever contain this many messages. Therefore this one limitation shouldn’t really matter.
-		</p>
-
-		<h4 class="text-center">Conflicts With HDMA Effects</h4>
-		<p>
-			This patch makes use of DMA transfers. DMA transfers share their channels with HDMA. This means
-			they will influence any HDMA effects that use the same channels. The DMA transfers in this patch all
-			use channel 0 (%00000001). If you experience problems with an HDMA effect while displaying a
-			dialogue box, just make sure not to use channel 0 for that effect. Read an HDMA tutorial for
-			further information on this subject.
-		</p>
-
-		<h4 id="advanced-compatibility" class="text-center">Compatibility With Other Patches</h4>
-		<p>
-			The following patches are known to be compatible:
-			<ul class="font-weight-bold">
-				<li>All patches made by RPG Hacker</li>
-				<li>Kaijyuu’s Super Status Bar</li>
-			</ul>
-			The following patches have a few compatibility quirks which can be easily worked around:
+			<h4 class="text-center">Dialogues Without Freezing Sprites</h4>
+			<p>
+				So you’re planning to use a dialogue in your game without freezing sprites? Dialogues like that can
+				be found in various RPGs as system messages. First of all there are certain things you have to note
+				when using this option:
+			</p>
 			<ul>
-				<li class="font-weight-bold">Sprite Status Bar</li>
-				<dd>
-					The sprite status bar doesn’t disappear when a message box is opened,
-					but you probaably shouldn’t be using both the Sprite Status Bar and
-					the Layer 3 dialogue box in the same level anyway, since
-					the Sprite Status Bar’s purpose is to allow full usage of the Layer 3,
-					which the dialogue box completely hides while it’s shown.
-				</dd>
+				<li>
+					Currently the patch doesn’t contain any hijack to end a dialogue when the level is ended.
+					When going from a level to the overworld with a dialogue still active, the graphics on the
+					overworld will be glitched. Therefore you shouldn’t use this feature in any level in which you
+					can die or leave the level by pressing START + SELECT. Might include a fix for this in future
+					versions.
+				</li>
+				<li>
+					When teleporting from one level to another the palette is changed and the Layer 3 tilemap is
+					cleared. This means that you’ll get glitches if teleporting to another level with a dialogue
+					active. Might include a fix for this in another version as well.
+				</li>
 			</ul>
-			The following patches are known to be incompatible:
+			<p>
+				Well, if you plan to use this feature anyways you may notice that it can be pretty slow in certain
+				situations, so here are a few tips to help you speed it up:
+			</p>
 			<ul>
-				<li class="font-weight-bold">SMB3 Status Bar</li>
-				<dd>
-					Causes graphical corruption and displays garbage.
-				</dd>
-				<li class="font-weight-bold">Minimalist Status Bar</li>
-				<dd>
-					Flashes the whole screen during dialogue transitions.
-				</dd>
+				<li>
+					Use the SA-1 Enhancement Chip.
+					<a tabindex="0" role="button" data-toggle="collapse" data-target="#video-sa1" aria-expanded="false" aria-controls="video-sa1">Case in point.</a>
+					<div id="video-sa1" class="collapse mt-3">
+						<iframe class="video" style="height:640px;" src="https://www.youtube.com/embed/hGmuaMoVO9I?rel=0&amp;start=71" allow="autoplay; encrypted-media" allowfullscreen="true"></iframe>
+					</div>
+				</li>
+				<li>
+					If you can’t use the SA-1 chip for whatever reason, then the following should provide a useable alternative:
+					<ul>
+						<li>
+							Use the newest version of Lunar Magic and activate the FastROM patch and FastROM addressing. This
+							speeds up the game by a whole lot. Enough to make use of this feature reasonable.
+						</li>
+						<li>
+							Use slower text speeds. The slower the text speed, the more frames between each letter. The
+							more frames between each letter, the less the player will notice any slowdown.
+						</li>
+						<li>
+							Show only small parts of text at the same time. In Secret of Mana for example system messages
+							always consisted of only one line of text. If you do it like that and put waits at the end of
+							each line, then the "lag phases" will be a lot shorter and won’t be noticed that much.
+						</li>
+						<li>
+							Avoid putting lots of sprites on the screen, especially big ones. Pretty much all of the slow downs
+							are caused by sprites. Two or three small sprites on a screen should be fine, but any
+							additional sprite will most likely slow it down.
+						</li>
+						<li>
+							Use Text Box Creation Style 0 (=No Text Box). This will skip the Pattern Addition Routine and
+							therefore save a good amount of cycles.
+						</li>
+					</ul>
+				</li>
 			</ul>
-		</p>
-		<p class="text-center my-4"><a href="#index">Return to Index</a></p>
+
+			<h4 class="text-center">Bank Limits</h4>
+			<p>
+				If you make your message list long enough (around 200 messages), it is possible that you’ll get an
+				error like this:
+				<img class="d-block m-1 my-2" src="screenshots/console-2.png" alt="Screenshot" width="668" height="331" />
+				As Asar states, this is caused by crossing a bank border. More specifically, your message data has gotten too
+				long to fit inside a single bank. There is a simple solution to this problem: Just add <code>%nextbank()</code> above the last message in the file,
+				and the errors should disappear (until you add around two hundred more messages). If they don’t, keep moving the
+				<code>%nextbank()</code> up (always make sure it’s just above a message) until they do.
+			</p>
+
+			<p>
+				Another important thing to note: It’s impossible to split the pointer table file
+				"vwfmessagepointers.asm" into multiple banks. Originally, I wanted to add bank border checking to this file,
+				but I figured that even without bank border checking, you can still get up to
+				$2AAA (that’s 10922) pointers into a single bank, and let’s be serious here: It’s rather unlikely for a single SNES game
+				to ever contain this many messages. Therefore this one limitation shouldn’t really matter.
+			</p>
+
+			<h4 class="text-center">Conflicts With HDMA Effects</h4>
+			<p>
+				This patch makes use of DMA transfers. DMA transfers share their channels with HDMA. This means
+				they will influence any HDMA effects that use the same channels. The DMA transfers in this patch all
+				use channel 0 (%00000001). If you experience problems with an HDMA effect while displaying a
+				dialogue box, just make sure not to use channel 0 for that effect. Read an HDMA tutorial for
+				further information on this subject.
+			</p>
+
+			<h4 id="advanced-compatibility" class="text-center">Compatibility With Other Patches</h4>
+			<p>
+				The following patches are known to be compatible:
+				<ul class="font-weight-bold">
+					<li>All patches made by RPG Hacker</li>
+					<li>Kaijyuu’s Super Status Bar</li>
+				</ul>
+				The following patches have a few compatibility quirks which can be easily worked around:
+				<ul>
+					<li class="font-weight-bold">Sprite Status Bar</li>
+					<dd>
+						The sprite status bar doesn’t disappear when a message box is opened,
+						but you probaably shouldn’t be using both the Sprite Status Bar and
+						the Layer 3 dialogue box in the same level anyway, since
+						the Sprite Status Bar’s purpose is to allow full usage of the Layer 3,
+						which the dialogue box completely hides while it’s shown.
+					</dd>
+				</ul>
+				The following patches are known to be incompatible:
+				<ul>
+					<li class="font-weight-bold">SMB3 Status Bar</li>
+					<dd>
+						Causes graphical corruption and displays garbage.
+					</dd>
+					<li class="font-weight-bold">Minimalist Status Bar</li>
+					<dd>
+						Flashes the whole screen during dialogue transitions.
+					</dd>
+				</ul>
+			</p>
+			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
 		</section>
 
 		<!-- Seperator Comment -->
 
 		<section class="container">
-		<h2 id="bugs" class="text-center">5. Known Bugs</h2>
-		<p>
-			<ul>
-				<li>Sometimes the teleporting command doesn’t work properly and doesn’t
-					teleport you to the specified level. I couldn’t find the cause of this so far.
-					Maybe the code is just executed at the wrong place.</li>
-				<li>When using the water level flag and teleporting to a level which uses
-					separate settings for the midway entrace, then you’ll end up at the
-					midway point instead of the level entrance.</li>
-				<li>If you die while a dialogue is being processed without freezing sprites, then this leads
-					to the aforementioned issues in the <a href="#advanced">Problem Solving</a> section.</li>
-			</ul>
-		</p>
-		<p class="text-center my-4"><a href="#index">Return to Index</a></p>
+			<h2 id="bugs" class="text-center">5. Known Bugs</h2>
+			<p>
+				<ul>
+					<li>Sometimes the teleporting command doesn’t work properly and doesn’t
+						teleport you to the specified level. I couldn’t find the cause of this so far.
+						Maybe the code is just executed at the wrong place.</li>
+					<li>When using the water level flag and teleporting to a level which uses
+						separate settings for the midway entrace, then you’ll end up at the
+						midway point instead of the level entrance.</li>
+					<li>If you die while a dialogue is being processed without freezing sprites, then this leads
+						to the aforementioned issues in the <a href="#advanced">Problem Solving</a> section.</li>
+				</ul>
+			</p>
+			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
+			</section>
+
+			<!-- Seperator Comment -->
+
+			<section class="container">
+			<h2 id="plans" class="text-center">6. Planned Features</h2>
+			<p>
+				<small class="text-center my-2 d-block">
+					LOL, I wrote this patch almost eight years ago and none of this is likely
+					going to happen anymore. Sorry to disappoint you. :(<br />
+					Sincerly, RPG Hacker
+				</small>
+				<ul>
+					<li>Create a GUI application to make setting up the patch a lot easier for the user.</li>
+					<li>Add a feature to the patch that allows the player to easily customise the text box ingame.</li>
+					<li>Add a command to jump to a certain pixel inside the text box.</li>
+					<li>Fix the <a href="#bugs">aforementioned teleport bugs</a>.</li>
+					<li>Add support for the expanded secondary entrances (<code>$0200</code> - <code>$1FFF</code>).</li>
+					<li>Allow customising which button is used for advancing the dialogue.</li>
+					<li>Add a feature to allow closing the dialogue mid-message, this might also help with fixing
+						<a href="#bugs">the aforementioned death bug</a>.</li>
+					<li>Implement UTF-8 mode to replace the deprecated 16-Bit mode.</li>
+					<li>Lots of optimizations.</li>
+				</ul>
+			</p>
+			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
 		</section>
 
 		<!-- Seperator Comment -->
 
 		<section class="container">
-		<h2 id="plans" class="text-center">6. Planned Features</h2>
-		<p>
-			<small class="text-center my-2 d-block">
-				LOL, I wrote this patch almost eight years ago and none of this is likely
-				going to happen anymore. Sorry to disappoint you. :(<br />
-				Sincerly, RPG Hacker
-			</small>
-			<ul>
-				<li>Create a GUI application to make setting up the patch a lot easier for the user.</li>
-				<li>Add a feature to the patch that allows the player to easily customise the text box ingame.</li>
-				<li>Add a command to jump to a certain pixel inside the text box.</li>
-				<li>Fix the <a href="#bugs">aforementioned teleport bugs</a>.</li>
-				<li>Add support for the expanded secondary entrances (<code>$0200</code> - <code>$1FFF</code>).</li>
-				<li>Allow customising which button is used for advancing the dialogue.</li>
-				<li>Add a feature to allow closing the dialogue mid-message, this might also help with fixing
-					<a href="#bugs">the aforementioned death bug</a>.</li>
-				<li>Implement UTF-8 mode to replace the deprecated 16-Bit mode.</li>
-				<li>Lots of optimizations.</li>
-			</ul>
-		</p>
-		<p class="text-center my-4"><a href="#index">Return to Index</a></p>
+			<h2 id="bug-reports" class="text-center">7. Bug Reports</h2>
+			<p>
+				Bugs or suggestions? Contact me on SMW Central, or file an <a href="https://github.com/RPGHacker/SMW-Workspace/issues">issue</a> on GitHub!
+			</p>
+			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
 		</section>
 
 		<!-- Seperator Comment -->
 
 		<section class="container">
-		<h2 id="bug-reports" class="text-center">7. Bug Reports</h2>
-		<p>
-			Bugs or suggestions? Contact me on SMW Central, or file an <a href="https://github.com/RPGHacker/SMW-Workspace/issues">issue</a> on GitHub!
-		</p>
-		<p class="text-center my-4"><a href="#index">Return to Index</a></p>
-		</section>
+			<h2 id="history" class="text-center">8. History</h2>
 
-		<!-- Seperator Comment -->
+			<dl>
+				<dt><h5>Version 1.3 - <span data-date="2018-04-23">04/23/2018</span></h5></dt>
+				<dd><p>
+					<h6>Contributors:</h6>
+					<ul>
+						<li>ExE Boss</li>
+					</ul>
 
-		<section class="container">
-		<h2 id="history" class="text-center">8. History</h2>
+					<h6>Changes:</h6>
+					<ul>
+						<li>Fixed and improved the Readme.</li>
+						<li>Fixed a typo in <code>vwfmessagepointers.asm</code>.</li>
+						<li>Fixed the broken option selection cursor.</li>
+						<li>The SRAM expansion patch won’t accidentally contract the SRAM size.</li>
+					</ul>
+				</p></dd>
 
-		<dl>
-			<dt><h5>Version 1.3 - <span data-date="2018-04-23">04/23/2018</span></h5></dt>
-			<dd><p>
-				<h6>Contributors:</h6>
-				<ul>
-					<li>ExE Boss</li>
-				</ul>
+				<dt><h5>Version 1.2 - <span data-date="2018-04-08">04/08/2018</span></h5></dt>
+				<dd><p>
+					<h6>Contributors:</h6>
+					<ul>
+						<li>ExE Boss</li>
+						<li>RPG Hacker</li>
+					</ul>
 
-				<h6>Changes:</h6>
-				<ul>
-					<li>Fixed and improved the Readme.</li>
-					<li>Fixed a typo in <code>vwfmessagepointers.asm</code>.</li>
-					<li>Fixed the broken option selection cursor.</li>
-					<li>The SRAM expansion patch won’t accidentally contract the SRAM size.</li>
-				</ul>
-			</p></dd>
+					<h6>Changes:</h6>
+					<ul>
+						<li>Merged changes from the SA-1 converted version.</li>
+						<li>Converted to a hybrid patch.</li>
+						<li>Updated code style to match the rest of RPG Hacker’s patches.</li>
+						<li>Updated the Readme to look good.</li>
+						<li>Fixed a few things in the Readme and updated some of the outdated information.</li>
+					</ul>
+				</p></dd>
 
-			<dt><h5>Version 1.2 - <span data-date="2018-04-08">04/08/2018</span></h5></dt>
-			<dd><p>
-				<h6>Contributors:</h6>
-				<ul>
-					<li>ExE Boss</li>
-					<li>RPG Hacker</li>
-				</ul>
+				<dt><h5>Version 1.01 - <span data-date="2014-07-06">07/06/2014</span></h5></dt>
+				<dd><p>
+					<h6>Contributors:</h6>
+					<ul>
+						<li>Vitor Vilela</li>
+					</ul>
 
-				<h6>Changes:</h6>
-				<ul>
-					<li>Merged changes from the SA-1 converted version.</li>
-					<li>Converted to a hybrid patch.</li>
-					<li>Updated code style to match the rest of RPG Hacker’s patches.</li>
-					<li>Updated the Readme to look good.</li>
-					<li>Fixed a few things in the Readme and updated some of the outdated information.</li>
-				</ul>
-			</p></dd>
+					<h6>Changes:</h6>
+					<ul>
+						<li>Fixed palette issues with accurate emulators</li>
+						<li>Changed the channel used in DMA transfers to 0.</li>
+						<li>Fixed cursor sometimes not disappearing when moving.</li>
+					</ul>
+				</p></dd>
 
-			<dt><h5>Version 1.01 - <span data-date="2014-07-06">07/06/2014</span></h5></dt>
-			<dd><p>
-				<h6>Contributors:</h6>
-				<ul>
-					<li>Vitor Vilela</li>
-				</ul>
+				<dt><h5>Version 1.0B - <span data-date="2012-01-16">01/16/2012</span></h5></dt>
+				<dd><p>
+					<h6>Contributors:</h6>
+					<ul>
+						<li>Alcaro</li>
+					</ul>
 
-				<h6>Changes:</h6>
-				<ul>
-					<li>Fixed palette issues with accurate emulators</li>
-					<li>Changed the channel used in DMA transfers to 0.</li>
-					<li>Fixed cursor sometimes not disappearing when moving.</li>
-				</ul>
-			</p></dd>
+					<h6>Changes:</h6>
+					<ul>
+						<li>Converted to Asar format</li>
+					</ul>
+				</p></dd>
 
-			<dt><h5>Version 1.0B - <span data-date="2012-01-16">01/16/2012</span></h5></dt>
-			<dd><p>
-				<h6>Contributors:</h6>
-				<ul>
-					<li>Alcaro</li>
-				</ul>
+				<dt><h5>Version 1.0 - <span data-date="2018-11-13">11/13/2010</span></h5></dt>
+				<dd><p>
+					<h6>Contributors:</h6>
+					<ul>
+						<li>RPG Hacker</li>
+					</ul>
 
-				<h6>Changes:</h6>
-				<ul>
-					<li>Converted to Asar format</li>
-				</ul>
-			</p></dd>
-
-			<dt><h5>Version 1.0 - <span data-date="2018-11-13">11/13/2010</span></h5></dt>
-			<dd><p>
-				<h6>Contributors:</h6>
-				<ul>
-					<li>RPG Hacker</li>
-				</ul>
-
-				<h6>Changes:</h6>
-				<ul>
-					<li>Initial Release</li>
-				</ul>
-			</p></dd>
-		</dl>
-		<p class="text-center my-4"><a href="#index">Return to Index</a></p>
+					<h6>Changes:</h6>
+					<ul>
+						<li>Initial Release</li>
+					</ul>
+				</p></dd>
+			</dl>
+			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
 		</section>
 	</body>
 </html>

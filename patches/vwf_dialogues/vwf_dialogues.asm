@@ -40,81 +40,82 @@ if !use_sa1_mapping
 endif
 
 !vwfmode	= !varram	; 1 byte
-!message	= !varram+1	; 2 bytes
-!counter	= !varram+3	; 1 byte
+!message	= !varram+$1	; 2 bytes
+!counter	= !varram+$3	; 1 byte
 
-!width	= !varram+4	; 1 byte
-!height	= !varram+5	; 1 byte
-!xpos	= !varram+6	; 1 byte
-!ypos	= !varram+7	; 1 byte
-!boxbg	= !varram+8	; 1 byte
-!boxcolor	= !varram+9	; 6 bytes
-!boxframe	= !varram+15	; 1 byte
-!boxcreate	= !varram+16	; 1 byte
-!boxpalette	= !varram+17	; 1 byte
-!freezesprites	= !varram+18	; 1 byte
-!beep	= !varram+19	; 1 byte
-!beepbank	= !varram+20	; 2 bytes
-!beepend	= !varram+22	; 1 byte
-!beependbank	= !varram+23	; 2 bytes
-!beepcursor	= !varram+25	; 1 byte
-!beepcursorbank	= !varram+26	; 2 bytes
-!beepchoice	= !varram+28	; 1 byte
-!beepchoicebank	= !varram+29	; 2 bytes
-!font	= !varram+31	; 1 byte
-!edge	= !varram+32	; 1 byte
-!space	= !varram+33	; 1 byte
-!frames	= !varram+34	; 1 byte
-!layout	= !varram+35	; 1 byte
-!soundoff	= !varram+36	; 1 byte
-!speedup	= !varram+37	; 1 byte
-!autowait	= !varram+38	; 1 byte
+!width	= !varram+$4	; 1 byte
+!height	= !varram+$5	; 1 byte
+!xpos	= !varram+$6	; 1 byte
+!ypos	= !varram+$7	; 1 byte
+!boxbg	= !varram+$8	; 1 byte
+!boxcolor	= !varram+$9	; 6 bytes
+!boxframe	= !varram+$F	; 1 byte
+!boxcreate	= !varram+$10	; 1 byte
+!boxpalette	= !varram+$11	; 1 byte
+!freezesprites	= !varram+$12	; 1 byte
+!beep	= !varram+$13	; 1 byte
+!beepbank	= !varram+$14	; 2 bytes
+!beepend	= !varram+$16	; 1 byte
+!beependbank	= !varram+$17	; 2 bytes
+!beepcursor	= !varram+$19	; 1 byte
+!beepcursorbank	= !varram+$1A	; 2 bytes
+!beepchoice	= !varram+$1C	; 1 byte
+!beepchoicebank	= !varram+$1D	; 2 bytes
+!font	= !varram+$1F	; 1 byte
+!edge	= !varram+$20	; 1 byte
+!space	= !varram+$21	; 1 byte
+!frames	= !varram+$22	; 1 byte
+!layout	= !varram+$23	; 1 byte
+!soundoff	= !varram+$24	; 1 byte
+!speedup	= !varram+$25	; 1 byte
+!autowait	= !varram+$26	; 1 byte
 
-!vrampointer	= !varram+39	; 2 bytes
-!currentwidth	= !varram+41	; 1 byte
-!currentheight	= !varram+42	; 1 byte
-!currentx	= !varram+43	; 1 byte
-!currenty	= !varram+44	; 1 byte
+!vrampointer	= !varram+$27	; 2 bytes
+!currentwidth	= !varram+$29	; 1 byte
+!currentheight	= !varram+$2A	; 1 byte
+!currentx	= !varram+$2B	; 1 byte
+!currenty	= !varram+$2C	; 1 byte
 
-!vwftextsource	= !varram+45	; 3 bytes
-!vwfbytes	= !varram+48	; 2 bytes
-!vwfgfxdest	= !varram+50	; 3 bytes
-!vwftilemapdest	= !varram+53	; 3 bytes
-!vwfpixel	= !varram+56	; 2 bytes
-!vwfmaxwidth	= !varram+58	; 1 byte
-!vwfmaxheight	= !varram+59	; 1 byte
-!vwfchar	= !varram+60	; 2 bytes
-!vwfwidth	= !varram+62	; 1 byte
-!vwfroutine	= !varram+63	; 15 bytes
-!vwftileram	= !varram+78	; 96 bytes
-!tile	= !varram+174	; 1 byte
-!property	= !varram+175	; 1 byte
-!currentpixel	= !varram+176	; 1 byte
-!firsttile	= !varram+177	; 1 byte
-!clearbox	= !varram+178	; 1 byte
-!wait	= !varram+179	; 1 byte
-!timer	= !varram+180	; 1 byte
-!teleport	= !varram+181	; 1 byte
-!telepdest	= !varram+182	; 2 bytes
-!telepprop	= !varram+184	; 1 byte
-!forcesfx	= !varram+185	; 1 byte
-!widthcarry	= !varram+186	; 1 byte
-!choices	= !varram+187	; 1 byte
-!cursor	= !varram+188	; 2 bytes
-!currentchoice	= !varram+190	; 1 byte
-!choicetable	= !varram+191	; 3 bytes
-!choicespace	= !varram+194	; 1 byte
-!choicewidth	= !varram+195	; 1 byte
-!cursormove	= !varram+196	; 1 byte
-!nochoicelb	= !varram+197	; 1 byte
-!cursorupload	= !varram+198	; 1 byte
-!cursorend	= !varram+199	; 1 byte
+!vwftextsource	= !varram+$2D	; 3 bytes
+!vwfbytes	= !varram+$30	; 2 bytes
+!vwfgfxdest	= !varram+$32	; 3 bytes
+!vwftilemapdest	= !varram+$35	; 3 bytes
+!vwfpixel	= !varram+$38	; 2 bytes
+!vwfmaxwidth	= !varram+$3A	; 1 byte
+!vwfmaxheight	= !varram+$3B	; 1 byte
+!vwfchar	= !varram+$3C	; 2 bytes
+!vwfwidth	= !varram+$3E	; 1 byte
+!vwfroutine	= !varram+$3F	; 15 bytes
+!vwftileram	= !varram+$4E	; 96 bytes
+!tile	= !varram+$AE	; 1 byte
+!property	= !varram+$AF	; 1 byte
+!currentpixel	= !varram+$B0	; 1 byte
+!firsttile	= !varram+$B1	; 1 byte
+!clearbox	= !varram+$B2	; 1 byte
+!wait	= !varram+$B3	; 1 byte
+!timer	= !varram+$B4	; 1 byte
+!teleport	= !varram+$B5	; 1 byte
+!telepdest	= !varram+$B6	; 2 bytes
+!telepprop	= !varram+$B8	; 1 byte
+!forcesfx	= !varram+$B9	; 1 byte
+!widthcarry	= !varram+$BA	; 1 byte
+!choices	= !varram+$BB	; 1 byte
+!cursor	= !varram+$BC	; 2 bytes
+!currentchoice	= !varram+$BE	; 1 byte
+!choicetable	= !varram+$BF	; 3 bytes
+!choicespace	= !varram+$C2	; 1 byte
+!choicewidth	= !varram+$C3	; 1 byte
+!cursormove	= !varram+$C4	; 1 byte
+!nochoicelb	= !varram+$C5	; 1 byte
+!cursorupload	= !varram+$C6	; 1 byte
+!cursorend	= !varram+$C7	; 1 byte
 
-!paletteupload	= !varram+200	; 1 byte
-!palbackup	= !varram+201	; 64 bytes
-!cursorfix	= !varram+265	; 1 byte
-!cursorvram	= !varram+266	; 2 bytes
-!cursorsrc	= !varram+268	; 2 bytes
+!paletteupload	= !varram+$C8	; 1 byte
+!palbackup	= !varram+$C9	; 64 bytes
+!cursorfix	= !varram+$109	; 1 byte
+!cursorvram	= !varram+$10A	; 2 bytes
+!cursorsrc	= !varram+$10C	; 2 bytes
+!enddialog	= !varram+$10E	; 1 byte
 
 !rambank	= select(!use_sa1_mapping,$40,$7E)
 
@@ -392,8 +393,8 @@ InitRAM:
 .InitVarRAM
 	sta !varram,x	; Initialize RAM
 	inx #2
-	cpx #$010E	; Number of bytes
-	bne .InitVarRAM
+	cpx #$010F	; Number of bytes
+	bcc .InitVarRAM
 	sep #$30
 
 .SetDefaults
@@ -633,6 +634,8 @@ endif
 
 
 VWFSetup:
+	lda #$00	;\ Ensure that the !enddialog flag gets properly cleared
+	sta !enddialog	;/
 	jsr GetMessage
 	jsr LoadHeader
 	jmp Buffer_End
@@ -3565,7 +3568,11 @@ WordWidth:
 .FC_LoadMessage
 .FD_LineBreak
 .FE_Space
+	jmp .Return
+
 .FF_End
+	lda #$01
+	sta !enddialog
 	jmp .Return
 
 .Add
@@ -4074,15 +4081,10 @@ TextUpload:
 
 
 .NoCursor
-	!16bit rep #$20
-	lda !vwfchar	; Dialogue done?
-	!8bit cmp #$FF
-	!16bit cmp #$FFFF
-	bne .NoEnd
-	!16bit lda #$0000
-	!8bit lda #$00
-	sta !vwfchar
-	!16bit sep #$20
+	lda !enddialog	; Dialogue done?
+	beq .NoEnd
+	lda #$00
+	sta !enddialog
 	jmp .End
 
 .NoEnd
@@ -4610,6 +4612,7 @@ print "Message register at address $",hex(!message),"."
 print "BG GFX register at address $",hex(!boxbg),"."
 print "BG Color register at address $",hex(!boxcolor),"."
 print "Frame GFX register at address $",hex(!boxframe),"."
+print "Abort Dialogue Processing register at address $",hex(!enddialog),"."
 
 print ""
 print "See Readme for details!"

@@ -1367,8 +1367,7 @@ db "Hi there!",$FA,$FF</code></pre>
 					<li>Fix the <a href="#bugs">aforementioned teleport bugs</a>.</li>
 					<li>Add support for the expanded secondary entrances (<code>$0200</code> - <code>$1FFF</code>).</li>
 					<li>Allow customising which button is used for advancing the dialogue.</li>
-					<li>Add a feature to allow closing the dialogue mid-message, this might also help with fixing
-						<a href="#bugs">the aforementioned death bug</a>.</li>
+					<li>Add a feature to allow closing the dialogue mid-message by pressing a button.</li>
 					<li>Implement UTF-8 mode to replace the deprecated 16-Bit mode.</li>
 					<li>Lots of optimizations.</li>
 				</ul>
@@ -1404,6 +1403,8 @@ db "Hi there!",$FA,$FF</code></pre>
 						<li>Fixed and improved the Readme.</li>
 						<li>Fixed a typo in <code>vwfmessagepointers.asm</code>.</li>
 						<li>Fixed the broken option selection cursor.</li>
+						<li>Fixed issue when using <code>$F4</code> to display character <code>$FF</code>.</li>
+						<li>Added a RAM flag to allow closing the dialogue mid-message.</li>
 						<li>The SRAM expansion patch won’t accidentally contract the SRAM size.</li>
 					</ul>
 				</p></dd>

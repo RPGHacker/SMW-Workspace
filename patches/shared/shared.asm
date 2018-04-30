@@ -51,7 +51,7 @@ if !shared_asm_included == 0
 	
 	; Returns the absolute value of value
 	
-	function abs(value) = select(less(num, 0), num*-1, num)
+	function abs(value) = select(less(value, 0), value*-1, value)
 	
 	
 	; Returns 1 if value > 0, -1 if value < 0 and 0 otherwise

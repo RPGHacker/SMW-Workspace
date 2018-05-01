@@ -1345,19 +1345,28 @@ db "Hi there!",$FA,$FF</code></pre>
 						midway point instead of the level entrance.</li>
 					<li>If you die while a dialogue is being processed without freezing sprites, then this leads
 						to the aforementioned issues in the <a href="#advanced">Problem Solving</a> section.</li>
+					<li>Sometimes, when closing a dialogue, there’s a Flash of <code>0</code>s (FO0)
+						when using level modes where Layer 3 isn’t on the Main-Screen, or the Main-Screen
+						or Sub-Screen registers are updated in such a way that Layer 3 gets shown
+						by another patch while this patch is busy restoring Layer 3.
+					<br/>
+						While this may sound easy to fix by applying <a href="https://smwc.me/1468216">Blind
+						Devil’s patch</a>, it isn’t, because of the tilemap still containing the VWF Dialogues
+						transparent tile, which is <code>$00</code>, because tile <code>$FC</code> can
+						get overwritten by a characher tile in sufficiently long messages.</li>
 				</ul>
 			</p>
 			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
-			</section>
+		</section>
 
-			<!-- Seperator Comment -->
+		<!-- Seperator Comment -->
 
-			<section class="container">
+		<section class="container">
 			<h2 id="plans" class="text-center">6. Planned Features</h2>
 			<p>
 				<small class="text-center my-2 d-block">
 					LOL, I wrote this patch almost eight years ago and none of this is likely
-					going to happen anymore. Sorry to disappoint you. :(<br />
+					going to happen anymore. Sorry to disappoint you. :(<br/>
 					Sincerly, RPG Hacker
 				</small>
 				<ul>

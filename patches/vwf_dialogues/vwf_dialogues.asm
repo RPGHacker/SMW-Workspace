@@ -31,7 +31,7 @@ namespace vwf_dialogues_
 
 
 
-; DO NOT EDIT THOSE!!!
+; DO NOT EDIT ANYTHING HERE, UNLESS YOU KNOW EXACTLY WHAT YOU'RE DOING!
 
 if !use_sa1_mapping
 	!varram	= !varramSA1
@@ -39,83 +39,92 @@ if !use_sa1_mapping
 	!tileram	= !tileramSA1
 endif
 
-!vwfmode	= !varram	; 1 byte
-!message	= !varram+$1	; 2 bytes
-!counter	= !varram+$3	; 1 byte
 
-!width	= !varram+$4	; 1 byte
-!height	= !varram+$5	; 1 byte
-!xpos	= !varram+$6	; 1 byte
-!ypos	= !varram+$7	; 1 byte
-!boxbg	= !varram+$8	; 1 byte
-!boxcolor	= !varram+$9	; 6 bytes
-!boxframe	= !varram+$F	; 1 byte
-!boxcreate	= !varram+$10	; 1 byte
-!boxpalette	= !varram+$11	; 1 byte
-!freezesprites	= !varram+$12	; 1 byte
-!beep	= !varram+$13	; 1 byte
-!beepbank	= !varram+$14	; 2 bytes
-!beepend	= !varram+$16	; 1 byte
-!beependbank	= !varram+$17	; 2 bytes
-!beepcursor	= !varram+$19	; 1 byte
-!beepcursorbank	= !varram+$1A	; 2 bytes
-!beepchoice	= !varram+$1C	; 1 byte
-!beepchoicebank	= !varram+$1D	; 2 bytes
-!font	= !varram+$1F	; 1 byte
-!edge	= !varram+$20	; 1 byte
-!space	= !varram+$21	; 1 byte
-!frames	= !varram+$22	; 1 byte
-!layout	= !varram+$23	; 1 byte
-!soundoff	= !varram+$24	; 1 byte
-!speedup	= !varram+$25	; 1 byte
-!autowait	= !varram+$26	; 1 byte
+!varrampos #= 0
 
-!vrampointer	= !varram+$27	; 2 bytes
-!currentwidth	= !varram+$29	; 1 byte
-!currentheight	= !varram+$2A	; 1 byte
-!currentx	= !varram+$2B	; 1 byte
-!currenty	= !varram+$2C	; 1 byte
+macro claim_varram(define, size)
+	!<define> := !varram+!varrampos
+	!varrampos #= !varrampos+<size>
+endmacro
 
-!vwftextsource	= !varram+$2D	; 3 bytes
-!vwfbytes	= !varram+$30	; 2 bytes
-!vwfgfxdest	= !varram+$32	; 3 bytes
-!vwftilemapdest	= !varram+$35	; 3 bytes
-!vwfpixel	= !varram+$38	; 2 bytes
-!vwfmaxwidth	= !varram+$3A	; 1 byte
-!vwfmaxheight	= !varram+$3B	; 1 byte
-!vwfchar	= !varram+$3C	; 2 bytes
-!vwfwidth	= !varram+$3E	; 1 byte
-!vwfroutine	= !varram+$3F	; 15 bytes
-!vwftileram	= !varram+$4E	; 96 bytes
-!tile	= !varram+$AE	; 1 byte
-!property	= !varram+$AF	; 1 byte
-!currentpixel	= !varram+$B0	; 1 byte
-!firsttile	= !varram+$B1	; 1 byte
-!clearbox	= !varram+$B2	; 1 byte
-!wait	= !varram+$B3	; 1 byte
-!timer	= !varram+$B4	; 1 byte
-!teleport	= !varram+$B5	; 1 byte
-!telepdest	= !varram+$B6	; 2 bytes
-!telepprop	= !varram+$B8	; 1 byte
-!forcesfx	= !varram+$B9	; 1 byte
-!widthcarry	= !varram+$BA	; 1 byte
-!choices	= !varram+$BB	; 1 byte
-!cursor	= !varram+$BC	; 2 bytes
-!currentchoice	= !varram+$BE	; 1 byte
-!choicetable	= !varram+$BF	; 3 bytes
-!choicespace	= !varram+$C2	; 1 byte
-!choicewidth	= !varram+$C3	; 1 byte
-!cursormove	= !varram+$C4	; 1 byte
-!nochoicelb	= !varram+$C5	; 1 byte
-!cursorupload	= !varram+$C6	; 1 byte
-!cursorend	= !varram+$C7	; 1 byte
 
-!paletteupload	= !varram+$C8	; 1 byte
-!palbackup	= !varram+$C9	; 64 bytes
-!cursorfix	= !varram+$109	; 1 byte
-!cursorvram	= !varram+$10A	; 2 bytes
-!cursorsrc	= !varram+$10C	; 2 bytes
-!enddialog	= !varram+$10E	; 1 byte
+%claim_varram(vwfmode, 1)
+%claim_varram(message, 2)
+%claim_varram(counter, 1)
+
+%claim_varram(width, 1)
+%claim_varram(height, 1)
+%claim_varram(xpos, 1)
+%claim_varram(ypos, 1)
+%claim_varram(boxbg, 1)
+%claim_varram(boxcolor, 6)
+%claim_varram(boxframe, 1)
+%claim_varram(boxcreate, 1)
+%claim_varram(boxpalette, 1)
+%claim_varram(freezesprites, 1)
+%claim_varram(beep, 1)
+%claim_varram(beepbank, 2)
+%claim_varram(beepend, 1)
+%claim_varram(beependbank, 2)
+%claim_varram(beepcursor, 1)
+%claim_varram(beepcursorbank, 2)
+%claim_varram(beepchoice, 1)
+%claim_varram(beepchoicebank, 2)
+%claim_varram(font, 1)
+%claim_varram(edge, 1)
+%claim_varram(space, 1)
+%claim_varram(frames, 1)
+%claim_varram(layout, 1)
+%claim_varram(soundoff, 1)
+%claim_varram(speedup, 1)
+%claim_varram(autowait, 1)
+
+%claim_varram(vrampointer, 2)
+%claim_varram(currentwidth, 1)
+%claim_varram(currentheight, 1)
+%claim_varram(currentx, 1)
+%claim_varram(currenty, 1)
+
+%claim_varram(vwftextsource, 3)
+%claim_varram(vwfbytes, 2)
+%claim_varram(vwfgfxdest, 3)
+%claim_varram(vwftilemapdest, 3)
+%claim_varram(vwfpixel, 2)
+%claim_varram(vwfmaxwidth, 1)
+%claim_varram(vwfmaxheight, 1)
+%claim_varram(vwfchar, 2)
+%claim_varram(vwfwidth, 1)
+%claim_varram(vwfroutine, 15)
+%claim_varram(vwftileram, 96)
+%claim_varram(tile, 1)
+%claim_varram(property, 1)
+%claim_varram(currentpixel, 1)
+%claim_varram(firsttile, 1)
+%claim_varram(clearbox, 1)
+%claim_varram(wait, 1)
+%claim_varram(timer, 1)
+%claim_varram(teleport, 1)
+%claim_varram(telepdest, 2)
+%claim_varram(telepprop, 1)
+%claim_varram(forcesfx, 1)
+%claim_varram(widthcarry, 1)
+%claim_varram(choices, 1)
+%claim_varram(cursor, 2)
+%claim_varram(currentchoice, 1)
+%claim_varram(choicetable, 3)
+%claim_varram(choicespace, 1)
+%claim_varram(choicewidth, 1)
+%claim_varram(cursormove, 1)
+%claim_varram(nochoicelb, 1)
+%claim_varram(cursorupload, 1)
+%claim_varram(cursorend, 1)
+
+%claim_varram(paletteupload, 1)
+%claim_varram(palbackup, 64)
+%claim_varram(cursorfix, 1)
+%claim_varram(cursorvram, 2)
+%claim_varram(cursorsrc, 2)
+%claim_varram(enddialog, 1)
 
 !rambank	= select(!use_sa1_mapping,$40,$7E)
 
@@ -393,7 +402,7 @@ InitRAM:
 .InitVarRAM
 	sta !varram,x	; Initialize RAM
 	inx #2
-	cpx #$010F	; Number of bytes
+	cpx #!varrampos	; Number of bytes
 	bcc .InitVarRAM
 	sep #$30
 

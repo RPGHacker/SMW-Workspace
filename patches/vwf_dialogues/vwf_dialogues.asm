@@ -5,7 +5,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-incsrc vwf_dialogues.cfg
+incsrc vwfconfig.cfg
 incsrc ../shared/shared.asm
 
 

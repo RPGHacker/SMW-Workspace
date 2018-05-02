@@ -523,7 +523,7 @@ db %00001111,$13,$13,$23,$29
 
 .body
 db $FD
-db "-POINT OF ADVICE-",$FA,$ED 
+db "-POINT OF ADVICE-",$FA,$ED
 db "The big coins are Dragon Coins. If you pick up five of these "
 db "in one area, you get an extra Mario."
 db $FA,$FF

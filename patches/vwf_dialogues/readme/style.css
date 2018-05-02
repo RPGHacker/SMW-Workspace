@@ -1,0 +1,81 @@
+.video {
+	width:	100%;
+	height:	360px;
+	border:	none;
+}
+
+.ir-crisp {
+	image-rendering: pixelated;
+	image-rendering: -webkit-optimize-contrast;
+	image-rendering: -moz-crisp-edges;
+	image-rendering: -o-crisp-edges;
+	image-rendering: crisp-edges;
+}
+
+table.kv-map > tbody > tr > th::after {
+	content:	":";
+	margin-left:	2px;
+	margin-right:	8px;
+}
+
+dd {
+	margin-left:	16px;
+}
+
+dt {
+	margin-top:	24px
+}
+
+dt code {
+	font-size:	100%;
+}
+
+pre {
+	margin-top:	1rem;
+	margin-bottom:	1rem;
+	margin-block-start:	1rem;
+	margin-block-end:	1rem;
+
+	padding-left:	1rem;
+	padding-right:	1rem;
+	padding-inline-start:	1rem;
+	padding-inline-end:	1rem;
+}
+
+a > code,
+pre > code {
+	color:	#E83E8C;
+}
+
+pre > code > table {
+	white-space: pre-line;
+}
+
+pre > code > table > tbody > tr > td:not(:last-child) {
+	padding-right:	1ch;
+}
+
+section.container + section.container {
+	margin-top:	3rem;
+	margin-block-start:	3rem;
+}
+
+p + h4 {
+	margin-top: 1.5rem;
+	margin-block-start: 1.5rem;
+}
+
+h1[id]::before, h2[id]::before, h3[id]::before,
+h4[id]::before, h5[id]::before, h6[id]::before,
+dt[id]::before {
+	content:	"";
+	display:	block;
+	margin-top:	-5rem;
+	height:	5rem;
+}
+
+ol > details > summary,
+ul > details > summary {
+	display:	list-item	flex;
+	list-style-position:	outside;
+}

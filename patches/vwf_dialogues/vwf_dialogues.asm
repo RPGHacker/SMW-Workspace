@@ -9,7 +9,7 @@ incsrc vwf_dialogues.cfg
 incsrc ../shared/shared.asm
 
 
-print "VWF Dialogues Patch v1.3 - (c) 2018 RPG Hacker"
+print "VWF Dialogues Patch - (c) 2018 RPG Hacker"
 
 
 math pri on

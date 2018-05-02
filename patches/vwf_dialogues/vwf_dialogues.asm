@@ -2890,6 +2890,8 @@ endif
 	jmp .FD_LineBreak
 
 .FFNoChoices
+	lda #$01
+	sta !enddialog
 	jsr IncPointer
 	jmp .End
 
@@ -3577,11 +3579,7 @@ WordWidth:
 .FC_LoadMessage
 .FD_LineBreak
 .FE_Space
-	jmp .Return
-
 .FF_End
-	lda #$01
-	sta !enddialog
 	jmp .Return
 
 .Add
@@ -4094,9 +4092,15 @@ TextUpload:
 	beq .NoEnd
 	lda #$00
 	sta !enddialog
+	!16bit rep #$20
+	!16bit lda #$0000
+	!8bit lda #$00
+	sta !vwfchar
+	!16bit sep #$20
 	jmp .End
 
 .NoEnd
+	lda !vwfchar
 	!8bit cmp #$FA	; Waiting for A button?
 	!16bit cmp #$FFFA
 	!16bit sep #$20

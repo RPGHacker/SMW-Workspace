@@ -265,7 +265,7 @@
 				After you’re done with setting up all the defines, save the file and patch it to your ROM with Asar.
 				Make sure only to patch <code>vwf_dialogues.asm</code> and nothing else. You should get a window that
 				looks somewhat like this:
-				<img class="d-block m-1 my-2" src="screenshots/console-1.png" alt="Screenshot" width="668" height="331" />
+				<img class="d-block m-1 my-2" src="screenshots/console-1.png" alt="Screenshot" width="979" height="512" />
 				If that’s what you see you’ve applied the patch successfully. I’ll explain all of those lines in detail
 				later on.
 			</p>
@@ -310,7 +310,7 @@
 			<p>
 				Let’s start with background graphics, the easiest format. Open the file "vwfpatterns.bin" in your
 				tile editor and set it to 2BPP GB. You should get a window similiar to this:
-				<img class="d-block m-1 my-2" src="screenshots/yychr-1.png" alt="Screenshot" width="638" height="486"/>
+				<img class="d-block m-1 my-2" src="screenshots/yychr-1.png" alt="Screenshot" width="634" height="481"/>
 				As I said this format is pretty easy. You only have two rules to follow:
 				<ul>
 					<li>One 8×8 tile = One BG pattern.</li>
@@ -326,7 +326,7 @@
 			<p>
 				Next up are frame graphics. Open up <code>vwfframes.bin</code> in your tile editor and set it to 2BPP GB. You
 				should see something like this:
-				<img class="d-block m-1 my-2" src="screenshots/yychr-2.png" alt="Screenshot" width="638" height="486"/>
+				<img class="d-block m-1 my-2" src="screenshots/yychr-2.png" alt="Screenshot" width="634" height="481"/>
 				Now frame graphics are a little bit more complicated in that way that each frame set consits of nine
 				8×8 tiles this time. Here is how they’re used:
 				<img class="d-block m-1 my-2 ir-crisp" src="screenshots/frames-1.png" alt="Screenshot" width="506" height="329"/>
@@ -381,7 +381,7 @@ dw $45ED,$24E6,$0C41
 				to edit them that way. Well, this is where YY-CHR v0.99 comes in handy. At the bottom it has a field labeled
 				"Pattern:". Simply select "FC/NES x16" here and the letters will be in the correct format. This is what
 				it looks like:
-				<img class="d-block m-1 my-2" src="screenshots/yychr-3.png" alt="Screenshot" width="638" height="486"/>
+				<img class="d-block m-1 my-2" src="screenshots/yychr-3.png" alt="Screenshot" width="634" height="481"/>
 				Each 16×16 tile is one character. Each font can have up to 256 characters. That’s four pages in YY-CHR.
 				Just like BG patterns, fonts have their special rules.
 				<ul>
@@ -435,7 +435,7 @@ dl Font2,Font2_Width</code></pre>
 			<p>
 				So now to actually use my patch and display some text on the screen.
 				Remember this window from applying the patch to your ROM?
-				<img class="d-block m-1 my-2" src="screenshots/console-1.png" alt="Screenshot" width="668" height="331" />
+				<img class="d-block m-1 my-2" src="screenshots/console-1.png" alt="Screenshot" width="979" height="512" />
 				This is the first time it actually plays a role. Now if you’re not familiar with ASM at all or don’t
 				plan on using this patch in your own patches, custom sprites or custom blocks then this won’t be
 				very interesting for you. For everyone else here is the general procedure of how to start a dialogue
@@ -1171,7 +1171,7 @@ db "Hi there!",$FA,$FF</code></pre>
 			<p>
 				Everything left now is to explain how to use the functions of this patch in your own patches.
 				For this we need the screenshot from Asar once again.
-				<img class="d-block m-1 my-2" src="screenshots/console-1.png" alt="Screenshot" width="668" height="331" />
+				<img class="d-block m-1 my-2" src="screenshots/console-1.png" alt="Screenshot" width="979" height="512" />
 			</p>
 
 			<dl>
@@ -1292,7 +1292,7 @@ db "Hi there!",$FA,$FF</code></pre>
 			<p>
 				If you make your message list long enough (around 200 messages), it is possible that you’ll get an
 				error like this:
-				<img class="d-block m-1 my-2" src="screenshots/console-2.png" alt="Screenshot" width="668" height="331" />
+				<img class="d-block m-1 my-2" src="screenshots/console-2.png" alt="Screenshot" width="979" height="512" />
 				As Asar states, this is caused by crossing a bank border. More specifically, your message data has gotten too
 				long to fit inside a single bank. There is a simple solution to this problem: Just add <code>%nextbank()</code> above the last message in the file,
 				and the errors should disappear (until you add around two hundred more messages). If they don’t, keep moving the

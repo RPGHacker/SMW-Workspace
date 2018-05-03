@@ -395,16 +395,21 @@ dw $45ED,$24E6,$0C41
 			<p>
 				Next thing is the width table. Open <code>vwffont1.asm</code>. As you can see the width table file and the actual
 				font file share the same file name. This is not required, but recommended. You’ll see something like this now:
-				<pre><code>;Char00to0F:
+				<pre><code>; Characters 00 to 0F
 db $07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$06,$06
-;Char10to1F:
+; Characters 10 to 1F
 db $07,$07,$05,$07,$08,$06,$09,$08,$07,$07,$07,$07,$06,$07,$07,$07
-;Char20to2F:
+; Characters 20 to 2F
 db $0B,$07,$07,$07,$07,$07,$06,$07,$07,$06,$07,$07,$03,$06,$07,$03
 [...]</code></pre>
 				This table contains the width of each character in the font file in pixel. This should be quite self
-				explanatory. Just use YY-CHR to count the pixels. This may be pretty annoying, but so far this is
-				the only way to do it.
+				explanatory. Just use YY-CHR to count the pixels. If that feels too annoying, you can also use the
+				included python script to do that automatically. You'll need Python 2.7 or Python 3. If you have that,
+				you can just drag and drop your font file onto the script and it will automatically create a widths
+				table right next to the font file. The generated table might need some manual tweaking though. If you
+				want, you can also have the script generate a fixed width table, by passing <code>-f</code> when
+				running the script on the command line. That will use the widest character in the font as the fixed
+				width.
 			</p>
 
 			<p>

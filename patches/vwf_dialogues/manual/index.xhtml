@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 	<head>
 		<meta charset="UTF-8"/>
-		<title>VWF Dialogues Patch - Readme</title>
+		<title>VWF Dialogues Patch - Manual</title>
 		<link rel="stylesheet" type="text/css" href="lib/bootstrap-4.0.0.min.css"/>
 		<link rel="stylesheet" type="text/css" href="style.css"/>
 		<script type="application/javascript" defer="true" src="lib/jquery-3.2.1.slim.min.js"></script>
@@ -141,7 +141,7 @@
 				Unlike Romi’s VWF Cutscene Tool (which is great, btw.) this patch is set up for easy
 				event creation, easy customization and compatibility with all kinds of languages. The cost
 				of this is that it’s way harder to use. However, as long as you’re somewhat familiar with
-				custom sprites/custom blocks and Asar patches and read this Readme carefully you should be fine.
+				custom sprites/custom blocks and Asar patches and read this manual carefully you should be fine.
 			</p>
 
 			<p>
@@ -157,7 +157,7 @@
 
 			<p>
 				Be aware that this patch does some modifications to the ROM that might seem to be unrelated to the
-				patch itself and aren’t mentioned anywhere in this Readme. For example: It automatically expands
+				patch itself and aren’t mentioned anywhere in this manual. For example: It automatically expands
 				the SRAM of your ROM to 128 KB since it needs over 32 KB of free RAM during dialogues.
 			</p>
 
@@ -303,7 +303,7 @@
 				tile editor will do. If you plan to edit (or create) fonts I really recommend you get YY-CHR v0.99,
 				though. Nope, YY-CHR v0.98 won’t do in this case. YY-CHR v0.99 has a very special and useful feature
 				which YY-CHR v0.98 doesn’t have and which is needed for editing fonts. I’ll use YY-CHR v0.99 for all
-				tile editor references in this Readme.
+				tile editor references in this manual.
 			</p>
 
 			<h4 class="text-center">Background graphics</h4>
@@ -343,7 +343,7 @@
 			<p>
 				Another thing you have to do for frames is setting up palettes for each frame set. Specifially you
 				have to set up the second, third and fourth color of the frame palette declared in <code>vwfframes.asm</code>
-				in section 2 of this Readme. The file looks somewhat like this:
+				in section 2 of this manual. The file looks somewhat like this:
 				<pre><code>; Format:
 ;db %--------,%--------	; Frame header
 ;dw $COL1,$COL2,$COL3	; Frame palette
@@ -716,7 +716,7 @@ db %rrssttuu,$vv,$ww,$xx,$yy
 
 			<h4 id="dialog-body" class="text-center">Dialogue Texts</h4>
 			<p>
-				So if you’re using the same labels as I suggested in this Readme then what you’re going to edit now is
+				So if you’re using the same labels as I suggested in this manual then what you’re going to edit now is
 				the part under the <code>.body</code> sublabel, which is the actual dialogue.
 			</p>
 			<dl>
@@ -1162,7 +1162,7 @@ db "Hi there!",$FA,$FF</code></pre>
 			</dl>
 
 			<p>
-				And with that another section of this ridiculously long Readme is done and you’re finally able to
+				And with that another section of this ridiculously long manual is done and you’re finally able to
 				write your own dialogues. WOO HOO!
 			</p>
 

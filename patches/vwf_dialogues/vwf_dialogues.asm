@@ -3892,7 +3892,7 @@ SetupColor:
 	phk
 	pla
 	sta $02
-	lda #$06
+	lda #$08
 	sta $211B
 	stz $211B
 	stz $211C
@@ -3902,7 +3902,7 @@ SetupColor:
 	rep #$20
 	lda $2134
 	clc
-	adc.w #Palettes
+	adc.w #Palettes+2
 	sta $00
 	sep #$20
 	ldy #$00

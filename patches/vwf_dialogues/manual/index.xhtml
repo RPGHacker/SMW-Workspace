@@ -344,15 +344,33 @@
 				Another thing you have to do for frames is setting up palettes for each frame set. Specifially you
 				have to set up the second, third and fourth color of the frame palette declared in <code>vwfframes.asm</code>
 				in section 2 of this Readme. The file looks somewhat like this:
-				<pre><code><table class="border-0" style="line-height:19px;"><tbody><tr><td>dw $0000,$FFFF,$0000	</td><td>; Frame $00</td></tr>
-<tr><td>dw $0A56,$04ED,$0044	</td><td>; Frame $01</td></tr>
-<tr><td>dw $45ED,$24E6,$0C41	</td><td>; Frame $02</td></tr>
-<tr><td>dw $477D,$2E55,$214D	</td><td>; Frame $03</td></tr>
-</tbody></table>[...]</code></pre>
-				Each line here sets the palette for 9 tiles in <code>vwfframes.bin</code>. You should start each line with
-				<code>dw</code>, followed by a space and then the values of the three colors in SNES RGB prefixed with
-				<code>$</code> (hex values are always prefixed with <code>$</code> in assembly, keep that in mind)
-				and seperated by commas. If you forgot about the SNES RGB format look in section 2 again.
+				<pre><code>; Format:
+;db %--------,%--------	; Frame header
+;dw $COL1,$COL2,$COL3	; Frame palette
+
+; Frame $00
+db %00000000,%00000000
+dw $0000,$FFFF,$0000
+
+; Frame $01
+db %00000000,%00000000
+dw $0A56,$04ED,$0044
+
+; Frame $02
+db %00000000,%00000000
+dw $45ED,$24E6,$0C41
+
+[...]</code></pre>
+				Each block here sets the palette for 9 tiles in <code>vwfframes.bin</code>.
+			</p><p>
+				First is the two-byte header, which is intended for future expansion
+				and is therefore currently all zeros, followed by the palette, which
+				starts with a <code>dw</code>, followed by a space and then the values
+				of the three colors in SNES RGB prefixed with <code>$</code>
+				(hex values are always prefixed with <code>$</code> in assembly,
+				keep that in mind) and seperated by commas.
+			</p><p>
+				If you forgot about the SNES RGB format look in section 2 again.
 				I explained how to find a SNES RGB value using Lunar Magic there.
 			</p>
 

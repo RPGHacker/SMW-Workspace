@@ -2890,6 +2890,8 @@ endif
 	jmp .FD_LineBreak
 
 .FFNoChoices
+	lda #$01
+	sta !enddialog
 	jsr IncPointer
 	jmp .End
 
@@ -3577,11 +3579,7 @@ WordWidth:
 .FC_LoadMessage
 .FD_LineBreak
 .FE_Space
-	jmp .Return
-
 .FF_End
-	lda #$01
-	sta !enddialog
 	jmp .Return
 
 .Add
@@ -3894,7 +3892,7 @@ SetupColor:
 	phk
 	pla
 	sta $02
-	lda #$06
+	lda #$08
 	sta $211B
 	stz $211B
 	stz $211C
@@ -3904,7 +3902,7 @@ SetupColor:
 	rep #$20
 	lda $2134
 	clc
-	adc.w #Palettes
+	adc.w #Palettes+2
 	sta $00
 	sep #$20
 	ldy #$00
@@ -4094,9 +4092,15 @@ TextUpload:
 	beq .NoEnd
 	lda #$00
 	sta !enddialog
+	!16bit rep #$20
+	!16bit lda #$0000
+	!8bit lda #$00
+	sta !vwfchar
+	!16bit sep #$20
 	jmp .End
 
 .NoEnd
+	lda !vwfchar
 	!8bit cmp #$FA	; Waiting for A button?
 	!16bit cmp #$FFFA
 	!16bit sep #$20

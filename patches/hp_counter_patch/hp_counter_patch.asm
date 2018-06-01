@@ -6,15 +6,18 @@
 
 
 incsrc ../free_7F4000/freeconfig.cfg
-incsrc hp_counter_patch.cfg
+incsrc hpconfig.cfg
 incsrc ../shared/shared.asm
 
 
-print "HP/MP Counter Patch v1.3 - (c) RPG Hacker"
+print "HP/MP Counter Patch - (c) RPG Hacker"
 
 
 math pri on
 math round off
+
+pushtable
+cleartable
 
 
 namespace hp_counter_patch_
@@ -1360,3 +1363,8 @@ if !EnableBowserBattleStatusBar
 endif
 
 print "Patch inserted at $",hex(FreecodeStart),", ",freespaceuse," bytes of free space used."
+
+namespace off
+
+
+pulltable

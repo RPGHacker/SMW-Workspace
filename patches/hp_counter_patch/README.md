@@ -1,7 +1,7 @@
-#RPG-Styled HP and MP Counter Version
+# RPG-Styled HP and MP Counter Version
 
 
-##Introduction
+## Introduction
 
 This patch installs an RPG-styled HP and MP Counter to your Super Mario World ROM. The counter was inspired by old SNES RPGs like Secret of Mana or Seiken Densetsu 3. You can have up to 999 HP and 99 MP. Some actions (like shooting Fireballs, Flying etc.) can be set up to cost MP. In that case you can’t use them if your MP are too low.
 
@@ -18,7 +18,7 @@ Use this patch on your own risk, I’m not responsible for any damage caused. I�
 This patch should be compatible with the 6 Digit Coin Counter Patch, but you have to apply the Coin Counter Patch first and this patch second.
 
 
-##Usage
+## Usage
 
 First of all you should insert the ExGFX files into your ROM, else you will get trash in your status bar.
 
@@ -100,26 +100,26 @@ This is how much MP cape-spinning takes away. Set to $00 to disable.
 This is how fast your MP are reduced while flying. The higher the number, the slower your MP are reduced. $32 is about one second.
 
 
-##Known Bugs
+## Known Bugs
 
 - When you start a new game and skip the intro, Mario is shown as Game Over on the overworld (this fixes itself once you enter a level).
 
 
-##Future Plans
+## Future Plans
 
 None for now, but feel free to contribute to this patch via [my GitHub](https://github.com/RPGHacker/SMW-Workspace/).
 
 
-##Special Thanks
+## Special Thanks
 
 - FPI for letting me use his TSRPR Status Bar GFX
 - Mert for letting me use his custom Mario head
 - People on SMWC, TMN, SMWH and YouTube who comment on my patch
 
 
-##Version History
+## Version History
 
-###Version 1.3 - xx/xx/xx
+### Version 1.3 - xx/xx/xx
 
 Contributors:
 - Exe Boss
@@ -140,7 +140,7 @@ Changes:
 - The status bar can now display MP values of up to 255, but the rest of the code still only supports values up to 99
 
 
-###Version 1.2 - November 1, 2015
+### Version 1.2 - November 1, 2015
 
 Contributors:
 - Medic
@@ -149,7 +149,7 @@ Changes:
 - Converted to Asar format
 
 
-###Version 1.1 - July 21, 2009
+### Version 1.1 - July 21, 2009
 
 Contributors:
 - RPG Hacker
@@ -167,7 +167,7 @@ Changes:
 - Improved SRAM Support
 
 
-###Version 1.0 - July 19, 2009
+### Version 1.0 - July 19, 2009
 
 Contributors:
 - RPG Hacker

@@ -122,7 +122,7 @@ None for now, but feel free to contribute to this patch via [my GitHub](https://
 ### Version 1.3 - xx/xx/xx
 
 Contributors:
-- Exe Boss
+- ExE Boss
 - RPG Hacker
 
 Changes:

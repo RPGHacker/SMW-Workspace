@@ -1,6 +1,5 @@
 # RPG-Styled HP and MP Counter Version
 
-
 ## Introduction
 
 This patch installs an RPG-styled HP and MP Counter to your Super Mario World ROM. The counter was inspired by old SNES RPGs like Secret of Mana or Seiken Densetsu 3. You can have up to 999 HP and 99 MP. Some actions (like shooting Fireballs, Flying etc.) can be set up to cost MP. In that case you can’t use them if your MP are too low.
@@ -17,98 +16,116 @@ Use this patch on your own risk, I’m not responsible for any damage caused. I�
 
 This patch should be compatible with the 6 Digit Coin Counter Patch, but you have to apply the Coin Counter Patch first and this patch second.
 
-
 ## Usage
 
 First of all you should insert the ExGFX files into your ROM, else you will get trash in your status bar.
 
 After that you have to open the ASM file and specify the starting values under the section “Value Defines” as well as a freespace address.
 
+<dl>
+<dt><code>!IntroLevel</code></dt>
+<dd>
+This is the intro level, so setting it to <code>$C5</code> will load <code>C5</code> as intro level. Setting it to <code>$DC</code> will disable the intro level, I don’t recommend this, though, as it causes a bug on the overworld.
+</dd>
 
-!IntroLevel
-This is the intro level + #$24, so setting it to $E9 will load C5 as intro level. Setting it to $00 will disable the intro level, I don’t recommend this, though, as it causes a bug on the overworld.
-
-
-!LifesatStart
+<dt><code>!LifesatStart</code></dt>
+<dd>
 These are the lifes to start with minus one. If you want to start with 1 life, set it to 00. Also if you want to keep your lifes from increasing you have to remove the semicolons at the beginnings of those lines:
 
+```asm
 ;org $028ACD
 ;        nop #8
+```
 
 If you want to disable bonus stars completely, you have to remove the semicolons at the beginnings of those lines:
 
+```asm
 ;org $05CF1B
 ;        nop #3
 ;
 ;
 ;org $009E4B
 ;        nop #3
+```
+</dd>
 
-
-!Damage
+<dt><code>!Damage</code></dt>
+<dd>
 This is the damage a regular sprite takes away. You can also set custom sprite damage. I’ve included a modified version of ICB’s Poison Goomba as a demonstration. Unlike with his patch, you have to add the code ABOVE the Mario <-> Sprite interaction routine, that was the only location where it worked for me. Don’t ask me why. I don’t have any experience with custom sprites. Anyways, this is the code you have to use:
 
+```asm
 lda #$02
 sta HurtFlag           ;by default $0670
 lda #DamageHighByte
 sta FreeramHighByte    ;by default $0061
 lda #DamageLow
 sta FreeramLow         ;by default $0060
+```
+</dd>
 
+<dt><code>!StartMaxHealth</code></dt>
+<dd>
+These are the max HP to start with in Hex. You can’t go above <code>999</code> (<code>$03E7</code>).
+</dd>
 
-!StartMaxHealth
-These are the max HP to start with in Hex. You can’t go above 999 ($03E7).
+<dt><code>!StartMaxMP</code></dt>
+<dd>
+These are the max MP to start with in Hex. You can’t go above <code>99</code> (<code>$63</code>).
+</dd>
 
+<dt><code>!RefillMPAfterDeath</code></dt>
+<dd>
+Set this to <code>$00</code> and your MP aren’t refilled after death, otherwise set it to any other number.
+</dd>
 
-!StartMaxMP
-These are the max MP to start with in Hex. You can’t go above 99 ($63).
+<dt><code>!LosePowerupAfterDeath</code></dt>
+<dd>
+Set this to <code>$00</code> to not lose your powerup afte death, otherwise set it to any other number.
+</dd>
 
-
-!RefillMPAfterDeath
-Set this to $00 and your MP aren’t refilled after death, otherwise set it to any other number.
-
-
-!LosePowerupAfterDeath
-Set this to $00 to not lose your powerup afte death, otherwise set it to any other number.
-
-
-!MushroomHeal
+<dt><code>!MushroomHeal</code></dt>
+<dd>
 This is how much HP a regular mushroom heals in Hex.
+</dd>
 
-
-!MPHeal
+<dt><code>!MPHeal</code></dt>
+<dd>
 This is how much MP a 1UP mushroom recovers in Hex.
+</dd>
 
+<dt><code>!FireballMP</code></dt>
+<dd>
+This is how much MP a fireball takes away. Set to <code>$00</code> to disable.
+</dd>
 
-!FireballMP
-This is how much MP a fireball takes away. Set to $00 to disable.
+<dt><code>!CapeMP</code></dt>
+<dd>
+This is how much MP flying takes away. Set to <code>$00</code> to disable.
+</dd>
 
-
-!CapeMP
-This is how much MP flying takes away. Set to $00 to disable.
-
-
-!FloatRequiresMP
+<dt><code>!FloatRequiresMP</code></dt>
+<dd>
 Set this to $00 and floating doesn’t require any MP, otherwise set it to any other number and floating requires the same MP as set under !CapeMP (but you still don’t lose MP when floating).
+</dd>
 
+<dt><code>!SpinMP</code></dt>
+<dd>
+This is how much MP cape-spinning takes away. Set to <code>$00</code> to disable.
+</dd>
 
-!SpinMP
-This is how much MP cape-spinning takes away. Set to $00 to disable.
-
-
-!FlyReduceSpeed
-This is how fast your MP are reduced while flying. The higher the number, the slower your MP are reduced. $32 is about one second.
-
+<dt><code>!FlyReduceSpeed</code></dt>
+<dd>
+This is how fast your MP are reduced while flying. The higher the number, the slower your MP are reduced. <code>$32</code> is about one second.
+</dd>
+</dl>
 
 ## Known Bugs
 
 - When you start a new game and skip the intro, Mario is shown as Game Over on the overworld (this fixes itself once you enter a level).
 
-
 ## Future Plans
 
 None for now, but feel free to contribute to this patch via [my GitHub](https://github.com/RPGHacker/SMW-Workspace/).
-
 
 ## Special Thanks
 
@@ -116,18 +133,15 @@ None for now, but feel free to contribute to this patch via [my GitHub](https://
 - Mert for letting me use his custom Mario head
 - People on SMWC, TMN, SMWH and YouTube who comment on my patch
 
-
 ## Version History
 
 ### Version 1.3 - xx/xx/xx
 
-Contributors:
+#### Contributors:
 - ExE Boss
 - RPG Hacker
 
-Changes:
-- Converted to Asar format
-
+#### Changes:
 - Optimised a lot of code
 - Added SA-1 support
 - Added Sprite Status Bar to the Bowser battle, can be turned off if another patch already handles this
@@ -139,22 +153,20 @@ Changes:
 - The Player head can now be moved around or removed altogether
 - The status bar can now display MP values of up to 255, but the rest of the code still only supports values up to 99
 
-
 ### Version 1.2 - November 1, 2015
 
-Contributors:
+#### Contributors:
 - Medic
 
-Changes:
+#### Changes:
 - Converted to Asar format
-
 
 ### Version 1.1 - July 21, 2009
 
-Contributors:
+#### Contributors:
 - RPG Hacker
 
-Changes:
+#### Changes:
 - Fixed Bowser bug (glitched Mario head)
 - Fixed Iggy/Larry bug (instant death when getting hit)
 - Fixed some Wii and DS related problems
@@ -166,11 +178,10 @@ Changes:
 - Improved Flying Routine
 - Improved SRAM Support
 
-
 ### Version 1.0 - July 19, 2009
 
-Contributors:
+#### Contributors:
 - RPG Hacker
 
-Changes:
+#### Changes:
 - Initial release

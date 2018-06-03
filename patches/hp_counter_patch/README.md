@@ -22,14 +22,10 @@ First of all you should insert the ExGFX files into your ROM, else you will get 
 
 After that you have to open the ASM file and specify the starting values under the section “Value Defines” as well as a freespace address.
 
-<dl>
-<dt><code>!IntroLevel</code></dt>
-<dd>
-This is the intro level, so setting it to <code>$C5</code> will load <code>C5</code> as intro level. Setting it to <code>$DC</code> will disable the intro level, I don’t recommend this, though, as it causes a bug on the overworld.
-</dd>
+### `!IntroLevel`
+This is the intro level, so setting it to `$C5` will load `C5` as intro level. Setting it to `$DC` will disable the intro level, I don’t recommend this, though, as it causes a bug on the overworld.
 
-<dt><code>!LifesatStart</code></dt>
-<dd>
+### `!LifesatStart`
 These are the lifes to start with minus one. If you want to start with 1 life, set it to 00. Also if you want to keep your lifes from increasing you have to remove the semicolons at the beginnings of those lines:
 
 ```asm
@@ -47,10 +43,8 @@ If you want to disable bonus stars completely, you have to remove the semicolons
 ;org $009E4B
 ;        nop #3
 ```
-</dd>
 
-<dt><code>!Damage</code></dt>
-<dd>
+### `!Damage`
 This is the damage a regular sprite takes away. You can also set custom sprite damage. I’ve included a modified version of ICB’s Poison Goomba as a demonstration. Unlike with his patch, you have to add the code ABOVE the Mario <-> Sprite interaction routine, that was the only location where it worked for me. Don’t ask me why. I don’t have any experience with custom sprites. Anyways, this is the code you have to use:
 
 ```asm
@@ -61,63 +55,39 @@ sta FreeramHighByte    ;by default $0061
 lda #DamageLow
 sta FreeramLow         ;by default $0060
 ```
-</dd>
 
-<dt><code>!StartMaxHealth</code></dt>
-<dd>
-These are the max HP to start with in Hex. You can’t go above <code>999</code> (<code>$03E7</code>).
-</dd>
+### `!StartMaxHealth`
+These are the max HP to start with in Hex. You can’t go above `999` (`$03E7`).
 
-<dt><code>!StartMaxMP</code></dt>
-<dd>
-These are the max MP to start with in Hex. You can’t go above <code>99</code> (<code>$63</code>).
-</dd>
+### `!StartMaxMP`
+These are the max MP to start with in Hex. You can’t go above `99` (`$63`).
 
-<dt><code>!RefillMPAfterDeath</code></dt>
-<dd>
-Set this to <code>$00</code> and your MP aren’t refilled after death, otherwise set it to any other number.
-</dd>
+### `!RefillMPAfterDeath`
+Set this to `$00` and your MP aren’t refilled after death, otherwise set it to any other number.
 
-<dt><code>!LosePowerupAfterDeath</code></dt>
-<dd>
-Set this to <code>$00</code> to not lose your powerup afte death, otherwise set it to any other number.
-</dd>
+### `!LosePowerupAfterDeath`
+Set this to `$00` to not lose your powerup afte death, otherwise set it to any other number.
 
-<dt><code>!MushroomHeal</code></dt>
-<dd>
+### `!MushroomHeal`
 This is how much HP a regular mushroom heals in Hex.
-</dd>
 
-<dt><code>!MPHeal</code></dt>
-<dd>
+### `!MPHeal`
 This is how much MP a 1UP mushroom recovers in Hex.
-</dd>
 
-<dt><code>!FireballMP</code></dt>
-<dd>
-This is how much MP a fireball takes away. Set to <code>$00</code> to disable.
-</dd>
+### `!FireballMP`
+This is how much MP a fireball takes away. Set to `$00` to disable.
 
-<dt><code>!CapeMP</code></dt>
-<dd>
-This is how much MP flying takes away. Set to <code>$00</code> to disable.
-</dd>
+### `!CapeMP`
+This is how much MP flying takes away. Set to `$00` to disable.
 
-<dt><code>!FloatRequiresMP</code></dt>
-<dd>
+### `!FloatRequiresMP`
 Set this to $00 and floating doesn’t require any MP, otherwise set it to any other number and floating requires the same MP as set under !CapeMP (but you still don’t lose MP when floating).
-</dd>
 
-<dt><code>!SpinMP</code></dt>
-<dd>
-This is how much MP cape-spinning takes away. Set to <code>$00</code> to disable.
-</dd>
+### `!SpinMP`
+This is how much MP cape-spinning takes away. Set to `$00` to disable.
 
-<dt><code>!FlyReduceSpeed</code></dt>
-<dd>
-This is how fast your MP are reduced while flying. The higher the number, the slower your MP are reduced. <code>$32</code> is about one second.
-</dd>
-</dl>
+### `!FlyReduceSpeed`
+This is how fast your MP are reduced while flying. The higher the number, the slower your MP are reduced. `$32` is about one second.
 
 ## Known Bugs
 

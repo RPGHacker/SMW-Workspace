@@ -26,15 +26,15 @@ First of all you should insert GFX00.bin and GFX28.bin into your ROM, otherwise 
 
 After that you have to open hpconfig.cfg in a text editor and take a look at all the settings in there. The comments give detailed explanations on what each setting means. Tweak these settings as you like, save the file and apply hp_counter_patch.asm to your ROM via Asar.
 
-The amount of damage a sprite deals by default is specified by the !Damage define. You can also set custom sprite damage. I’ve included a modified version of ICB’s Poison Goomba as a demonstration. Unlike with his HP patch, you have to add the code ABOVE the Mario <-> Sprite interaction routine, that was the only location where it worked for me. Don’t ask me why. I don’t have any experience with custom sprites. Anyways, this is the code you have to use:
+The amount of damage a sprite deals by default is specified by the !Damage define. You can also set custom sprite damage. I’ve included a modified Rex sprite for PIXI to demonstrate this. Its damage can be customized via its extra properties. To add custom damage to your own sprite, just add this code to your sprite ASM just before calling the damage routine:
 
 ```asm
-lda #$02
-sta HurtFlag           ;by default $0670
-lda #DamageHighByte
-sta FreeramHighByte    ;by default $0061
-lda #DamageLow
-sta FreeramLow         ;by default $0060
+lda.b #$02
+sta !HurtFlag          ; by default $0116
+lda.b #!DamageToDeal
+sta !FreeRAM           ; by default $60
+lda.b #!DamageToDeal>>8
+sta !FreeRAM+1         ; by default $61
 ```
 
 The !EnableBowserBattleStatusBar define enables or disables the HP counter for SMW's Bowser battle. When enabled, sprite_sb.bin is automatically inserted into the ROM. You can overwrite this with sprite_sb_TSRPR.bin if you're using the TSRPR-styled GFX files.

@@ -105,10 +105,10 @@ print ""
 
 print ""
 
-%test_get_status_ram($09, $02, $0F00, $0F00)
-%test_get_status_ram($0D, $02, $0F04, $0F04)
-%test_get_status_ram($09, $03, $0F1B, $0F1B)
-%test_get_status_ram($0D, $03, $0F1F, $0F1F)
+%test_get_status_ram($09, $02, $0F00, $6F00)
+%test_get_status_ram($0D, $02, $0F04, $6F04)
+%test_get_status_ram($09, $03, $0F1B, $6F1B)
+%test_get_status_ram($0D, $03, $0F1F, $6F1F)
 
 
 ; Test End

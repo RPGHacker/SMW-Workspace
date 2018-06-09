@@ -312,11 +312,11 @@ org	remap_rom($008CC1)
 	db $FC,$38,$FC,$38,$00,$38,$44,$38,$FC,$38,$FC,$38
 	db $00,$38,$FC,$38,$FC,$38
 	
-	
-; Bowser battle status bar hijack
-	
 org	remap_rom($008CF7)
 	db $FC,$38,$FC,$38,$FC,$38,$FC,$38
+	
+	
+; Bowser battle status bar hijack
 
 if !EnableBowserBattleStatusBar
 	org remap_rom($0082E2)

@@ -38,6 +38,31 @@ print "<function_name>(<in_address>) => $",hex(!out_value)," (expected: !expecte
 endmacro
 
 
+macro test_get_status_ram(x, y, expected_address, expected_sa1_address)
+	!num_tests_performed += +1
+	
+	!out_value = get_status_ram(<x>, <y>)
+	!passed = "FAILED"
+	
+if !use_sa1_mapping == 1
+	!expected_value = <expected_sa1_address>
+	if !out_value == !expected_value
+		!num_tests_passed += +1
+		!passed = "PASSED"
+	endif
+else
+	!expected_value = <expected_address>
+	if !out_value == !expected_value
+		!num_tests_passed += +1
+		!passed = "PASSED"
+	endif
+endif
+
+print "get_status_ram(<x>, <y>) => $",hex(!out_value)," (expected: !expected_value) - !passed!"
+
+endmacro
+
+
 print "Unit Test: remap_ram()"
 print ""
 if !use_sa1_mapping == 1
@@ -75,6 +100,15 @@ print ""
 %test_remap_function(remap_ram, $1000, $7000)
 %test_remap_function(remap_ram, $7EC800, $40C800)
 %test_remap_function(remap_ram, $7FAB1C, $6056)
+
+; get_status_ram()
+
+print ""
+
+%test_get_status_ram($09, $02, $0F00, $0F00)
+%test_get_status_ram($0D, $02, $0F04, $0F04)
+%test_get_status_ram($09, $03, $0F1B, $0F1B)
+%test_get_status_ram($0D, $03, $0F1F, $0F1F)
 
 
 ; Test End

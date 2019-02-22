@@ -322,8 +322,13 @@ org remap_rom($0081F2)
 
 ; Hijack NMI for various things
 org remap_rom($008297)
+if !use_sa1_mapping
+	ldx #$A1
+	jml NMIHijack
+else
 	jml NMIHijack
 	nop #$2
+endif
 
 ; Call RAM Init Routine on Title Screen
 org remap_rom($0086E2)
@@ -506,8 +511,10 @@ NMIHijack:
 	sty $4209
 	stz $420A
 	stz $11
+if !use_sa1_mapping == 0
 	lda #$A1
 	sta $4200
+endif
 	stz $2111
 	stz $2111
 	stz $2112
@@ -517,7 +524,11 @@ NMIHijack:
 .SpecialNMI
 	stz $11	; Else load special NMI
 	lda #$81	; Disable IRQ
+if !use_sa1_mapping
+	sta $01,s
+else	
 	sta $4200
+endif
 	stz $2111	; Set layer 3 X scroll to $0100
 	lda #$01
 	sta $2111

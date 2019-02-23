@@ -526,7 +526,7 @@ endif
 	lda #$81	; Disable IRQ
 if !use_sa1_mapping
 	sta $01,s
-else	
+else
 	sta $4200
 endif
 	stz $2111	; Set layer 3 X scroll to $0100

@@ -2,6 +2,292 @@
 
 %textstart()
 
+; Text macros.
+
+TextMacros:
+.TM0000					;\ Text macros 0000-000F are reserved for buffered text. Do not put text data under these labels.
+.TM0001					;| Refer to vwfcode.asm to see how to use the BufferVWFText routine
+.TM0002					;|
+.TM0003					;|
+.TM0004					;|
+.TM0005					;|
+.TM0006					;|
+.TM0007					;|
+.TM0008					;|
+.TM0009					;|
+.TM000A					;|
+.TM000B					;|
+.TM000C					;|
+.TM000D					;|
+.TM000E					;|
+.TM000F					;|
+	db $E7				;/
+
+.TM0010
+db "Mario",$E7
+!TM0010_Mario = "$E8 : dw $0010"
+
+.TM0011
+db "Luigi",$E7
+!TM0011_Luigi = "$E8 : dw $0011"
+
+.TM0012
+db "Yoshi",$E7
+!TM0012_Yoshi = "$E8 : dw $0012"
+
+.TM0013
+db "Princess Peach",$E7
+!TM0013_PrincessPeach = "$E8 : dw $0013"
+
+.TM0014
+db "Bowser",$E7
+!TM0014_Bowser = "$E8 : dw $0014"
+
+.TM0015
+db "Toad",$E7
+!TM0015_Toad = "$E8 : dw $0015"
+
+.TM0016
+db $FD,"- SWITCH PALACE -",$FD,$FD,$E7
+!TM0016_SwitchPalaceHeader = "$E8 : dw $0016"
+
+.TM0017
+db $FD,"-POINT OF ADVICE-",$FA,$ED,$E7
+!TM0017_PointOfAdvice = "$E8 : dw $0017"
+
+.TM0018
+.TM0019
+.TM001A
+.TM001B
+.TM001C
+.TM001D
+.TM001E
+.TM001F
+.TM0020
+.TM0021
+.TM0022
+.TM0023
+.TM0024
+.TM0025
+.TM0026
+.TM0027
+.TM0028
+.TM0029
+.TM002A
+.TM002B
+.TM002C
+.TM002D
+.TM002E
+.TM002F
+.TM0030
+.TM0031
+.TM0032
+.TM0033
+.TM0034
+.TM0035
+.TM0036
+.TM0037
+.TM0038
+.TM0039
+.TM003A
+.TM003B
+.TM003C
+.TM003D
+.TM003E
+.TM003F
+.TM0040
+.TM0041
+.TM0042
+.TM0043
+.TM0044
+.TM0045
+.TM0046
+.TM0047
+.TM0048
+.TM0049
+.TM004A
+.TM004B
+.TM004C
+.TM004D
+.TM004E
+.TM004F
+.TM0050
+.TM0051
+.TM0052
+.TM0053
+.TM0054
+.TM0055
+.TM0056
+.TM0057
+.TM0058
+.TM0059
+.TM005A
+.TM005B
+.TM005C
+.TM005D
+.TM005E
+.TM005F
+.TM0060
+.TM0061
+.TM0062
+.TM0063
+.TM0064
+.TM0065
+.TM0066
+.TM0067
+.TM0068
+.TM0069
+.TM006A
+.TM006B
+.TM006C
+.TM006D
+.TM006E
+.TM006F
+.TM0070
+.TM0071
+.TM0072
+.TM0073
+.TM0074
+.TM0075
+.TM0076
+.TM0077
+.TM0078
+.TM0079
+.TM007A
+.TM007B
+.TM007C
+.TM007D
+.TM007E
+.TM007F
+.TM0080
+.TM0081
+.TM0082
+.TM0083
+.TM0084
+.TM0085
+.TM0086
+.TM0087
+.TM0088
+.TM0089
+.TM008A
+.TM008B
+.TM008C
+.TM008D
+.TM008E
+.TM008F
+.TM0090
+.TM0091
+.TM0092
+.TM0093
+.TM0094
+.TM0095
+.TM0096
+.TM0097
+.TM0098
+.TM0099
+.TM009A
+.TM009B
+.TM009C
+.TM009D
+.TM009E
+.TM009F
+.TM00A0
+.TM00A1
+.TM00A2
+.TM00A3
+.TM00A4
+.TM00A5
+.TM00A6
+.TM00A7
+.TM00A8
+.TM00A9
+.TM00AA
+.TM00AB
+.TM00AC
+.TM00AD
+.TM00AE
+.TM00AF
+.TM00B0
+.TM00B1
+.TM00B2
+.TM00B3
+.TM00B4
+.TM00B5
+.TM00B6
+.TM00B7
+.TM00B8
+.TM00B9
+.TM00BA
+.TM00BB
+.TM00BC
+.TM00BD
+.TM00BE
+.TM00BF
+.TM00C0
+.TM00C1
+.TM00C2
+.TM00C3
+.TM00C4
+.TM00C5
+.TM00C6
+.TM00C7
+.TM00C8
+.TM00C9
+.TM00CA
+.TM00CB
+.TM00CC
+.TM00CD
+.TM00CE
+.TM00CF
+.TM00D0
+.TM00D1
+.TM00D2
+.TM00D3
+.TM00D4
+.TM00D5
+.TM00D6
+.TM00D7
+.TM00D8
+.TM00D9
+.TM00DA
+.TM00DB
+.TM00DC
+.TM00DD
+.TM00DE
+.TM00DF
+.TM00E0
+.TM00E1
+.TM00E2
+.TM00E3
+.TM00E4
+.TM00E5
+.TM00E6
+.TM00E7
+.TM00E8
+.TM00E9
+.TM00EA
+.TM00EB
+.TM00EC
+.TM00ED
+.TM00EE
+.TM00EF
+.TM00F0
+.TM00F1
+.TM00F2
+.TM00F3
+.TM00F4
+.TM00F5
+.TM00F6
+.TM00F7
+.TM00F8
+.TM00F9
+.TM00FA
+.TM00FB
+.TM00FC
+.TM00FD
+.TM00FE
+.TM00FF
+db $E7
 
 ;-------------------------------------------------------
 
@@ -12,12 +298,16 @@ db %00001000,%01111000,%11010001,%11000000,$A0,%00100000
 dw $7FFF,$0000
 db %11111100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message0000ASMLoc
+dl .MessageSkipLoc
 
 .body
 db $FD,"Welcome! This is Dinosaur Land.",$FD,$FD
 db "In this strange land we find that Princess Toadstool "
 db "is missing again!",$FD
 db $FD,"Looks like Bowser is at it again!",$FD,$FD
+.MessageSkipLoc
 db $FF
 
 ;-------------------------------------------------------
@@ -29,12 +319,17 @@ db %00001000,%01111000,%11010001,%11000000,$01,%00100000
 dw $7FFF,$0000
 db %11110100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message0001ASMLoc
+dl .MessageSkipLoc
 
 .body
 db "Hooray! Thank you for rescuing me. "
 db "My name is Yoshi. On my way to rescue my friends, "
 db "Bowser trapped me in that egg."
-db $FA,$FF
+db $FA
+.MessageSkipLoc
+db $FF
 
 ;-------------------------------------------------------
 
@@ -73,11 +368,16 @@ db %00001000,%01111000,%11010001,%11000000,$01,%00100000
 dw $7FFF,$0000
 db %11110100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message0009ASMLoc
+dl .MessageSkipLoc
 
 .body
 db "This is a Ghost House. Can you find the exit? "
 db "Hee, hee, hee... Don't get lost!"
-db $FA,$FF
+db $FA
+.MessageSkipLoc
+db $FF
 
 ;-------------------------------------------------------
 
@@ -88,12 +388,17 @@ db %00001000,%01111000,%11010001,%11000000,$01,%00100000
 dw $7FFF,$0000
 db %11110100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message000AASMLoc
+dl .MessageSkipLoc
 
 .body
 db "You can slide the screen left or right by pressing "
 db "the L or R Buttons on top of the controller.",$FA,$ED
 db "You may be able to see further ahead."
-db $FA,$FF
+db $FA
+.MessageSkipLoc
+db $FF
 
 ;-------------------------------------------------------
 
@@ -124,17 +429,20 @@ db %00001000,%01111000,%11010001,%11000000,$A0,%00100000
 dw $7FFF,$0000
 db %11111100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message0010ASMLoc
+dl .MessageSkipLoc
 
 .body
 db $EE,$1A
 dw $02E0
 db $EE,$1B
 dw $0000
-db $FD
-db "- SWITCH PALACE -",$FD,$FD
+db !TM0016_SwitchPalaceHeader
 db "The power of the switch you have pushed will turn",$FD
 db $F3,$06,$AD,$F3,$07," into ",$F3,$06,$AE,$F3,$07," .",$FD
 db $FD,"Your progress will also be saved.",$FD,$FD
+.MessageSkipLoc
 db $FF
 
 ;-------------------------------------------------------
@@ -230,12 +538,17 @@ db %00001000,%01111000,%11010001,%11000000,$01,%00100000
 dw $7FFF,$0000
 db %11110100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message0026ASMLoc
+dl .MessageSkipLoc
 
 .body
 db "There are five entrances to the Star World in Dinosaur Land."
 db $FA,$ED
 db "Find them all and you can travel between many different places."
-db $FA,$FF
+db $FA
+.MessageSkipLoc
+db $FF
 
 ;-------------------------------------------------------
 
@@ -250,17 +563,20 @@ db %00001000,%01111000,%11010001,%11000000,$A0,%00100000
 dw $7FFF,$0000
 db %11111100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message0028ASMLoc
+dl .MessageSkipLoc
 
 .body
 db $EE,$1A
 dw $2F3F
 db $EE,$1B
 dw $0000
-db $FD
-db "- SWITCH PALACE -",$FD,$FD
+db !TM0016_SwitchPalaceHeader
 db "The power of the switch you have pushed will turn",$FD
 db $F3,$06,$AD,$F3,$07," into ",$F3,$06,$AE,$F3,$07," .",$FD
 db $FD,"Your progress will also be saved.",$FD,$FD
+.MessageSkipLoc
 db $FF
 
 ;-------------------------------------------------------
@@ -276,11 +592,16 @@ db %00001000,%01111000,%11010001,%11000000,$01,%00100000
 dw $7FFF,$0000
 db %11110100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message002AASMLoc
+dl .MessageSkipLoc
 
 .body
 db "The red dot areas on the map have two different exits.",$FA,$ED
 db "If you have the time and skill, be sure to look for them."
-db $FA,$FF
+db $FA
+.MessageSkipLoc
+db $FF
 
 ;-------------------------------------------------------
 
@@ -291,12 +612,17 @@ db %00001000,%01111000,%11010001,%11000000,$01,%00100000
 dw $7FFF,$0000
 db %11110100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message002BASMLoc
+dl .MessageSkipLoc
 
 .body
 db "Use Mario's cape to soar through the air! "
 db "Run fast, jump, and hold the Y Button.",$FA,$ED
 db "To keep balance, use left and right on the Control Pad."
-db $FA,$FF
+db $FA
+.MessageSkipLoc
+db $FF
 
 ;-------------------------------------------------------
 
@@ -423,12 +749,17 @@ db %00001000,%01111000,%11010001,%11000000,$01,%00100000
 dw $7FFF,$0000
 db %11110100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message0049ASMLoc
+dl .MessageSkipLoc
 
 .body
 db "Here, the coins you collect or the time remaining "
 db "can change your progress.",$FA,$ED
 db "Can you find the special goal?"
-db $FA,$FF
+db $FA
+.MessageSkipLoc
+db $FF
 
 ;-------------------------------------------------------
 
@@ -439,12 +770,17 @@ db %00001000,%01111000,%11010001,%11000000,$01,%00100000
 dw $7FFF,$0000
 db %11110100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message004AASMLoc
+dl .MessageSkipLoc
 
 .body
 db "Press Up on the Control Pad while jumping and you can "
 db "cling to the fence.",$FA,$ED
 db "To go in the door at the end of this area, use Up also."
-db $FA,$FF
+db $FA
+.MessageSkipLoc
+db $FF
 
 ;-------------------------------------------------------
 
@@ -455,14 +791,18 @@ db %00001000,%01111000,%11010001,%11000000,$01,%00100000
 dw $7FFF,$0000
 db %11111100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message004BASMLoc
+dl .MessageSkipLoc
 
 .body
-db $FD
-db "-POINT OF ADVICE-",$FA,$ED
+db !TM0017_PointOfAdvice
 db "One of Yoshi's friends is trapped in the castle by Iggy Koopa."
 db $FA,$ED
 db "To defeat him, push him into the lava pool."
-db $FA,$FF
+db $FA
+.MessageSkipLoc
+db $FF
 
 ;-------------------------------------------------------
 
@@ -473,12 +813,17 @@ db %00001000,%01111000,%11010001,%11000000,$01,%00100000
 dw $7FFF,$0000
 db %11110100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message004CASMLoc
+dl .MessageSkipLoc
 
 .body
 db "You get Bonus Stars if you cut the tape at the end of each area."
 db $FA,$ED
 db "If you collect 100 Bonus Stars you can play a fun bonus game."
-db $FA,$FF
+db $FA
+.MessageSkipLoc
+db $FF
 
 ;-------------------------------------------------------
 
@@ -489,11 +834,16 @@ db %00001000,%01111000,%11010001,%11000000,$01,%00100000
 dw $7FFF,$0000
 db %11110100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message004DASMLoc
+dl .MessageSkipLoc
 
 .body
 db "If you are in an area that you have already cleared, "
 db "you can return to the map screen by pressing START, then SELECT."
-db $FA,$FF
+db $FA
+.MessageSkipLoc
+db $FF
 
 ;-------------------------------------------------------
 
@@ -504,12 +854,17 @@ db %00001000,%01111000,%11010001,%11000000,$01,%00100000
 dw $7FFF,$0000
 db %11110100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message004EASMLoc
+dl .MessageSkipLoc
 
 .body
 db "When you stomp on an enemy, you can jump high if you hold "
 db "the jump button.",$FA,$ED
 db "Use Up on the Control Pad to jump high in the shallow water."
-db $FA,$FF
+db $FA
+.MessageSkipLoc
+db $FF
 
 ;-------------------------------------------------------
 
@@ -520,13 +875,17 @@ db %00001000,%01111000,%11010001,%11000000,$01,%00100000
 dw $7FFF,$0000
 db %11111100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message004FASMLoc
+dl .MessageSkipLoc
 
 .body
-db $FD
-db "-POINT OF ADVICE-",$FA,$ED
+db !TM0017_PointOfAdvice
 db "The big coins are Dragon Coins. If you pick up five of these "
 db "in one area, you get an extra Mario."
-db $FA,$FF
+db $FA
+.MessageSkipLoc
+db $FF
 
 ;-------------------------------------------------------
 
@@ -537,6 +896,9 @@ db %00001000,%01111000,%11010001,%11000000,$01,%00100000
 dw $7FFF,$0000
 db %11111100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message0050ASMLoc
+dl .MessageSkipLoc
 
 db $EE,$1A
 dw $03E0
@@ -548,7 +910,9 @@ db "Hello! Sorry I'm not home, but I have gone to rescue my friends "
 db "who were captured by Bowser.",$FA,$ED
 db $FD,$F3,$06
 db "- Yoshi ",$AC
-db $FA,$FF
+db $FA
+.MessageSkipLoc
+db $FF
 
 ;-------------------------------------------------------
 
@@ -559,12 +923,17 @@ db %00001000,%01111000,%11010001,%11000000,$01,%00100000
 dw $7FFF,$0000
 db %11110100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message0051ASMLoc
+dl .MessageSkipLoc
 
 .body
 db "It is possible to fill in the dotted line blocks.",$FA,$ED
 db "To fill in the yellow ones, just go west then north to "
 db "the top of the mountain."
-db $FA,$FF
+db $FA
+.MessageSkipLoc
+db $FF
 
 ;-------------------------------------------------------
 
@@ -575,14 +944,19 @@ db %00001000,%01111000,%11010001,%11000000,$01,%00100000
 dw $7FFF,$0000
 db %11111100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message0052ASMLoc
+dl .MessageSkipLoc
 
 .body
-db $FD
-db "-POINT OF ADVICE-",$FA,$ED
+db !TM0017_PointOfAdvice
 db "You can hold an extra item in the box at the top of the screen."
 db $FA,$ED
 db "To use it, press the SELECT Button."
-db $FA,$FF
+db $FA
+
+.MessageSkipLoc
+db $FF
 
 ;-------------------------------------------------------
 
@@ -593,13 +967,17 @@ db %00001000,%01111000,%11010001,%11000000,$01,%00100000
 dw $7FFF,$0000
 db %11111100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message0053ASMLoc
+dl .MessageSkipLoc
 
 .body
-db $FD
-db "-POINT OF ADVICE-",$FA,$ED
+db !TM0017_PointOfAdvice
 db "To pick up a shell, use the X or Y Button.",$FA,$ED
 db "To throw a shell upwards, look up and let go of the button."
-db $FA,$FF
+db $FA
+.MessageSkipLoc
+db $FF
 
 ;-------------------------------------------------------
 
@@ -610,13 +988,17 @@ db %00001000,%01111000,%11010001,%11000000,$01,%00100000
 dw $7FFF,$0000
 db %11110100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message0054ASMLoc
+dl .MessageSkipLoc
 
 .body
 db "To do a spin jump, press the A Button.",$FA,$ED
 db "A Super Mario spin jump can break some of the blocks and "
 db "defeat some of the tougher enemies."
-db $FA,$FF
-
+db $FA
+.MessageSkipLoc
+db $FF
 
 ;-------------------------------------------------------
 
@@ -627,14 +1009,18 @@ db %00001000,%01111000,%11010001,%11000000,$01,%00100000
 dw $7FFF,$0000
 db %11111100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message0055ASMLoc
+dl .MessageSkipLoc
 
 .body
-db $FD
-db "-POINT OF ADVICE-",$FA,$ED
+db !TM0017_PointOfAdvice
 db "This gate marks the middle of this area.",$FA,$ED
 db "By cutting the tape here, you can continue from close to "
 db "this point."
-db $FA,$FF
+db $FA
+.MessageSkipLoc
+db $FF
 
 ;-------------------------------------------------------
 
@@ -805,17 +1191,20 @@ db %00001000,%01111000,%11010001,%11000000,$A0,%00100000
 dw $7FFF,$0000
 db %11111100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message007EASMLoc
+dl .MessageSkipLoc
 
 .body
 db $EE,$1A
 dw $0017
 db $EE,$1B
 dw $0000
-db $FD
-db "- SWITCH PALACE -",$FD,$FD
+db !TM0016_SwitchPalaceHeader
 db "The power of the switch you have pushed will turn",$FD
 db $F3,$06,$AD,$F3,$07," into ",$F3,$06,$AE,$F3,$07," .",$FD
 db $FD,"Your progress will also be saved.",$FD,$FD
+.MessageSkipLoc
 db $FF
 
 ;-------------------------------------------------------
@@ -871,17 +1260,20 @@ db %00001000,%01111000,%11010001,%11000000,$A0,%00100000
 dw $7FFF,$0000
 db %11111100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message008AASMLoc
+dl .MessageSkipLoc
 
 .body
 db $EE,$1A
 dw $6DAD
 db $EE,$1B
 dw $0000
-db $FD
-db "- SWITCH PALACE -",$FD,$FD
+db !TM0016_SwitchPalaceHeader
 db "The power of the switch you have pushed will turn",$FD
 db $F3,$06,$AD,$F3,$07," into ",$F3,$06,$AE,$F3,$07," .",$FD
 db $FD,"Your progress will also be saved.",$FD,$FD
+.MessageSkipLoc
 db $FF
 
 ;-------------------------------------------------------
@@ -965,12 +1357,17 @@ db %00001000,%01111000,%11010001,%11000000,$01,%00100000
 dw $7FFF,$0000
 db %11110100
 db %00001111,$13,$13,$23,$29
+db %00000010
+;dl Message009DASMLoc
+dl .MessageSkipLoc
 
 .body
 db "Amazing! Few have made it this far. Beyond lies the Special Zone."
 db $FA,$ED
 db "Complete it and you can explore a strange new world. GOOD LUCK!"
-db $FA,$FF
+db $FA
+.MessageSkipLoc
+db $FF
 
 ;-------------------------------------------------------
 
@@ -1365,6 +1762,5 @@ Message00FE:
 Message00FF:
 
 ;-------------------------------------------------------
-
 
 %textend()

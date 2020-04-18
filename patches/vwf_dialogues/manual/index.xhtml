@@ -32,6 +32,9 @@
 							<a class="nav-link text-nowrap" href="#main">Main Functions</a>
 						</li>
 						<li class="nav-item">
+							<a class="nav-link text-nowrap" href="#main2">Advanced Functions</a>
+						</li>
+						<li class="nav-item">
 							<a class="nav-link text-nowrap" href="#advanced">Problem Solving</a>
 						</li>
 						<li class="nav-item">
@@ -55,7 +58,7 @@
 
 		<section class="jumbotron">
 			<div class="container">
-				<h1 class="text-center mt-1 mb-2">VWF Dialogues Patch<br/><small>© 2018 RPG Hacker</small></h1>
+				<h1 class="text-center mt-1 mb-2">VWF Dialogues Patch<br/><small>© 2010-2020 RPG Hacker</small></h1>
 
 				<div class="row my-2 py-1 text-center ir-crisp">
 					<div class="py-2 col col-xl-3 offset-xl-1"><img src="screenshots/screen-5.png" alt="Screenshot"/></div>
@@ -116,9 +119,26 @@
 							<li><a href="#text-command-ee"><code>$EE</code> - Edit Color</a></li>
 							<li><a href="#text-command-ed"><code>$ED</code> - Clear Text Box</a></li>
 							<li><a href="#text-command-ec"><code>$EC</code> - Play BGM</a></li>
+							<li><a href="#text-command-eb"><code>$EB</code> - Freeze Textbox</a></li>
+							<li><a href="#text-command-e9-ea"><code>$EA</code> - Unused</a></li>
+							<li><a href="#text-command-e9-ea"><code>$E9</code> - Unused</a></li>
+							<li><a href="#text-command-e8"><code>$E8</code> - Use Text Macro</a></li>
+							<li><a href="#text-command-e7"><code>$E7</code> - Return from Text Macro</a></li>
 						</ul></details>
 					</ul></li>
-					<li><a href="#advanced">Problem Solving (Advanced)</a></li>
+					<li><a href="#main2">Main Functions (Advanced)</a></li>
+						<details>
+							<summary><a href="#dialog-body">vwfcode.asm routines</a></summary><ul>
+							<li><a href="#vwfcode-displayamessage">DisplayAMessage</a></li>
+							<li><a href="#vwfcode-changevwftextptr">ChangeVWFTextPtr</a></li>
+							<li><a href="#vwfcode-changemessageasmptr">ChangeMessageASMPtr</a></li>
+							<li><a href="#vwfcode-changemessageskipptr">ChangeMessageSkipPtr</a></li>
+							<li><a href="#vwfcode-checkifmessagewasskipped">CheckIfMessageWasSkipped</a></li>
+							<li><a href="#vwfcode-buffervwftext">BufferVWFText</a></li>
+							<li><a href="#vwfcode-togglemessageasmptr">ToggleMessageASMPtr</a></li>
+							<li><a href="#vwfcode-closemessageandgotooverworld">CloseMessageAndGoToOverworld</a></li>
+						</ul></details>
+					<li><a href="#advanced">Problem Solving</a></li>
 					<li><a href="#bugs">Known Bugs</a></li>
 					<li><a href="#plans">Planned Features</a></li>
 					<li><a href="#bug-reports">Bug Reports</a></li>
@@ -158,7 +178,7 @@
 			<p>
 				Be aware that this patch does some modifications to the ROM that might seem to be unrelated to the
 				patch itself and aren’t mentioned anywhere in this manual. For example: It automatically expands
-				the SRAM of your ROM to 128 KB since it needs over 32 KB of free RAM during dialogues.
+				the SRAM of your ROM to 128 KB since it needs over 18 KB of free RAM during dialogues.
 			</p>
 
 			<p>
@@ -416,7 +436,7 @@ db $0B,$07,$07,$07,$07,$07,$06,$07,$07,$06,$07,$07,$03,$06,$07,$03
 				To create a new font file, simply copy <code>vwffont1.bin</code> and <code>vwffont1.asm</code>, rename them accordingly and
 				edit them. To insert this new font into your game, press CTRL + F inside <code>vwf_dialogues.asm</code>,
 				search for "INSERT DATA HERE!" and paste the following code just below it
-				<pre><code>%nextbank()
+				<pre><code>%nextbank(freedata)
 %binary(Font2, "vwffont2.bin")
 %source(Font2_Width, "vwffont2.asm")</code></pre>
 				where <code>Font2</code> and <code>Font2_Width</code> are unique names which you will use to identify your new font and width table
@@ -450,24 +470,34 @@ dl Font2,Font2_Width</code></pre>
 						Write the number of the message to display to the Message register. This is a 2-Byte address.
 						So let’s say you’d want to display message <code>$002D</code>.
 						Using the example from the screenshot this would go somewhat like this:
-						<pre><code>rep #$20
-lda.w #$002D
-sta.l $702001
-sep #$20</code></pre>
+						<pre><code>rep #$20		; Set A to be 16-bit.
+lda.w #$002D		;\ Message number to load.
+sta.l $702001		;/
+sep #$20		; Set A to be 8-bit.</code></pre>
 					</li>
 					<li>
 						Write <code>$01</code> to the VWF State register. One thing is very important here: Before you do this
 						you’ll have to check if a dialogue is already being processed. Why? Well, if you don’t this might
 						lead to unexpected results, like Layer 3 glitiching up for example. If the VWF State register equals
 						<code>$00</code> then no dialogue is being processed. This leads to the following code:
-						<pre><code>lda.l $702000
-bne .SkipDialogue
-lda #$01
-sta.l $702000
-
+						<pre><code>lda.l $702000		;\ Is a VWF Message being displayed?
+bne .SkipDialogue	;/ If so, branch.
+lda #$01		;\ Otherwise, initialize the new VWF Message.
+sta.l $702000		;/
 .SkipDialogue</code></pre>
 					</li>
 				</ol>
+				<ul>
+					<li>
+						Alternatively, the patch contains a routine that will do most of the above for you in addition to forcing
+						the previous message to close. All you need to do is load the message number. To call this routine, do the
+						following, using the above screenshot and previous example as an example.
+						<pre><code>rep #$20		; Set A to be 16-bit.
+lda.w #$002D		; Message number to load.
+jsl.l $90F079		; Address of the "DisplayAMessage" routine.
+sep #$20		; Set A to be 8-bit.</code></pre>
+					</li>
+				</ul>
 			</p>
 
 			<p>
@@ -537,6 +567,9 @@ db %bbbbbccc,%ccddddee,%eeffffgg,%gghhhhhh,$ii,%jjjj----
 dw $kkkk,$llll
 db %mnnnop-q
 db %rrssttuu,$vv,$ww,$xx,$yy
+db %------z1
+dl MessageASMLoc
+dl .MessageSkipLoc
 
 .body</code></pre>
 				Simply copy and paste this header for the start. All numbers prefixed with <code>%</code> require binary digits,
@@ -712,6 +745,38 @@ db %rrssttuu,$vv,$ww,$xx,$yy
 				<dt id="dialog-header-yy"><code>yy</code></dt>
 				<dd><p>
 					Same as <code>vv</code>, but for the "pressed A" sound effect.
+				</p></dd>
+				<dt id="dialog-header-z"><code>z</code></dt>
+				<dd><p>
+					MessageASM flag.
+					<table class="kv-map"><tbody>
+						<tr><th><code>0</code></th><td>Disable MessageASM</td></tr>
+						<tr><th><code>1</code></th><td>Enable MessageASM</td></tr>
+					</tbody></table>
+					This allows you to run custom code for this text box every frame that it's up until it closes. Think of it
+					like UberASM for text boxes. This can be used to do things like run scripts for a cutscene or create custom
+					menus.
+				</p></dd>
+				<dt id="dialog-header-1"><code>1</code></dt>
+				<dd><p>
+					Skip Message flag.
+					<table class="kv-map"><tbody>
+						<tr><th><code>0</code></th><td>Disable message skip</td></tr>
+						<tr><th><code>1</code></th><td>Enable message skip</td></tr>
+					</tbody></table>
+					This allows you to define whether the text pointer is allowed to be modified with the start button. This can
+					be used to do things like allow the player to close a textbox early, but it can have other uses if used with 
+					the $F1 command.
+				</p></dd>
+				<dt id="dialog-header-MessageASMLoc"><code>MessageASMLoc</code></dt>
+				<dd><p>
+					24-bit pointer to the textbox's MessageASM routine. This must point to ASM code to work correctly. If MessageASM
+					is disabled, comment out this pointer by putting a ; in front of it, otherwise your text box will glitch.
+				</p></dd>
+				<dt id="dialog-header-MessageSkipLoc"><code>.MessageSkipLoc</code></dt>
+				<dd><p>
+					Same as <code>MessageASMLoc</code>, except for the skip function and it must point to text data rather than ASM
+					code.
 				</p></dd>
 			</dl>
 			<p>
@@ -1108,24 +1173,32 @@ db "Too bad. Come again later!",$FA,$FF</code></pre>
 					This sets up a teleport which will occur as soon as dialogue processing is over.
 					Usage is like this:
 					<pre><code>db $EF
-dw $-lll
+dw $llll
 db %----w-s-</code></pre>
 					<code>lll</code> is the level to teleport to or the secondary exit number to use. This can be
-					anything from <code>$000</code> to <code>$1FF</code>. Set <code>w</code> to <code>1</code>
-					if the destination level is a water level, otherwise set it to <code>0</code>.
-					Set <code>s</code> to <code>1</code> if <code>lll</code> should be used as a secondary exit number,
-					otherwise set it to <code>0</code> to use <code>lll</code> as the destination level number.
+					anything from <code>$000</code> to <code>$1FF</code> for level destinations or <code>$0000</code> to <code>$1FFF</code> for
+					secondary entrance destinations. Set <code>s</code> to <code>1</code> if <code>llll</code> should
+					be used as a secondary exit number, otherwise set it to <code>0</code> to use <code>llll</code> as
+					the destination level number. The effect of <code>w</code> will vary depending on whether the destination
+					is a level or secondary entrance.
+				</p><p>
+					If it's a level:
+					<table class="kv-map"><tbody>
+						<tr><th><code>0</code></th><td>Go to level entrance</td></tr>
+						<tr><th><code>1</code></th><td>Go to midway entrance</td></tr>
+					</tbody></table>
+				</p><p>
+					If the destination is a secondary entrance:
+
+					<table class="kv-map"><tbody>
+						<tr><th><code>0</code></th><td>Normal level</td></tr>
+						<tr><th><code>1</code></th><td>Water level</td></tr>
+					</tbody></table>
 				</p><p>
 					<h6>Example:</h6>
 					<pre><code>db $EF
 dw $010D
 db %00000000</code></pre>
-				</p><p>
-					<b>Notice:</b> The teleport command currently doesn’t support Lunar Magic’s
-					expanded secondary entrances (<code>$0200</code> - <code>$1FFF</code>), and has
-					issues with levels that are configured to use separate settings for the midway
-					entrace when using the <code>w</code> flag, as it will teleport to the midway
-					entrace and make the level a water level.
 				</p></dd>
 				<dt id="text-command-ee"><code>$EE</code> - Edit Color</dt>
 				<dd><p>
@@ -1164,12 +1237,239 @@ db "Hi there!",$FA,$FF</code></pre>
 					from the same bank" if using carol’s or Romi’s Addmusic and stuff like that. That’s
 					all there is to say about this command.
 				</p></dd>
+				<dt id="text-command-eb"><code>$EB</code> - Freeze Textbox</dt>
+				<dd><p>
+					This freezes the textbox indefinitely until something modifies the text pointer. This is
+					meant to be used alongside MessageASM to give your custom message code more control over
+					the textbox.
+				</p></dd>
+				<dt id="text-command-e9-ea"><code>$E9-$EA</code> - Unused</dt>
+				<dd><p>
+					These commands are reserved for future use. Do not use them.
+				</p></dd>
+				<dt id="text-command-e8"><code>$E8</code> - Use Text Macro</dt>
+				<dd><p>
+					This acts like a JSR for the textbox system. Usage is like this:
+					<pre><code>db $E8 : dw $XXXX</code></pre>
+					Where <code>$XXXX</code> is the ID of the text macro to use and can be from anywhere from $0000 to $FFFF.
+					What this does specifically is it allows you to display a string you've defined and have the
+					textbox continue where it left off. This is an incredibly useful feature if you want to reduce
+					the size of your message text.
+				</p><p>
+					For example, let's say I want to display "Princess Peach". Each time you type that, you use up
+					14 bytes of space (28 in 16-bit mode) and you have a chance of accidentally typing it incorrectly.
+					With text macros, you can store "Princess Peach" once and display it anytime using just 3 bytes
+					(4 in 16-bit mode) each. The more frequently you need to use "Princess Peach" in your text, the
+					more bytes you save.
+				</p><p>
+					To define your own custom text macros, go to the bottom of vwfmessages.asm and you'll find a bunch of
+					.TMXXXX labels. Put any string of text/commands under those labels like so:
+				</p><p>
+<pre><code>.TM0001
+db "Princess Peach",$E7</code></pre>
+					From there, using <code>db $E8 : $0001</code> in a message will display "Princess Peach".
+				</p><p>
+					Note that 256 text macro pointers are given by default, with the first 16 reserved for buffered strings.
+					If you need more text macros, then the pointers are found in vwfmessagepointers.asm. You can have a maximum
+					of 65,536 unique text macros, which is likely more than you'll ever need.
+				</p></dd>
+				<dt id="text-command-e7"><code>$E7</code> - Return from Text Macro</dt>
+				<dd><p>
+					This acts like an RTS for the textbox system. Put this at the end of your text macro
+					strings to tell the textbox system to jump back to where it was at before calling the
+					previous text macro. Unless you know what you're doing, you should end text macros with this command,
+					otherwise the texbox system won't know where the end of the string is.
+				</p></dd>
 			</dl>
 
 			<p>
 				And with that another section of this ridiculously long manual is done and you’re finally able to
 				write your own dialogues. WOO HOO!
 			</p>
+		</section>
+
+		<!-- Seperator Comment -->
+
+		<section class="container">
+			<h2 id="main2" class="text-center">4. Main Functions (Advanced)</h2>
+			<h3 class="text-center">MessageASM</h3>
+
+			<p>
+				Starting with V1.3, this patch enables you to run custom code on a per message basis, like how UberASM allows you to have
+				custom code run on a per level/submap/gamemode/etc. basis. MessageASM code is run every frame once the current VWF mode is
+				02 or more and can be used to do things that the <code>$F1</code> command cannot do. It also allows you to tie message
+				specific code to this patch instead of through UberASM code or some other outside resource. MessageASM can be used to do things
+				like create custom menus, display character portraits, auto-display the name of whoever is speaking at the start of each text box,
+				run scripts that move/animate sprites, etc.
+
+			</p><p>
+				<h6>Some useful VWF RAM addresses to use with your MessageASM code:</h6>
+
+				</p><p>
+				<code>!skipmessageflag</code> = Is set to 00 when a message has been skipped with the Start button. Is a non-zero value otherwise.
+
+				</p><p>
+				<code>!initialskipmessageflag</code> = Is non-zero if the current message is allowed to be skipped.
+
+				</p><p>
+				<code>!l3priorityflag</code> = Contains a backup of the layer 3 priority bit before the text box was displayed. Modify this to affect layer 3 once the text box disappears.
+
+				</p><p>
+				<code>!l3transparencyflag</code> = Contains a backup of the layer 3 color math settings before the text box was displayed. Modify this to affect layer 3 once the text box disappears.
+
+				</p><p>
+				<code>!l3mainscreenflag</code> = Contains a backup of the layer 3 mainscreen setting before the text box was displayed. Modify this to affect layer 3 once the text box disappears.
+
+				</p><p>
+				<code>!l3subscreenflag</code> = Contains a backup of the layer 3 subscreen setting before the text box was displayed. Modify this to affect layer 3 once the text box disappears.
+
+				</p><p>
+				<code>!isnotatstartoftext</code> = Is set to 00 when a text box is cleared, 01 when text parsing begins. Use this to initialize code related to individual text boxes.
+			</p>
+
+			<h3 class="text-center">vwfcode.asm</h3>
+
+			<p>
+				This file, added in V1.3, is meant to contain custom code related to VWF messages such as MessageASM code. By
+				default, this file contains various routines that give your messages extra functionality. Here is what these
+				routines do:
+			</p>
+				<dt id="vwfcode-displayamessage"><code>DisplayAMessage</code></dt>
+				<p>
+					This will cause a new VWF message to display based on whatever 16-bit value was stored in A prior to calling. If
+					a VWF message is already active, then the previous message will be forced to close to prevent glitches. This routine
+					is meant to be called from within any custom code, whether that be MessageASM, the <code>$F1</code> command code,
+					UberASM code or a custom sprite/patch/block/etc.
+				</p><p>
+					<h6>Entry code:</h6>
+					<pre><code>REP #$20
+LDA.w #MessageNumber
+JSL DisplayAMessage</code></pre>
+				</p>
+				<dt id="vwfcode-changevwftextptr"><code>ChangeVWFTextPtr</code></dt>
+				<p>
+					This lets you change the VWF text pointer to change the text that will be displayed next frame. Call this routine from
+					within MessageASM or <code>$F1</code> command code.
+				</p><p>
+					<h6>Entry code:</h6>
+					<pre><code>LDA.b #TextPointer
+LDX.b #TextPointer>>8
+LDY.b #TextPointer>>16
+JML ChangeVWFTextPtr</code></pre>
+
+					... where "TextPointer" is any label above valid text data.
+				</p>
+
+				<dt id="vwfcode-changemessageasmptr"><code>ChangeMessageASMPtr</code></dt>
+				<p>
+					This lets you change the MessageASM pointer to change what code will run next frame. Call this routine from
+					within MessageASM or <code>$F1</code> command code.
+				</p><p>
+					<h6>Entry code:</h6>
+					<pre><code>LDA.b #ASMPointer
+LDX.b #ASMPointer>>8
+LDY.b #ASMPointer>>16
+JML ChangeMessageASMPtr</code></pre>
+
+					... where "ASMPointer" is any label above valid code.
+				</p>
+
+				<dt id="vwfcode-changemessageskipptr"><code>ChangeMessageSkipPtr</code></dt>
+				<p>
+					This lets you change the Message skip pointer to change where the text box should jump when start is pressed. Call this routine from
+					within MessageASM or <code>$F1</code> command code.
+				</p><p>
+					<h6>Entry code:</h6>
+					<pre><code>LDA.b #TextPointer
+LDX.b #TextPointer>>8
+LDY.b #TextPointer>>16
+JML ChangeMessageSkipPtr</code></pre>
+
+					... where "TextPointer" is any label above valid text data.
+				</p>
+
+				<dt id="vwfcode-checkifmessagewasskipped"><code>CheckIfMessageWasSkipped</code></dt>
+				<p>
+					This allows you to detect if the player has pressed start to skip a message. This can allow you to reset <code>!skipmessageflag</code>
+					to a non-zero value if you want a message to have multiple skip functions in the same message. Note that this check only works if a message
+					was initially set to allow message skipping. If you want to toggle whether this routine works or not, store 00 to <code>!initialskipmessageflag</code>
+					to disable and any non-zero value to enable. Call this routine from within MessageASM code.
+				</p><p>
+					<h6>Entry code:</h6>
+					<pre><code>JSL CheckIfMessageWasSkipped
+BCS .MessageWasSkipped
+.MessageWasNotSkipped</code></pre>
+
+					... where "TextPointer" is any label above valid text data.
+				</p>
+
+				<dt id="vwfcode-buffervwftext"><code>BufferVWFText</code></dt>
+				<p>
+					This routine allows you to buffer a string of text/commands to RAM, allowing for easier and more flexible variable text display.
+					Buffered strings must end with a <code>$E7</code> command to signify the end of a string. Buffered text can be displayed using text macros
+					0000-000F or by setting <code>$03</code> to a non-zero value before calling this routine to hijack the current text pointer. If you do
+					the latter, the buffered text will get a <code>$FB</code> command automatically added to the end of it, so that the text pointer will
+					know where to jump back to. You should only call this routine from within MessageASM code, and only when at the start of an empty text box.
+					Otherwise, you run the risk of issues with word wrapping and/or centered text. In addition, if you call this routine consecuatively, be sure
+					to call <code>BufferVWFText_Main</code> first, then call <code>BufferVWFText_Entry2</code> for each subsequent call.
+				</p><p>
+					<h6>Entry code 1:</h6>
+					<pre><code>;(Some code that sets X to a multiple of 2)
+REP #$30
+STZ $03
+LDY.w #.StringTable>>16
+LDA.l .StringTable,x
+JML BufferVWFText_Main</code>
+
+<h6>Entry code 2:</h6>
+<code>;(Some code that sets X to a multiple of 2)
+REP #$30
+SEC
+ROL $03
+LDA.w #TextPointer
+STA $04
+LDA.w #TextPointer>>8
+STA $05
+LDY.w #.StringTable>>16
+LDA.l .StringTable,x
+JML BufferVWFText_Main
+
+.StringTable
+dw .String1,.String2,.String3 ...
+
+.String1
+db "Insert any valid text/commands here",$E7</code></pre>
+
+					... where "TextPointer" is any label above valid text data.
+
+				</p><p>
+					Warning: If used in MessageASM code, be careful with when you call this routine and hijack the text pointer. If text parsing is delayed
+					in some way and you call this routine multiple times, then your message could end up in an infinite loop!
+				</p>
+
+				<dt id="vwfcode-togglemessageasmptr"><code>ToggleMessageASMPtr</code></dt>
+				<p>
+					This allows you to toggle whether the current MessageASM routine should run. Call this routine within MessageASM code,
+					<code>$F1</code> command code or directly with the <code>$F1</code> command.
+				</p><p>
+					<h6>Entry code:</h6>
+					<pre><code>JSL ToggleMessageASMPtr_XXXX</code></pre>
+
+					... where "XXXX" is either "Enable" or "Disable".
+				</p>
+
+				<dt id="vwfcode-closemessageandgotooverworld"><code>CloseMessageAndGoToOverworld</code></dt>
+				<p>
+					This allows you to make the current message close and fade out to the overworld. Call this routine within MessageASM code,
+					<code>$F1</code> command code or directly with the <code>$F1</code> command.
+				</p><p>
+					<h6>Entry code:</h6>
+					<pre><code>JSL CloseMessageAndGoToOverworld_XXXX</code></pre>
+
+					... where "XXXX" is either "NormalExit" or "SecretExit" or "StartPlusSelect" depending on what exit level behavior you want.
+				</p><p>
+					Note: If using Lunar Magic 3.00, then you can simply use the $EF command to teleport to the overworld via a secondary entrance.
+				</p>
 
 			<h3 class="text-center">Custom Patches</h3>
 
@@ -1219,6 +1519,16 @@ db "Hi there!",$FA,$FF</code></pre>
 				<dd><p>
 					Which set of graphics to use for the text box frame.
 				</p></dd>
+				<dt>Abort Dialogue Processing register</dt>
+				<dd><p>
+					Flag used to force the VWF message to close.
+				</p></dd>
+				<dt>DisplayAMessage routine</dt>
+				<dd><p>
+					This routine allows you to display a new VWF Message and force the current message to close
+					if one is already displaying. Before JSLing to this routine, use <code>REP #$20</code> to set A
+					to be 16-bit, then load the 16-bit message number you want into A.
+				</p></dd>
 			</dl>
 			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
 		</section>
@@ -1226,7 +1536,7 @@ db "Hi there!",$FA,$FF</code></pre>
 		<!-- Seperator Comment -->
 
 		<section class="container">
-			<h2 id="advanced" class="text-center">4. Problem Solving (Advanced)</h2>
+			<h2 id="advanced" class="text-center">5. Problem Solving</h2>
 			<p>
 				In this section I’ll go over a few problems that may or may not be more complicated than most of the
 				other stuff here so far.
@@ -1240,16 +1550,7 @@ db "Hi there!",$FA,$FF</code></pre>
 			</p>
 			<ul>
 				<li>
-					Currently the patch doesn’t contain any hijack to end a dialogue when the level is ended.
-					When going from a level to the overworld with a dialogue still active, the graphics on the
-					overworld will be glitched. Therefore you shouldn’t use this feature in any level in which you
-					can die or leave the level by pressing START + SELECT. Might include a fix for this in future
-					versions.
-				</li>
-				<li>
-					When teleporting from one level to another the palette is changed and the Layer 3 tilemap is
-					cleared. This means that you’ll get glitches if teleporting to another level with a dialogue
-					active. Might include a fix for this in another version as well.
+					Currently the patch doesn’t contain any hijack to end a dialogue when touching a goal tape.
 				</li>
 			</ul>
 			<p>
@@ -1299,9 +1600,9 @@ db "Hi there!",$FA,$FF</code></pre>
 				error like this:
 				<img class="d-block m-1 my-2" src="screenshots/console-2.png" alt="Screenshot" width="979" height="512" />
 				As Asar states, this is caused by crossing a bank border. More specifically, your message data has gotten too
-				long to fit inside a single bank. There is a simple solution to this problem: Just add <code>%nextbank()</code> above the last message in the file,
+				long to fit inside a single bank. There is a simple solution to this problem: Just add <code>%nextbank(freedata)</code> above the last message in the file,
 				and the errors should disappear (until you add around two hundred more messages). If they don’t, keep moving the
-				<code>%nextbank()</code> up (always make sure it’s just above a message) until they do.
+				<code>%nextbank(freedata)</code> up (always make sure it’s just above a message) until they do.
 			</p>
 
 			<p>
@@ -1311,6 +1612,12 @@ db "Hi there!",$FA,$FF</code></pre>
 				$2AAA (that’s 10922) pointers into a single bank, and let’s be serious here: It’s rather unlikely for a single SNES game
 				to ever contain this many messages. Therefore this one limitation shouldn’t really matter.
 			</p>
+			<p>
+				Alternatively, you can attempt to optimize your text so that it takes up less space. Comment out messages you're not using
+				anymore. Rephrase your text to say the same thing in fewer characters. Convert key terms, names, frequently used phrases, etc.
+				into text macros. Optimize your MessageASM/<code>$F1</code> command code. Do whatever you can to make your text as small as possible
+				without compromising any functionality.
+			</p>
 
 			<h4 class="text-center">Conflicts With HDMA Effects</h4>
 			<p>
@@ -1319,6 +1626,13 @@ db "Hi there!",$FA,$FF</code></pre>
 				use channel 0 (%00000001). If you experience problems with an HDMA effect while displaying a
 				dialogue box, just make sure not to use channel 0 for that effect. Read an HDMA tutorial for
 				further information on this subject.
+			</p>
+
+			<h4 class="text-center">Backwards compatibility</h4>
+			<p>
+				For the most part, the current version of this patch is backwards compatible with the older versions. However,
+				if you're upgrading the patch for a hack that used a previous version, you may need to adjust some of the RAM defines
+				and JSLs to VWF related code in your custom code.
 			</p>
 
 			<h4 id="advanced-compatibility" class="text-center">Compatibility With Other Patches</h4>
@@ -1357,17 +1671,10 @@ db "Hi there!",$FA,$FF</code></pre>
 		<!-- Seperator Comment -->
 
 		<section class="container">
-			<h2 id="bugs" class="text-center">5. Known Bugs</h2>
+			<h2 id="bugs" class="text-center">6. Known Bugs</h2>
 			<p>
 				<ul>
-					<li>Sometimes the teleporting command doesn’t work properly and doesn’t
-						teleport you to the specified level. I couldn’t find the cause of this so far.
-						Maybe the code is just executed at the wrong place.</li>
-					<li>When using the water level flag and teleporting to a level which uses
-						separate settings for the midway entrace, then you’ll end up at the
-						midway point instead of the level entrance.</li>
-					<li>If you die while a dialogue is being processed without freezing sprites, then this leads
-						to the aforementioned issues in the <a href="#advanced">Problem Solving</a> section.</li>
+					<li>This patch has been known to cause freespace leaks. The current cause is unknown.</li>
 					<li>Sometimes, when closing a dialogue, there’s a Flash of <code>0</code>s (FO0)
 						when using level modes where Layer 3 isn’t on the Main-Screen, or the Main-Screen
 						or Sub-Screen registers are updated in such a way that Layer 3 gets shown
@@ -1385,22 +1692,21 @@ db "Hi there!",$FA,$FF</code></pre>
 		<!-- Seperator Comment -->
 
 		<section class="container">
-			<h2 id="plans" class="text-center">6. Planned Features</h2>
+			<h2 id="plans" class="text-center">7. Planned Features</h2>
 			<p>
 				<small class="text-center my-2 d-block">
-					LOL, I wrote this patch almost eight years ago and none of this is likely
-					going to happen anymore. Sorry to disappoint you. :(<br/>
-					Sincerly, RPG Hacker
+					LOL, I wrote this patch almost a gazillion years ago and none of this is likely
+					going to happen anymore*. Sorry to disappoint you. :(<br/><br/>
+					Sincerly, RPG Hacker<br/><br/>
+					*At least by me. Luckily, the patch is now hosted on GitHub, and a bunch of people have already picked up right where I had left off. Thanks to them, the patch keeps evolving, even to this day!<br/>
+					I'm thankful to every one of you! &lt;3
 				</small>
 				<ul>
 					<li>Create a GUI application to make setting up the patch a lot easier for the user.</li>
 					<li>Add a feature to the patch that allows the player to easily customise the text box ingame.</li>
 					<li>Add a command to jump to a certain pixel inside the text box.</li>
-					<li>Fix the <a href="#bugs">aforementioned teleport bugs</a>.</li>
-					<li>Add support for the expanded secondary entrances (<code>$0200</code> - <code>$1FFF</code>).</li>
 					<li>Allow customising which button is used for advancing the dialogue.</li>
-					<li>Add a feature to allow closing the dialogue mid-message by pressing a button.</li>
-					<li>Implement UTF-8 mode to replace the deprecated 16-Bit mode.</li>
+					<li>Implement a better alternative for the deprecated 16-Bit mode. Something that supports all kinds of languages, while keeping the text insertion size as small as possible for every one of them.</li>
 					<li>Lots of optimizations.</li>
 				</ul>
 			</p>
@@ -1410,9 +1716,9 @@ db "Hi there!",$FA,$FF</code></pre>
 		<!-- Seperator Comment -->
 
 		<section class="container">
-			<h2 id="bug-reports" class="text-center">7. Bug Reports</h2>
+			<h2 id="bug-reports" class="text-center">8. Bug Reports</h2>
 			<p>
-				Bugs or suggestions? Contact me on SMW Central, or file an <a href="https://github.com/RPGHacker/SMW-Workspace/issues">issue</a> on GitHub!
+				Bugs or suggestions? Contact me on SMW Central, or (preferably) file an <a href="https://github.com/RPGHacker/SMW-Workspace/issues">issue</a> on GitHub!
 			</p>
 			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
 		</section>
@@ -1420,9 +1726,40 @@ db "Hi there!",$FA,$FF</code></pre>
 		<!-- Seperator Comment -->
 
 		<section class="container">
-			<h2 id="history" class="text-center">8. History</h2>
+			<h2 id="history" class="text-center">9. History</h2>
 
 			<dl>
+			<dt><h5>Version 1.3 - <span data-date="2019-07-05">07/05/2019</span></h5></dt>
+				<dd><p>
+					<h6>Contributors:</h6>
+					<ul>
+						<li>Yoshifanatic</li>
+					</ul>
+
+					<h6>Changes:</h6>
+					<ul>
+						<li>Fixed message 7F's pointer so it no longer points to message 8F.</li>
+						<li>Fixed an oversight where various aspects of layer 3 (transparency, priority, main/subscreen status) were not being preserved.</li>
+						<li>Added MessageASM functionality to allow one to run custom code on a per-message basis.</li>
+						<li>Added the ability to modify the text pointer using the start button.</li>
+						<li>Added a text macro system, allowing one to define strings of text/commands to be called at any time in a message.</li>
+						<li>Added an extra step to message initialization that initializes all the VWF variables on message load, not just on title screen load.</li>
+						<li>Added command byte <code>$EB</code> that forces a textbox to freeze until something modifies the text pointer.</li>
+						<li>Added command bytes <code>$E8</code> and <code>$E7</code> for the text macro system and that act like a JSR and RTS to the textbox system, respectively.</li>
+						<li>Added several useful routines that can be called from within messages, such as a text buffering routine.</li>
+						<li>Made it so that the textbox will be forced to close when the screen fades out. The fadeout will also be delayed until the textbox closes.</li>
+						<li>Added some functionality that enables the textbox to close if another message is being set to display</li>
+						<li>Changed the hijack location for initializing the VWF RAM on the title screen from $0086E2 to $0096B4, because the former location was very questionable.</li>
+						<li>Fixed the incompatibility with Vitor Vilela's SA-1 Pack Patch V1.30.</li>
+						<li>Changed the %nextbank macro to allow specifying the freespace command to use.</li>
+						<li>Adjusted the <code>$EF</code> command to work with secondary entrances $0200-$1FFF, levels using Lunar Magic 3.00 custom level dimensions, and layer 2 horizontal levels.</li>
+						<li>Added a RAM flag that indicates that the text box has just been cleared.</li>
+						<li>Made the default message display an error message.</li>
+						<li>Cut RAM usage in half by optimizing how the text tiles are buffered.</li>
+						<li>Several small code optimizations.</li>
+					</ul>
+				</p></dd>
+
 				<dt><h5>Version 1.2 - <span data-date="2018-05-03">05/03/2018</span></h5></dt>
 				<dd><p>
 					<h6>Contributors:</h6>

@@ -9,7 +9,7 @@ incsrc vwfconfig.cfg
 incsrc ../shared/shared.asm
 
 
-print "VWF Dialogues Patch - (c) 2018 RPG Hacker"
+print "VWF Dialogues Patch - (c) 2010-2020 RPG Hacker"
 
 
 math pri on
@@ -48,8 +48,8 @@ macro claim_varram(define, size)
 endmacro
 
 
-%claim_varram(vwfmode, 1)
-%claim_varram(message, 2)
+%claim_varram(vwfmode, 1)				; Contains the current state of the text box.
+%claim_varram(message, 2)				; The 16-bit message number to display
 %claim_varram(counter, 1)
 
 %claim_varram(width, 1)
@@ -61,22 +61,22 @@ endmacro
 %claim_varram(boxframe, 1)
 %claim_varram(boxcreate, 1)
 %claim_varram(boxpalette, 1)
-%claim_varram(freezesprites, 1)
-%claim_varram(beep, 1)
-%claim_varram(beepbank, 2)
-%claim_varram(beepend, 1)
-%claim_varram(beependbank, 2)
-%claim_varram(beepcursor, 1)
-%claim_varram(beepcursorbank, 2)
-%claim_varram(beepchoice, 1)
-%claim_varram(beepchoicebank, 2)
+%claim_varram(freezesprites, 1)				; Flag indicating that the textbox has frozen all sprites.
+%claim_varram(beep, 1)					; The sound effect ID to play for the text beep noise.
+%claim_varram(beepbank, 2)				; The RAM address stored to by the above.
+%claim_varram(beepend, 1)				; The sound effect ID to play for the "wait for A" sound effect.
+%claim_varram(beependbank, 2)				; The RAM address stored to by the above.
+%claim_varram(beepcursor, 1)				; The sound effect ID to play when moving the cursor
+%claim_varram(beepcursorbank, 2)			; The RAM address stored to by the above.
+%claim_varram(beepchoice, 1)				; The sound effect ID to play when pressing A.
+%claim_varram(beepchoicebank, 2)			; The RAM address stored to by the above.
 %claim_varram(font, 1)
 %claim_varram(edge, 1)
 %claim_varram(space, 1)
 %claim_varram(frames, 1)
 %claim_varram(layout, 1)
-%claim_varram(soundoff, 1)
-%claim_varram(speedup, 1)
+%claim_varram(soundoff, 1)				; Flag that disables all the normal textbox sounds
+%claim_varram(speedup, 1)				; Flag indicating that the current textbox can be sped up when A is held.
 %claim_varram(autowait, 1)
 
 %claim_varram(vrampointer, 2)
@@ -85,10 +85,10 @@ endmacro
 %claim_varram(currentx, 1)
 %claim_varram(currenty, 1)
 
-%claim_varram(vwftextsource, 3)
+%claim_varram(vwftextsource, 3)				; 24-bit pointer to the current text data.
 %claim_varram(vwfbytes, 2)
 %claim_varram(vwfgfxdest, 3)
-%claim_varram(vwftilemapdest, 3)
+%claim_varram(vwftilemapdest, 3)			; 24-bit pointer to the location in the tile buffer to read from when uploading the textbox tilemap.
 %claim_varram(vwfpixel, 2)
 %claim_varram(vwfmaxwidth, 1)
 %claim_varram(vwfmaxheight, 1)
@@ -103,9 +103,9 @@ endmacro
 %claim_varram(clearbox, 1)
 %claim_varram(wait, 1)
 %claim_varram(timer, 1)
-%claim_varram(teleport, 1)
-%claim_varram(telepdest, 2)
-%claim_varram(telepprop, 1)
+%claim_varram(teleport, 1)				; Flag indicating whether a teleport should take place.
+%claim_varram(telepdest, 1)				; Data that gets stored to the table at $19B8 when the teleport function is active.
+%claim_varram(telepprop, 1)				; Data that gets stored to the table at $19D8 when the teleport function is active.
 %claim_varram(forcesfx, 1)
 %claim_varram(widthcarry, 1)
 %claim_varram(choices, 1)
@@ -119,12 +119,34 @@ endmacro
 %claim_varram(cursorupload, 1)
 %claim_varram(cursorend, 1)
 
-%claim_varram(paletteupload, 1)
-%claim_varram(palbackup, 64)
+%claim_varram(paletteupload, 1)				; Flag indicating that the layer 3 palettes should be updated.
+%claim_varram(palbackup, 64)				; Backup of the layer 3 palettes.
 %claim_varram(cursorfix, 1)
 %claim_varram(cursorvram, 2)
 %claim_varram(cursorsrc, 2)
 %claim_varram(enddialog, 1)
+
+%claim_varram(messageasmopcode, 1)			; Determines whether MessageASM code will run. Contains either $5C (JML) or $6B (RTL)
+%claim_varram(messageasmloc, 3)				; 24-bit pointer to the current MessageASM routine.
+%claim_varram(vwfactiveflag, 1)				; Flag indicating that a VWF Message is active. Used to tell the VWF system to close the current text box before opening the new one.
+%claim_varram(skipmessageflag, 1)			; Flag indicating that the message skip function is enabled for the current textbox.
+%claim_varram(skipmessageloc, 3)			; 24-bit pointer to the text data that will be jumped to if start is pressed and message skipping is enabled.
+%claim_varram(l3priorityflag, 1)			; Backup of the layer 3 priority bit in register $2105
+%claim_varram(l3transparencyflag, 1)			; Backup of the layer 3 color math settings from RAM address $40 (mirror of $2131) 
+%claim_varram(l3mainscreenflag, 1)			; Backup of the layer 3 main screen bit from RAM address $0D9D (mirror of $212C)
+%claim_varram(l3subscreenflag, 1)			; Backup of the layer 3 sub screen bit from RAM address $0D9E (mirror of $212D)
+%claim_varram(isnotatstartoftext, 1)			; Flag indicating that the text box has just been cleared. Intended to provide an easy way to sync up MessageASM code with the start of a new textbox.
+%claim_varram(initialskipmessageflag, 1)		; Flag indicating that the current textbox originally had the message skip function enabled. Intended to allow you to revert the state of the other skip message flag if it's been disabled.
+%claim_varram(vwfbufferdest, 3)				; 24-bit pointer to the location in the tile buffer to read from when uploading text graphics.
+%claim_varram(vwfbufferindex, 1)			; Index to the text graphics buffer determining where in the buffer to store tiles.
+%claim_varram(vwfstackindex1, 1)			; Stack pointer for the first VWF stack 
+%claim_varram(vwfstackindex2, 1)			; Stack pointer for the second VWF stack 
+%claim_varram(vwfstack1, 60)				; Used by the text macro system to store/reload text pointers.
+%claim_varram(vwfstack2, 60)				; Used by the text macro system to store/reload text pointers.
+%claim_varram(vwftbufferedtextpointerindex, 1)		; Index for the which 24-bit buffered text macro pointer should be updated.
+%claim_varram(vwftbufferedtextindex, 2)			; 16-bit index into the text buffer, used for handling where to write in the table for consecuative text buffers.
+%claim_varram(vwftbufferedtextpointers, 48)		; 24-bit pointer table for the buffered text macros.
+%claim_varram(vwftextbuffer, 512)			; Buffer dedicated for uploading VWF text to in order to display variable text.
 
 !rambank	= select(!use_sa1_mapping,$40,$7E)
 
@@ -136,6 +158,17 @@ endmacro
 !8bit	= "if !bitmode	== !8 :"
 !16bit	= "if !bitmode	== !16 :"
 !hijack	= "if !hijackbox	== !true :"
+
+!vwfbuffer_emptytile = !tileram
+!vwfbuffer_bgtile = !tileram+$10
+!vwfbuffer_frame = !tileram+$20
+!vwfbuffer_letters = !tileram+$20
+!vwfbuffer_choicebackup = !tileram+$0420
+!vwfbuffer_cursor = !tileram+$042C
+!vwfbuffer_textboxtilemap = !tileram+$048C
+;!vwfbuffer_choicebackup = !tileram+$3894
+;!vwfbuffer_cursor = !tileram+$38A0
+;!vwfbuffer_textboxtilemap = !tileram+$3900
 
 
 
@@ -200,10 +233,9 @@ macro bwramtransfer(bytes, start, source, destination)
 		sta $2253
 		stz $2254
 		nop
-		rep #$20
+		rep #$21
 		lda $2306	; Add source address
-		clc	; to get new source address
-		adc.w #<source>
+		adc.w #<source>	; to get new source address
 		sta $2232
 		ldy.b #<source>>>16
 		sty $2234
@@ -237,9 +269,9 @@ macro mvntransfer(bytes, start, source, destination)
 		stz $2254
 		nop
 	endif
-	rep #$30
+	rep #$31
 	lda select(!use_sa1_mapping,$2306,$2134)	; Add source address
-	clc : adc.w #<source>	; to get new source address
+	adc.w #<source>	; to get new source address
 	tax
 	ldy.w #<destination>	; Destination address
 	lda.w #<bytes>-1	; Number of bytes
@@ -258,9 +290,8 @@ endmacro
 
 !PrevFreespace	= AutoFreespaceCleaner
 
-macro nextbank()
-	freedata : prot !PrevFreespace
-	cleartable
+macro nextbank(freespace)
+	<freespace> : prot !PrevFreespace
 	!PrevFreespace += a
 	!PrevFreespace:
 endmacro
@@ -284,6 +315,7 @@ endmacro
 ; Macros for text files
 
 macro textstart()
+	%nextbank(freedata)
 	cleartable
 	table vwftable.txt
 endmacro
@@ -294,10 +326,20 @@ macro textend()
 	dw $7FFF,$0000
 	db %11110100
 	db %00001111,$13,$13,$23,$29
+	db %00000000
+	;dl MessageASMLoc
+	;dl .MessageSkipLoc
 
+	db "Message "
+	db $F6
+	dl !message+1
+	db $F6
+	dl !message
+	db " is invalid! Please contact the hack author to report this oversight."
 	!8bit db $FA
-	!8bit db $FF
 	!16bit dw $FFFA
+;.MessageSkipLoc
+	!8bit db $FF
 	!16bit dw $FFFF
 endmacro
 
@@ -325,9 +367,24 @@ org remap_rom($008297)
 	jml NMIHijack
 	nop #$2
 
-; Call RAM Init Routine on Title Screen
+; Restore hijacked code from older versions of the patch
+; This hijack location was highly questionable to begin with.
 org remap_rom($0086E2)
+	STY $00
+	REP #$30
+
+; Call RAM Init Routine on Title Screen
+org remap_rom($0096B4)
 	jml InitMode
+
+; Check if a message is active before fading out.
+org remap_rom($009F37)
+	jml MosaicGamemodeHijack
+	nop
+
+org remap_rom($009F6F)
+	jml FadeGamemodeHijack
+	nop
 
 ; Hijack message box to call VWF dialogue
 org remap_rom($00A1DF)
@@ -335,7 +392,7 @@ org remap_rom($00A1DF)
 
 ; Buffer data before loading up to VRAM in V-Blank
 org remap_rom($00A2A9)
-	jml Buffer
+	jml VWFBufferRt
 	nop #2
 
 ; SRAM expansion ($07 => 2^7 kb = 128 kb)
@@ -379,19 +436,27 @@ InitCall:
 
 
 InitMode:
-	sty $00
-	pha
-	lda remap_ram($0100)
-	cmp #$03
-	bne .NoTitle
 	jsr InitRAM	; RAM init on Title Screen
+	ldx #$07
+	lda #$FF
+	jml remap_rom($0096B8)
 
-.NoTitle
-	pla
-	rep #$30
-	jml remap_rom($0086E6)
-
-
+InitVWFRAM:
+	lda !vwfmode					;\ Preserve these RAM addresses so they don't get wiped out when initializing the VWF RAM
+	pha						;| This routine is called in VWF mode 01 when the message is already active.
+	lda !message					;|
+	pha						;|
+	lda !message+1					;|
+	pha						;/
+	jsr InitRAM					;
+	pla						;
+	sta !message+1					;
+	pla						;
+	sta !message					;
+	pla						;
+	inc						;
+	sta !vwfmode					;
+	jmp Buffer_End					;
 
 InitRAM:
 	phx
@@ -416,14 +481,47 @@ InitRAM:
 	sta !boxcolor
 	lda.b #!bgcolor>>8
 	sta !boxcolor+1
-
+	lda #$6B
+	sta !messageasmopcode
 .End
 	plx
 	rts
 
+;;;;;;;;;;;;;;;;;;;;
+;Level fade out Hijack;
+;;;;;;;;;;;;;;;;;;;;
 
+MosaicGamemodeHijack:
+	jsr CheckIfVWFActive
+	dec remap_ram($0DB1)
+	BPL +
+	jml remap_rom($009F3C)
++
+	jml remap_rom($009F6E)
 
+FadeGamemodeHijack:
+	jsr CheckIfVWFActive
+	dec remap_ram($0DB1)
+	BPL +
+	jml remap_rom($009F74)
++
+	jml remap_rom($009F6E)
 
+CheckIfVWFActive:
+	lda remap_ram($0DAF)				;\ If the level is fading in, return
+	beq .NotActive					;/
+	lda !vwfmode					;\ If no VWF message is active, return.
+	beq .NotActive					;/
+.Entry2
+	cmp #$09					;\ If not in VWF mode 09 (display text), don't increment the VWF mode here
+	bne .NotTextCreation				;/
+	inc						;\ Force the text box to close if one is already open.
+	sta !vwfmode					;/
+.NotTextCreation
+	inc remap_ram($0DB1)				; Delay the fade out from happpening
+	jsr Buffer					; Run the VWF buffer code.
+.NotActive
+	rts
 
 ;;;;;;;;;;;;;;;;;;;;
 ;Message Box Hijack;
@@ -434,24 +532,24 @@ InitRAM:
 ; dialogues.
 
 MessageBox:
-	lda !vwfmode	; Already displaying a message?
-	beq .CallDialogue
-	stz remap_ram($1426)
-	rtl
+	lda #$00
+	xba
+	;lda !vwfmode	; Already displaying a message?
+	;beq .CallDialogue
+	;stz remap_ram($1426)
+	;rtl
 
 .CallDialogue
 	lda remap_ram($1426)	; Yoshi Special Message?
 	cmp #$03
 	bne .NoYoshi
 	lda #$01
-	sta !message
 	bra .SetMessage
 
 .NoYoshi
 	lda remap_ram($0109)	; Intro Level Message?
 	beq .NoIntro
 	lda #$00
-	sta !message
 	bra .SetMessage
 
 .NoIntro
@@ -474,15 +572,10 @@ MessageBox:
 	clc
 	adc remap_ram($1426)
 	dec
-	sta !message
-
 .SetMessage
-	lda #$00
-	sta !message+1
 	stz remap_ram($1426)
-	lda #$01
-	sta !vwfmode
-
+	rep #$20
+	jml DisplayAMessage
 .End
 	rtl
 
@@ -498,26 +591,21 @@ MessageBox:
 ; dialogues.
 
 NMIHijack:
-	phx
+	stz $11
 	lda !vwfmode
 	tax
 	lda.l .NMITable,x
 	bne .SpecialNMI	; If NMITable = $00 load regular NMI
 	sty $4209
 	stz $420A
-	stz $11
-	lda #$A1
-	sta $4200
 	stz $2111
 	stz $2111
 	stz $2112
 	stz $2112
+	ldx #$A1
 	bra .End
 
 .SpecialNMI
-	stz $11	; Else load special NMI
-	lda #$81	; Disable IRQ
-	sta $4200
 	stz $2111	; Set layer 3 X scroll to $0100
 	lda #$01
 	sta $2111
@@ -525,15 +613,16 @@ NMIHijack:
 	sta $2112
 	lda #$01
 	sta $2112
-
+	ldx #$81	; Disable IRQ
 .End
-	plx
+	stx $4200
 	jml remap_rom($0082B0)
 
 .NMITable
-	db $00,$00,$00,$01,$01
+	db $00,$00,$00,$00,$01
 	db $01,$01,$01,$01,$01
-	db $01,$01,$01,$00,$00
+	db $01,$01,$01,$01,$00
+	db $00
 
 
 
@@ -545,6 +634,14 @@ NMIHijack:
 
 ; This buffers code to save time in V-Blank.
 
+VWFBufferRt:
+	jsr Buffer
+	lda $1C
+	pha
+	lda $1D
+	pha
+	jml remap_rom($00A2AF)
+
 Buffer:
 if !use_sa1_mapping
 	lda.b #.Main
@@ -554,87 +651,96 @@ if !use_sa1_mapping
 	lda.b #.Main/65536
 	sta $3182
 	jsr $1E80
-
-	lda $1C
-	pha
-	lda $1D
-	pha
-	jml remap_rom($00A2AF)
+	rts
 
 .Main
+	jsr .Sub
+	rtl
+
+.Sub
 	phb
 	phk
 	plb
 else
+	phb
+	phk
+	plb
 	phx
 	phy
 	pha
-	phb
 	php
-	phk
-	plb
 endif
 
 	lda remap_ram($13D4)
 	beq .NoPause
-	bra .End
+	jmp .End
 
 .NoPause
+	lda !vwfactiveflag				;\ Is another message trying to display?
+	beq .NotForceClose				;/ If not, skip past this code
+	lda !vwfmode					;\ Did the currently active message finish closing?
+	beq .NotActive					;/ If so, make the new message appear
+	cmp #$09					;\ Is the previous message in VWF mode 09 (display text)?
+	bne .NotTextCreation				;/ If not, don't advance the VWF mode
+	inc						;\ Increment the VWF mode to skip past the display text mode.
+	sta !vwfmode					;/
+.NotTextCreation
+	bra .NotForceClose
+
+.NotActive
+	lda #$01
+	sta !vwfmode
+	lda #$00
+	sta !vwfactiveflag
+	lda #$6B
+	sta !messageasmopcode
+	bra .End
+
+.NotForceClose
 	lda !vwfmode	; Prepare jump to routine
 	beq .End
-	asl
-	tax
-	lda .Routinetable,x
-	sta $00
-	inx
-	lda .Routinetable,x
-	sta $01
-	phk
-	pla
-	sta $02
-
+	cmp #$01					;\ If in VWF mode 01 (initialize RAM), don't run the MessageASM code
+	beq .NoMessageASM				;/
+	phb						;\ Run whatever MessageASM routine was defined in the message header.
+	lda !messageasmopcode+3				;|
+	pha						;|
+	plb						;|
+	jsl !messageasmopcode				;|
+	plb						;/
+.NoMessageASM
 	lda !freezesprites	; Freeze sprites if flag is set
 	beq .NoFreezeSprites
-	lda #$02
+	;lda #$02
 	sta remap_ram($13FB)
 	sta $9D
 	sta remap_ram($13D3)
+	rep #$20
 	lda $15
-	and #$BF
+	and #$BFBF
 	sta $15
-	lda $16
-	and #$BF
-	sta $16
 	lda $17
-	and #$BF
+	and #$BFBF
 	sta $17
-	lda $18
-	and #$BF
-	sta $18
-
+	sep #$20
 .NoFreezeSprites
-	jml [remap_ram($0000)]
+	lda !vwfmode
+	asl
+	tax
+	jmp (.Routinetable,x)
 
 .End
 if !use_sa1_mapping
-	plb
-	rtl
 else
 	plp	; Return
-	plb
 	pla
 	ply
 	plx
-
-	lda $1C
-	pha
-	lda $1D
-	pha
-	jml remap_rom($00A2AF)
 endif
+	plb
+	rts
 
 .Routinetable
-	dw .End,.End,VWFSetup,BufferGraphics,.End
+	dw .End,InitVWFRAM,.End,VWFSetup,BufferGraphics,.End
 	dw .End,BufferWindow,VWFInit,TextCreation,CollapseWindow
 	dw .End,.End,.End,.End,.End
 
@@ -656,6 +762,10 @@ LoadHeader:
 	sta $01
 	lda !vwftextsource+2
 	sta $02
+	!8bit lda #$0D
+	!16bit lda #$0C
+	sta $03
+	stz $04
 
 	ldy #$00
 
@@ -816,18 +926,52 @@ LoadHeader:
 	sta !beepchoice
 	iny
 
-	rep #$20
-	lda $00
+	lda $03
 	clc
-	adc #$0005
-	sta $00
+	adc #$05
+	sta $03
 
 .NoSounds
-	rep #$20
+	lda [$00],y		; Message skip flag
+	and #$02
+	sta !skipmessageflag
+	sta !initialskipmessageflag
+	lda [$00],y		; Message ASM Flag
+	and #$01
+	beq .NoMessageASM
+	iny
+	lda [$00],y
+	xba
+	lda #$5C
+	rep #$21
+	sta !messageasmopcode
+	iny
+	lda [$00],y
+	sta !messageasmopcode+2
+	sep #$20
+	iny
+	lda $03
+	adc #$03
+	sta $03
+.NoMessageASM
+	iny
+	lda !initialskipmessageflag
+	beq .NoMessageSkip
+	rep #$21
+	lda [$00],y		; Message skip pointer
+	sta !skipmessageloc
+	sep #$20
+	iny
+	iny
+	lda [$00],y		; Message skip pointer
+	sta !skipmessageloc+2
+	lda $03
+	adc #$03
+	sta $03
+.NoMessageSkip
+	rep #$21
 	lda $00
-	clc
-	!8bit adc #$000C
-	!16bit adc #$000B
+	adc $03
 	sta !vwftextsource
 	sep #$20
 
@@ -920,12 +1064,16 @@ LoadHeader:
 
 
 BufferGraphics:
+	jsr .Start
+	jmp Buffer_End
+
+.Start
 	rep #$30
 	ldx #$0000
 	lda #$0000
 
 .DrawEmpty
-	sta !tileram,x	; Draw empty tile
+	sta !vwfbuffer_emptytile,x	; Draw empty tile
 	inx #2
 	cpx #$0010
 	bne .DrawEmpty
@@ -935,10 +1083,10 @@ BufferGraphics:
 
 	; Copy text box graphics over to RAM
 
-	%bwramtransfer($0010,!boxbg,Patterns,!tileram+16)
-	%bwramtransfer($0090,!boxframe,Frames,!tileram+32)
+	%bwramtransfer($0010,!boxbg,Patterns,!vwfbuffer_bgtile)
+	%bwramtransfer($0090,!boxframe,Frames,!vwfbuffer_frame)
 
-	jmp Buffer_End
+	rts
 
 
 ; This routine clears the screen by filling the tilemap with $00.
@@ -955,7 +1103,7 @@ ClearScreen:
 	lda !tile
 
 .InitTilemap
-	sta !tileram+$3900,x
+	sta !vwfbuffer_textboxtilemap,x
 	inx #2
 	cpx #$0700
 	bne .InitTilemap
@@ -987,16 +1135,7 @@ BufferWindow:
 	lda !boxcreate	; Prepare jump to routine
 	asl
 	tax
-	lda.l .Routinetable,x
-	sta $00
-	inx
-	lda.l .Routinetable,x
-	sta $01
-	phk
-	pla
-	sta $02
-
-	jml [remap_ram($0000)]
+	jmp (.Routinetable,x)
 
 .Routinetable
 	dw .NoBox,.SoEBox,.SoMBox,.MMZBox,.InstBox
@@ -1126,13 +1265,12 @@ SoMLine:
 	lda #$01
 	sta $02
 	jsr GetTilemapPos
-	rep #$20
-	lda.w #!tileram+$3900
-	clc
+	rep #$21
+	lda.w #!vwfbuffer_textboxtilemap
 	adc $03
 	sta $03
 	sep #$20
-	lda.b #!tileram+$3900>>16
+	lda.b #!vwfbuffer_textboxtilemap>>16
 	sta $05
 
 	ldy #$00
@@ -1197,11 +1335,11 @@ DrawBox:
 	sta $00
 	lda !currenty
 	sta $01
-	lda.b #!tileram+$3900
+	lda.b #!vwfbuffer_textboxtilemap
 	sta $03
-	lda.b #!tileram+$3900>>8
+	lda.b #!vwfbuffer_textboxtilemap>>8
 	sta $04
-	lda.b #!tileram+$3900>>16
+	lda.b #!vwfbuffer_textboxtilemap>>16
 	sta $05
 	lda !currentwidth
 	sta $06
@@ -1213,9 +1351,9 @@ DrawBox:
 	sta $00
 	lda !currenty
 	sta $01
-	lda.b #!tileram+$3900
+	lda.b #!vwfbuffer_textboxtilemap
 	sta $03
-	lda.b #!tileram+$3900>>8
+	lda.b #!vwfbuffer_textboxtilemap>>8
 	sta $04
 	lda !currentwidth
 	sta $06
@@ -1237,8 +1375,7 @@ GetTilemapPos:
 	lda $00
 	asl
 	sta $00
-	lda #$20
-	asl
+	lda #$40
 	bra .Store
 
 .NoDouble
@@ -1254,8 +1391,7 @@ GetTilemapPos:
 	lda #$00
 	xba
 	lda $00
-	rep #$20
-	clc
+	rep #$21
 	adc select(!use_sa1_mapping,$2306,$2134)
 	sta $03
 	sep #$20
@@ -1296,9 +1432,8 @@ DrawBG:
 
 .InstLoopY
 	jsr GetTilemapPos	; Get tilemap position
-	rep #$20
+	rep #$21
 	lda $08
-	clc
 	adc $03
 	sta $03
 	sep #$20
@@ -1352,9 +1487,8 @@ AddFrame:
 
 .VerticalLoop
 	jsr DrawTile
-	rep #$20
+	rep #$21
 	lda $03
-	clc
 	adc #$0040
 	sta $03
 	sep #$20
@@ -1442,9 +1576,8 @@ DrawLine:
 
 SetPos:
 	jsr GetTilemapPos
-	rep #$20
+	rep #$21
 	lda $08
-	clc
 	adc $03
 	sta $03
 	sep #$20
@@ -1497,16 +1630,7 @@ CollapseWindow:
 	lda !boxcreate	; Prepare jump to routine
 	asl
 	tax
-	lda.l .Routinetable,x
-	sta $00
-	inx
-	lda.l .Routinetable,x
-	sta $01
-	phk
-	pla
-	sta $02
-
-	jml [remap_ram($0000)]
+	jmp (.Routinetable,x)
 
 .Routinetable
 	dw .NoBox,.SoEBox,.SoMBox,.MMZBox,.InstBox
@@ -1663,11 +1787,10 @@ ClearVert:
 	lda #$01
 	sta $02
 	jsr GetTilemapPos
-	lda.b #!tileram+$3900>>16
+	lda.b #!vwfbuffer_textboxtilemap>>16
 	sta $05
-	rep #$20
-	lda.w #!tileram+$3900
-	clc
+	rep #$21
+	lda.w #!vwfbuffer_textboxtilemap
 	adc $03
 	sta $03
 	ldy #$00
@@ -1699,11 +1822,10 @@ ClearHoriz:
 	lda #$01
 	sta $02
 	jsr GetTilemapPos
-	lda.b #!tileram+$3900>>16
+	lda.b #!vwfbuffer_textboxtilemap>>16
 	sta $05
-	rep #$20
-	lda.w #!tileram+$3900
-	clc
+	rep #$21
+	lda.w #!vwfbuffer_textboxtilemap
 	adc $03
 	sta $03
 	ldy #$00
@@ -1782,6 +1904,7 @@ InitLine:
 	sta !currentpixel
 	lda #$00
 	sta !widthcarry
+	sta !vwfbufferindex
 
 	lda !width	; Reset available width
 	asl #4
@@ -1822,8 +1945,13 @@ InitLine:
 	pha
 
 .WidthBegin
+	lda !currenty				;\ This fixes an oddity where the next line's width is calculated when at the end of a text box.
+	inc #2					;| This would cause a text macro to break if it spanned more than one text box.
+	cmp !vwfmaxheight			;|
+	bcs .AtEndOfTextBox			;/
 	jsr WordWidth
 
+.AtEndOfTextBox
 	lda !widthcarry
 	beq .NoCarry
 	lda #$00
@@ -1918,10 +2046,10 @@ InitLine:
 	and #$03FF
 	asl #4
 	clc
-	adc.w #!tileram	; Add starting address
+	adc.w #!vwfbuffer_emptytile	; Add starting address
 	sta $09
 	sep #$20
-	lda.b #!tileram>>16
+	lda.b #!vwfbuffer_emptytile>>16
 	sta $0B
 
 if !use_sa1_mapping
@@ -2013,21 +2141,16 @@ if !use_sa1_mapping
 	stz select(!use_sa1_mapping,$2254,$2306)
 	nop
 endif
-	rep #$20
+	rep #$21
 	lda select(!use_sa1_mapping,$2306,$2134)
-	clc
 	adc.w #Pointers
 	sta $00
-	sep #$20
-	lda.b #Pointers>>16
+	lda.w #Pointers>>16
 	sta $02
-	ldy #$00
-	lda [$00],y
+	ldy #$02
+	lda [$00]
 	sta !vwftextsource
-	iny
-	lda [$00],y
-	sta !vwftextsource+1
-	iny
+	sep #$20
 	lda [$00],y
 	sta !vwftextsource+2
 	rts
@@ -2037,6 +2160,40 @@ endif
 
 
 TextCreation:
+	lda !skipmessageflag
+	beq .DontSkip
+	lda !vwfchar
+	cmp #$ED
+	beq .DontSkip
+	cmp #$FF
+	beq .DontSkip
+	lda $15				; Did the player press start?
+	and #$10			;
+	cmp #$10			; If so, allow the message to be closed early
+	bne .DontSkip			;
+	rep #$20
+	lda !skipmessageloc
+	sta !vwftextsource
+	!16bit lda #$FFEB
+	!16bit sta !vwfchar
+	sep #$20
+	lda !skipmessageloc+2
+	sta !vwftextsource+2
+	!8bit lda #$EB
+	!8bit sta !vwfchar
+	lda #$00
+	sta !wait
+	sta !cursormove
+	sta !cursorupload
+	sta !cursorend
+	sta !choices
+	sta !currentchoice
+	sta !skipmessageflag
+	inc
+	sta !clearbox
+	jmp .NoButton
+
+.DontSkip
 	lda !wait
 	beq .NoWait
 	jmp .End
@@ -2108,7 +2265,7 @@ TextCreation:
 	sta !cursorupload
 	stz $0F
 	jsr BackupTilemap
-	%mvntransfer($0060, #$00, !tileram+$38A0, !vwftileram)
+	%mvntransfer($0060, #$00, !vwfbuffer_cursor, !vwftileram)
 	lda !choicespace
 	cmp #$08
 	bcs .NoChoiceCombine
@@ -2119,14 +2276,14 @@ TextCreation:
 	asl
 	tax
 	rep #$20
-	lda !tileram+$3894,x
+	lda !vwfbuffer_choicebackup,x
 	and #$03FF
 	asl #4
 	clc
-	adc.w #!tileram
+	adc.w #!vwfbuffer_emptytile
 	sta $03
 	sep #$20
-	lda.b #!tileram>>16
+	lda.b #!vwfbuffer_emptytile>>16
 	sta $05
 
 	lda !choicewidth
@@ -2176,36 +2333,35 @@ TextCreation:
 	jmp .End
 
 .NoClearBox
+	lda #$01
+	sta !isnotatstartoftext
 	jsr ReadPointer
 	!16bit rep #$20
 	lda [$00]
 	sta !vwfchar
 	!16bit inc $00
-	!8bit cmp #$EC
-	!16bit cmp #$FFEC
+	!8bit cmp #$E7
+	!16bit cmp #$FFE7
 	bcs .Jump
 	!16bit sep #$20
 	jmp .WriteLetter
 
 .Jump
 	sec
-	!8bit sbc #$EC
-	!16bit sbc #$FFEC
+	!8bit sbc #$E7
+	!16bit sbc #$FFE7
 	!16bit sep #$20
 	asl
 	tax
-	lda.l .Routinetable,x
-	sta $0C
-	inx
-	lda.l .Routinetable,x
-	sta $0D
-	phk
-	pla
-	sta $0E
 	!16bit jsr IncPointer
-	jml [remap_ram($000C)]
+	jmp (.Routinetable,x)
 
 .Routinetable
+	dw .E7_EndTextMacro
+	dw .E8_TextMacro
+	dw .FF_End
+	dw .FF_End
+	dw .EB_DoNothing
 	dw .EC_PlayBGM
 	dw .ED_ClearBox
 	dw .EE_ChangeColor
@@ -2226,6 +2382,57 @@ TextCreation:
 	dw .FD_LineBreak
 	dw .FE_Space
 	dw .FF_End
+
+.E7_EndTextMacro
+	jsr HandleVWFStackByte1_Pull
+	sta !vwftextsource+2
+	jsr HandleVWFStackByte1_Pull
+	xba
+	jsr HandleVWFStackByte1_Pull
+	rep #$21
+	adc #$0003
+	sta !vwftextsource
+	sep #$20
+	jmp TextCreation
+
+.E8_TextMacro
+	lda $00
+	jsr HandleVWFStackByte1_Push
+	lda $01
+	jsr HandleVWFStackByte1_Push
+	lda $02
+	jsr HandleVWFStackByte1_Push
+	ldy #$01
+	rep #$30
+	lda.b [$00],y
+	cmp #$0010
+	bcs ..NotBufferedText
+	sta $0C
+	asl
+	clc
+	adc $0C
+	tax
+	lda !vwftbufferedtextpointers,x
+	sta !vwftextsource
+	sep #$30
+	lda.b #!vwftextbuffer>>16
+	bra +
+
+..NotBufferedText
+	asl
+	tax
+	lda.l TextMacroPointers,x
+	sta !vwftextsource
+	sep #$30
+	lda.b #TextMacros>>16
++
+	sta !vwftextsource+2
+	jmp TextCreation
+
+.EB_DoNothing
+	lda #$01
+	sta !forcesfx
+	JMP .End
 
 .EC_PlayBGM
 	ldy #$01
@@ -2254,7 +2461,7 @@ if !use_sa1_mapping
 	sta $0184
 	lda.b #.EE_ChangeColor_SNES/65536
 	sta $0185
-	lda #$d0
+	lda #$D0
 	sta $2209
 	ldy #$01
 -	lda $018A
@@ -2298,10 +2505,17 @@ endif
 	lda [$00],y
 	sta !telepdest
 	iny
+	stz $03
 	lda [$00],y
-	sta !telepdest+1
+	lsr
+	rol $03
+	asl #4
+	sta $04
 	iny
 	lda [$00],y
+	and #$0E
+	ora $03
+	ora $04
 	sta !telepprop
 	lda #$01
 	sta !teleport
@@ -2388,12 +2602,12 @@ endif
 	sta $0C
 	lda.w #!cursor
 	sta $00
-	lda.w #!tileram+$38A0
+	lda.w #!vwfbuffer_cursor
 	sta $09
 	sep #$20
 	lda.b #!cursor>>16
 	sta $02
-	lda.b #!tileram+$38A0>>16
+	lda.b #!vwfbuffer_cursor>>16
 	sta $0B
 
 	lda !currentx
@@ -2421,24 +2635,24 @@ endif
 	rep #$20
 	lda #$0006
 	sta $06
-	lda.w #!tileram+$10
+	lda.w #!vwfbuffer_bgtile
 	sta $00
-	lda.w #!tileram+$38A0
+	lda.w #!vwfbuffer_cursor
 	sta $03
 	sep #$20
-	lda.b #!tileram+$10>>16
+	lda.b #!vwfbuffer_bgtile>>16
 	sta $02
-	lda.b #!tileram+$38A0>>16
+	lda.b #!vwfbuffer_cursor>>16
 	sta $05
 
 	jsl AddPattern
 
 .F0NoBG
 	rep #$20
-	lda.w #!tileram+$38A0
+	lda.w #!vwfbuffer_cursor
 	sta $09
 	sep #$20
-	lda.b #!tileram+$38A0>>16
+	lda.b #!vwfbuffer_cursor>>16
 	sta $0B
 
 	lda !currentx
@@ -2470,8 +2684,7 @@ endif
 	asl
 	clc
 	adc $0C
-	rep #$20
-	clc
+	rep #$21
 	adc !vwftextsource
 	sta !vwftextsource
 	sep #$20
@@ -2655,9 +2868,8 @@ endif
 	!16bit sta !vwfroutine+10
 	!16bit lda #$FF
 	!16bit sta !vwfroutine+11
-	rep #$20
+	rep #$21
 	lda $00
-	clc
 	adc #$0005
 	!8bit sta !vwfroutine+6
 	!16bit sta !vwfroutine+12
@@ -2702,9 +2914,8 @@ endif
 	sta $00
 
 .NoZeros
-	rep #$20
+	rep #$21
 	lda.w #!vwfroutine
-	clc
 	adc $00
 	sta !vwftextsource
 	sep #$20
@@ -2749,6 +2960,8 @@ endif
 	jmp .NoButton
 
 .FC_LoadMessage
+	lda #$6B
+	sta !messageasmopcode
 	ldy #$01
 	lda [$00],y
 	sta !message
@@ -2760,6 +2973,7 @@ endif
 	sta !vwfmode
 	lda #$01
 	sta !clearbox
+	jsr BufferGraphics_Start
 	jmp VWFInit
 
 .FD_LineBreak
@@ -2939,13 +3153,6 @@ endif
 
 	jsr GetDestination
 
-	lda $09
-	sta !vwfgfxdest
-	lda $0A
-	sta !vwfgfxdest+1
-	lda $0B
-	sta !vwfgfxdest+2
-
 	lda !firsttile
 	bne .NoWipe
 	lda !boxcreate
@@ -2963,18 +3170,15 @@ endif
 
 	lda !boxcreate
 	beq .End
-	lda.b #!tileram+$10
+	rep #$20
+	lda.w #!vwfbuffer_bgtile
 	sta $00
-	lda.b #!tileram+$10>>8
-	sta $01
-	lda.b #!tileram+$10>>16
-	sta $02
-
-	lda !vwfgfxdest
+	lda !vwfbufferdest
 	sta $03
-	lda !vwfgfxdest+1
-	sta $04
-	lda !vwfgfxdest+2
+	sep #$20
+	lda.b #!vwfbuffer_bgtile>>16
+	sta $02
+	lda !vwfbufferdest+2
 	sta $05
 
 	lda #$06
@@ -2985,7 +3189,43 @@ endif
 .End
 	jmp Buffer_End
 
+HandleVWFStackByte1:
+.Pull
+	lda !vwfstackindex1
+	dec
+	sta !vwfstackindex1
+	tax
+	lda !vwfstack1,x
+	rts
 
+.Push
+	pha
+	lda !vwfstackindex1
+	tax
+	inc
+	sta !vwfstackindex1
+	pla
+	sta !vwfstack1,x
+	rts
+
+HandleVWFStackByte2:
+.Pull
+	lda !vwfstackindex2
+	dec
+	sta !vwfstackindex2
+	tax
+	lda !vwfstack2,x
+	rts
+
+.Push
+	pha
+	lda !vwfstackindex2
+	tax
+	inc
+	sta !vwfstackindex2
+	pla
+	sta !vwfstack2,x
+	rts
 
 GetFont:
 	lda #$06	; Multiply font number with 6
@@ -2998,9 +3238,8 @@ if !use_sa1_mapping
 	stz $2254
 	nop
 endif
-	rep #$20
+	rep #$21
 	lda select(!use_sa1_mapping,$2306,$2134)
-	clc
 	adc.w #Fonttable	; Add starting address
 	sta $00
 	sep #$20
@@ -3023,10 +3262,19 @@ GetDestination:
 	and #$03FF	; Multiply tile number with 16
 	asl #4
 	clc
-	adc.w #!tileram	; Add starting address
+	adc.w #!vwfbuffer_emptytile	; Add starting address
+	sta !vwfgfxdest
+	lda !vwfbufferindex
+	and #$003F	; Multiply tile number with 16
+	asl #4
+	clc
+	adc.w #!vwfbuffer_letters	; Add starting address
+	sta !vwfbufferdest
 	sta $09
 	sep #$20
-	lda.b #!tileram>>16
+	lda.b #!vwfbuffer_letters>>16
+	sta !vwfgfxdest+2
+	sta !vwfbufferdest+2
 	sta $0B
 	rts
 
@@ -3062,8 +3310,7 @@ Beep:
 	bne .Play
 	lda $13
 	and #$01
-	beq .Play
-	bra .Return
+	bne .Return
 
 .Play
 	lda #$00
@@ -3151,12 +3398,11 @@ WriteTilemap:
 	lda #$01
 	sta $02
 	jsr GetTilemapPos
-	lda.b #!tileram+$3900>>16
+	lda.b #!vwfbuffer_textboxtilemap>>16
 	sta $05
 	sta !vwftilemapdest+2
-	rep #$20
-	lda.w #!tileram+$3900
-	clc
+	rep #$21
+	lda.w #!vwfbuffer_textboxtilemap
 	adc $03
 	sta $03
 	sta !vwftilemapdest
@@ -3246,7 +3492,6 @@ Convert8Bit:
 	stz $03
 	lda [$07]
 	ldy $04
-	cpy #$00
 	beq .Hundreds
 	jsr Convert16Bit
 
@@ -3358,8 +3603,8 @@ WordWidth:
 	!16bit rep #$20
 	lda [$00]
 	sta !vwfchar
-	!8bit cmp #$EC
-	!16bit cmp #$FFEC
+	!8bit cmp #$E7
+	!16bit cmp #$FFE7
 	bcs .Jump
 	!16bit sep #$20
 	!16bit jsr IncPointer
@@ -3368,25 +3613,22 @@ WordWidth:
 
 .Jump
 	sec
-	!8bit sbc #$EC
-	!16bit sbc #$FFEC
+	!8bit sbc #$E7
+	!16bit sbc #$FFE7
 	!16bit sep #$20
 	asl
 	tax
-	lda.l .Routinetable,x
-	sta $0C
-	inx
-	lda.l .Routinetable,x
-	sta $0D
-	phk
-	pla
-	sta $0E
 	!16bit jsr IncPointer
 	jsr IncPointer
 	jsr ReadPointer
-	jml [remap_ram($000C)]
+	jmp (.Routinetable,x)
 
 .Routinetable
+	dw .E7_EndTextMacro
+	dw .E8_TextMacro
+	dw .FF_End
+	dw .FF_End
+	dw .EB_DoNothing
 	dw .EC_PlayBGM
 	dw .ED_ClearBox
 	dw .EE_ChangeColor
@@ -3407,6 +3649,51 @@ WordWidth:
 	dw .FD_LineBreak
 	dw .FE_Space
 	dw .FF_End
+
+.E7_EndTextMacro
+	jsr HandleVWFStackByte2_Pull
+	sta !vwftextsource+2
+	jsr HandleVWFStackByte2_Pull
+	xba
+	jsr HandleVWFStackByte2_Pull
+	rep #$21
+	adc #$0002
+	sta !vwftextsource
+	sep #$20
+	jmp .Begin
+
+.E8_TextMacro
+	lda $00
+	jsr HandleVWFStackByte2_Push
+	lda $01
+	jsr HandleVWFStackByte2_Push
+	lda $02
+	jsr HandleVWFStackByte2_Push
+	rep #$30
+	lda.b [$00]
+	cmp #$0010
+	bcs ..NotBufferedText
+	sta $0C
+	asl
+	clc
+	adc $0C
+	tax
+	lda !vwftbufferedtextpointers,x
+	sta !vwftextsource
+	sep #$30
+	lda.b #!vwftextbuffer>>16
+	bra +
+
+..NotBufferedText
+	asl
+	tax
+	lda.l TextMacroPointers,x
+	sta !vwftextsource
+	sep #$30
+	lda.b #TextMacros>>16
++
+	sta !vwftextsource+2
+	jmp .Begin
 
 .EE_ChangeColor
 .EF_Teleport
@@ -3497,9 +3784,8 @@ WordWidth:
 	!16bit sta !vwfroutine+10
 	!16bit lda #$FF
 	!16bit sta !vwfroutine+11
-	rep #$20
+	rep #$21
 	lda $00
-	clc
 	adc #$0004
 	!8bit sta !vwfroutine+6
 	!16bit sta !vwfroutine+12
@@ -3543,9 +3829,8 @@ WordWidth:
 	sta $00
 
 .NoZeros
-	rep #$20
+	rep #$21
 	lda.w #!vwfroutine
-	clc
 	adc $00
 	sta !vwftextsource
 	sep #$20
@@ -3574,6 +3859,7 @@ WordWidth:
 	sta !vwftextsource+2
 	jmp .Begin
 
+.EB_DoNothing
 .ED_ClearBox
 .F0_Choices
 .FC_LoadMessage
@@ -3594,8 +3880,7 @@ WordWidth:
 	bcs .End
 	cmp !vwfmaxwidth
 	bcc .Continue
-	beq .Continue
-	bra .End
+	bne .End
 
 .Continue
 	sta !vwfwidth
@@ -3646,19 +3931,10 @@ VBlank:
 	lda !vwfmode
 	asl
 	tax
-	lda .Routinetable,x
-	sta $00
-	inx
-	lda .Routinetable,x
-	sta $01
-	phk
-	pla
-	sta $02
-
 	lda #$F0	; Hide Status Bar item
 	sta remap_ram($02E1)
 
-	jml [remap_ram($0000)]
+	jmp (.Routinetable,x)
 
 .End
 	plp	; Return
@@ -3681,7 +3957,7 @@ VBlank:
 	jml remap_rom($0081F7)
 
 .Routinetable
-	dw .End,PrepareBackup,Backup,PrepareScreen,SetupColor
+	dw .End,.End,PrepareBackup,Backup,PrepareScreen,SetupColor
 	dw BackupEnd,CreateWindow,PrepareScreen,TextUpload,CreateWindow
 	dw PrepareBackup,Backup,SetupColor,BackupEnd,VBlankEnd
 
@@ -3723,8 +3999,12 @@ VBlankEnd:
 	lda #$00
 	sta !teleport
 
+if read1($05D7B9) == $22					;\ Account for LM 3.00's level dimension hijacks.
+	jsl.l read3($05D7BA)					;|
+else								;/
 	lda $5B
-	beq .Horizontal
+	lsr
+	bcc .Horizontal
 
 	ldx $97
 	bra .SetupTeleport
@@ -3733,11 +4013,11 @@ VBlankEnd:
 	ldx $95
 
 .SetupTeleport
+endif
 	lda !telepdest
 	sta remap_ram($19B8),x
-	lda !telepdest+1
+	lda !telepprop
 	ora #$04
-	ora !telepprop
 	sta remap_ram($19D8),x
 
 .Teleport
@@ -3766,10 +4046,27 @@ PrepareBackup:
 	sta !vrampointer
 	sep #$20
 
+	lda !vwfmode
+	cmp #$02
+	bne .dontpreserveL3
+	lda $3E
+	sta !l3priorityflag
+	lda remap_ram($0D9E)
+	sta !l3subscreenflag
+	lda $40
+	sta !l3transparencyflag
+	lda remap_ram($0D9D)
+	sta !l3mainscreenflag
+
+.dontpreserveL3
+
 	lda #$04	; Hide layer 3
 	trb remap_ram($0D9D)
+	trb remap_ram($0D9E)
 	lda remap_ram($0D9D)
 	sta $212C
+	lda remap_ram($0D9E)
+	sta $212D
 
 .End
 	lda !vwfmode
@@ -3782,7 +4079,10 @@ PrepareBackup:
 
 
 Backup:
-	rep #$20
+	rep #$21
+	lda #$4000	; Adjust VRAM address
+	adc !vrampointer
+	sta $02
 
 	lda !vrampointer
 	asl a
@@ -3790,15 +4090,14 @@ Backup:
 	adc.w #!backupram	; Adjust destination address
 	sta $00
 
-	lda #$4000	; Adjust VRAM address
+	lda !vrampointer	; Adjust pointer
 	clc
-	adc !vrampointer
-	sta $02
-
+	adc #$0400
+	sta !vrampointer
 	sep #$20
 
 	lda !vwfmode
-	cmp #$02
+	cmp #$03
 	beq .Backup
 	jmp .Restore
 
@@ -3812,13 +4111,6 @@ Backup:
 	%dmatransfer(#$01,#$01,#$18,".b #!backupram>>16",".b $01",".b $00",#$0800)
 
 .Continue
-	rep #$20	; Adjust pointer
-	lda !vrampointer
-	clc
-	adc #$0400
-	sta !vrampointer
-	sep #$20
-
 	lda !counter	; Reduce iteration counter
 	dec
 	sta !counter
@@ -3837,16 +4129,40 @@ Backup:
 
 
 BackupEnd:
-	lda #$04	; Display layer 3
-	tsb remap_ram($0D9D)
+	lda !vwfmode
+	cmp #$06
+	bne .layer3Subscreen
+	lda #$08
+	tsb $3E
 	lda remap_ram($0D9D)
-	sta $212C
+	ora #$04
+	tsb $212C
+	trb $40
 
 .End
 	lda !vwfmode
 	inc
 	sta !vwfmode
 	jmp VBlank_End
+
+.layer3Subscreen
+	lda !l3subscreenflag
+	and #$04
+	ora remap_ram($0D9E)
+	sta remap_ram($0D9E)
+	sta $212D
+	lda !l3mainscreenflag
+	and #$04
+	ora remap_ram($0D9D)
+	sta remap_ram($0D9D)
+	sta $212C
+	lda !l3priorityflag
+	sta $3E
+	lda !l3transparencyflag
+	and #$04
+	ora $40
+	sta $40
+	BRA .End
 
 
 
@@ -3855,7 +4171,7 @@ BackupEnd:
 SetupColor:
 	stz $2121	; Backup or restore layer 3 colors
 	lda !vwfmode
-	cmp #$04
+	cmp #$05
 	beq .Backup
 .Restore
 	%mvntransfer($0040, #$00, !palbackup, select(!use_sa1_mapping,$400703,$7E0703))
@@ -3899,9 +4215,8 @@ SetupColor:
 	lda !boxframe
 	sta $211C
 	nop
-	rep #$20
+	rep #$21
 	lda $2134
-	clc
 	adc.w #Palettes+2
 	sta $00
 	sep #$20
@@ -3931,10 +4246,10 @@ SetupColor:
 
 PrepareScreen:
 	%vramprepare(#$80,#$4000,"","")	; Upload graphics and tilemap to VRAM
-	%dmatransfer(#$01,#$01,#$18,".b #!tileram>>16",".b #!tileram>>8",".b #!tileram",#$00B0)
+	%dmatransfer(#$01,#$01,#$18,".b #!vwfbuffer_emptytile>>16",".b #!vwfbuffer_emptytile>>8",".b #!vwfbuffer_emptytile",#$00B0)
 
 	%vramprepare(#$80,#$5C80,"","")
-	%dmatransfer(#$01,#$01,#$18,".b #!tileram+$3900>>16",".b #!tileram+$3900>>8",".b #!tileram+$3900",#$0700)
+	%dmatransfer(#$01,#$01,#$18,".b #!vwfbuffer_textboxtilemap>>16",".b #!vwfbuffer_textboxtilemap>>8",".b #!vwfbuffer_textboxtilemap",#$0700)
 
 .End
 	lda !vwfmode
@@ -3948,7 +4263,7 @@ PrepareScreen:
 
 CreateWindow:
 	%vramprepare(#$80,#$5C80,"","")
-	%dmatransfer(#$01,#$01,#$18,".b #!tileram+$3900>>16",".b #!tileram+$3900>>8",".b #!tileram+$3900",#$0700)
+	%dmatransfer(#$01,#$01,#$18,".b #!vwfbuffer_textboxtilemap>>16",".b #!vwfbuffer_textboxtilemap>>8",".b #!vwfbuffer_textboxtilemap",#$0700)
 
 	lda !counter
 	cmp #$02
@@ -3972,7 +4287,7 @@ TextUpload:
 	sta !cursorfix
 
 	%vramprepare(#$80,!cursorvram,"","")
-	%dmatransfer(#$01,#$01,#$18,".b #!tileram+$3900>>16"," !cursorsrc+1"," !cursorsrc",#$0046)
+	%dmatransfer(#$01,#$01,#$18,".b #!vwfbuffer_textboxtilemap>>16"," !cursorsrc+1"," !cursorsrc",#$0046)
 
 .SkipCursor
 	lda !wait	; Wait for frames?
@@ -4036,7 +4351,7 @@ TextUpload:
 	rep #$20
 	lda !vwftilemapdest
 	sec
-	sbc.w #!tileram+$3900
+	sbc.w #!vwfbuffer_textboxtilemap
 	lsr
 	clc
 	adc #$5C80
@@ -4147,9 +4462,8 @@ TextUpload:
 	sta $01
 	stz $02
 	jsr GetTilemapPos
-	rep #$20
+	rep #$21
 	lda #$5C80
-	clc
 	adc $03
 	sta $03
 	sep #$20
@@ -4174,27 +4488,28 @@ TextUpload:
 	beq .Begin
 	lda #$00
 	sta !clearbox
+	sta !isnotatstartoftext
 	%vramprepare(#$80,#$5C80,"","")
-	%dmatransfer(#$01,#$01,#$18,".b #!tileram+$3900>>16",".b #!tileram+$3900>>8",".b #!tileram+$3900",#$0700)
+	%dmatransfer(#$01,#$01,#$18,".b #!vwfbuffer_textboxtilemap>>16",".b #!vwfbuffer_textboxtilemap>>8",".b #!vwfbuffer_textboxtilemap",#$0700)
 	jmp .Return
 
 .Begin
 	rep #$20	; Upload GFX
 	lda !vwfgfxdest
 	sec
-	sbc.w #!tileram
+	sbc.w #!vwfbuffer_emptytile
 	lsr
 	clc
 	adc #$4000
 	sta $00
 	sep #$20
 	%vramprepare(#$80,$00,"","")
-	%dmatransfer(#$01,#$01,#$18," !vwfgfxdest+2"," !vwfgfxdest+1"," !vwfgfxdest",#$0060)
+	%dmatransfer(#$01,#$01,#$18," !vwfbufferdest+2"," !vwfbufferdest+1"," !vwfbufferdest",#$0060)
 
 	rep #$20	; Upload Tilemap
 	lda !vwftilemapdest
 	sec
-	sbc.w #!tileram+$3900
+	sbc.w #!vwfbuffer_textboxtilemap
 	lsr
 	clc
 	adc #$5C80
@@ -4263,11 +4578,10 @@ BackupTilemap:
 
 	jsr GetTilemapPos
 
-	lda.b #!tileram+$3900>>16
+	lda.b #!vwfbuffer_textboxtilemap>>16
 	sta $05
-	rep #$20
-	lda.w #!tileram+$3900
-	clc
+	rep #$21
+	lda.w #!vwfbuffer_textboxtilemap
 	adc $03
 	sta $03
 	sep #$20
@@ -4280,21 +4594,21 @@ BackupTilemap:
 	rep #$20
 	ldy #$02
 	lda [$03]
-	sta !tileram+$3894
+	sta !vwfbuffer_choicebackup
 	lda [$03],y
-	sta !tileram+$3896
+	sta !vwfbuffer_choicebackup+$02
 	iny #2
 	lda [$03],y
-	sta !tileram+$3898
+	sta !vwfbuffer_choicebackup+$04
 	ldy #$40
 	lda [$03],y
-	sta !tileram+$389A
+	sta !vwfbuffer_choicebackup+$06
 	iny #2
 	lda [$03],y
-	sta !tileram+$389C
+	sta !vwfbuffer_choicebackup+$08
 	iny #2
 	lda [$03],y
-	sta !tileram+$389E
+	sta !vwfbuffer_choicebackup+$0A
 	sep #$20
 
 	rts
@@ -4302,21 +4616,21 @@ BackupTilemap:
 .Restore
 	rep #$20
 	ldy #$02
-	lda !tileram+$3894
+	lda !vwfbuffer_choicebackup
 	sta [$03]
-	lda !tileram+$3896
+	lda !vwfbuffer_choicebackup+$02
 	sta [$03],y
 	iny #2
-	lda !tileram+$3898
+	lda !vwfbuffer_choicebackup+$04
 	sta [$03],y
 	ldy #$40
-	lda !tileram+$389A
+	lda !vwfbuffer_choicebackup+$06
 	sta [$03],y
 	iny #2
-	lda !tileram+$389C
+	lda !vwfbuffer_choicebackup+$08
 	sta [$03],y
 	iny #2
-	lda !tileram+$389E
+	lda !vwfbuffer_choicebackup+$0A
 	sta [$03],y
 	sep #$20
 
@@ -4332,7 +4646,7 @@ BackupTilemap:
 	rep #$20
 	lda $03
 	sec
-	sbc.w #!tileram+$3900
+	sbc.w #!vwfbuffer_textboxtilemap
 	lsr
 	clc
 	adc #$5C80
@@ -4377,9 +4691,8 @@ GenerateVWF:
 	sep #$20
 	lda $05	; Get GFX 2 Offset
 	sta $0E
-	rep #$20
+	rep #$21
 	lda $03
-	clc
 	adc #$0020
 	sta $0C
 
@@ -4395,9 +4708,8 @@ GenerateVWF:
 	!16bit jsr GetFont
 	!16bit lda $05
 	!16bit sta $0E
-	!16bit rep #$20
+	!16bit rep #$21
 	!16bit lda $03
-	!16bit clc
 	!16bit adc #$0020
 	!16bit sta $0C
 	!16bit sep #$20
@@ -4454,7 +4766,7 @@ GenerateVWF:
 	bne .Draw
 	sep #$10
 	ldx #$00
-	ldy #$00
+	txy
 
 	lda !firsttile	; Skip one step if first tile in line
 	beq .Combine
@@ -4502,10 +4814,15 @@ endif
 	rep #$20
 	lda select(!use_sa1_mapping,$2306,$4214)
 	asl
+	pha
 	clc
 	adc !tile
 	sta !tile
+	pla
+	clc
 	sep #$20
+	adc !vwfbufferindex
+	sta !vwfbufferindex
 	lda select(!use_sa1_mapping,$2306,$4214)
 	clc
 	adc !currentx
@@ -4520,9 +4837,8 @@ if !use_sa1_mapping
 	stz $2254
 	nop
 endif
-	rep #$20
+	rep #$21
 	lda select(!use_sa1_mapping,$2306,$2134)
-	clc
 	adc $09
 	sta $09
 
@@ -4565,9 +4881,8 @@ AddPattern:
 	cpy #$10
 	bne .Combine
 
-	rep #$20
+	rep #$21
 	lda $03
-	clc
 	adc #$0010
 	sta $03
 	sep #$20
@@ -4626,6 +4941,8 @@ print "BG GFX register at address $",hex(!boxbg),"."
 print "BG Color register at address $",hex(!boxcolor),"."
 print "Frame GFX register at address $",hex(!boxframe),"."
 print "Abort Dialogue Processing register at address $",hex(!enddialog),"."
+;print "MessageASM opcode register at address $",hex(!messageasmopcode),"."
+;print "Active VWF Message Flag at address $",hex(!vwfactiveflag),"."
 
 print ""
 print "See Readme for details!"
@@ -4638,12 +4955,14 @@ freedata
 Pointers:
 incsrc vwfmessagepointers.asm
 
-%nextbank()
-
 Text:
 incsrc vwfmessages.asm
 
-print "Text data insterted at $",hex(Text),"."
+Code:
+incsrc vwfcode.asm
+
+
+print "Text data inserted at $",hex(Text),"."
 
 ;-------------------------------------------------------------
 ;INSERT DATA HERE!
@@ -4658,6 +4977,7 @@ print "Text data insterted at $",hex(Text),"."
 print ""
 print ""
 freedata : prot !PrevFreespace : Kleenex: db $00	;ignore this line, it must be at the end of the patch for technical reasons
+;print "End of VWF data at $",pc,"."
 
 namespace off
 

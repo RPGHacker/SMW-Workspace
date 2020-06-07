@@ -1,0 +1,14 @@
+# Set the default behaviour, in case people don't have core.autocrlf set.
+*	text=lf
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+*.asm	text
+*.cfg	text
+.gitattributes	text
+.gitignore	text
+.gitmodules	text
+
+# Denote all files that are truly binary and should not be modified.
+*.bin	binary
+*.sfc	binary

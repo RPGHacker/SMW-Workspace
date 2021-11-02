@@ -13,7 +13,6 @@ Put all your base ROMs in here for testing convenience. The .gitignore file in t
 - lm3mb_fast.smc - ROM opened in Lunar Magic, expanded to 3 MB and saved, with FastROM patch and addressing applied
 - lm4mb_fast.smc - ROM opened in Lunar Magic, expanded to 4 MB and saved, with FastROM patch and addressing applied
 
-- lm1mb_sa1.smc - ROM with SA-1 patch applied, opened in Lunar Magic, expanded to 1 MB and saved
 - lm2mb_sa1.smc - ROM with SA-1 patch applied, opened in Lunar Magic, expanded to 2 MB and saved
 - lm3mb_sa1.smc - ROM with SA-1 patch applied, opened in Lunar Magic, expanded to 3 MB and saved
 - lm4mb_sa1.smc - ROM with SA-1 patch applied, opened in Lunar Magic, expanded to 4 MB and saved

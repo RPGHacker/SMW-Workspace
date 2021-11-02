@@ -14,7 +14,7 @@ IF %ERRORLEVEL% NEQ 0 (
 	echo.
 )
 
-.\..\..\..\tools\asar\asar.exe .\..\vwf_dialogues.asm .\patched.smc
+.\..\..\..\tools\asar\asar.exe -I".\..\messages\tests" .\..\vwf_dialogues.asm .\patched.smc
 
 echo.
 

@@ -32,11 +32,13 @@ namespace vwf_dialogues_
 
 
 ; DO NOT EDIT ANYTHING HERE, UNLESS YOU KNOW EXACTLY WHAT YOU'RE DOING!
+!palettebackupram = $7E0703
 
 if !use_sa1_mapping
 	!varram	= !varramSA1
 	!backupram	= !backupramSA1
 	!tileram	= !tileramSA1
+	!palettebackupram	= !palettebackupramSA1
 endif
 
 
@@ -157,7 +159,6 @@ endmacro
 
 !8bit	= "if !bitmode	== !8 :"
 !16bit	= "if !bitmode	== !16 :"
-!hijack	= "if !hijackbox	== !true :"
 
 !vwfbuffer_emptytile = !tileram
 !vwfbuffer_bgtile = !tileram+$10
@@ -169,6 +170,18 @@ endmacro
 ;!vwfbuffer_choicebackup = !tileram+$3894
 ;!vwfbuffer_cursor = !tileram+$38A0
 ;!vwfbuffer_textboxtilemap = !tileram+$3900
+
+if !use_sa1_mapping
+	!dma_channel_nmi = 2
+	!dma_channel_non_nmi = 0
+else
+	; RPG Hacker: I don't know if this distinction is actually necessary, but I don't even want to risk breaking compatibility.
+	!dma_channel_nmi = 0
+	!dma_channel_non_nmi = 0
+endif
+
+!cpu_snes = 0
+!cpu_sa1 = 1
 
 
 
@@ -193,34 +206,124 @@ endmacro
 
 
 
+; RPG Hacker: This org is currently necessary, otherwise the struct above produces incorrect addresses??
+org $008000
 
+; DMA register helper
+struct DMA_Regs $4300
+    .Control: skip 1		; $43x0
+    .Destination: skip 1	; $43x1
+    .Source_Address:		; $43x2 - $43x4
+		.Source_Address_Word:
+			.Source_Address_Low: skip 1
+			.Source_Address_High: skip 1
+		.Source_Address_Bank: skip 1
+    .Size:					; $43x5 - $43x7
+		.Size_Word:
+			.Size_Low: skip 1
+			.Size_High: skip 1
+		skip 1	; $43x7 used by HDMA only
+endstruct align $10
+
+
+
+; Helpers for defining DMA source address
+function dma_source_indirect(address) = $01000000|(address&$FFFFFF)
+function dma_source_indirect_word(address, bank) = ((bank&$FF)<<24)|(address&$FFFFFF)
+
+!dma_write_once = #$01
+!dma_write_twice = #$02
+!dma_read_once = #$81
+!dma_read_twice = #$82
 
 ; A simple Macro for DMA transfers
+macro dmatransfer(channel, dmasettings, destination, source, bytes)
+	assert <channel> >= 0 && <channel> <= 7,"%dmatransfer() channel parameter must be a value between 0 and 7. Current: <channel>"
+	
+	assert <destination> >= $2100 && <destination> <= $21FF, "Invalid destination passed to %dmatransfer(): <destination>. Must be a PPU register between $2100 and $21FF."
+	
+	!source_resolved #= <source>
+	!dma_source_address_mode #= ((!source_resolved>>24)&$FF)
+	
+	!source_without_header #= !source_resolved&$FFFFFF
+	
+	if !dma_source_address_mode == 0
+		!dma_source_low = "lda.b #!source_without_header"
+		!dma_source_high = "lda.b #!source_without_header>>8"
+		!dma_source_bank = "lda.b #!source_without_header>>16"
+	elseif !dma_source_address_mode == 1
+		!dma_source_low = "lda !source_without_header"
+		!dma_source_high = "lda !source_without_header+1"
+		!dma_source_bank = "lda !source_without_header+2"
+	else
+		!dma_source_low = "lda !source_without_header"
+		!dma_source_high = "lda !source_without_header+1"
+		!dma_source_bank = "lda.b #!dma_source_address_mode"
+	endif
 
-macro dmatransfer(channel, dmasettings, destination, sourcebank, sourcehigh, sourcelow, bytes)
 	lda <dmasettings>
-	sta $4300
-	lda <destination>
-	sta $4301
-	lda<sourcelow>	; I put the label close to the opcode
-	sta $4302	; to allow length definitions
-	lda<sourcehigh>
-	sta $4303
-	lda<sourcebank>
-	sta $4304
+	sta.w DMA_Regs[<channel>].Control
+	lda.b #<destination>
+	sta.w DMA_Regs[<channel>].Destination
+	!dma_source_low
+	sta.w DMA_Regs[<channel>].Source_Address_Low
+	!dma_source_high
+	sta.w DMA_Regs[<channel>].Source_Address_High
+	!dma_source_bank
+	sta.w DMA_Regs[<channel>].Source_Address_Bank
 	rep #$20
 	lda <bytes>
-	sta $4305
+	sta.w DMA_Regs[<channel>].Size_Word
 	sep #$20
-	lda <channel>
+	lda.b #(1<<<channel>)
 	sta $420B
 endmacro
 
 
 
+; A macro for MVN transfers
+
+macro mvntransfer(bytes, source, destination, current_cpu, ...)
+	!currently_on_sa1_cpu = and(equal(<current_cpu>,!cpu_sa1),!use_sa1_mapping)
+
+	phb
+if sizeof(...) > 0
+	lda.b #<bytes>	; Calculate starting index
+	sta select(!currently_on_sa1_cpu,$2251,$211B)
+	lda.b #<bytes>>>8
+	sta select(!currently_on_sa1_cpu,$2252,$211B)
+	stz select(!currently_on_sa1_cpu,$2250,$211C)
+	lda <0>
+	sta select(!currently_on_sa1_cpu,$2253,$211C)
+	if !currently_on_sa1_cpu
+		stz $2254
+		nop
+	endif
+	
+	rep #$31
+	lda select(!currently_on_sa1_cpu,$2306,$2134)	; Add source address
+	adc.w #<source>	; to get new source address
+	tax
+else
+	rep #$30
+	ldx.w #<source>
+endif
+	ldy.w #<destination>	; Destination address
+	lda.w #<bytes>-1	; Number of bytes
+	
+	mvn bank(<destination>), bank(<source>)
+	
+	sep #$30
+	plb
+endmacro
+
+
+
+
 ; NEW: A macro for SA-1 DMA (ROM->BWRAM) transfer
+
 macro bwramtransfer(bytes, start, source, destination)
-	if !use_sa1_mapping
+	if !use_sa1_mapping && !sa1_use_dma_for_gfx_transfer
 		lda #$C4
 		sta $2230
 
@@ -250,36 +353,8 @@ macro bwramtransfer(bytes, start, source, destination)
 		stz $2230
 		stz $018C
 	else
-		%mvntransfer(<bytes>,<start>,<source>,<destination>)
+		%mvntransfer(<bytes>, <source>, <destination>, !cpu_sa1, <start>)
 	endif
-endmacro
-
-; A macro for MVN transfers
-
-macro mvntransfer(bytes, start, source, destination)
-	phb
-	lda.b #<bytes>	; Calculate starting index
-	sta select(!use_sa1_mapping,$2251,$211B)
-	lda.b #<bytes>>>16
-	sta select(!use_sa1_mapping,$2252,$211B)
-	stz select(!use_sa1_mapping,$2250,$211C)
-	lda <start>
-	sta select(!use_sa1_mapping,$2253,$211C)
-	if !use_sa1_mapping
-		stz $2254
-		nop
-	endif
-	rep #$31
-	lda select(!use_sa1_mapping,$2306,$2134)	; Add source address
-	adc.w #<source>	; to get new source address
-	tax
-	ldy.w #<destination>	; Destination address
-	lda.w #<bytes>-1	; Number of bytes
-	db $54	; MVN opcode in Hex
-	db <destination>>>16
-	db <source>>>16
-	sep #$30
-	plb
 endmacro
 
 
@@ -364,14 +439,19 @@ org remap_rom($0081F2)
 
 ; Hijack NMI for various things
 org remap_rom($008297)
+if !use_sa1_mapping
+	ldx #$A1
+	jml NMIHijack
+else
 	jml NMIHijack
 	nop #$2
+endif
 
 ; Restore hijacked code from older versions of the patch
 ; This hijack location was highly questionable to begin with.
 org remap_rom($0086E2)
-	STY $00
-	REP #$30
+	sty $00
+	rep #$30
 
 ; Call RAM Init Routine on Title Screen
 org remap_rom($0096B4)
@@ -387,13 +467,9 @@ org remap_rom($009F6F)
 	nop
 
 ; Hijack message box to call VWF dialogue
-org remap_rom($00A1DF)
-!hijack jsl MessageBox
-
-; Buffer data before loading up to VRAM in V-Blank
-org remap_rom($00A2A9)
-	jml VWFBufferRt
-	nop #2
+org remap_rom($00A1DA)
+	jml OriginalMessageBox
+	nop
 
 ; SRAM expansion ($07 => 2^7 kb = 128 kb)
 if !patch_sram_expansion != !false && read1(remap_rom($00FFD8)) < $07
@@ -531,7 +607,15 @@ CheckIfVWFActive:
 ; This hijacks SMW's original message routine to work with VWF
 ; dialogues.
 
-MessageBox:
+OriginalMessageBox:
+	; Our VWF processing needs to run, even if the game frame itself doesn't.
+	; So we just do it before we decide to skip the frame simulation.
+	jsl VWFBufferRt
+
+	lda remap_ram($1426)
+	beq .NoOriginalMessageBoxRequested
+	
+if !hijackbox == !true
 	lda #$00
 	xba
 	;lda !vwfmode	; Already displaying a message?
@@ -553,8 +637,8 @@ MessageBox:
 	bra .SetMessage
 
 .NoIntro
-	lda remap_rom($03BB9B)	; Inside Yoshi's House? (LM hacked
-	cmp #$FF	; ROM only)
+	lda remap_rom($03BB9B)	; Inside Yoshi's House? (LM hacked ROM only)
+	cmp #$FF
 	bne .HackedROM
 	lda #$28
 
@@ -574,10 +658,22 @@ MessageBox:
 	dec
 .SetMessage
 	stz remap_ram($1426)
+	print pc
 	rep #$20
-	jml DisplayAMessage
-.End
-	rtl
+	jsl DisplayAMessage
+else	
+	jml remap_rom($00A1DF)	; Run original message box and skip frame simulation
+endif
+	
+.NoOriginalMessageBoxRequested
+	; New code: If our own message box is open, also don't simulate frame.
+	lda !freezesprites
+	beq .RunGameFrame
+	
+	jml remap_rom($00A1E3)	; Skip frame simulation
+	
+.RunGameFrame
+	jml remap_rom($00A1E4)	; Don't skip frame simulation
 
 
 
@@ -614,8 +710,16 @@ NMIHijack:
 	lda #$01
 	sta $2112
 	ldx #$81	; Disable IRQ
+	
 .End
+if !use_sa1_mapping
+	pha
+	txa
+	sta $01,s
+	pla
+else
 	stx $4200
+endif
 	jml remap_rom($0082B0)
 
 .NMITable
@@ -636,11 +740,7 @@ NMIHijack:
 
 VWFBufferRt:
 	jsr Buffer
-	lda $1C
-	pha
-	lda $1D
-	pha
-	jml remap_rom($00A2AF)
+	rtl
 
 Buffer:
 if !use_sa1_mapping
@@ -708,21 +808,6 @@ endif
 	jsl !messageasmopcode				;|
 	plb						;/
 .NoMessageASM
-	lda !freezesprites	; Freeze sprites if flag is set
-	beq .NoFreezeSprites
-	;lda #$02
-	sta remap_ram($13FB)
-	sta $9D
-	sta remap_ram($13D3)
-	rep #$20
-	lda $15
-	and #$BFBF
-	sta $15
-	lda $17
-	and #$BFBF
-	sta $17
-	sep #$20
-.NoFreezeSprites
 	lda !vwfmode
 	asl
 	tax
@@ -845,25 +930,7 @@ LoadHeader:
 	lda [$00],y	; Freeze sprites?
 	lsr #7
 	sta !freezesprites
-	sta remap_ram($13FB)
-	sta $9D
-	sta remap_ram($13D3)
-
-	lda !freezesprites
-	beq .NoFreezeSprites
-	and #$BF
-	sta $15
-	lda $16
-	and #$BF
-	sta $16
-	lda $17
-	and #$BF
-	sta $17
-	lda $18
-	and #$BF
-	sta $18
-
-.NoFreezeSprites
+	
 	lda [$00],y	; Letter palette
 	and #$70
 	lsr #4
@@ -2265,7 +2332,7 @@ TextCreation:
 	sta !cursorupload
 	stz $0F
 	jsr BackupTilemap
-	%mvntransfer($0060, #$00, !vwfbuffer_cursor, !vwftileram)
+	%mvntransfer($0060, !vwfbuffer_cursor, !vwftileram, !cpu_sa1)
 	lda !choicespace
 	cmp #$08
 	bcs .NoChoiceCombine
@@ -3925,7 +3992,7 @@ VBlank:
 	lda #$00
 	sta !paletteupload
 	sta $2121
-	%dmatransfer(#$01,#$02,#$22,".b #!rambank",".b #$07",".b #$03",#$0040)
+	%dmatransfer(!dma_channel_nmi,!dma_write_twice,$2122,!palettebackupram,#$0040)
 .skip
 
 	lda !vwfmode
@@ -3984,15 +4051,9 @@ VBlankEnd:
 	jsl remap_rom($05B165)
 
 .NotSwitchPallace
-	lda !freezesprites
-	beq .NoFreezeSprites
 	lda #$00
-	sta remap_ram($13FB)
-	sta $9D
-	sta remap_ram($13D3)
 	sta !freezesprites
-
-.NoFreezeSprites
+	
 	lda !teleport	; Check if teleport set
 	beq .NoTeleport
 
@@ -4103,12 +4164,12 @@ Backup:
 
 .Backup
 	%vramprepare(#$80,$02,"lda $2139","")
-	%dmatransfer(#$01,#$81,#$39,".b #!backupram>>16",".b $01",".b $00",#$0800)
+	%dmatransfer(!dma_channel_nmi,!dma_read_once,$2139,dma_source_indirect_word($00, bank(!backupram)),#$0800)
 	jmp .Continue
 
 .Restore
 	%vramprepare(#$80,$02,"","")
-	%dmatransfer(#$01,#$01,#$18,".b #!backupram>>16",".b $01",".b $00",#$0800)
+	%dmatransfer(!dma_channel_nmi,!dma_write_once,$2118,dma_source_indirect_word($00, bank(!backupram)),#$0800)
 
 .Continue
 	lda !counter	; Reduce iteration counter
@@ -4174,13 +4235,13 @@ SetupColor:
 	cmp #$05
 	beq .Backup
 .Restore
-	%mvntransfer($0040, #$00, !palbackup, select(!use_sa1_mapping,$400703,$7E0703))
-	%dmatransfer(#$01,#$02,#$22,".b #!rambank",".b #$07",".b #$03",#$0040)
+	%mvntransfer($0040, !palbackup, !palettebackupram, !cpu_snes)
+	%dmatransfer(!dma_channel_nmi,!dma_write_twice,$2122,!palettebackupram,#$0040)
 	jmp .End
 
 .Backup
-	%dmatransfer(#$01,#$82,#$3B,".b #!rambank",".b #$07",".b #$03",#$0040)
-	%mvntransfer($0040, #$00, select(!use_sa1_mapping,$400703,$7E0703), !palbackup)
+	%dmatransfer(!dma_channel_nmi,!dma_read_twice,$213B,!palettebackupram,#$0040)
+	%mvntransfer($0040, !palettebackupram, !palbackup, !cpu_snes)
 
 	lda !boxpalette	; Set BG and letter color
 	asl #2
@@ -4246,10 +4307,10 @@ SetupColor:
 
 PrepareScreen:
 	%vramprepare(#$80,#$4000,"","")	; Upload graphics and tilemap to VRAM
-	%dmatransfer(#$01,#$01,#$18,".b #!vwfbuffer_emptytile>>16",".b #!vwfbuffer_emptytile>>8",".b #!vwfbuffer_emptytile",#$00B0)
+	%dmatransfer(!dma_channel_nmi,!dma_write_once,$2118,!vwfbuffer_emptytile,#$00B0)
 
 	%vramprepare(#$80,#$5C80,"","")
-	%dmatransfer(#$01,#$01,#$18,".b #!vwfbuffer_textboxtilemap>>16",".b #!vwfbuffer_textboxtilemap>>8",".b #!vwfbuffer_textboxtilemap",#$0700)
+	%dmatransfer(!dma_channel_nmi,!dma_write_once,$2118,!vwfbuffer_textboxtilemap,#$0700)
 
 .End
 	lda !vwfmode
@@ -4263,7 +4324,7 @@ PrepareScreen:
 
 CreateWindow:
 	%vramprepare(#$80,#$5C80,"","")
-	%dmatransfer(#$01,#$01,#$18,".b #!vwfbuffer_textboxtilemap>>16",".b #!vwfbuffer_textboxtilemap>>8",".b #!vwfbuffer_textboxtilemap",#$0700)
+	%dmatransfer(!dma_channel_nmi,!dma_write_once,$2118,!vwfbuffer_textboxtilemap,#$0700)
 
 	lda !counter
 	cmp #$02
@@ -4287,7 +4348,7 @@ TextUpload:
 	sta !cursorfix
 
 	%vramprepare(#$80,!cursorvram,"","")
-	%dmatransfer(#$01,#$01,#$18,".b #!vwfbuffer_textboxtilemap>>16"," !cursorsrc+1"," !cursorsrc",#$0046)
+	%dmatransfer(!dma_channel_nmi,!dma_write_once,$2118,dma_source_indirect_word(!cursorsrc, bank(!vwfbuffer_textboxtilemap)),#$0046)
 
 .SkipCursor
 	lda !wait	; Wait for frames?
@@ -4313,7 +4374,7 @@ TextUpload:
 	sta !cursorupload
 
 	%vramprepare(#$80,#$5C50,"","")
-	%dmatransfer(#$01,#$01,#$18,".b #!vwftileram>>16",".b #!vwftileram>>8",".b #!vwftileram",#$0060)
+	%dmatransfer(!dma_channel_nmi,!dma_write_once,$2118,!vwftileram,#$0060)
 
 	lda !edge
 	lsr #3
@@ -4358,7 +4419,7 @@ TextUpload:
 	sta $00
 	sep #$20
 	%vramprepare(#$80,$00,"","")
-	%dmatransfer(#$01,#$01,#$18," !vwftilemapdest+2"," !vwftilemapdest+1"," !vwftilemapdest",#$0046)
+	%dmatransfer(!dma_channel_nmi,!dma_write_once,$2118,dma_source_indirect(!vwftilemapdest),#$0046)
 
 	jmp .Return
 
@@ -4490,7 +4551,7 @@ TextUpload:
 	sta !clearbox
 	sta !isnotatstartoftext
 	%vramprepare(#$80,#$5C80,"","")
-	%dmatransfer(#$01,#$01,#$18,".b #!vwfbuffer_textboxtilemap>>16",".b #!vwfbuffer_textboxtilemap>>8",".b #!vwfbuffer_textboxtilemap",#$0700)
+	%dmatransfer(!dma_channel_nmi,!dma_write_once,$2118,!vwfbuffer_textboxtilemap,#$0700)
 	jmp .Return
 
 .Begin
@@ -4504,7 +4565,7 @@ TextUpload:
 	sta $00
 	sep #$20
 	%vramprepare(#$80,$00,"","")
-	%dmatransfer(#$01,#$01,#$18," !vwfbufferdest+2"," !vwfbufferdest+1"," !vwfbufferdest",#$0060)
+	%dmatransfer(!dma_channel_nmi,!dma_write_once,$2118,dma_source_indirect(!vwfbufferdest),#$0060)
 
 	rep #$20	; Upload Tilemap
 	lda !vwftilemapdest
@@ -4516,7 +4577,7 @@ TextUpload:
 	sta $00
 	sep #$20
 	%vramprepare(#$80,$00,"","")
-	%dmatransfer(#$01,#$01,#$18," !vwftilemapdest+2"," !vwftilemapdest+1"," !vwftilemapdest",#$0046)
+	%dmatransfer(!dma_channel_nmi,!dma_write_once,$2118,dma_source_indirect(!vwftilemapdest),#$0046)
 
 	jsr Beep
 

@@ -73,14 +73,6 @@ if !shared_asm_included == 0
 	
 	
 	
-	
-	
-	; Returns the bank byte of an address (e.g. returns $24 for address $2482FA)
-	
-	function get_bank_byte(address) = (address&$FF0000)>>16
-	
-	
-	
 	; Private section
 	
 	{	
@@ -108,7 +100,7 @@ if !shared_asm_included == 0
 		; between $7E0000 and $7E1FFF, otherwise returns 0
 		; For internal use only
 		
-		function has_ram_mirrors(current_pc, address) = and(has_mirrors(get_bank_byte(current_pc)), and(greaterequal(address, $7E0000), lessequal(address, $7E1FFF)))
+		function has_ram_mirrors(current_pc, address) = and(has_mirrors(<:current_pc), and(greaterequal(address, $7E0000), lessequal(address, $7E1FFF)))
 		
 		
 		
@@ -116,7 +108,7 @@ if !shared_asm_included == 0
 		; lies within range mirror_range_start to mirror_range_end and mirrors exist inside the bank current_pc lies in
 		; For internal use only
 		
-		function shorten_if_in_range(current_pc, address, bank_range_start, bank_range_end, mirror_range_start, mirror_range_end) =	select(and(or(has_mirrors(get_bank_byte(current_pc)), has_ram_mirrors(current_pc, address)), and(greaterequal(get_bank_byte(address), bank_range_start), lessequal(get_bank_byte(address), bank_range_end))), remap_range(address, (address&$FF0000)|mirror_range_start, (address&$FF0000)|mirror_range_end, $000000|mirror_range_start), address)
+		function shorten_if_in_range(current_pc, address, bank_range_start, bank_range_end, mirror_range_start, mirror_range_end) =	select(and(or(has_mirrors(<:current_pc), has_ram_mirrors(current_pc, address)), and(greaterequal(<:address, bank_range_start), lessequal(<:address, bank_range_end))), remap_range(address, (address&$FF0000)|mirror_range_start, (address&$FF0000)|mirror_range_end, $000000|mirror_range_start), address)
 		
 		
 		
@@ -139,7 +131,63 @@ if !shared_asm_included == 0
 		; Maps a RAM address from a sprite table correctly, depending on whether we need SA-1 mapping or not
 		; For internal use only
 		
-		function remap_sprite_table_ram(address) = select(!use_sa1_mapping, remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(shorten_if_mirrored(!current_pc, address), $00AA, $00B5, $309E), $00B6, $00C1, $30B6), $00C2, $00CD, $30D8), $009E, $00A9, $3200), $00D8, $00E3, $3216), $00E4, $00EF, $322C), $14C8, $14D3, $3242), $14D4, $14DF, $3258), $14E0, $14EB, $326E), $151C, $1527, $3284), $1528, $1533, $329A), $1534, $153F, $32B0), $1540, $154B, $32C6), $154C, $1557, $32DC), $1558, $1563, $32F2), $1564, $156F, $3308), $1570, $157B, $331E), $157C, $1587, $3334), $1588, $1593, $334A), $1594, $159F, $3360), $15A0, $15AB, $3376), $15AC, $15B7, $338C), $15EA, $15F5, $33A2), $15F6, $1601, $33B8), $1602, $160D, $33CE), $160E, $1619, $33E4), $163E, $1649, $33FA), $187B, $1886, $3410), $14EC, $14F7, $74C8), $14F8, $1503, $74DE), $1504, $150F, $74F4), $1510, $151B, $750A), $15B8, $15C3, $7520), $15C4, $15CF, $7536), $15D0, $15DB, $754C), $15DC, $15E7, $7562), $161A, $1625, $7578), $1626, $1631, $758E), $1632, $163D, $75A4), $190F, $191A, $7658), $1FD6, $1FE1, $766E), $1FE2, $1FED, $7FD6), $164A, $1655, $75BA), $1656, $1661, $75D0), $1662, $166D, $75EA), $166E, $1679, $7600), $167A, $1685, $7616), $1686, $1691, $762C), $186C, $1877, $7642), address)
+		if !use_sa1_mapping
+			function remap_sprite_table_ram(address) = \
+				remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(\
+					shorten_if_mirrored(!current_pc, address),\
+						$00AA, $00B5, $309E),\
+						$00B6, $00C1, $30B6),\
+						$00C2, $00CD, $30D8),\
+						$009E, $00A9, $3200),\
+						$00D8, $00E3, $3216),\
+						$00E4, $00EF, $322C),\
+						$14C8, $14D3, $3242),\
+						$14D4, $14DF, $3258),\
+						$14E0, $14EB, $326E),\
+						$151C, $1527, $3284),\
+						$1528, $1533, $329A),\
+						$1534, $153F, $32B0),\
+						$1540, $154B, $32C6),\
+						$154C, $1557, $32DC),\
+						$1558, $1563, $32F2),\
+						$1564, $156F, $3308),\
+						$1570, $157B, $331E),\
+						$157C, $1587, $3334),\
+						$1588, $1593, $334A),\
+						$1594, $159F, $3360),\
+						$15A0, $15AB, $3376),\
+						$15AC, $15B7, $338C),\
+						$15EA, $15F5, $33A2),\
+						$15F6, $1601, $33B8),\
+						$1602, $160D, $33CE),\
+						$160E, $1619, $33E4),\
+						$163E, $1649, $33FA),\
+						$187B, $1886, $3410),\
+						$14EC, $14F7, $74C8),\
+						$14F8, $1503, $74DE),\
+						$1504, $150F, $74F4),\
+						$1510, $151B, $750A),\
+						$15B8, $15C3, $7520),\
+						$15C4, $15CF, $7536),\
+						$15D0, $15DB, $754C),\
+						$15DC, $15E7, $7562),\
+						$161A, $1625, $7578),\
+						$1626, $1631, $758E),\
+						$1632, $163D, $75A4),\
+						$190F, $191A, $7658),\
+						$1FD6, $1FE1, $766E),\
+						$1FE2, $1FED, $7FD6),\
+						$164A, $1655, $75BA),\
+						$1656, $1661, $75D0),\
+						$1662, $166D, $75EA),\
+						$166E, $1679, $7600),\
+						$167A, $1685, $7616),\
+						$1686, $1691, $762C),\
+						$186C, $1877, $7642\
+			)
+		else
+			function remap_sprite_table_ram(address) = address
+		endif
 	}
 
 	
@@ -148,7 +196,34 @@ if !shared_asm_included == 0
 	
 	; Maps a RAM address correctly, depending on whether we need SA-1/SuperFX mapping or not
 	
-	function remap_ram(address) = select(!use_sa1_mapping, remap_address(remap_address(remap_address(remap_address(remap_address(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_sprite_table_ram(shorten_if_mirrored(!current_pc, address)), $0000, $00FF, $3000), $0100, $1FFF, $6100), $7EC800, $7EFFFF, $40C800), $7FC800, $7FFFFF, $41C800), $7F9A7B, $7F9C7A, $418800), $700000, $7007FF, $41C000), $700800, $7027FF, $41A000), $7FAB10, $6040), $7FAB1C, $6056), $7FAB28, $6057), $7FAB34, $606D), $7FAB9E, $6083), select(!use_sfx_mapping, remap_range(remap_range(remap_range(shorten_if_mirrored(!current_pc, address), $0000, $1FFF, $6000), $7EC800, $7EFFFF, $70C800), $7FC800, $7FFFFF, $71C800), address))
+	if !use_sa1_mapping
+		function remap_ram(address) = \
+			remap_address(remap_address(remap_address(remap_address(remap_address(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_range(remap_sprite_table_ram(\
+				shorten_if_mirrored(!current_pc, address)),\
+					$0000, $00FF, $3000),\
+					$0100, $1FFF, $6100),\
+					$7EC800, $7EFFFF, $40C800),\
+					$7FC800, $7FFFFF, $41C800),\
+					$7F9A7B, $7F9C7A, $418800),\
+					$700000, $7007FF, $41C000),\
+					$700800, $7027FF, $41A000),\
+					$7FAB10, $6040),\
+					$7FAB1C, $6056),\
+					$7FAB28, $6057),\
+					$7FAB34, $606D),\
+					$7FAB9E, $6083\
+			)
+	elseif !use_sfx_mapping
+		function remap_ram(address) = \
+			remap_range(remap_range(remap_range(\
+				shorten_if_mirrored(!current_pc, address),\
+					$0000, $1FFF, $6000),\
+					$7EC800, $7EFFFF, $70C800),\
+					$7FC800, $7FFFFF, $71C800\
+			)
+	else
+		function remap_ram(address) = address
+	endif
 	
 	
 	
@@ -178,11 +253,6 @@ if !shared_asm_included == 0
 	; This version actually seems to work better in those cases, so I hope it's also the overall better solution
 	
 	function frac(decimal_number) = decimal_number-trunc(decimal_number)
-	
-	
-	; Returns the floor of a decimal number
-	
-	function floor(decimal_number) = trunc(decimal_number)-select(less(decimal_number, trunc(decimal_number)), 1, 0)
 	
 	
 	; Returns the ceiling of a decimal number

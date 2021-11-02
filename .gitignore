@@ -2,6 +2,8 @@
 *.smc
 *.srm
 *.sfc
+*.sym
+*.sav
 
 !tools/asar137/help.sfc #Aside from this one (which is empty, anyways)
 

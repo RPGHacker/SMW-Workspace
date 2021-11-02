@@ -150,16 +150,6 @@ endmacro
 %claim_varram(vwftbufferedtextpointers, 48)		; 24-bit pointer table for the buffered text macros.
 %claim_varram(vwftextbuffer, 512)			; Buffer dedicated for uploading VWF text to in order to display variable text.
 
-!rambank	= select(!use_sa1_mapping,$40,$7E)
-
-!8	= 0
-!16	= 1
-!false	= 0
-!true	= 1
-
-!8bit	= "if !bitmode	== !8 :"
-!16bit	= "if !bitmode	== !16 :"
-
 !vwfbuffer_emptytile = !tileram
 !vwfbuffer_bgtile = !tileram+$10
 !vwfbuffer_frame = !tileram+$20
@@ -170,6 +160,16 @@ endmacro
 ;!vwfbuffer_choicebackup = !tileram+$3894
 ;!vwfbuffer_cursor = !tileram+$38A0
 ;!vwfbuffer_textboxtilemap = !tileram+$3900
+
+!rambank	= select(!use_sa1_mapping,$40,$7E)
+
+!8	= 0
+!16	= 1
+!false	= 0
+!true	= 1
+
+!8bit	= "if !bitmode	== !8 :"
+!16bit	= "if !bitmode	== !16 :"
 
 if !use_sa1_mapping
 	!dma_channel_nmi = 2
@@ -658,7 +658,6 @@ if !hijackbox == !true
 	dec
 .SetMessage
 	stz remap_ram($1426)
-	print pc
 	rep #$20
 	jsl DisplayAMessage
 else	
@@ -2332,7 +2331,41 @@ TextCreation:
 	sta !cursorupload
 	stz $0F
 	jsr BackupTilemap
-	%mvntransfer($0060, !vwfbuffer_cursor, !vwftileram, !cpu_sa1)
+	%mvntransfer($0060, !vwfbuffer_cursor, !vwftileram, !cpu_sa1)	
+
+	lda !edge
+	lsr #3
+	sta !currentx
+	lda !currenty
+	pha
+	sec
+	sbc !choices
+	sec
+	sbc !choices
+	sta !currenty
+	lda !currentchoice
+	dec
+	asl
+	clc
+	adc !currenty
+	sta !currenty
+	lda #$00
+	sta !vwfwidth
+	lda !edge
+	and #$07
+	clc
+	adc !choicewidth
+	sta !currentpixel
+	rep #$20
+	lda !tile
+	and #$FC00
+	ora #$038A
+	sta !tile
+	sep #$20
+	jsr WriteTilemap
+	pla
+	sta !currenty
+	
 	lda !choicespace
 	cmp #$08
 	bcs .NoChoiceCombine
@@ -4376,39 +4409,6 @@ TextUpload:
 	%vramprepare(#$80,#$5C50,"","")
 	%dmatransfer(!dma_channel_nmi,!dma_write_once,$2118,!vwftileram,#$0060)
 
-	lda !edge
-	lsr #3
-	sta !currentx
-	lda !currenty
-	pha
-	sec
-	sbc !choices
-	sec
-	sbc !choices
-	sta !currenty
-	lda !currentchoice
-	dec
-	asl
-	clc
-	adc !currenty
-	sta !currenty
-	lda #$00
-	sta !vwfwidth
-	lda !edge
-	and #$07
-	clc
-	adc !choicewidth
-	sta !currentpixel
-	rep #$20
-	lda !tile
-	and #$FC00
-	ora #$038A
-	sta !tile
-	sep #$20
-	jsr WriteTilemap
-	pla
-	sta !currenty
-
 	rep #$20
 	lda !vwftilemapdest
 	sec
@@ -4418,6 +4418,7 @@ TextUpload:
 	adc #$5C80
 	sta $00
 	sep #$20
+
 	%vramprepare(#$80,$00,"","")
 	%dmatransfer(!dma_channel_nmi,!dma_write_once,$2118,dma_source_indirect(!vwftilemapdest),#$0046)
 

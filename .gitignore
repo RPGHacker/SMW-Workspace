@@ -4,6 +4,7 @@
 *.sfc
 *.sym
 *.sav
+*.bsz
 
 !tools/asar137/help.sfc #Aside from this one (which is empty, anyways)
 

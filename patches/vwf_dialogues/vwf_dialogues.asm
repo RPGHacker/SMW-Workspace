@@ -1,4 +1,4 @@
-@asar 1.50
+@asar 1.90
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;VWF Dialogues Patch by RPG Hacker;
@@ -9,10 +9,11 @@ incsrc vwfconfig.cfg
 incsrc ../shared/shared.asm
 
 
-print "VWF Dialogues Patch - (c) 2010-2020 RPG Hacker"
+print ""
+print "VWF Dialogues Patch - (c) 2010-2021 RPG Hacker"
+print ""
 
 
-math pri on
 math round off
 
 pushtable
@@ -126,6 +127,7 @@ endmacro
 %claim_varram(cursorfix, 1)
 %claim_varram(cursorvram, 2)
 %claim_varram(cursorsrc, 2)
+%claim_varram(arrowvram, 2)
 %claim_varram(enddialog, 1)
 
 %claim_varram(messageasmopcode, 1)			; Determines whether MessageASM code will run. Contains either $5C (JML) or $6B (RTL)
@@ -2432,7 +2434,29 @@ TextCreation:
 	jsr ClearBox
 	jmp .End
 
-.NoClearBox
+.NoClearBox	
+	; RPG Hacker: This was previously called from the SNES CPU, which isn't supported, because
+	; GetTilemapPos uses SA-1 multiplication in SA-1 builds. Therefore, I'm preprocessing the address
+	; and storing it in a variable for later use.
+	lda !xpos
+	clc
+	adc !width
+	inc
+	sta $00
+	lda !height
+	asl
+	clc
+	adc !ypos
+	inc
+	sta $01
+	stz $02
+	jsr GetTilemapPos
+	rep #$21
+	lda #$5C80
+	adc $03
+	sta !arrowvram
+	sep #$20
+
 	lda #$01
 	sta !isnotatstartoftext
 	jsr ReadPointer
@@ -4511,26 +4535,7 @@ TextUpload:
 	sta !timer
 
 .NoReset
-	lda !xpos
-	clc
-	adc !width
-	inc
-	sta $00
-	lda !height
-	asl
-	clc
-	adc !ypos
-	inc
-	sta $01
-	stz $02
-	jsr GetTilemapPos
-	rep #$21
-	lda #$5C80
-	adc $03
-	sta $03
-	sep #$20
-
-	%vramprepare(#$00,$03,"","")
+	%vramprepare(#$00,!arrowvram,"","")
 
 	lda !timer
 	cmp #$11
@@ -4731,9 +4736,6 @@ BackupTilemap:
 
 ; The actual VWF Creation routine.
 
-print ""
-print "VWF Creation Routine at address $",pc,"."
-
 ;$00 : Text
 ;$03 : GFX 1
 ;$06 : Width
@@ -4920,8 +4922,6 @@ endif
 
 ; Adds the background pattern to letters.
 
-print "Pattern Addition Routine at address $",pc,"."
-
 
 ;$00 : Graphic
 ;$03 : Destination
@@ -4995,22 +4995,6 @@ incbin vwffont1.bin
 .Width
 incsrc vwffont1.asm
 
-print ""
-
-print "VWF State register at address $",hex(!vwfmode),"."
-print "Message register at address $",hex(!message),"."
-print "BG GFX register at address $",hex(!boxbg),"."
-print "BG Color register at address $",hex(!boxcolor),"."
-print "Frame GFX register at address $",hex(!boxframe),"."
-print "Abort Dialogue Processing register at address $",hex(!enddialog),"."
-;print "MessageASM opcode register at address $",hex(!messageasmopcode),"."
-;print "Active VWF Message Flag at address $",hex(!vwfactiveflag),"."
-
-print ""
-print "See Readme for details!"
-print ""
-print "Patch inserted at $",hex(FreecodeStart),", ",freespaceuse," bytes of free space used."
-
 freedata
 !PrevFreespace:
 
@@ -5023,9 +5007,6 @@ incsrc vwfmessages.asm
 Code:
 incsrc vwfcode.asm
 
-
-print "Text data inserted at $",hex(Text),"."
-
 ;-------------------------------------------------------------
 ;INSERT DATA HERE!
 
@@ -5037,7 +5018,32 @@ print "Text data inserted at $",hex(Text),"."
 ;-------------------------------------------------------------
 
 print ""
+print "Patch inserted at $",hex(FreecodeStart),"."
+print "Text data inserted at $",hex(Text),"."
+print freespaceuse," bytes of free space used."
+print dec(!varrampos)," bytes of \!varram used."
+
 print ""
+print "VWF Creation Routine at address $",hex(GenerateVWF),"."
+print "Pattern Addition Routine at address $",hex(AddPattern),"."
+print "DisplayAMessage routine located at $",hex(DisplayAMessage),"."
+
+print ""
+print "VWF State register at address $",hex(!vwfmode),"."
+print "Message register at address $",hex(!message),"."
+print "BG GFX register at address $",hex(!boxbg),"."
+print "BG Color register at address $",hex(!boxcolor),"."
+print "Frame GFX register at address $",hex(!boxframe),"."
+print "Abort Dialogue Processing register at address $",hex(!enddialog),"."
+;print "MessageASM opcode register at address $",hex(!messageasmopcode),"."
+;print "Active VWF Message Flag at address $",hex(!vwfactiveflag),"."
+
+print ""
+print "See Readme for details!"
+
+print ""
+
+
 freedata : prot !PrevFreespace : Kleenex: db $00	;ignore this line, it must be at the end of the patch for technical reasons
 ;print "End of VWF data at $",pc,"."
 

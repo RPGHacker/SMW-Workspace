@@ -35,8 +35,6 @@ DisplayAMessage:
 	STA !vwfactiveflag
 	RTL
 
-print "DisplayAMessage routine located at $",hex(DisplayAMessage),"."
-
 
 ; This routine allows you to change the text pointer to wherever you specify
 ; Entry code:

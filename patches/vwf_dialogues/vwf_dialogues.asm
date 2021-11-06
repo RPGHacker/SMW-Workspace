@@ -1423,6 +1423,11 @@ DrawBox:
 	sta $03
 	lda.b #!vwfbuffer_textboxtilemap>>8
 	sta $04
+	; RPG Hacker: Technically unneeded, because the function above never overwrites $05,
+	; but I still prefer to have this here so that I don't wonder why it's missing every
+	; single time. This "optimization" never really saved much, anyways.
+	lda.b #!vwfbuffer_textboxtilemap>>16
+	sta $05
 	lda !currentwidth
 	sta $06
 	lda !currentheight
@@ -1455,7 +1460,9 @@ GetTilemapPos:
 	stz select(!use_sa1_mapping,$2250,$211C)
 	lda $01
 	sta select(!use_sa1_mapping,$2253,$211C)
-	if !use_sa1_mapping : stz $2254
+	if !use_sa1_mapping
+		stz $2254
+	endif
 	lda #$00
 	xba
 	lda $00
@@ -1540,6 +1547,8 @@ DrawBG:
 ; vertically" flag for the DrawTile subroutine.
 
 AddFrame:
+	lda #$01
+	sta $02
 	lda $03	; Preserve tilemap address
 	sta $08
 	lda $04
@@ -1768,6 +1777,7 @@ CollapseWindow:
 	inc
 	sta !currenty
 
+	lda !currentheight
 	jsr DrawBox
 	jmp .End
 
@@ -1943,10 +1953,18 @@ endif
 	phy
 	tay
 	ldx #$00
+	
+	; RPG Hacker: Because an "Absolute Long Indexed, Y" mode doesn't exist...
+	lda.b #!palettebackupram
+	sta $00
+	lda.b #!palettebackupram>>8
+	sta $01
+	lda.b #!palettebackupram>>16
+	sta $02
 
 .BoxColorLoop
 	lda !boxcolor+2,x
-	sta remap_ram($0703),y
+	sta [$00],y
 	inx
 	iny
 	cpx #$04
@@ -2206,7 +2224,7 @@ GetMessage:
 	lda #$03
 	sta select(!use_sa1_mapping,$2253,$211C)
 if !use_sa1_mapping
-	stz select(!use_sa1_mapping,$2254,$2306)
+	stz $2254
 	nop
 endif
 	rep #$21
@@ -2607,10 +2625,10 @@ endif
 	tax
 	iny
 	lda [$00],y
-	sta remap_ram($0703),x
+	sta !palettebackupram,x
 	iny
 	lda [$00],y
-	sta remap_ram($0704),x
+	sta !palettebackupram+1,x
 	plx
 	lda #$01
 	sta !paletteupload
@@ -2895,9 +2913,9 @@ endif
 	ora !property
 	sta !property
 	lda !boxcolor
-	sta remap_ram($0703),x
+	sta !palettebackupram,x
 	lda !boxcolor+1
-	sta remap_ram($0704),x
+	sta !palettebackupram+1,x
 	lda #$01
 	sta !paletteupload
 	plx
@@ -4306,11 +4324,19 @@ SetupColor:
 	asl
 	phy
 	tay
-	ldx #$00
+	ldx #$00	
+	
+	; RPG Hacker: Because an "Absolute Long Indexed, Y" mode doesn't exist...
+	lda.b #!palettebackupram
+	sta $00
+	lda.b #!palettebackupram>>8
+	sta $01
+	lda.b #!palettebackupram>>16
+	sta $02
 
 .BoxColorLoop
 	lda !boxcolor,x
-	sta remap_ram($0703),y
+	sta [$00],y
 	iny
 	inx
 	cpx #$06
@@ -4342,7 +4368,7 @@ SetupColor:
 
 .FrameColorLoop
 	lda [$00],y
-	sta remap_ram($0703),x
+	sta !palettebackupram,x
 	inx
 	iny
 	cpy #$06

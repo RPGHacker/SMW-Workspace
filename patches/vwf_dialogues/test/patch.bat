@@ -1,6 +1,6 @@
 @echo off
 
-copy /B/Y .\..\..\..\baserom\lm1mb.smc .\patched.smc
+copy /B/Y .\..\..\..\baserom\lm1mb.smc .\patched.smc > NUL
 
 echo.
 

@@ -5013,12 +5013,14 @@ while !temp_i < !vwf_num_text_files
 	print "Text data !temp_i inserted at $",hex(TextFile!temp_i),"."
 	!temp_i #= !temp_i+1
 endwhile
+undef "temp_i"
 
 !temp_i #= 0
 while !temp_i < !vwf_num_fonts
 	print "Font data !temp_i inserted at $",hex(Font!temp_i),"."
 	!temp_i #= !temp_i+1
 endwhile
+undef "temp_i"
 
 print freespaceuse," bytes of free space used."
 print dec(!varrampos)," bytes of \!varram used."

@@ -20,7 +20,8 @@ macro vwf_define_enum(name, ...)
 				.<!temp_i>: skip 1
 				
 				!temp_i #= !temp_i+1
-			endwhile		
+			endwhile
+			undef "temp_i"
 			
 			.Count:
 		endstruct
@@ -79,34 +80,51 @@ Fonttable:
 		dl Font!{temp_i},Font!{temp_i}_Width
 		!temp_i #= !temp_i+1
 	endwhile
+	undef "temp_i"
 
 Pointers:
 	!temp_i #= 0
 	!temp_num_gaps #= 0
 	while !temp_i < !vwf_highest_message_id
 		if defined("vwf_message_!{temp_i}_defined")
-			dl !{vwf_message_!{temp_i}_label}
+			if !{vwf_message_!{temp_i}_has_header}
+				dl !{vwf_message_!{temp_i}_label}
+			else
+				!vwf_last_fallback_label := !{vwf_message_!{temp_i}_fallback_label}
+				dl !vwf_last_fallback_label
+			endif
 		else
-			; RPG Hacker: If it's a gap, pad with magic hex.
-			dl $000BAD
+			; RPG Hacker: If it's a gap, use whatever was the last fallback label we found.
+			; If there is none, just pad with magic hex. It will likely lead to a crash if
+			; someone attempts to open the message, but at least we should be able to find
+			; it in the ROM and know what's going on.
+			if defined("vwf_last_fallback_label")
+				dl !vwf_last_fallback_label
+			else
+				dl $000BAD
+			endif
 			!temp_num_gaps #= !temp_num_gaps+1
 		endif
 	
 		!temp_i #= !temp_i+1
 	endwhile
+	undef "temp_i"
 	
 	if !temp_num_gaps >= 50
-		warn "Found !temp_num_gaps gaps in message IDs. It's recommended to avoid gaps as to not waste freespace."
+		warn "Found !temp_num_gaps gaps in message IDs. Gaps in message IDs waste freespace, so it's recommended to avoid excessive usage of them."
 	endif
+	undef "temp_num_gaps"
 
 TextMacroPointers:
 	; RPG Hacker: Some text macros are reserved for buffered text, so pad with magic hex.
 	rep !num_reserved_text_macros : dl $00DEAD
 	
+	!temp_i #= 0
 	while !temp_i < !vwf_num_text_macros
 		dl TextMacro!temp_i
 		!temp_i #= !temp_i+1
 	endwhile
+	undef "temp_i"
 endmacro
 
 
@@ -136,20 +154,7 @@ endmacro
 macro vwf_text_end()
 	if !vwf_current_message_id != $FFFF
 		error "A %vwf_message_start() (message !vwf_current_message_id) seems to be missing a %vwf_message_end()."
-	else
-		!8bit_mode_only db $00
-		db %00001000,%01111000,%11010001,%11000000,$01,%00100000
-		dw $7FFF,$0000
-		db %11110100
-		db %00001111,$13,$13,$23,$29
-		db %00000000
-		;dl MessageASMLoc
-		;dl .MessageSkipLoc
-		
-		!8bit_mode_only db $F1
-		!16bit_mode_only dw $FFF1
-		dl HandleUndefinedMessage!vwf_current_text_file_id
-		
+	else		
 		!vwf_current_message_name = ""
 		!vwf_current_message_id = $FFFF
 		!vwf_header_present = false
@@ -162,11 +167,14 @@ endmacro
 macro vwf_define_invalid_message_handlers()
 	
 HandleUndefinedMessage!vwf_num_text_files:
-	lda.b #.Text
-	ldx.b #.Text>>8
-	ldy.b #.Text>>16
-	jsl ChangeVWFTextPtr
-	rtl
+	!8bit_mode_only db $00
+	db %00001000,%01111000,%11010001,%11000000,$01,%00100000
+	dw $7FFF,$0000
+	db %11110100
+	db %00001111,$13,$13,$23,$29
+	db %00000000
+	;dl MessageASMLoc
+	;dl .MessageSkipLoc	
 	
 .Text
 	if !bitmode	== BitMode.8Bit
@@ -207,9 +215,16 @@ macro vwf_message_start(id)
 		
 		!vwf_num_messages #= !vwf_num_messages+1
 		
-		!temp_id_num #= $<id>
+		!temp_id_num #= !vwf_current_message_id
+		!temp_text_id_num #= !vwf_num_text_files-1
 		!{vwf_message_!{temp_id_num}_defined} = true
 		!{vwf_message_!{temp_id_num}_label} := !vwf_current_message_name
+		!{vwf_message_!{temp_id_num}_fallback_label} := HandleUndefinedMessage!temp_text_id_num
+		!{vwf_message_!{temp_id_num}_has_header} = false
+		
+		!vwf_last_fallback_label := !{vwf_message_!{temp_id_num}_fallback_label}
+		undef "temp_id_num"
+		undef "temp_text_id_num"
 		
 		if $<id> > !vwf_highest_message_id
 			!vwf_highest_message_id #= $<id>
@@ -248,8 +263,10 @@ TextMacro!vwf_num_text_macros:
 		<!temp_i>
 		!temp_i #= !temp_i+1
 	endwhile
+	undef "temp_i"
 
-	db $E7
+	!8bit_mode_only db $E7
+	!16bit_mode_only db $FFE7
 	
 	!vwf_text_macro_<name>_defined = true
 	; RPG Hacker: +!num_reserved_text_macros, because we are skipping the reserved macros in the table.
@@ -316,6 +333,7 @@ macro vwf_clear_header_argument(arg_id)
 	%vwf_get_header_arg_name("temp_name", <arg_id>)
 	
 	%vwf_reset_header_arg_to_default(<arg_id>, !temp_name)
+	undef "temp_name"
 	
 	!vwf_header_argument_<arg_id>_set #= false
 endmacro
@@ -327,6 +345,7 @@ macro vwf_clear_header_arguments()
 		
 		!temp_i #= !temp_i+1
 	endwhile
+	undef "temp_i"
 endmacro
 
 
@@ -369,6 +388,8 @@ macro vwf_verify_header_argument_value(arg_id, name, value, display_name)
 			!vwf_header_argument_<name>_id #= !temp_sound_id
 			!vwf_header_argument_<name>_bank #= !temp_bank
 		endif
+		undef "temp_sound_id"
+		undef "temp_bank"
 	else
 		error "Header property <arg_id> (set via ""<display_name>"") has an unknown type, indicating a bug in the patch."
 	endif
@@ -397,6 +418,7 @@ macro vwf_extract_header_agrument(packed_value)
 	
 	!temp_id #= (!temp_function_value>>24)&$FF
 	!temp_value #= !temp_function_value&$FFFFFF
+	undef "temp_function_value"
 	
 	if !temp_id < 0 || !temp_id > !vwf_header_num_setters
 		error "Failed to parse header option type from value: <packed_value>"
@@ -405,6 +427,8 @@ macro vwf_extract_header_agrument(packed_value)
 		
 		%vwf_verify_header_argument(!temp_id, !temp_name, !temp_value)
 	endif
+	undef "temp_id"
+	undef "temp_value"
 endmacro
 
 
@@ -420,6 +444,8 @@ macro vwf_verfiy_default_arguments()
 			!temp_value #= !{!{temp_define_name}}
 			
 			!temp_packed_value #= vwf_!temp_name(!temp_value)&$FFFFFF
+			
+			undef "temp_value"
 		elseif !temp_arg_type == 1			
 			!temp_id_define_name := default_!{temp_name}_id
 			!temp_bank_define_name := default_!{temp_name}_bank
@@ -432,6 +458,9 @@ macro vwf_verfiy_default_arguments()
 			!temp_bank_value #= !{!{temp_bank_define_name}}
 			
 			!temp_packed_value #= vwf_!temp_name(!temp_id_value, !temp_bank_value)&$FFFFFF
+			
+			undef "temp_id_value"
+			undef "temp_bank_value"
 		else
 			error "Header property !temp_i (set while parsing defaults) has an unknown type, indicating a bug in the patch."
 		endif
@@ -440,9 +469,12 @@ macro vwf_verfiy_default_arguments()
 		; Using only one backslash here makes Asar try to resolve the define once inside the macro...
 		!temp_printable_name = "\\\!!{temp_define_name}"
 		%vwf_verify_header_argument_value(!temp_i, !temp_name, !temp_packed_value, !temp_printable_name)
+		undef "temp_define_name"
+		undef "temp_packed_value"
 		
 		!temp_i #= !temp_i+1
 	endwhile
+	undef "temp_i"
 endmacro
 
 
@@ -463,6 +495,7 @@ struct WaitFrames extends AutoWait
 	
 		!temp_i #= !temp_i+1
 	endwhile
+	undef "temp_i"
 endstruct
 
 
@@ -502,20 +535,10 @@ endstruct
 macro vwf_header(...)	
 	if !vwf_current_message_id == $FFFF
 		error "You must call %vwf_message_start() before calling %vwf_header()."
-	else
-		!8bit_mode_only db $00
-		db %00001000,%01111000,%11010001,%11000000,$01,%00100000
-		dw $7FFF,$0000
-		db %11110100
-		db %00001111,$13,$13,$23,$29
-		db %00000000
-		;dl MessageASMLoc
-		;dl .MessageSkipLoc
-		
-		; RPG Hacker: Every message start also serves as the fallback for the message above.
-		!8bit_mode_only db $F1
-		!16bit_mode_only dw $FFF1
-		dl HandleUndefinedMessage!vwf_current_text_file_id
+	else		
+		!temp_id_num #= !vwf_current_message_id
+		!{vwf_message_!{temp_id_num}_has_header} = true
+		undef "temp_id_num"
 	
 	!vwf_current_message_name:
 	
@@ -526,6 +549,7 @@ macro vwf_header(...)
 			%vwf_extract_header_agrument(<!temp_i>)
 			!temp_i #= !temp_i+1
 		endwhile
+		undef "temp_i"
 			
 		!vwf_header_present = true
 	endif

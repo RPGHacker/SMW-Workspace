@@ -1,6 +1,6 @@
 @echo off
 
-copy /B/Y .\..\..\..\baserom\lm1mb_sa1.smc .\patched.smc
+copy /B/Y .\..\..\..\baserom\lm2mb_sa1.smc .\patched.smc
 
 echo.
 
@@ -14,7 +14,7 @@ IF %ERRORLEVEL% NEQ 0 (
 	echo.
 )
 
-.\..\..\..\tools\asar\asar.exe .\..\tolerance_timer.asm .\patched.smc
+.\..\..\..\tools\asar\asar.exe --symbols=wla --symbols-path=".\patched.cpu.sym" .\..\tolerance_timer.asm .\patched.smc
 
 echo.
 

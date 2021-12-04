@@ -14,7 +14,7 @@ IF %ERRORLEVEL% NEQ 0 (
 	echo.
 )
 
-.\..\..\..\tools\asar\asar.exe .\..\tolerance_timer.asm .\patched.smc
+.\..\..\..\tools\asar\asar.exe --symbols=wla --symbols-path=".\patched.cpu.sym" .\..\tolerance_timer.asm .\patched.smc
 
 echo.
 

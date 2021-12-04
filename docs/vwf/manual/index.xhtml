@@ -58,7 +58,7 @@
 
 		<section class="jumbotron">
 			<div class="container">
-				<h1 class="text-center mt-1 mb-2">VWF Dialogues Patch<br/><small>© 2010-2020 RPG Hacker</small></h1>
+				<h1 class="text-center mt-1 mb-2">VWF Dialogues Patch<br/><small>© 2010-2021 RPG Hacker</small></h1>
 
 				<div class="row my-2 py-1 text-center ir-crisp">
 					<div class="py-2 col col-xl-3 offset-xl-1"><img src="screenshots/screen-5.png" alt="Screenshot"/></div>
@@ -1761,6 +1761,7 @@ db "Insert any valid text/commands here",$E7</code></pre>
 						<li>Overall patch cleanup - made some places in the patch more readable and more intuitive, using newer Asar features.</li>
 						<li>Fixed several incompatibilities - patch should no work on newest versions of Higan/BSNES, as well as on sd2snes.</li>
 						<li>Changed the way the "freeze sprites" setting works. As a result, the smoke clouds in Yoshi's House can no longer glitch while a dialog box is open.</li>
+						<li>When specifying &quot;wait x frames&quot; for the auto wait header setting, the patch will now wait 1 frame less, giving the setting an effective range of $01 to $FE instead of $02 to $FF.</li>
 					</ul>
 				</p></dd>
 

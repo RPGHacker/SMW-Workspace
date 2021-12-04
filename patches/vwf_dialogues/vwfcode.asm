@@ -1,7 +1,3 @@
-
-%nextbank(freecode)
-
-
 ;-------------------------------------------------------
 
 ; Custom code meant for your VWF messages goes here.

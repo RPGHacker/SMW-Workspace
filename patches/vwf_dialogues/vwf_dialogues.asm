@@ -149,7 +149,7 @@ endmacro
 %claim_varram(vwfstack2, 60)				; Used by the text macro system to store/reload text pointers.
 %claim_varram(vwftbufferedtextpointerindex, 1)		; Index for the which 24-bit buffered text macro pointer should be updated.
 %claim_varram(vwftbufferedtextindex, 2)			; 16-bit index into the text buffer, used for handling where to write in the table for consecuative text buffers.
-%claim_varram(vwftbufferedtextpointers, 48)		; 24-bit pointer table for the buffered text macros.
+%claim_varram(vwftbufferedtextpointers, !num_reserved_text_macros*3)	; 24-bit pointer table for the buffered text macros.
 %claim_varram(vwftextbuffer, 512)			; Buffer dedicated for uploading VWF text to in order to display variable text.
 
 !vwfbuffer_emptytile = !tileram
@@ -165,13 +165,26 @@ endmacro
 
 !rambank	= select(!use_sa1_mapping,$40,$7E)
 
-!8	= 0
-!16	= 1
-!false	= 0
-!true	= 1
+false	= 0
+true	= 1
 
-!8bit	= "if !bitmode	== !8 :"
-!16bit	= "if !bitmode	== !16 :"
+!8bit_mode_only     = "if !bitmode == BitMode.8Bit :"
+!16bit_mode_only    = "if !bitmode == BitMode.16Bit :"
+
+!vwf_current_message_name = ""
+!vwf_current_message_id = $FFFF
+!vwf_header_present = false
+!vwf_current_text_file_id = -1
+
+!vwf_num_messages = 0
+!vwf_highest_message_id = 0
+
+!vwf_num_text_macros = 0
+
+!vwf_num_fonts = 0
+!vwf_num_text_files = 0
+
+!vwf_prev_freespace = AutoFreespaceCleaner
 
 if !use_sa1_mapping
 	!dma_channel_nmi = 2
@@ -183,7 +196,17 @@ else
 endif
 
 !cpu_snes = 0
-!cpu_sa1 = 1
+!cpu_sa1 = 1	
+	
+	
+	
+incsrc vwfmacros.asm
+
+
+
+if !bitmode == BitMode.16Bit
+	warn "16-bit mode is deprecated and might be removed in the future."
+endif
 
 
 
@@ -363,67 +386,6 @@ endmacro
 
 
 
-; Macros for new banks
-
-!PrevFreespace	= AutoFreespaceCleaner
-
-macro nextbank(freespace)
-	<freespace> : prot !PrevFreespace
-	!PrevFreespace += a
-	!PrevFreespace:
-endmacro
-
-
-macro binary(identifier, data)
-	<identifier>:
-	incbin <data>
-endmacro
-
-
-macro source(identifier, data)
-	<identifier>:
-	incsrc <data>
-endmacro
-
-
-
-
-
-; Macros for text files
-
-macro textstart()
-	%nextbank(freedata)
-	cleartable
-	table vwftable.txt
-endmacro
-
-macro textend()
-	!8bit db $00
-	db %00001000,%01111000,%11010001,%11000000,$01,%00100000
-	dw $7FFF,$0000
-	db %11110100
-	db %00001111,$13,$13,$23,$29
-	db %00000000
-	;dl MessageASMLoc
-	;dl .MessageSkipLoc
-
-	db "Message "
-	db $F6
-	dl !message+1
-	db $F6
-	dl !message
-	db " is invalid! Please contact the hack author to report this oversight."
-	!8bit db $FA
-	!16bit dw $FFFA
-;.MessageSkipLoc
-	!8bit db $FF
-	!16bit dw $FFFF
-endmacro
-
-
-
-
-
 ;;;;;;;;;
 ;Hijacks;
 ;;;;;;;;;
@@ -474,7 +436,7 @@ org remap_rom($00A1DA)
 	nop
 
 ; SRAM expansion ($07 => 2^7 kb = 128 kb)
-if !patch_sram_expansion != !false && read1(remap_rom($00FFD8)) < $07
+if !patch_sram_expansion != false && read1(remap_rom($00FFD8)) < $07
 	org remap_rom($00FFD8)
 		db $07
 endif
@@ -617,7 +579,7 @@ OriginalMessageBox:
 	lda remap_ram($1426)
 	beq .NoOriginalMessageBoxRequested
 	
-if !hijackbox == !true
+if !hijackbox == true
 	lda #$00
 	xba
 	;lda !vwfmode	; Already displaying a message?
@@ -848,16 +810,16 @@ LoadHeader:
 	sta $01
 	lda !vwftextsource+2
 	sta $02
-	!8bit lda #$0D
-	!16bit lda #$0C
+	!8bit_mode_only lda #$0D
+	!16bit_mode_only lda #$0C
 	sta $03
 	stz $04
 
 	ldy #$00
 
-	!8bit lda [$00],y	; Font
-	!8bit sta !font
-	!8bit iny
+	!8bit_mode_only lda [$00],y	; Font
+	!8bit_mode_only sta !font
+	!8bit_mode_only iny
 
 	lda [$00],y	; X position
 	lsr #3
@@ -2051,11 +2013,11 @@ InitLine:
 .NoCarry
 	lda !vwfwidth
 	sta !currentwidth
-	!16bit rep #$20
+	!16bit_mode_only rep #$20
 	lda !vwfchar
-	!8bit cmp #$FE
-	!16bit cmp #$FFFE
-	!16bit sep #$20
+	!8bit_mode_only cmp #$FE
+	!16bit_mode_only cmp #$FFFE
+	!16bit_mode_only sep #$20
 	bne .WidthEnd
 
 	lda !vwfwidth
@@ -2084,11 +2046,11 @@ InitLine:
 	sta !vwftextsource+1
 	pla
 	sta !vwftextsource
-	!16bit rep #$20
-	!16bit lda #$0000
-	!8bit lda #$00
+	!16bit_mode_only rep #$20
+	!16bit_mode_only lda #$0000
+	!8bit_mode_only lda #$00
 	sta !vwfchar
-	!16bit sep #$20
+	!16bit_mode_only sep #$20
 
 .RegularLayout
 	lda #$00
@@ -2113,16 +2075,17 @@ InitLine:
 	cmp #$01
 	beq .ButtonWait
 	lda !autowait
+	dec
 	sta !wait
 	bra .NoClearBox
 
 .ButtonWait
 	jsr EndBeep
-	!8bit lda #$FA
-	!16bit rep #$20
-	!16bit lda #$FFFA
+	!8bit_mode_only lda #$FA
+	!16bit_mode_only rep #$20
+	!16bit_mode_only lda #$FFFA
 	sta !vwfchar
-	!16bit sep #$20
+	!16bit_mode_only sep #$20
 
 .NoClearBox
 	rep #$20
@@ -2260,13 +2223,13 @@ TextCreation:
 	rep #$20
 	lda !skipmessageloc
 	sta !vwftextsource
-	!16bit lda #$FFEB
-	!16bit sta !vwfchar
+	!16bit_mode_only lda #$FFEB
+	!16bit_mode_only sta !vwfchar
 	sep #$20
 	lda !skipmessageloc+2
 	sta !vwftextsource+2
-	!8bit lda #$EB
-	!8bit sta !vwfchar
+	!8bit_mode_only lda #$EB
+	!8bit_mode_only sta !vwfchar
 	lda #$00
 	sta !wait
 	sta !cursormove
@@ -2438,11 +2401,11 @@ TextCreation:
 
 
 .NoCursor
-	!16bit rep #$20
+	!16bit_mode_only rep #$20
 	lda !vwfchar
-	!8bit cmp #$FA
-	!16bit cmp #$FFFA
-	!16bit sep #$20
+	!8bit_mode_only cmp #$FA
+	!16bit_mode_only cmp #$FFFA
+	!16bit_mode_only sep #$20
 	bne .NoButton
 	jmp .End
 
@@ -2478,24 +2441,24 @@ TextCreation:
 	lda #$01
 	sta !isnotatstartoftext
 	jsr ReadPointer
-	!16bit rep #$20
+	!16bit_mode_only rep #$20
 	lda [$00]
 	sta !vwfchar
-	!16bit inc $00
-	!8bit cmp #$E7
-	!16bit cmp #$FFE7
+	!16bit_mode_only inc $00
+	!8bit_mode_only cmp #$E7
+	!16bit_mode_only cmp #$FFE7
 	bcs .Jump
-	!16bit sep #$20
+	!16bit_mode_only sep #$20
 	jmp .WriteLetter
 
 .Jump
 	sec
-	!8bit sbc #$E7
-	!16bit sbc #$FFE7
-	!16bit sep #$20
+	!8bit_mode_only sbc #$E7
+	!16bit_mode_only sbc #$FFE7
+	!16bit_mode_only sep #$20
 	asl
 	tax
-	!16bit jsr IncPointer
+	!16bit_mode_only jsr IncPointer
 	jmp (.Routinetable,x)
 
 .Routinetable
@@ -2547,7 +2510,7 @@ TextCreation:
 	ldy #$01
 	rep #$30
 	lda.b [$00],y
-	cmp #$0010
+	cmp #!num_reserved_text_macros
 	bcs ..NotBufferedText
 	sta $0C
 	asl
@@ -2566,7 +2529,7 @@ TextCreation:
 	lda.l TextMacroPointers,x
 	sta !vwftextsource
 	sep #$30
-	lda.b #TextMacros>>16
+	lda.b TextMacroPointers+2,x
 +
 	sta !vwftextsource+2
 	jmp TextCreation
@@ -2712,10 +2675,10 @@ endif
 	iny
 	lda [$00],y
 	sta !cursor
-	!16bit iny
-	!16bit lda [$00],y
-	!16bit sta !cursor+1
-	!16bit jsr IncPointer
+	!16bit_mode_only iny
+	!16bit_mode_only lda [$00],y
+	!16bit_mode_only sta !cursor+1
+	!16bit_mode_only jsr IncPointer
 	jsr IncPointer
 	jsr IncPointer
 	jsr IncPointer
@@ -2734,8 +2697,8 @@ endif
 	lda #$01
 	sta !firsttile
 
-	!16bit lda !cursor+1
-	!16bit sta !font
+	!16bit_mode_only lda !cursor+1
+	!16bit_mode_only sta !font
 
 	jsr GetFont
 
@@ -2851,16 +2814,17 @@ endif
 	cmp #$01
 	beq .F0ButtonWait
 	lda !autowait
+	dec
 	sta !wait
 	bra .F0NoAutowait
 
 .F0ButtonWait
 	jsr EndBeep
-	!16bit rep #$20
-	!16bit lda #$FFFA
-	!8bit lda #$FA
+	!16bit_mode_only rep #$20
+	!16bit_mode_only lda #$FFFA
+	!8bit_mode_only lda #$FA
 	sta !vwfchar
-	!16bit sep #$20
+	!16bit_mode_only sep #$20
 
 .F0NoAutowait
 	jmp TextCreation
@@ -2926,10 +2890,10 @@ endif
 .F4_Character
 	jsr IncPointer
 	jsr ReadPointer
-	!16bit rep #$20
+	!16bit_mode_only rep #$20
 	lda [$00]
 	sta !vwfchar
-	!16bit sep #$20
+	!16bit_mode_only sep #$20
 	jmp .WriteLetter
 
 .F5_RAMCharacter
@@ -2942,14 +2906,14 @@ endif
 	iny
 	lda [$00],y
 	sta $0E
-	!16bit rep #$20
+	!16bit_mode_only rep #$20
 	lda [$0C]
 	sta !vwfroutine
-	!16bit sep #$20
+	!16bit_mode_only sep #$20
 	lda #$FB
 	sta !vwfroutine+1+!bitmode
-	!16bit lda #$FF
-	!16bit sta !vwfroutine+3
+	!16bit_mode_only lda #$FF
+	!16bit_mode_only sta !vwfroutine+3
 	rep #$20
 	lda $00
 	inc #4
@@ -2978,17 +2942,17 @@ endif
 	lda [$0C]
 	lsr #4
 	sta !vwfroutine
-	!16bit lda #$00
-	!16bit sta !vwfroutine+1
+	!16bit_mode_only lda #$00
+	!16bit_mode_only sta !vwfroutine+1
 	lda [$0C]
 	and #$0F
 	sta !vwfroutine+1+!bitmode
-	!16bit lda #$00
-	!16bit sta !vwfroutine+3
+	!16bit_mode_only lda #$00
+	!16bit_mode_only sta !vwfroutine+3
 	lda #$FB
 	sta !vwfroutine+2+!bitmode+!bitmode
-	!16bit lda #$FF
-	!16bit sta !vwfroutine+5
+	!16bit_mode_only lda #$FF
+	!16bit_mode_only sta !vwfroutine+5
 	rep #$20
 	lda $00
 	inc #4
@@ -3006,19 +2970,19 @@ endif
 
 .F7_DecValue
 	lda #$FB
-	!8bit sta !vwfroutine+5
-	!16bit sta !vwfroutine+10
-	!16bit lda #$FF
-	!16bit sta !vwfroutine+11
+	!8bit_mode_only sta !vwfroutine+5
+	!16bit_mode_only sta !vwfroutine+10
+	!16bit_mode_only lda #$FF
+	!16bit_mode_only sta !vwfroutine+11
 	rep #$21
 	lda $00
 	adc #$0005
-	!8bit sta !vwfroutine+6
-	!16bit sta !vwfroutine+12
+	!8bit_mode_only sta !vwfroutine+6
+	!16bit_mode_only sta !vwfroutine+12
 	sep #$20
 	lda $02
-	!8bit sta !vwfroutine+8
-	!16bit sta !vwfroutine+14
+	!8bit_mode_only sta !vwfroutine+8
+	!16bit_mode_only sta !vwfroutine+14
 
 	ldy #$01
 	lda [$00],y
@@ -3042,15 +3006,15 @@ endif
 	bne .SixteenBit
 	inc $00
 	inc $00
-	!16bit inc $00
-	!16bit inc $00
+	!16bit_mode_only inc $00
+	!16bit_mode_only inc $00
 
 .SixteenBit
 	pla
 	and #$0F
 	beq .NoZeros
 	lda $05
-	!16bit asl
+	!16bit_mode_only asl
 	clc
 	adc $00
 	sta $00
@@ -3119,11 +3083,11 @@ endif
 	jmp VWFInit
 
 .FD_LineBreak
-	!16bit rep #$20
-	!16bit lda #$FFFD
-	!8bit lda #$FD
+	!16bit_mode_only rep #$20
+	!16bit_mode_only lda #$FFFD
+	!8bit_mode_only lda #$FD
 	sta !vwfchar
-	!16bit sep #$20
+	!16bit_mode_only sep #$20
 	jsr IncPointer
 	jsr InitLine
 	lda !clearbox
@@ -3204,13 +3168,13 @@ endif
 	pha
 	lda !vwfchar
 	pha
-	!16bit lda !vwfchar+1
-	!16bit pha
+	!16bit_mode_only lda !vwfchar+1
+	!16bit_mode_only pha
 
 	jsr WordWidth
 
-	!16bit pla
-	!16bit sta !vwfchar+1
+	!16bit_mode_only pla
+	!16bit_mode_only sta !vwfchar+1
 	pla
 	sta !vwfchar
 	pla
@@ -3252,8 +3216,8 @@ endif
 	jmp .End
 
 .WriteLetter
-	!16bit lda !vwfchar+1
-	!16bit sta !font
+	!16bit_mode_only lda !vwfchar+1
+	!16bit_mode_only sta !font
 	jsr GetFont
 
 	rep #$20
@@ -3288,7 +3252,7 @@ endif
 
 .Create
 	jsr IncPointer
-	!16bit jsr IncPointer
+	!16bit_mode_only jsr IncPointer
 	lda [$06],y
 	sta !vwfwidth
 	jsr WriteTilemap
@@ -3619,12 +3583,12 @@ WipePixels:
 HextoDec:
 	jsr Convert8Bit
 	jsr GetZeros
-	!16bit lda #$00
-	!16bit sta !vwfroutine+1
-	!16bit sta !vwfroutine+3
-	!16bit sta !vwfroutine+5
-	!16bit sta !vwfroutine+7
-	!16bit sta !vwfroutine+9
+	!16bit_mode_only lda #$00
+	!16bit_mode_only sta !vwfroutine+1
+	!16bit_mode_only sta !vwfroutine+3
+	!16bit_mode_only sta !vwfroutine+5
+	!16bit_mode_only sta !vwfroutine+7
+	!16bit_mode_only sta !vwfroutine+9
 	rts
 
 Convert8Bit:
@@ -3738,29 +3702,29 @@ GetZeros:
 
 
 WordWidth:
-	!8bit jsr GetFont
+	!8bit_mode_only jsr GetFont
 
 .Begin
 	jsr ReadPointer
-	!16bit rep #$20
+	!16bit_mode_only rep #$20
 	lda [$00]
 	sta !vwfchar
-	!8bit cmp #$E7
-	!16bit cmp #$FFE7
+	!8bit_mode_only cmp #$E7
+	!16bit_mode_only cmp #$FFE7
 	bcs .Jump
-	!16bit sep #$20
-	!16bit jsr IncPointer
+	!16bit_mode_only sep #$20
+	!16bit_mode_only jsr IncPointer
 	jsr IncPointer
 	jmp .Add
 
 .Jump
 	sec
-	!8bit sbc #$E7
-	!16bit sbc #$FFE7
-	!16bit sep #$20
+	!8bit_mode_only sbc #$E7
+	!16bit_mode_only sbc #$FFE7
+	!16bit_mode_only sep #$20
 	asl
 	tax
-	!16bit jsr IncPointer
+	!16bit_mode_only jsr IncPointer
 	jsr IncPointer
 	jsr ReadPointer
 	jmp (.Routinetable,x)
@@ -3813,7 +3777,7 @@ WordWidth:
 	jsr HandleVWFStackByte2_Push
 	rep #$30
 	lda.b [$00]
-	cmp #$0010
+	cmp #!num_reserved_text_macros
 	bcs ..NotBufferedText
 	sta $0C
 	asl
@@ -3832,7 +3796,7 @@ WordWidth:
 	lda.l TextMacroPointers,x
 	sta !vwftextsource
 	sep #$30
-	lda.b #TextMacros>>16
+	lda.b TextMacroPointers+2,x
 +
 	sta !vwftextsource+2
 	jmp .Begin
@@ -3856,11 +3820,11 @@ WordWidth:
 	jmp .Begin
 
 .F4_Character
-	!16bit rep #$20
+	!16bit_mode_only rep #$20
 	lda [$00]
 	sta !vwfchar
-	!16bit sep #$20
-	!16bit jsr IncPointer
+	!16bit_mode_only sep #$20
+	!16bit_mode_only jsr IncPointer
 	jsr IncPointer
 	jmp .Add
 
@@ -3876,10 +3840,10 @@ WordWidth:
 	jsr IncPointer
 	jsr IncPointer
 	jsr IncPointer
-	!16bit rep #$20
+	!16bit_mode_only rep #$20
 	lda [$0C]
 	sta !vwfchar
-	!16bit sep #$20
+	!16bit_mode_only sep #$20
 	jmp .Add
 
 .F6_HexValue
@@ -3894,17 +3858,17 @@ WordWidth:
 	lda [$0C]
 	lsr #4
 	sta !vwfroutine
-	!16bit lda #$00
-	!16bit sta !vwfroutine+1
+	!16bit_mode_only lda #$00
+	!16bit_mode_only sta !vwfroutine+1
 	lda [$0C]
 	and #$0F
 	sta !vwfroutine+1+!bitmode
-	!16bit lda #$00
-	!16bit sta !vwfroutine+3
+	!16bit_mode_only lda #$00
+	!16bit_mode_only sta !vwfroutine+3
 	lda #$FB
 	sta !vwfroutine+2+!bitmode+!bitmode
-	!16bit lda #$FF
-	!16bit sta !vwfroutine+5
+	!16bit_mode_only lda #$FF
+	!16bit_mode_only sta !vwfroutine+5
 	rep #$20
 	lda $00
 	inc #3
@@ -3922,19 +3886,19 @@ WordWidth:
 
 .F7_DecValue
 	lda #$FB
-	!8bit sta !vwfroutine+5
-	!16bit sta !vwfroutine+10
-	!16bit lda #$FF
-	!16bit sta !vwfroutine+11
+	!8bit_mode_only sta !vwfroutine+5
+	!16bit_mode_only sta !vwfroutine+10
+	!16bit_mode_only lda #$FF
+	!16bit_mode_only sta !vwfroutine+11
 	rep #$21
 	lda $00
 	adc #$0004
-	!8bit sta !vwfroutine+6
-	!16bit sta !vwfroutine+12
+	!8bit_mode_only sta !vwfroutine+6
+	!16bit_mode_only sta !vwfroutine+12
 	sep #$20
 	lda $02
-	!8bit sta !vwfroutine+8
-	!16bit sta !vwfroutine+14
+	!8bit_mode_only sta !vwfroutine+8
+	!16bit_mode_only sta !vwfroutine+14
 
 	ldy #$01
 	lda [$00]
@@ -3957,15 +3921,15 @@ WordWidth:
 	bne .SixteenBit
 	inc $00
 	inc $00
-	!16bit inc $00
-	!16bit inc $00
+	!16bit_mode_only inc $00
+	!16bit_mode_only inc $00
 
 .SixteenBit
 	pla
 	and #$0F
 	beq .NoZeros
 	lda $05
-	!16bit asl
+	!16bit_mode_only asl
 	clc
 	adc $00
 	sta $00
@@ -4011,9 +3975,9 @@ WordWidth:
 	jmp .Return
 
 .Add
-	!16bit lda !vwfchar+1
-	!16bit sta !font
-	!16bit jsr GetFont
+	!16bit_mode_only lda !vwfchar+1
+	!16bit_mode_only sta !font
+	!16bit_mode_only jsr GetFont
 	lda !vwfchar
 	tay
 	lda [$06],y
@@ -4508,7 +4472,7 @@ TextUpload:
 	sta !choices
 	sta !currentchoice
 	sta !vwfchar
-	!16bit sta !vwfchar+1
+	!16bit_mode_only sta !vwfchar+1
 	lda #$01
 	sta !clearbox
 	jmp .Return
@@ -4519,18 +4483,18 @@ TextUpload:
 	beq .NoEnd
 	lda #$00
 	sta !enddialog
-	!16bit rep #$20
-	!16bit lda #$0000
-	!8bit lda #$00
+	!16bit_mode_only rep #$20
+	!16bit_mode_only lda #$0000
+	!8bit_mode_only lda #$00
 	sta !vwfchar
-	!16bit sep #$20
+	!16bit_mode_only sep #$20
 	jmp .End
 
 .NoEnd
 	lda !vwfchar
-	!8bit cmp #$FA	; Waiting for A button?
-	!16bit cmp #$FFFA
-	!16bit sep #$20
+	!8bit_mode_only cmp #$FA	; Waiting for A button?
+	!16bit_mode_only cmp #$FFFA
+	!16bit_mode_only sep #$20
 	beq .CheckButton
 	jmp .Upload
 
@@ -4542,7 +4506,7 @@ TextUpload:
 	jsr ButtonBeep
 	lda #$00
 	sta !vwfchar
-	!16bit sta !vwfchar+1
+	!16bit_mode_only sta !vwfchar+1
 	lda #$00
 	sta !timer
 
@@ -4618,11 +4582,11 @@ TextUpload:
 
 	lda !speedup
 	beq .Return
-	!16bit rep #$20
+	!16bit_mode_only rep #$20
 	lda !vwfchar
-	!8bit cmp #$F9
-	!16bit cmp #$FFF9
-	!16bit sep #$20
+	!8bit_mode_only cmp #$F9
+	!16bit_mode_only cmp #$FFF9
+	!16bit_mode_only sep #$20
 	beq .Return
 	lda $15
 	and #$80
@@ -4789,21 +4753,21 @@ GenerateVWF:
 .Read
 	lda [$00]	; Read character
 	inc $00
-	!16bit inc $00
-	!8bit sep #$20
+	!16bit_mode_only inc $00
+	!8bit_mode_only sep #$20
 	sta !vwfchar
-	!16bit sep #$20
-	!16bit lda !vwfchar+1
-	!16bit sta !font
-	!16bit jsr GetFont
-	!16bit lda $05
-	!16bit sta $0E
-	!16bit rep #$21
-	!16bit lda $03
-	!16bit adc #$0020
-	!16bit sta $0C
-	!16bit sep #$20
-	!16bit lda !vwfchar
+	!16bit_mode_only sep #$20
+	!16bit_mode_only lda !vwfchar+1
+	!16bit_mode_only sta !font
+	!16bit_mode_only jsr GetFont
+	!16bit_mode_only lda $05
+	!16bit_mode_only sta $0E
+	!16bit_mode_only rep #$21
+	!16bit_mode_only lda $03
+	!16bit_mode_only adc #$0020
+	!16bit_mode_only sta $0C
+	!16bit_mode_only sep #$20
+	!16bit_mode_only lda !vwfchar
 	tay
 	lda [$06],y	; Get width
 	sta !vwfwidth
@@ -4980,7 +4944,7 @@ AddPattern:
 
 .End
 	rtl
-
+	
 
 
 
@@ -4995,9 +4959,6 @@ Emptytile:
 ;;;;;;;;;;;;;;;;
 ;[CUSTOMTABLES];
 ;;;;;;;;;;;;;;;;
-
-Fonttable:
-incsrc vwffontpointers.asm
 
 Palettes:
 incsrc vwfframes.asm
@@ -5016,36 +4977,49 @@ incbin vwfframes.bin
 Patterns:
 incbin vwfpatterns.bin
 
-Font1:
-incbin vwffont1.bin
-.Width
-incsrc vwffont1.asm
-
-freedata
-!PrevFreespace:
-
-Pointers:
-incsrc vwfmessagepointers.asm
-
-Text:
-incsrc vwfmessages.asm
-
 Code:
 incsrc vwfcode.asm
 
+
+%vwf_first_bank()
+
 ;-------------------------------------------------------------
-;INSERT DATA HERE!
+; INSERT FONT & TEXT DATA BELOW!
+
+%vwf_add_font("vwffont1.bin", "vwffont1.asm")
+
+%vwf_add_messages("vwfmessages.asm", "vwftable.txt")
 
 
 
-
-
-;END
+; FONT & TEXT DATA END
 ;-------------------------------------------------------------
+
+; RPG Hacker: Would prefer to call this in vwfmacros.asm, but that
+; would throw an error on !default_font, because it wouldn't know
+; how many fonts have actually been added yet.
+%vwf_verfiy_default_arguments()
+
+%vwf_next_bank()
+
+%vwf_generate_pointers()
+
 
 print ""
 print "Patch inserted at $",hex(FreecodeStart),"."
-print "Text data inserted at $",hex(Text),"."
+
+!temp_i #= 0
+while !temp_i < !vwf_num_text_files
+	print "Text data !temp_i inserted at $",hex(TextFile!temp_i),"."
+	!temp_i #= !temp_i+1
+endwhile
+
+!temp_i #= 0
+while !temp_i < !vwf_num_fonts
+	print "Font data !temp_i inserted at $",hex(Font!temp_i),"."
+	!temp_i #= !temp_i+1
+endwhile
+
 print freespaceuse," bytes of free space used."
 print dec(!varrampos)," bytes of \!varram used."
 
@@ -5070,7 +5044,7 @@ print "See Readme for details!"
 print ""
 
 
-freedata : prot !PrevFreespace : Kleenex: db $00	;ignore this line, it must be at the end of the patch for technical reasons
+freedata : prot !vwf_prev_freespace : Kleenex: db $00	;ignore this line, it must be at the end of the patch for technical reasons
 ;print "End of VWF data at $",pc,"."
 
 namespace off

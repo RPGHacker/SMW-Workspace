@@ -1,301 +1,31 @@
-; Actual dialogues go here.
+;-------------------------------------------------------
 
-%textstart()
+; DIALOG DATA BEGIN
 
-; Text macros.
+; Text macros:
 
-TextMacros:
-.TM0000					;\ Text macros 0000-000F are reserved for buffered text. Do not put text data under these labels.
-.TM0001					;| Refer to vwfcode.asm to see how to use the BufferVWFText routine
-.TM0002					;|
-.TM0003					;|
-.TM0004					;|
-.TM0005					;|
-.TM0006					;|
-.TM0007					;|
-.TM0008					;|
-.TM0009					;|
-.TM000A					;|
-.TM000B					;|
-.TM000C					;|
-.TM000D					;|
-.TM000E					;|
-.TM000F					;|
-	db $E7				;/
+%vwf_register_text_macro("Mario", "db ""Mario""")
+%vwf_register_text_macro("Luigi", "db ""Luigi""")
+%vwf_register_text_macro("Yoshi", "db ""Yoshi""")
+%vwf_register_text_macro("Peach", "db ""Princess Peach""")
+%vwf_register_text_macro("Bowser", "db ""Bowser""")
+%vwf_register_text_macro("Toad", "db ""Toad""")
+%vwf_register_text_macro("SwitchPalace", "db $FD,""- SWITCH PALACE -"",$FD,$FD")
+%vwf_register_text_macro("PointOfAdvice", "db $FD,""-POINT OF ADVICE-"",$FA,$ED")
 
-.TM0010
-db "Mario",$E7
-!TM0010_Mario = "$E8 : dw $0010"
 
-.TM0011
-db "Luigi",$E7
-!TM0011_Luigi = "$E8 : dw $0011"
-
-.TM0012
-db "Yoshi",$E7
-!TM0012_Yoshi = "$E8 : dw $0012"
-
-.TM0013
-db "Princess Peach",$E7
-!TM0013_PrincessPeach = "$E8 : dw $0013"
-
-.TM0014
-db "Bowser",$E7
-!TM0014_Bowser = "$E8 : dw $0014"
-
-.TM0015
-db "Toad",$E7
-!TM0015_Toad = "$E8 : dw $0015"
-
-.TM0016
-db $FD,"- SWITCH PALACE -",$FD,$FD,$E7
-!TM0016_SwitchPalaceHeader = "$E8 : dw $0016"
-
-.TM0017
-db $FD,"-POINT OF ADVICE-",$FA,$ED,$E7
-!TM0017_PointOfAdvice = "$E8 : dw $0017"
-
-.TM0018
-.TM0019
-.TM001A
-.TM001B
-.TM001C
-.TM001D
-.TM001E
-.TM001F
-.TM0020
-.TM0021
-.TM0022
-.TM0023
-.TM0024
-.TM0025
-.TM0026
-.TM0027
-.TM0028
-.TM0029
-.TM002A
-.TM002B
-.TM002C
-.TM002D
-.TM002E
-.TM002F
-.TM0030
-.TM0031
-.TM0032
-.TM0033
-.TM0034
-.TM0035
-.TM0036
-.TM0037
-.TM0038
-.TM0039
-.TM003A
-.TM003B
-.TM003C
-.TM003D
-.TM003E
-.TM003F
-.TM0040
-.TM0041
-.TM0042
-.TM0043
-.TM0044
-.TM0045
-.TM0046
-.TM0047
-.TM0048
-.TM0049
-.TM004A
-.TM004B
-.TM004C
-.TM004D
-.TM004E
-.TM004F
-.TM0050
-.TM0051
-.TM0052
-.TM0053
-.TM0054
-.TM0055
-.TM0056
-.TM0057
-.TM0058
-.TM0059
-.TM005A
-.TM005B
-.TM005C
-.TM005D
-.TM005E
-.TM005F
-.TM0060
-.TM0061
-.TM0062
-.TM0063
-.TM0064
-.TM0065
-.TM0066
-.TM0067
-.TM0068
-.TM0069
-.TM006A
-.TM006B
-.TM006C
-.TM006D
-.TM006E
-.TM006F
-.TM0070
-.TM0071
-.TM0072
-.TM0073
-.TM0074
-.TM0075
-.TM0076
-.TM0077
-.TM0078
-.TM0079
-.TM007A
-.TM007B
-.TM007C
-.TM007D
-.TM007E
-.TM007F
-.TM0080
-.TM0081
-.TM0082
-.TM0083
-.TM0084
-.TM0085
-.TM0086
-.TM0087
-.TM0088
-.TM0089
-.TM008A
-.TM008B
-.TM008C
-.TM008D
-.TM008E
-.TM008F
-.TM0090
-.TM0091
-.TM0092
-.TM0093
-.TM0094
-.TM0095
-.TM0096
-.TM0097
-.TM0098
-.TM0099
-.TM009A
-.TM009B
-.TM009C
-.TM009D
-.TM009E
-.TM009F
-.TM00A0
-.TM00A1
-.TM00A2
-.TM00A3
-.TM00A4
-.TM00A5
-.TM00A6
-.TM00A7
-.TM00A8
-.TM00A9
-.TM00AA
-.TM00AB
-.TM00AC
-.TM00AD
-.TM00AE
-.TM00AF
-.TM00B0
-.TM00B1
-.TM00B2
-.TM00B3
-.TM00B4
-.TM00B5
-.TM00B6
-.TM00B7
-.TM00B8
-.TM00B9
-.TM00BA
-.TM00BB
-.TM00BC
-.TM00BD
-.TM00BE
-.TM00BF
-.TM00C0
-.TM00C1
-.TM00C2
-.TM00C3
-.TM00C4
-.TM00C5
-.TM00C6
-.TM00C7
-.TM00C8
-.TM00C9
-.TM00CA
-.TM00CB
-.TM00CC
-.TM00CD
-.TM00CE
-.TM00CF
-.TM00D0
-.TM00D1
-.TM00D2
-.TM00D3
-.TM00D4
-.TM00D5
-.TM00D6
-.TM00D7
-.TM00D8
-.TM00D9
-.TM00DA
-.TM00DB
-.TM00DC
-.TM00DD
-.TM00DE
-.TM00DF
-.TM00E0
-.TM00E1
-.TM00E2
-.TM00E3
-.TM00E4
-.TM00E5
-.TM00E6
-.TM00E7
-.TM00E8
-.TM00E9
-.TM00EA
-.TM00EB
-.TM00EC
-.TM00ED
-.TM00EE
-.TM00EF
-.TM00F0
-.TM00F1
-.TM00F2
-.TM00F3
-.TM00F4
-.TM00F5
-.TM00F6
-.TM00F7
-.TM00F8
-.TM00F9
-.TM00FA
-.TM00FB
-.TM00FC
-.TM00FD
-.TM00FE
-.TM00FF
-db $E7
+; Messages:
 
 ; RPG Hacker: Really, message $0050 (Yoshi's House) is the most important one for us, since it's the quickest one to get to.
 ;-------------------------------------------------------
 
-Message0050:	; Message 104-1
+%vwf_message_start(0050)	; Message 104-1
+
+	%vwf_header()
+	
 .header
 db $00
-db %00001000,%01111001,%11010001,%11000000,$01,%00100000
+db %00000000,%01111111,%01010001,%11000000,$01,%00100000
 dw $7FFF,$0000
 db %11111100
 db %00001111,$13,$13,$23,$29
@@ -303,1081 +33,2098 @@ db %00000010
 ;dl Message0050ASMLoc
 dl .MessageSkipLoc
 
-db $EE,$1A
-dw $03E0
-db $EE,$1B
-dw $0000
+db "Select a test:",$FD
 
-.body
-db "Hello! Sorry I'm not home, but I have gone to rescue my friends "
-db "who were captured by Bowser.",$FA,$ED
-db $FD,$F3,$06
-db "- Yoshi ",$AC
-db $FA,$ED
-
-db "Now choose an option, please!"
-
-db $F0,$34
+db $F0,$C4
 db $A8
 
+dl ..test_0
+dl ..test_1
+dl ..test_2
+dl ..test_3
+dl ..test_4
+dl ..test_5
+dl ..test_6
+dl ..test_7
+dl ..test_8
+dl ..test_9
+dl ..test_a
+dl ..test_b
 
-dl ..option_1
-dl ..option_2
-dl ..option_3
+db "Reserved",$FD
+db "Reserved",$FD
+db "Reserved",$FD
+db "Reserved",$FD
+db "Reserved",$FD
+db "Reserved",$FD
+db "Reserved",$FD
+db "Reserved",$FD
+db "Reserved",$FD
+db "Reserved",$FD
+db "Reserved",$FD
+db "Reserved",$FD
 
-db "Option 1 Text",$FD
-db "Option 2 Text",$FD
-db "Option 3 Text",$FD
+..test_0
+..test_1
+..test_2
+..test_3
+..test_4
+..test_5
+..test_6
+..test_7
+..test_8
+..test_9
+..test_a
+..test_b
+db "Thank you for using VWF Dialogues Patch by RPG Hacker!",$FA
 
-..option_1
-db "You selected option 1!",$FA,$FF
 
-..option_2
-db "You selected option 2!",$FA,$FF
-
-..option_3
-db "You selected option 3!",$FA,$FF
 
 .MessageSkipLoc
-db $FF
+	;%vwf_close()
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
 
-Message0000:	; Message 000-1
-.header
-db $00
-db %00001000,%01111000,%11010001,%11000000,$A0,%00100000
-dw $7FFF,$0000
-db %11111100
-db %00001111,$13,$13,$23,$29
-db %00000010
-;dl Message0000ASMLoc
-dl .MessageSkipLoc
+%vwf_message_start(0000)	; Message 000-1
 
-.body
-db $FD,"Welcome! This is Dinosaur Land.",$FD,$FD
-db "In this strange land we find that Princess Toadstool "
-db "is missing again!",$FD
-db $FD,"Looks like Bowser is at it again!",$FD,$FD
-.MessageSkipLoc
-db $FF
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0001)	; Message 000-2
 
-Message0001:	; Message 000-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0002)	; Message 001-1
 
-Message0002:	; Message 001-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0003)	; Message 001-2
 
-Message0003:	; Message 001-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0004)	; Message 002-1
 
-Message0004:	; Message 002-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0005)	; Message 002-2
 
-Message0005:	; Message 002-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0006)	; Message 003-1
 
-Message0006:	; Message 003-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0007)	; Message 003-2
 
-Message0007:	; Message 003-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0008)	; Message 004-1
 
-Message0008:	; Message 004-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0009)	; Message 004-2
 
-Message0009:	; Message 004-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(000A)	; Message 005-1
 
-Message000A:	; Message 005-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(000B)	; Message 005-2
 
-Message000B:	; Message 005-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(000C)	; Message 006-1
 
-Message000C:	; Message 006-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(000D)	; Message 006-2
 
-Message000D:	; Message 006-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(000E)	; Message 007-1
 
-Message000E:	; Message 007-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(000F)	; Message 007-2
 
-Message000F:	; Message 007-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0010)	; Message 008-1
 
-Message0010:	; Message 008-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0011)	; Message 008-2
 
-Message0011:	; Message 008-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0012)	; Message 009-1
 
-Message0012:	; Message 009-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0013)	; Message 009-2
 
-Message0013:	; Message 009-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0014)	; Message 00A-1
 
-Message0014:	; Message 00A-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0015)	; Message 00A-2
 
-Message0015:	; Message 00A-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0016)	; Message 00B-1
 
-Message0016:	; Message 00B-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0017)	; Message 00B-2
 
-Message0017:	; Message 00B-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0018)	; Message 00C-1
 
-Message0018:	; Message 00C-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0019)	; Message 00C-2
 
-Message0019:	; Message 00C-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(001A)	; Message 00D-1
 
-Message001A:	; Message 00D-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(001B)	; Message 00D-2
 
-Message001B:	; Message 00D-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(001C)	; Message 00E-1
 
-Message001C:	; Message 00E-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(001D)	; Message 00E-2
 
-Message001D:	; Message 00E-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(001E)	; Message 00F-1
 
-Message001E:	; Message 00F-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(001F)	; Message 00F-2
 
-Message001F:	; Message 00F-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0020)	; Message 010-1
 
-Message0020:	; Message 010-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0021)	; Message 010-2
 
-Message0021:	; Message 010-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0022)	; Message 011-1
 
-Message0022:	; Message 011-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0023)	; Message 011-2
 
-Message0023:	; Message 011-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0024)	; Message 012-1
 
-Message0024:	; Message 012-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0025)	; Message 012-2
 
-Message0025:	; Message 012-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0026)	; Message 013-1
 
-Message0026:	; Message 013-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0027)	; Message 013-2
 
-Message0027:	; Message 013-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0028)	; Message 014-1
 
-Message0028:	; Message 014-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0029)	; Message 014-2
 
-Message0029:	; Message 014-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(002A)	; Message 015-1
 
-Message002A:	; Message 015-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(002B)	; Message 015-2
 
-Message002B:	; Message 015-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(002C)	; Message 016-1
 
-Message002C:	; Message 016-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(002D)	; Message 016-2
 
-Message002D:	; Message 016-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(002E)	; Message 017-1
 
-Message002E:	; Message 017-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(002F)	; Message 017-2
 
-Message002F:	; Message 017-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0030)	; Message 018-1
 
-Message0030:	; Message 018-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0031)	; Message 018-2
 
-Message0031:	; Message 018-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0032)	; Message 019-1
 
-Message0032:	; Message 019-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0033)	; Message 019-2
 
-Message0033:	; Message 019-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0034)	; Message 01A-1
 
-Message0034:	; Message 01A-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0035)	; Message 01A-2
 
-Message0035:	; Message 01A-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0036)	; Message 01B-1
 
-Message0036:	; Message 01B-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0037)	; Message 01B-2
 
-Message0037:	; Message 01B-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0038)	; Message 01C-1
 
-Message0038:	; Message 01C-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0039)	; Message 01C-2
 
-Message0039:	; Message 01C-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(003A)	; Message 01D-1
 
-Message003A:	; Message 01D-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(003B)	; Message 01D-2
 
-Message003B:	; Message 01D-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(003C)	; Message 01E-1
 
-Message003C:	; Message 01E-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(003D)	; Message 01E-2
 
-Message003D:	; Message 01E-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(003E)	; Message 01F-1
 
-Message003E:	; Message 01F-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(003F)	; Message 01F-2
 
-Message003F:	; Message 01F-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0040)	; Message 020-1
 
-Message0040:	; Message 020-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0041)	; Message 020-2
 
-Message0041:	; Message 020-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0042)	; Message 021-1
 
-Message0042:	; Message 021-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0043)	; Message 021-2
 
-Message0043:	; Message 021-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0044)	; Message 022-1
 
-Message0044:	; Message 022-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0045)	; Message 022-2
 
-Message0045:	; Message 022-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0046)	; Message 023-1
 
-Message0046:	; Message 023-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0047)	; Message 023-2
 
-Message0047:	; Message 023-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0048)	; Message 024-1
 
-Message0048:	; Message 024-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0049)	; Message 024-2
 
-Message0049:	; Message 024-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(004A)	; Message 101-1
 
-Message004A:	; Message 101-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(004B)	; Message 101-2
 
-Message004B:	; Message 101-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(004C)	; Message 102-1
 
-Message004C:	; Message 102-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(004D)	; Message 102-2
 
-Message004D:	; Message 102-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(004E)	; Message 103-1
 
-Message004E:	; Message 103-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(004F)	; Message 103-2
 
-Message004F:	; Message 103-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0051)	; Message 104-2
 
-Message0051:	; Message 104-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0052)	; Message 105-1
 
-Message0052:	; Message 105-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0053)	; Message 105-2
 
-Message0053:	; Message 105-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0054)	; Message 106-1
 
-Message0054:	; Message 106-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0055)	; Message 106-2
 
-Message0055:	; Message 106-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0056)	; Message 107-1
 
-Message0056:	; Message 107-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0057)	; Message 107-2
 
-Message0057:	; Message 107-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0058)	; Message 108-1
 
-Message0058:	; Message 108-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0059)	; Message 108-2
 
-Message0059:	; Message 108-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(005A)	; Message 109-1
 
-Message005A:	; Message 109-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(005B)	; Message 109-2
 
-Message005B:	; Message 109-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(005C)	; Message 10A-1
 
-Message005C:	; Message 10A-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(005D)	; Message 10A-2
 
-Message005D:	; Message 10A-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(005E)	; Message 10B-1
 
-Message005E:	; Message 10B-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(005F)	; Message 10B-2
 
-Message005F:	; Message 10B-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0060)	; Message 10C-1
 
-Message0060:	; Message 10C-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0061)	; Message 10C-2
 
-Message0061:	; Message 10C-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0062)	; Message 10D-1
 
-Message0062:	; Message 10D-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0063)	; Message 10D-2
 
-Message0063:	; Message 10D-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0064)	; Message 10E-1
 
-Message0064:	; Message 10E-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0065)	; Message 10E-2
 
-Message0065:	; Message 10E-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0066)	; Message 10F-1
 
-Message0066:	; Message 10F-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0067)	; Message 10F-2
 
-Message0067:	; Message 10F-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0068)	; Message 110-1
 
-Message0068:	; Message 110-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0069)	; Message 110-2
 
-Message0069:	; Message 110-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(006A)	; Message 111-1
 
-Message006A:	; Message 111-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(006B)	; Message 111-2
 
-Message006B:	; Message 111-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(006C)	; Message 112-1
 
-Message006C:	; Message 112-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(006D)	; Message 112-2
 
-Message006D:	; Message 112-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(006E)	; Message 113-1
 
-Message006E:	; Message 113-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(006F)	; Message 113-2
 
-Message006F:	; Message 113-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0070)	; Message 114-1
 
-Message0070:	; Message 114-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0071)	; Message 114-2
 
-Message0071:	; Message 114-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0072)	; Message 115-1
 
-Message0072:	; Message 115-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0073)	; Message 115-2
 
-Message0073:	; Message 115-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0074)	; Message 116-1
 
-Message0074:	; Message 116-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0075)	; Message 116-2
 
-Message0075:	; Message 116-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0076)	; Message 117-1
 
-Message0076:	; Message 117-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0077)	; Message 117-2
 
-Message0077:	; Message 117-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0078)	; Message 118-1
 
-Message0078:	; Message 118-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0079)	; Message 118-2
 
-Message0079:	; Message 118-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(007A)	; Message 119-1
 
-Message007A:	; Message 119-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(007B)	; Message 119-2
 
-Message007B:	; Message 119-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(007C)	; Message 11A-1
 
-Message007C:	; Message 11A-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(007D)	; Message 11A-2
 
-Message007D:	; Message 11A-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(007E)	; Message 11B-1
 
-Message007E:	; Message 11B-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(007F)	; Message 11B-2
 
-Message007F:	; Message 11B-2
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0080)	; Message 11C-1
 
-Message0080:	; Message 11C-1
+	; Message header & text go here
 
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0081)	; Message 11C-2
+
+	; Message header & text go here
 
-Message0081:	; Message 11C-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message0082:	; Message 11D-1
+%vwf_message_start(0082)	; Message 11D-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0083)	; Message 11D-2
+
+	; Message header & text go here
 
-Message0083:	; Message 11D-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message0084:	; Message 11E-1
+%vwf_message_start(0084)	; Message 11E-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0085)	; Message 11E-2
+
+	; Message header & text go here
 
-Message0085:	; Message 11E-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message0086:	; Message 11F-1
+%vwf_message_start(0086)	; Message 11F-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0087)	; Message 11F-2
+
+	; Message header & text go here
 
-Message0087:	; Message 11F-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message0088:	; Message 120-1
+%vwf_message_start(0088)	; Message 120-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0089)	; Message 120-2
+
+	; Message header & text go here
 
-Message0089:	; Message 120-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message008A:	; Message 121-1
+%vwf_message_start(008A)	; Message 121-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(008B)	; Message 121-2
+
+	; Message header & text go here
 
-Message008B:	; Message 121-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message008C:	; Message 122-1
+%vwf_message_start(008C)	; Message 122-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(008D)	; Message 122-2
+
+	; Message header & text go here
 
-Message008D:	; Message 122-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message008E:	; Message 123-1
+%vwf_message_start(008E)	; Message 123-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(008F)	; Message 123-2
+
+	; Message header & text go here
 
-Message008F:	; Message 123-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message0090:	; Message 124-1
+%vwf_message_start(0090)	; Message 124-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0091)	; Message 124-2
+
+	; Message header & text go here
 
-Message0091:	; Message 124-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message0092:	; Message 125-1
+%vwf_message_start(0092)	; Message 125-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0093)	; Message 125-2
+
+	; Message header & text go here
 
-Message0093:	; Message 125-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message0094:	; Message 126-1
+%vwf_message_start(0094)	; Message 126-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0095)	; Message 126-2
+
+	; Message header & text go here
 
-Message0095:	; Message 126-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message0096:	; Message 127-1
+%vwf_message_start(0096)	; Message 127-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0097)	; Message 127-2
+
+	; Message header & text go here
 
-Message0097:	; Message 127-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message0098:	; Message 128-1
+%vwf_message_start(0098)	; Message 128-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(0099)	; Message 128-2
+
+	; Message header & text go here
 
-Message0099:	; Message 128-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message009A:	; Message 129-1
+%vwf_message_start(009A)	; Message 129-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(009B)	; Message 129-2
+
+	; Message header & text go here
 
-Message009B:	; Message 129-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message009C:	; Message 12A-1
+%vwf_message_start(009C)	; Message 12A-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(009D)	; Message 12A-2
+
+	; Message header & text go here
 
-Message009D:	; Message 12A-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message009E:	; Message 12B-1
+%vwf_message_start(009E)	; Message 12B-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(009F)	; Message 12B-2
+
+	; Message header & text go here
 
-Message009F:	; Message 12B-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00A0:	; Message 12C-1
+%vwf_message_start(00A0)	; Message 12C-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00A1)	; Message 12C-2
+
+	; Message header & text go here
 
-Message00A1:	; Message 12C-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00A2:	; Message 12D-1
+%vwf_message_start(00A2)	; Message 12D-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00A3)	; Message 12D-2
+
+	; Message header & text go here
 
-Message00A3:	; Message 12D-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00A4:	; Message 12E-1
+%vwf_message_start(00A4)	; Message 12E-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00A5)	; Message 12E-2
+
+	; Message header & text go here
 
-Message00A5:	; Message 12E-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00A6:	; Message 12F-1
+%vwf_message_start(00A6)	; Message 12F-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00A7)	; Message 12F-2
+
+	; Message header & text go here
 
-Message00A7:	; Message 12F-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00A8:	; Message 130-1
+%vwf_message_start(00A8)	; Message 130-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00A9)	; Message 130-2
+
+	; Message header & text go here
 
-Message00A9:	; Message 130-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00AA:	; Message 131-1
+%vwf_message_start(00AA)	; Message 131-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00AB)	; Message 131-2
+
+	; Message header & text go here
 
-Message00AB:	; Message 131-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00AC:	; Message 132-1
+%vwf_message_start(00AC)	; Message 132-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00AD)	; Message 132-2
+
+	; Message header & text go here
 
-Message00AD:	; Message 132-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00AE:	; Message 133-1
+%vwf_message_start(00AE)	; Message 133-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00AF)	; Message 133-2
+
+	; Message header & text go here
 
-Message00AF:	; Message 133-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00B0:	; Message 134-1
+%vwf_message_start(00B0)	; Message 134-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00B1)	; Message 134-2
+
+	; Message header & text go here
 
-Message00B1:	; Message 134-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00B2:	; Message 135-1
+%vwf_message_start(00B2)	; Message 135-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00B3)	; Message 135-2
+
+	; Message header & text go here
 
-Message00B3:	; Message 135-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00B4:	; Message 136-1
+%vwf_message_start(00B4)	; Message 136-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00B5)	; Message 136-2
+
+	; Message header & text go here
 
-Message00B5:	; Message 136-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00B6:	; Message 137-1
+%vwf_message_start(00B6)	; Message 137-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00B7)	; Message 137-2
+
+	; Message header & text go here
 
-Message00B7:	; Message 137-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00B8:	; Message 138-1
+%vwf_message_start(00B8)	; Message 138-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00B9)	; Message 138-2
+
+	; Message header & text go here
 
-Message00B9:	; Message 138-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00BA:	; Message 139-1
+%vwf_message_start(00BA)	; Message 139-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00BB)	; Message 139-2
+
+	; Message header & text go here
 
-Message00BB:	; Message 139-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00BC:	; Message 13A-1
+%vwf_message_start(00BC)	; Message 13A-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00BD)	; Message 13A-2
+
+	; Message header & text go here
 
-Message00BD:	; Message 13A-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00BE:	; Message 13B-1
+%vwf_message_start(00BE)	; Message 13B-1
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00BF)	; Message 13B-2
+
+	; Message header & text go here
 
-Message00BF:	; Message 13B-2
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00C0:
+%vwf_message_start(00C0)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00C1)
+
+	; Message header & text go here
 
-Message00C1:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00C2:
+%vwf_message_start(00C2)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00C3)
+
+	; Message header & text go here
 
-Message00C3:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00C4:
+%vwf_message_start(00C4)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00C5)
+
+	; Message header & text go here
 
-Message00C5:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00C6:
+%vwf_message_start(00C6)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00C7)
+
+	; Message header & text go here
 
-Message00C7:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00C8:
+%vwf_message_start(00C8)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00C9)
+
+	; Message header & text go here
 
-Message00C9:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00CA:
+%vwf_message_start(00CA)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00CB)
+
+	; Message header & text go here
 
-Message00CB:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00CC:
+%vwf_message_start(00CC)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00CD)
+
+	; Message header & text go here
 
-Message00CD:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00CE:
+%vwf_message_start(00CE)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00CF)
+
+	; Message header & text go here
 
-Message00CF:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00D0:
+%vwf_message_start(00D0)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00D1)
+
+	; Message header & text go here
 
-Message00D1:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00D2:
+%vwf_message_start(00D2)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00D3)
+
+	; Message header & text go here
 
-Message00D3:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00D4:
+%vwf_message_start(00D4)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00D5)
+
+	; Message header & text go here
 
-Message00D5:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00D6:
+%vwf_message_start(00D6)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00D7)
+
+	; Message header & text go here
 
-Message00D7:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00D8:
+%vwf_message_start(00D8)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00D9)
+
+	; Message header & text go here
 
-Message00D9:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00DA:
+%vwf_message_start(00DA)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00DB)
+
+	; Message header & text go here
 
-Message00DB:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00DC:
+%vwf_message_start(00DC)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00DD)
+
+	; Message header & text go here
 
-Message00DD:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00DE:
+%vwf_message_start(00DE)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00DF)
+
+	; Message header & text go here
 
-Message00DF:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00E0:
+%vwf_message_start(00E0)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00E1)
+
+	; Message header & text go here
 
-Message00E1:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00E2:
+%vwf_message_start(00E2)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00E3)
+
+	; Message header & text go here
 
-Message00E3:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00E4:
+%vwf_message_start(00E4)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00E5)
+
+	; Message header & text go here
 
-Message00E5:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00E6:
+%vwf_message_start(00E6)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00E7)
+
+	; Message header & text go here
 
-Message00E7:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00E8:
+%vwf_message_start(00E8)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00E9)
+
+	; Message header & text go here
 
-Message00E9:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00EA:
+%vwf_message_start(00EA)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00EB)
+
+	; Message header & text go here
 
-Message00EB:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00EC:
+%vwf_message_start(00EC)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00ED)
+
+	; Message header & text go here
 
-Message00ED:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00EE:
+%vwf_message_start(00EE)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00EF)
+
+	; Message header & text go here
 
-Message00EF:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00F0:
+%vwf_message_start(00F0)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00F1)
+
+	; Message header & text go here
 
-Message00F1:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00F2:
+%vwf_message_start(00F2)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00F3)
+
+	; Message header & text go here
 
-Message00F3:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00F4:
+%vwf_message_start(00F4)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00F5)
+
+	; Message header & text go here
 
-Message00F5:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00F6:
+%vwf_message_start(00F6)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00F7)
+
+	; Message header & text go here
 
-Message00F7:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00F8:
+%vwf_message_start(00F8)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00F9)
+
+	; Message header & text go here
 
-Message00F9:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00FA:
+%vwf_message_start(00FA)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00FB)
+
+	; Message header & text go here
 
-Message00FB:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00FC:
+%vwf_message_start(00FC)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00FD)
+
+	; Message header & text go here
 
-Message00FD:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-Message00FE:
+%vwf_message_start(00FE)
 
+	; Message header & text go here
+
+%vwf_message_end()
+
 ;-------------------------------------------------------
+
+%vwf_message_start(00FF)
+
+	; Message header & text go here
 
-Message00FF:
+%vwf_message_end()
 
 ;-------------------------------------------------------
 
-%textend()
+; DIALOG DATA END

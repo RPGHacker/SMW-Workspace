@@ -36,6 +36,11 @@ endmacro
 
 function vwf_make_color_15(red, green, blue) = (red&%11111)|((green&%11111)<<5)|((blue&%11111)<<10)
 
+function vwf_get_color_index_2bpp(palette, id) = (palette*4)+id
+
+!vwf_text_color_id = 2
+!vwf_bg_color_id = 2
+
 
 
 ; Resource management macros
@@ -116,8 +121,8 @@ Pointers:
 	undef "temp_num_gaps"
 
 TextMacroPointers:
-	; RPG Hacker: Some text macros are reserved for buffered text, so pad with magic hex.
-	rep !num_reserved_text_macros : dl $00DEAD
+	;; RPG Hacker: Some text macros are reserved for buffered text, so pad with magic hex.
+	;rep !num_reserved_text_macros : dl $00DEAD
 	
 	!temp_i #= 0
 	while !temp_i < !vwf_num_text_macros
@@ -139,7 +144,8 @@ macro vwf_text_start(table_file)
 	table "<table_file>"
 	
 	!vwf_current_message_name = ""
-	!vwf_current_message_id = $FFFF
+	!vwf_current_message_asm_name = ""
+	!vwf_current_message_id = $10000
 	!vwf_header_present = false
 	!vwf_current_text_file_id #= !vwf_num_text_files
 	
@@ -152,11 +158,12 @@ macro vwf_text_start(table_file)
 endmacro
 
 macro vwf_text_end()
-	if !vwf_current_message_id != $FFFF
+	if !vwf_current_message_id != $10000
 		error "A %vwf_message_start() (message !vwf_current_message_id) seems to be missing a %vwf_message_end()."
 	else		
 		!vwf_current_message_name = ""
-		!vwf_current_message_id = $FFFF
+		!vwf_current_message_asm_name = ""
+		!vwf_current_message_id = $10000
 		!vwf_header_present = false
 		!vwf_current_text_file_id = -1
 		
@@ -164,39 +171,20 @@ macro vwf_text_end()
 	endif
 endmacro
 
-macro vwf_define_invalid_message_handlers()
+macro vwf_define_invalid_message_handlers()		
+	!vwf_defining_internal_message = true
 	
-HandleUndefinedMessage!vwf_num_text_files:
-	!8bit_mode_only db $00
-	db %00001000,%01111000,%11010001,%11000000,$01,%00100000
-	dw $7FFF,$0000
-	db %11110100
-	db %00001111,$13,$13,$23,$29
-	db %00000000
-	;dl MessageASMLoc
-	;dl .MessageSkipLoc	
+	%vwf_message_start(10001)
 	
-.Text
-	if !bitmode	== BitMode.8Bit
-		db "Message "
-		db $F6
-		dl !message+1
-		db $F6
-		dl !message
-		db " isn't defined. Please contact the hack author to report this oversight."
-		db $FA
-		db $FF
-	else	
-		dw "Message "
-		dw $FFF6
-		dl !message+1
-		dw $FFF6
-		dl !message
-		dw " isn't defined. Please contact the hack author to report this oversight."
-		dw $FFFA
-		dw $FFFF
-	endif
+	HandleUndefinedMessage!vwf_num_text_files:
+		%vwf_header(vwf_x_pos(1), vwf_y_pos(1), vwf_width(14), vwf_height(3), vwf_freeze_game(true), vwf_text_speed(0), vwf_auto_wait(AutoWait.WaitForA), vwf_enable_skipping(false), vwf_enable_message_asm(false))
+		
+		%vwf_text("Message ") : %vwf_hex(!message+1) : %vwf_hex(!message) : %vwf_text(" isn't defined. Please contact the hack author to report this oversight.")
+		%vwf_wait_for_a()
 	
+	%vwf_message_end()
+	
+	undef "vwf_defining_internal_message"	
 endmacro
 
 
@@ -204,40 +192,52 @@ endmacro
 ; Message header macros
 
 macro vwf_message_start(id)
-	if !vwf_current_message_id != $FFFF
+	if !vwf_current_message_id != $10000
 		error "A %vwf_message_start() (message !vwf_current_message_id) seems to be missing a %vwf_message_end()."
 	elseif defined("vwf_message_<id>_defined")
 		error "Message ID <id> used multiple times. Please make sure every message ID is unique."
+	elseif not(defined("vwf_defining_internal_message")) && $<id> > $FFFF
+		error "Message IDs must be between 0000 and FFFF (current: <id>)."
 	else
-		!vwf_current_message_name = "Message<id>"
+		!vwf_current_message_name = "Message<id>"		
+		!vwf_current_message_asm_name = "MessageASM<id>"
 		!vwf_current_message_id = $<id>
 		!vwf_header_present = false
-		
-		!vwf_num_messages #= !vwf_num_messages+1
-		
+			
 		!temp_id_num #= !vwf_current_message_id
 		!temp_text_id_num #= !vwf_num_text_files-1
 		!{vwf_message_!{temp_id_num}_defined} = true
 		!{vwf_message_!{temp_id_num}_label} := !vwf_current_message_name
-		!{vwf_message_!{temp_id_num}_fallback_label} := HandleUndefinedMessage!temp_text_id_num
 		!{vwf_message_!{temp_id_num}_has_header} = false
 		
-		!vwf_last_fallback_label := !{vwf_message_!{temp_id_num}_fallback_label}
+		if not(defined("vwf_defining_internal_message"))
+			!vwf_num_messages #= !vwf_num_messages+1
+			!{vwf_message_!{temp_id_num}_fallback_label} := HandleUndefinedMessage!temp_text_id_num
+			
+			!vwf_last_fallback_label := !{vwf_message_!{temp_id_num}_fallback_label}
+			
+			if $<id> > !vwf_highest_message_id
+				!vwf_highest_message_id #= $<id>
+			endif
+		endif
+		
 		undef "temp_id_num"
 		undef "temp_text_id_num"
-		
-		if $<id> > !vwf_highest_message_id
-			!vwf_highest_message_id #= $<id>
-		endif
 	endif
 endmacro
 
 macro vwf_message_end()
-	if !vwf_current_message_id == $FFFF
+	if !vwf_current_message_id == $10000
 		error "You must call %vwf_message_start() before calling %vwf_message_end()."
 	else
 		if !vwf_header_present != false
-			; RPG Hacker: Add fallback in case someone forgets to terminate a message correctly.
+			; RPG Hacker: vwf_message_end() includes a %vwf_close() by default, because every message needs one.
+			; This will also prevent the message box from messing up if someone forgets it, and it allows us to
+			; define a default skip location.			
+			if !vwf_message_skip_enabled != false && !vwf_message_skip_location_default != false
+				.SkipLocation:
+			endif
+			
 			%vwf_close()
 		else
 			; RPG Hacker: If we don't have at least a header, don't add this fallback. This is likely an empty message,
@@ -247,32 +247,42 @@ macro vwf_message_end()
 		endif
 			
 		!vwf_current_message_name = ""
-		!vwf_current_message_id = $FFFF	
+		!vwf_current_message_id = $10000
 		!vwf_header_present = false
 	endif
 endmacro
 
 macro vwf_register_text_macro(name, ...)
 	if defined("vwf_text_macro_<name>_defined")
-		error "Text macro redefinition: <name>"
+		error "%vwf_register_text_macro(): Text macro redefinition: <name>"
+	elseif defined("vwf_inside_text_macro")
+		error "%vwf_register_text_macro(): Can't define nested text macros."
+	else
+
+	TextMacro!vwf_num_text_macros:
+		!vwf_inside_text_macro = true
+		
+		!temp_i #= 0
+		while !temp_i < sizeof(...)
+			<!temp_i>
+			!temp_i #= !temp_i+1
+		endwhile
+		undef "temp_i"
+	
+		%vwf_text_macro_end()
+		undef "vwf_inside_text_macro"
+		
+		!vwf_text_macro_<name>_defined = true
+		!vwf_text_macro_<name>_id #= !vwf_num_text_macros
+		; RPG Hacker: +!num_reserved_text_macros, because we are skipping the reserved macros in the table.
+		if !bitmode == BitMode.8Bit
+			!vwf_text_macro_<name>_sequence := "db $E8 : dw !vwf_num_text_macros+!num_reserved_text_macros"
+		else
+			!vwf_text_macro_<name>_sequence := "db $FFE8 : dw !vwf_num_text_macros+!num_reserved_text_macros"
+		endif
+		
+		!vwf_num_text_macros #= !vwf_num_text_macros+1
 	endif
-
-TextMacro!vwf_num_text_macros:
-	!temp_i #= 0
-	while !temp_i < sizeof(...)
-		<!temp_i>
-		!temp_i #= !temp_i+1
-	endwhile
-	undef "temp_i"
-
-	!8bit_mode_only db $E7
-	!16bit_mode_only db $FFE7
-	
-	!vwf_text_macro_<name>_defined = true
-	; RPG Hacker: +!num_reserved_text_macros, because we are skipping the reserved macros in the table.
-	!vwf_text_macro_<name>_sequence := "$E8 : dw !vwf_num_text_macros+!num_reserved_text_macros"
-	
-	!vwf_num_text_macros #= !vwf_num_text_macros+1
 endmacro
 
 
@@ -509,7 +519,7 @@ endstruct
 %vwf_define_header_setter_generic("height", false, 1, 13)
 
 %vwf_define_header_setter_generic("box_animation", false, !vwf_enum_BoxAnimation_first, !vwf_enum_BoxAnimation_last)
-%vwf_define_header_setter_generic("palette", true, $00, $07)
+%vwf_define_header_setter_generic("text_palette", true, $00, $07)
 %vwf_define_header_setter_generic("text_color", true, vwf_make_color_15(0,0,0), vwf_make_color_15(31,31,31))
 %vwf_define_header_setter_generic("bg_color", true, vwf_make_color_15(0,0,0), vwf_make_color_15(31,31,31))
 
@@ -521,21 +531,21 @@ endstruct
 %vwf_define_header_setter_generic("text_speed", false, 0, 63)
 %vwf_define_header_setter_generic("auto_wait", false, !vwf_enum_AutoWait_first, AutoWait.WaitFrames.254)
 %vwf_define_header_setter_generic("button_speedup", false, false, true)
-%vwf_define_header_setter_generic("skip_enable", false, false, true)
+%vwf_define_header_setter_generic("enable_skipping", false, false, true)
 
-%vwf_define_header_setter_generic("disable_sounds", false, false, true)
+%vwf_define_header_setter_generic("enable_sfx", false, false, true)
 %vwf_define_header_setter_sound("letter_sound")
 %vwf_define_header_setter_sound("wait_sound")
 %vwf_define_header_setter_sound("cursor_sound")
 %vwf_define_header_setter_sound("continue_sound")
 
-%vwf_define_header_setter_generic("message_asm_enable", false, false, true)
+%vwf_define_header_setter_generic("enable_message_asm", false, false, true)
 
 
-macro vwf_header(...)	
-	if !vwf_current_message_id == $FFFF
+macro vwf_header(...)
+	if !vwf_current_message_id == $10000
 		error "You must call %vwf_message_start() before calling %vwf_header()."
-	else		
+	else
 		!temp_id_num #= !vwf_current_message_id
 		!{vwf_message_!{temp_id_num}_has_header} = true
 		undef "temp_id_num"
@@ -552,6 +562,95 @@ macro vwf_header(...)
 		undef "temp_i"
 			
 		!vwf_header_present = true
+		
+		
+		; RPG Hacker: We could do some more validation on header arguments here.
+		; For example: Verify that the X/Y pos is valid against the chosen width/height.
+		; That way, we could remove a lot of the runtime-side checks.
+		; However, for now, I'm leaving things as they are.
+		; I don't want too end up rewriting absolutely everything.		
+		
+		
+		; Header format:
+		
+		; db $aa
+		; $aa:    Font number		
+		db !vwf_header_argument_font_value
+		
+		; db %aaaaabbb,%bbccccdd,%ddeeeeff,%ffgggggg
+		; %aaaaa:  Text box X pos
+		; %bbbbb:  Text box Y pos
+		; %cccc:   Text box width
+		; %dddd:   Text box height
+		; %eeee:   Text margin (free space at left and right edge of text box) in pixels
+		; %ffff:   Width of a space in pixels
+		; %gggggg: Text speed (number of frames between letters)		
+		db (!vwf_header_argument_x_pos_value<<3)|(!vwf_header_argument_y_pos_value>>2)
+		db (!vwf_header_argument_y_pos_value<<6)|(!vwf_header_argument_width_value<<2)|(!vwf_header_argument_height_value>>2)
+		db (!vwf_header_argument_height_value<<6)|(!vwf_header_argument_text_margin_value<<2)|(!vwf_header_argument_space_width_value>>2)
+		db (!vwf_header_argument_space_width_value<<6)|!vwf_header_argument_text_speed_value
+		
+		; db $aa,%bbbb--cd
+		; $aa:     Auto wait options
+		; %bbbb:   Text box creation animation
+		; %c:      Enable message box skip
+		; %d:      Enable MessageASM
+		db !vwf_header_argument_auto_wait_value
+		db (!vwf_header_argument_box_animation_value<<4)|(!vwf_header_argument_enable_skipping_value<<1)|!vwf_header_argument_enable_message_asm_value
+		
+		; dw $aaaa,$bbbb
+		; $aaaa    Text palette's third color (text color)
+		; $bbbb    Text palette's fourth color (outlines color)
+		dw !vwf_header_argument_text_color_value
+		dw !vwf_header_argument_bg_color_value
+		
+		; db %abbbcd-e
+		; %a:      Freeze gameplay
+		; %bbb:    Text palette number
+		; %c:      Text alignment (left/centered)
+		; %d:      Allow button speedup
+		; %e:      Disable all sound effects
+		db (!vwf_header_argument_freeze_game_value<<7)|(!vwf_header_argument_text_palette_value<<4)|(!vwf_header_argument_text_alignment_value<<3)\
+			|(!vwf_header_argument_button_speedup_value<<2)|not(!vwf_header_argument_enable_sfx_value)
+		
+		; db %aabbccdd   (skip if sounds disabled)
+		; %aa      Letter sound bank (-$1DF9)
+		; %bb      Wait for A button sound bank (-$1DF9)
+		; %cc      Cursor sound bank (-$1DF9)
+		; %dd      Continue sound bank (-$1DF9)
+		if !vwf_header_argument_enable_sfx_value
+			db ((!vwf_header_argument_letter_sound_bank-$1DF9)<<6)|((!vwf_header_argument_wait_sound_bank-$1DF9)<<4)\
+				|((!vwf_header_argument_cursor_sound_bank-$1DF9)<<2)|(!vwf_header_argument_continue_sound_bank-$1DF9)
+		endif
+		
+		; db $aa,$bb,$cc,$dd   (skip if sounds disabled)
+		; $aa      Letter sound ID
+		; $bb      Wait for A button sound ID
+		; $cc      Cursor sound ID
+		; $dd      Continue sound ID
+		if !vwf_header_argument_enable_sfx_value
+			db !vwf_header_argument_letter_sound_id
+			db !vwf_header_argument_wait_sound_id
+			db !vwf_header_argument_cursor_sound_id
+			db !vwf_header_argument_continue_sound_id
+		endif
+		
+		; dl $aaaaaa   (skip if message skip disabled)
+		; $aaaaaa: Message skip location
+		if !vwf_header_argument_enable_skipping_value
+			dl .SkipLocation
+			!vwf_message_skip_enabled = true
+			!vwf_message_skip_location_default = true
+		else
+			!vwf_message_skip_enabled = false
+			!vwf_message_skip_location_default = false
+		endif
+		
+		; dl $aaaaaa   (skip if MessageASM disabled)
+		; $aaaaaa: MessageASM location
+		if !vwf_header_argument_enable_message_asm_value
+			dl !vwf_current_message_asm_name
+		endif
 	endif
 endmacro
 
@@ -559,9 +658,389 @@ endmacro
 
 ; Message command macros
 
+; RPG Hacker: IMPORTANT: Adjust this define when adding any new commands to the patch!
+!vwf_lowest_reserved_hex = $FFE7
+
+macro vwf_print_message_command_error()
+	error "Message content macros can only be called inside a message body (i.e. after a call to %vwf_header() and before a call to %vwf_message_end()) or text macro."
+endmacro
+
+!vwf_message_command_error_condition = "not(defined(""vwf_inside_text_macro"")) && or(equal(!vwf_current_message_id, $10000), equal(!vwf_header_present, false))"
+
+macro vwf_char(value)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	else
+		if !bitmode == BitMode.8Bit
+			if <value> >= (!vwf_lowest_reserved_hex&$FF)
+				db $F4
+			endif
+			db <value>
+		else
+			if <value> >= !vwf_lowest_reserved_hex
+				dw $FFF4
+			endif
+			dw <value>
+		endif
+	endif
+endmacro
+
+; RPG Hacker: TODO: Ideally, this macro should prevent anything contained
+; in the string to be evaluated as commands (except for spaces). However,
+; this would require iterating over the input string, which is something
+; not currently supported by Asar whatsoever.
+macro vwf_text(text)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	else		
+		!8bit_mode_only db "<text>"
+		!16bit_mode_only dw "<text>"
+	endif
+endmacro
+
+macro vwf_set_skip_location()
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	elseif !vwf_message_skip_enabled == false
+		warn "Calling %vwf_set_skip_location() for a message that has skipping disabled. You might have forgotten to enable skipping in the header."
+	elseif !vwf_message_skip_location_default == false
+		error "Calling %vwf_set_skip_location() multiple times for one message."
+	else
+		!vwf_message_skip_location_default = false
+		.SkipLocation
+	endif
+endmacro
+
 macro vwf_close()
-	!8bit_mode_only db $FF
-	!16bit_mode_only dw $FFFF
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	else
+		!8bit_mode_only db $FF
+		!16bit_mode_only dw $FFFF
+	endif
+endmacro
+
+; RPG Hacker: Should never really be needed, but why not.
+macro vwf_space()
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	else
+		!8bit_mode_only db $FE
+		!16bit_mode_only dw $FFFE
+	endif
+endmacro
+
+macro vwf_line_break()
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	else
+		!8bit_mode_only db $FD
+		!16bit_mode_only dw $FFFD
+	endif
+endmacro
+
+macro vwf_display_message(message_id)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	else
+		!8bit_mode_only db $FC
+		!16bit_mode_only dw $FFFC
+		dw $<message_id>
+	endif
+endmacro
+
+macro vwf_set_text_pointer(pointer)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	else
+		!8bit_mode_only db $FB
+		!16bit_mode_only dw $FFFB
+		dl <pointer>
+	endif
+endmacro
+
+macro vwf_wait_for_a()
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	else
+		!8bit_mode_only db $FA
+		!16bit_mode_only dw $FFFA
+	endif
+endmacro
+
+macro vwf_wait_frames(num_frames)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	elseif <num_frames> < $00 || <num_frames > $FF	
+		error "%vwf_wait_frames() only supports values between ",dec($00)," and ",dec($FF)" (current: ",dec(<num_frames>),")."
+	else
+		!8bit_mode_only db $F9
+		!16bit_mode_only dw $FFF9
+		db <num_frames>
+	endif
+endmacro
+
+macro vwf_set_text_speed(text_speed)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	elseif <text_speed> < $00 || <text_speed > $FF	
+		error "%vwf_set_text_speed() only supports values between ",dec($00)," and ",dec($FF)" (current:",dec(<text_speed>)")."
+	else
+		!8bit_mode_only db $F8
+		!16bit_mode_only dw $FFF8
+		db <text_speed>
+	endif
+endmacro
+
+%vwf_define_enum(AddressSize, 8Bit, 16Bit)
+
+macro vwf_decimal(address, ...)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	else
+		!temp_address_size = AddressSize.8Bit
+		!temp_leading_zeroes = 0
+		
+		if sizeof(...) > 1
+			!temp_address_size = <1>
+		endif
+		
+		if sizeof(...) > 2
+			!temp_leading_zeroes = <2>
+		endif
+		
+		if !temp_address_size < !vwf_enum_AddressSize_first || !temp_address_size > !vwf_enum_AddressSize_last
+			error "%vwf_decimal(): ""address_size"" must be a value between ""!vwf_enum_AddressSize_first"" and ""!vwf_enum_AddressSize_last""."
+		endif
+		
+		if !temp_leading_zeroes != true && !temp_leading_zeroes != false
+			error "%vwf_decimal(): ""leading_zeroes"" must be either true or false"
+		endif
+	
+		!8bit_mode_only db $F7
+		!16bit_mode_only dw $FFF7
+		dl <address>
+		db (!temp_address_size<<4)|!temp_leading_zeroes
+		
+		undef "temp_address_size"
+		undef "temp_leading_zeroes"
+	endif
+endmacro
+
+macro vwf_hex(address)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	else	
+		!8bit_mode_only db $F6
+		!16bit_mode_only dw $FFF6
+		dl <address>
+	endif
+endmacro
+
+macro vwf_char_at_address(address)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	else	
+		!8bit_mode_only db $F5
+		!16bit_mode_only dw $FFF5
+		dl <address>
+	endif
+endmacro
+
+macro vwf_set_text_palette(palette)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	elseif <palette> < 0 || <palette> > 7	
+		error "%vwf_set_text_palette() only supports values between 0 and 7 (current: <palette>)."
+	else
+		!8bit_mode_only db $F3
+		!16bit_mode_only dw $FFF3
+		db <palette>
+	endif
+endmacro
+
+macro vwf_set_font(font)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	elseif <font> < 0 || <font> > !vwf_num_fonts-1
+		error "%vwf_set_font() only supports values between 0 and ",dec(!vwf_num_fonts-1)" (current: ",dec(<font>)")."
+	else
+		; RPG Hacker: Changing fonts does nothing in 16-Bit mode.
+		if !bitmode == BitMode.8Bit
+			db $F2
+			db <font>
+		endif
+	endif
+endmacro
+
+macro vwf_execute_subroutine(address)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	else	
+		!8bit_mode_only db $F1
+		!16bit_mode_only dw $FFF1
+		dl <address>
+	endif
+endmacro
+
+macro vwf_wrap(...)
+	; RPG Hacker: Inner commands might use !temp_i, so, uuh...
+	; Let's just use a different name here.
+	!temp_very_secure_i #= 0
+	while !temp_very_secure_i < sizeof(...)
+		<!temp_very_secure_i>
+	
+		!temp_very_secure_i #= !temp_very_secure_i+1
+	endwhile
+	undef "temp_very_secure_i"
+endmacro
+
+macro vwf_display_options(label_prefix, ...)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	elseif sizeof(...) == 0
+		error "%vwf_display_options() needs at least a single option."
+	elseif sizeof(...) > 13
+		error "%vwf_display_options() supports only up to 13 options (current: ",dec(sizeof(...)),")."
+	elseif !default_cursor_space < 0 || !default_cursor_space > 7
+		error "\!default_cursor_space must be a value between 0 and 7 (curent: ",dec(!default_cursor_space),")."
+	else	
+		!8bit_mode_only db $F0
+		!16bit_mode_only dw $FFF0
+		db (sizeof(...)<<4)|!default_cursor_space
+		!8bit_mode_only db !default_cursor_char
+		!16bit_mode_only dw !default_cursor_char
+		
+		!temp_i #= 0
+		while !temp_i < sizeof(...)
+			dl .<label_prefix>!temp_i
+		
+			!temp_i #= !temp_i+1
+		endwhile
+		undef "temp_i"
+		
+		; RPG Hacker: Inner commands might use !temp_i, so, uuh...
+		; Let's just use a different name here.
+		!temp_secure_i #= 0
+		while !temp_secure_i < sizeof(...)
+			<!temp_secure_i>
+			
+			%vwf_line_break()
+		
+			!temp_secure_i #= !temp_secure_i+1
+		endwhile
+		undef "temp_secure_i"
+	endif
+endmacro
+
+macro vwf_set_option_location(label_prefix, id)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	else
+		!temp_i #= <id>
+		.<label_prefix>!temp_i:
+		undef "temp_i"
+	endif
+endmacro
+
+macro vwf_setup_teleport(destination_level_or_entrance, is_secondary, midway_or_water_level)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	elseif <is_secondary> != true && <is_secondary> != false
+		error "%vwf_setup_teleport(): is_secondary needs to be either true or false."
+	elseif <is_secondary> == false && (<destination_level_or_entrance> < $000 || <destination_level_or_entrance> > $1FF)
+		error "%vwf_setup_teleport(): destination_level must be a number between $000 and $1FF (current: $",hex(<destination_level_or_entrance>),")."
+	elseif <is_secondary> == true && (<destination_level_or_entrance> < $0000 || <destination_level_or_entrance> > $1FFF)
+		error "%vwf_setup_teleport(): destination_entrance must be a number between $0000 and $1FFF (current: $",hex(<destination_level_or_entrance>),")."
+	elseif <midway_or_water_level> != true && <midway_or_water_level> != false
+		error "%vwf_setup_teleport(): midway_or_water_level needs to be either true or false."
+	else
+		!8bit_mode_only db $EF
+		!16bit_mode_only dw $FFEF
+		dw <destination_level_or_entrance>
+		db (<midway_or_water_level><<3)|(<is_secondary><<1)
+	endif
+endmacro
+
+macro vwf_change_colors(palette_start, ...)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	elseif <palette_start> < $00 || <palette_start> > $FF
+		error "%vwf_change_colors(): palette_start must be a number between $00 and $FF (current: $",hex(<palette_start>),")."
+	elseif sizeof(...) < 1
+		error "%vwf_change_colors() needs at least a single color."
+	elseif sizeof(...)+<palette_start> > $100
+		error "%vwf_change_colors(): can only provide up to ",dec($100-<palette_start>)," colors from palette start position $",hex(<palette_start>),". Current: ",dec(sizeof(...)),"."
+	else		
+		!temp_i #= 0
+		while !temp_i < sizeof(...)
+			!8bit_mode_only db $EE
+			!16bit_mode_only dw $FFEE
+			
+			if <!temp_i> < $0000 || <!temp_i> > $FFFF
+				error "%vwf_change_colors(): colors must be numbers between $0000 and $FFFF. Please use the vwf_make_color_15() function. (Current at ",dec(!temp_i),": $",hex(<!temp_i>),")."
+			endif
+			
+			db <palette_start>+!temp_i
+			dw <!temp_i>
+		
+			!temp_i #= !temp_i+1
+		endwhile
+		undef "temp_i"
+	endif
+endmacro
+
+macro vwf_clear()
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	else
+		!8bit_mode_only db $ED
+		!16bit_mode_only dw $FFED
+	endif
+endmacro
+
+macro vwf_play_bgm(bgm_id)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	elseif <bgm_id> < 0 || <bgm_id> > !vwf_num_fonts-1
+		error "%vwf_play_bgm() only supports values between $00 and $FF (current: $",hex(<bgm_id>)")."
+	else
+		!8bit_mode_only db $EC
+		!16bit_mode_only dw $FFEC
+		db <bgm_id>
+	endif
+endmacro
+
+macro vwf_freeze()
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	else
+		!8bit_mode_only db $EB
+		!16bit_mode_only dw $FFEB
+	endif
+endmacro
+
+; RPG Hacker: $EA and $E9 are currently reserved, but I don't know why.
+; I think Yoshifanatic did that when working on v1.3, and I'm sticking to it, ust to be safe.
+
+macro vwf_execute_text_macro(name)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	elseif not(defined("vwf_text_macro_<name>_defined"))
+		error "%vwf_execute_text_macro(): Couldn't find text macro ""<name>""."
+	else
+		!vwf_text_macro_<name>_sequence
+	endif
+endmacro
+
+; RPG Hacker: This one is for internal purposes only. End users should never have a reason to use this.
+macro vwf_text_macro_end()
+	if not(defined("vwf_inside_text_macro"))
+		error "%vwf_text_macro_end() is intended for internal purposes only and should be called automatically by %vwf_register_text_macro()."
+	else
+		!8bit_mode_only db $E7
+		!16bit_mode_only dw $FFE7
+	endif
 endmacro
 
 
@@ -589,7 +1068,7 @@ endmacro
 
 macro textstart()
 	warn "%textstart() macro is deprecated and will disappear in a future version. Please use %vwf_add_messages() instead."
-	%vwf_text_start("vwftable.txt")
+	%vwf_text_start(!vwf_default_table_file)
 endmacro
 
 macro textend()

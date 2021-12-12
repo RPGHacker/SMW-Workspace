@@ -172,7 +172,8 @@ true	= 1
 !16bit_mode_only    = "if !bitmode == BitMode.16Bit :"
 
 !vwf_current_message_name = ""
-!vwf_current_message_id = $FFFF
+!vwf_current_message_asm_name = ""
+!vwf_current_message_id = $10000
 !vwf_header_present = false
 !vwf_current_text_file_id = -1
 
@@ -196,7 +197,13 @@ else
 endif
 
 !cpu_snes = 0
-!cpu_sa1 = 1	
+!cpu_sa1 = 1
+
+if !assembler_ver >= 20000
+	!vwf_default_table_file = "vwftable_utf8.txt"
+else
+	!vwf_default_table_file = "vwftable_ascii.txt"
+endif
 	
 	
 	
@@ -810,8 +817,8 @@ LoadHeader:
 	sta $01
 	lda !vwftextsource+2
 	sta $02
-	!8bit_mode_only lda #$0D
-	!16bit_mode_only lda #$0C
+	!8bit_mode_only lda #$0C
+	!16bit_mode_only lda #$0B
 	sta $03
 	stz $04
 
@@ -873,7 +880,22 @@ LoadHeader:
 
 	lda [$00],y	; Box creation style
 	lsr #4
-	sta !boxcreate
+	and #%00001111
+	sta !boxcreate	
+	
+	lda [$00],y		; Message skip flag
+	and #$02
+	sta !skipmessageflag
+	sta !initialskipmessageflag
+	lda [$00],y		; Message ASM Flag
+	and #$01
+	beq .NoMessageASM
+	lda #$5C
+	bra .StoreMessageASMOpcode
+.NoMessageASM
+	lda #$6B
+.StoreMessageASMOpcode
+	sta !messageasmopcode
 	iny
 
 	lda [$00],y	; Letter color
@@ -962,43 +984,39 @@ LoadHeader:
 	sta $03
 
 .NoSounds
-	lda [$00],y		; Message skip flag
-	and #$02
-	sta !skipmessageflag
-	sta !initialskipmessageflag
-	lda [$00],y		; Message ASM Flag
-	and #$01
-	beq .NoMessageASM
-	iny
-	lda [$00],y
-	xba
-	lda #$5C
-	rep #$21
-	sta !messageasmopcode
-	iny
-	lda [$00],y
-	sta !messageasmopcode+2
-	sep #$20
-	iny
-	lda $03
-	adc #$03
-	sta $03
-.NoMessageASM
-	iny
 	lda !initialskipmessageflag
-	beq .NoMessageSkip
+	beq .NoMessageSkipPointer
 	rep #$21
-	lda [$00],y		; Message skip pointer
+	lda [$00],y		; Message skip location (address)
 	sta !skipmessageloc
 	sep #$20
 	iny
 	iny
-	lda [$00],y		; Message skip pointer
+	lda [$00],y		; Message skip location (bank)
 	sta !skipmessageloc+2
 	lda $03
+	clc
 	adc #$03
 	sta $03
-.NoMessageSkip
+	
+.NoMessageSkipPointer
+	lda !messageasmopcode
+	cmp #$5C
+	bne .NoMessageASMPointer
+	rep #$21
+	lda [$00],y		; Message ASM location (address)
+	sta !messageasmopcode+1
+	sep #$20
+	iny
+	iny
+	lda [$00],y		; Message ASM location (bank)
+	sta !messageasmopcode+3
+	lda $03
+	clc
+	adc #$03
+	sta $03
+
+.NoMessageASMPointer
 	rep #$21
 	lda $00
 	adc $03
@@ -2211,6 +2229,26 @@ endif
 TextCreation:
 	lda !skipmessageflag
 	beq .DontSkip
+	
+	; RPG Hacker: If skipping is enabled, check if we're about to cross the skip location.
+	; If so, disable skipping for the current message. This is so that if someone presses
+	; start after reaching the skip location, it won't loop around and display the skip
+	; text again.
+	lda !vwftextsource
+	cmp !skipmessageloc
+	bne .SkipLocationNotReached
+	lda !vwftextsource+1
+	cmp !skipmessageloc+1
+	bne .SkipLocationNotReached
+	lda !vwftextsource+2
+	cmp !skipmessageloc+2
+	bne .SkipLocationNotReached
+	
+	lda #$00
+	sta !skipmessageflag
+	bra .DontSkip
+	
+.SkipLocationNotReached
 	lda !vwfchar
 	cmp #$ED
 	beq .DontSkip
@@ -2464,8 +2502,8 @@ TextCreation:
 .Routinetable
 	dw .E7_EndTextMacro
 	dw .E8_TextMacro
-	dw .FF_End
-	dw .FF_End
+	dw .FF_End	; Reserved
+	dw .FF_End	; Reserved
 	dw .EB_DoNothing
 	dw .EC_PlayBGM
 	dw .ED_ClearBox
@@ -2495,7 +2533,7 @@ TextCreation:
 	xba
 	jsr HandleVWFStackByte1_Pull
 	rep #$21
-	adc #$0003
+	adc #$0003+!bitmode
 	sta !vwftextsource
 	sep #$20
 	jmp TextCreation
@@ -2510,21 +2548,22 @@ TextCreation:
 	ldy #$01
 	rep #$30
 	lda.b [$00],y
-	cmp #!num_reserved_text_macros
-	bcs ..NotBufferedText
 	sta $0C
 	asl
 	clc
 	adc $0C
+	cmp #!num_reserved_text_macros*3
+	bcs ..NotBufferedText
 	tax
 	lda !vwftbufferedtextpointers,x
 	sta !vwftextsource
 	sep #$30
-	lda.b #!vwftextbuffer>>16
+	lda !vwftbufferedtextpointers+2,x
 	bra +
 
 ..NotBufferedText
-	asl
+	sec
+	sbc #!num_reserved_text_macros*3
 	tax
 	lda.l TextMacroPointers,x
 	sta !vwftextsource
@@ -3732,8 +3771,8 @@ WordWidth:
 .Routinetable
 	dw .E7_EndTextMacro
 	dw .E8_TextMacro
-	dw .FF_End
-	dw .FF_End
+	dw .FF_End	; Reserved
+	dw .FF_End	; Reserved
 	dw .EB_DoNothing
 	dw .EC_PlayBGM
 	dw .ED_ClearBox
@@ -3763,7 +3802,7 @@ WordWidth:
 	xba
 	jsr HandleVWFStackByte2_Pull
 	rep #$21
-	adc #$0002
+	adc #$0002+!bitmode
 	sta !vwftextsource
 	sep #$20
 	jmp .Begin
@@ -3777,21 +3816,22 @@ WordWidth:
 	jsr HandleVWFStackByte2_Push
 	rep #$30
 	lda.b [$00]
-	cmp #!num_reserved_text_macros
-	bcs ..NotBufferedText
 	sta $0C
 	asl
 	clc
 	adc $0C
+	cmp #!num_reserved_text_macros*3
+	bcs ..NotBufferedText
 	tax
 	lda !vwftbufferedtextpointers,x
 	sta !vwftextsource
 	sep #$30
-	lda.b #!vwftextbuffer>>16
+	lda !vwftbufferedtextpointers+2,x
 	bra +
 
 ..NotBufferedText
-	asl
+	sec
+	sbc #!num_reserved_text_macros*3
 	tax
 	lda.l TextMacroPointers,x
 	sta !vwftextsource
@@ -4988,7 +5028,7 @@ incsrc vwfcode.asm
 
 %vwf_add_font("vwffont1.bin", "vwffont1.asm")
 
-%vwf_add_messages("vwfmessages.asm", "vwftable.txt")
+%vwf_add_messages("vwfmessages.asm", !vwf_default_table_file)
 
 
 

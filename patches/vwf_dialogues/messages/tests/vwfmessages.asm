@@ -4,14 +4,7 @@
 
 ; Text macros:
 
-%vwf_register_text_macro("Mario", "db ""Mario""")
-%vwf_register_text_macro("Luigi", "db ""Luigi""")
-%vwf_register_text_macro("Yoshi", "db ""Yoshi""")
-%vwf_register_text_macro("Peach", "db ""Princess Peach""")
-%vwf_register_text_macro("Bowser", "db ""Bowser""")
-%vwf_register_text_macro("Toad", "db ""Toad""")
-%vwf_register_text_macro("SwitchPalace", "db $FD,""- SWITCH PALACE -"",$FD,$FD")
-%vwf_register_text_macro("PointOfAdvice", "db $FD,""-POINT OF ADVICE-"",$FA,$ED")
+%vwf_register_text_macro("Option2Text", %vwf_wrap( %vwf_text("Okayish "), %vwf_set_text_palette($04), %vwf_text("AVERAGE"), %vwf_set_text_palette(!default_text_palette), %vwf_text(" Test") ))
 
 
 ; Messages:
@@ -21,66 +14,59 @@
 
 %vwf_message_start(0050)	; Message 104-1
 
-	%vwf_header()
+	%vwf_header(vwf_x_pos(0), vwf_y_pos(0), vwf_width(15), vwf_height(13), vwf_text_alignment(TextAlignment.Centered))
 	
-.header
-db $00
-db %00000000,%01111111,%01010001,%11000000,$01,%00100000
-dw $7FFF,$0000
-db %11111100
-db %00001111,$13,$13,$23,$29
-db %00000010
-;dl Message0050ASMLoc
-dl .MessageSkipLoc
+	%vwf_change_colors(vwf_get_color_index_2bpp($04, !vwf_text_color_id), vwf_make_color_15(6, 6, 31), vwf_make_color_15(0, 0, 0))
+	%vwf_change_colors(vwf_get_color_index_2bpp($05, !vwf_text_color_id), vwf_make_color_15(6, 31, 6), vwf_make_color_15(0, 0, 0))
+	%vwf_change_colors(vwf_get_color_index_2bpp($06, !vwf_text_color_id), vwf_make_color_15(31, 12, 12), vwf_make_color_15(0, 0, 0))
+	
+if !assembler_ver >= 20000
+	%vwf_set_text_palette($05) : %vwf_text("🐾 👉 Pléäse sèlêct â teßt 👈 🐾") : %vwf_set_text_palette(!default_text_palette) : %vwf_line_break()
+else
+	%vwf_set_text_palette($05) : %vwf_char($00AC) : %vwf_space() : %vwf_text("Please select a test") : %vwf_space() : %vwf_char($00AC) : %vwf_set_text_palette(!default_text_palette) : %vwf_line_break()
+endif
+	
+	%vwf_display_options(TestSelection,
+		%vwf_wrap( %vwf_text("Super "),
+			%vwf_set_text_palette($06), %vwf_text("UBER"),
+			%vwf_set_text_palette(!default_text_palette), %vwf_text(" Test") ),
+		%vwf_execute_text_macro("Option2Text"),
+		%vwf_text("Reserved"),
+		%vwf_text("Reserved"),
+		%vwf_text("Reserved"),
+		%vwf_text("Reserved"),
+		%vwf_text("Reserved"),
+		%vwf_text("Reserved"),
+		%vwf_text("Reserved"),
+		%vwf_text("Reserved"),
+		%vwf_text("Reserved"),
+		%vwf_text("Reserved"))
+		
+	;%vwf_change_colors(-1, $0000)
+	;%vwf_change_colors($100, $0000)
+	;%vwf_change_colors($1A)
+	;%vwf_change_colors($FF, $0000, $0000)
+	;%vwf_change_colors($1A, $0000)
+	;%vwf_change_colors($1A, $10000)
+	;%vwf_change_colors($1A, -1)
+	
+	%vwf_set_option_location(TestSelection, 0)
+	%vwf_set_option_location(TestSelection, 1)
+	%vwf_set_option_location(TestSelection, 2)
+	%vwf_set_option_location(TestSelection, 3)
+	%vwf_set_option_location(TestSelection, 4)
+	%vwf_set_option_location(TestSelection, 5)
+	%vwf_set_option_location(TestSelection, 6)
+	%vwf_set_option_location(TestSelection, 7)
+	%vwf_set_option_location(TestSelection, 8)
+	%vwf_set_option_location(TestSelection, 9)
+	%vwf_set_option_location(TestSelection, 10)
+	%vwf_set_option_location(TestSelection, 11)
+	%vwf_set_option_location(TestSelection, 12)
 
-db "Select a test:",$FD
+	%vwf_set_skip_location()
+		%vwf_text("Thank you for using VWF Dialogues Patch by RPG Hacker!") : %vwf_wait_for_a()
 
-db $F0,$C4
-db $A8
-
-dl ..test_0
-dl ..test_1
-dl ..test_2
-dl ..test_3
-dl ..test_4
-dl ..test_5
-dl ..test_6
-dl ..test_7
-dl ..test_8
-dl ..test_9
-dl ..test_a
-dl ..test_b
-
-db "Reserved",$FD
-db "Reserved",$FD
-db "Reserved",$FD
-db "Reserved",$FD
-db "Reserved",$FD
-db "Reserved",$FD
-db "Reserved",$FD
-db "Reserved",$FD
-db "Reserved",$FD
-db "Reserved",$FD
-db "Reserved",$FD
-db "Reserved",$FD
-
-..test_0
-..test_1
-..test_2
-..test_3
-..test_4
-..test_5
-..test_6
-..test_7
-..test_8
-..test_9
-..test_a
-..test_b
-db "Thank you for using VWF Dialogues Patch by RPG Hacker!",$FA
-
-
-
-.MessageSkipLoc
 	;%vwf_close()
 
 %vwf_message_end()

@@ -143,10 +143,14 @@ endmacro
 %claim_varram(initialskipmessageflag, 1)		; Flag indicating that the current textbox originally had the message skip function enabled. Intended to allow you to revert the state of the other skip message flag if it's been disabled.
 %claim_varram(vwfbufferdest, 3)				; 24-bit pointer to the location in the tile buffer to read from when uploading text graphics.
 %claim_varram(vwfbufferindex, 1)			; Index to the text graphics buffer determining where in the buffer to store tiles.
-%claim_varram(vwfstackindex1, 1)			; Stack pointer for the first VWF stack 
-%claim_varram(vwfstackindex2, 1)			; Stack pointer for the second VWF stack 
-%claim_varram(vwfstack1, 60)				; Used by the text macro system to store/reload text pointers.
-%claim_varram(vwfstack2, 60)				; Used by the text macro system to store/reload text pointers.
+
+; RPG Hacker: Make sure both of these stacks have the same size. Stack 1 will be copied into stack 2 at run-time.
+!vwf_text_macro_stack_size = 60
+%claim_varram(vwfstackindex1, 1)						; Defines a stack of text pointers for the text macro system (to support nested macros)
+%claim_varram(vwfstack1, !vwf_text_macro_stack_size)	; 
+%claim_varram(vwfstackindex2, 1)						; Same as above, but for the WordWidth function.
+%claim_varram(vwfstack2, !vwf_text_macro_stack_size)	;
+
 %claim_varram(vwftbufferedtextpointerindex, 1)		; Index for the which 24-bit buffered text macro pointer should be updated.
 %claim_varram(vwftbufferedtextindex, 2)			; 16-bit index into the text buffer, used for handling where to write in the table for consecuative text buffers.
 %claim_varram(vwftbufferedtextpointers, !num_reserved_text_macros*3)	; 24-bit pointer table for the buffered text macros.
@@ -3744,6 +3748,35 @@ GetZeros:
 
 
 WordWidth:
+	; RPG Hacker: In order to make this function work reliably with the text macro system,
+	; we need to make a copy of the current text macro stack whenever we call it.
+	; I tested using a simple loop for this, because text macro stacks of more than one
+	; element should be rare, and simple loops sound like they should be faster for few iterations.
+	; However, in my testing, the MVN solution turned out to be faster even for simple stacks.
+	lda !vwfstackindex1
+	sta !vwfstackindex2
+	beq .NoStackCopy
+	
+	xba
+	lda.b #$00
+	xba
+	
+	rep #$30
+	
+	dec		; -1 because of how MVN works
+	
+	ldx.w #!vwfstack1
+	ldy.w #!vwfstack2
+	
+	phb
+	mvn bank(!vwfstack2), bank(!vwfstack1)
+	plb
+	
+	sep #$30
+	
+.NoStackCopy
+
+.GetFont
 	!8bit_mode_only jsr GetFont
 
 .Begin
@@ -3856,7 +3889,7 @@ WordWidth:
 	lda [$00]
 	sta !font
 	jsr IncPointer
-	jmp WordWidth
+	jmp .GetFont
 
 .F3_ChangePalette
 	jsr IncPointer
@@ -3986,7 +4019,7 @@ WordWidth:
 	lda.b #!vwfroutine>>16
 	sta !vwftextsource+2
 
-	jmp WordWidth
+	jmp .GetFont
 
 .EC_PlayBGM
 .F8_TextSpeed

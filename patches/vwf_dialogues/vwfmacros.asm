@@ -121,9 +121,6 @@ Pointers:
 	undef "temp_num_gaps"
 
 TextMacroPointers:
-	;; RPG Hacker: Some text macros are reserved for buffered text, so pad with magic hex.
-	;rep !num_reserved_text_macros : dl $00DEAD
-	
 	!temp_i #= 0
 	while !temp_i < !vwf_num_text_macros
 		dl TextMacro!temp_i
@@ -657,9 +654,6 @@ endmacro
 
 
 ; Message command macros
-
-; RPG Hacker: IMPORTANT: Adjust this define when adding any new commands to the patch!
-!vwf_lowest_reserved_hex = $FFE7
 
 macro vwf_print_message_command_error()
 	error "Message content macros can only be called inside a message body (i.e. after a call to %vwf_header() and before a call to %vwf_message_end()) or text macro."

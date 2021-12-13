@@ -1,6 +1,6 @@
 @echo off
 
-.\..\..\..\tools\bsnes-plus-073.2-x64\bsnes-accuracy.exe .\patched.smc
+.\..\..\..\tools\bsnes-plus-v05.87-master\bsnes-accuracy.exe .\patched.smc
 
 echo.
 

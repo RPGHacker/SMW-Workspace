@@ -204,9 +204,12 @@ if !assembler_ver >= 20000
 else
 	!vwf_default_table_file = "vwftable_ascii.txt"
 endif
-	
-	
-	
+
+; RPG Hacker: IMPORTANT: Adjust this define when adding any new commands to the patch!
+!vwf_lowest_reserved_hex = $FFE7
+
+
+
 incsrc vwfmacros.asm
 
 
@@ -2483,16 +2486,16 @@ TextCreation:
 	lda [$00]
 	sta !vwfchar
 	!16bit_mode_only inc $00
-	!8bit_mode_only cmp #$E7
-	!16bit_mode_only cmp #$FFE7
+	!8bit_mode_only cmp.b #!vwf_lowest_reserved_hex
+	!16bit_mode_only cmp.w #!vwf_lowest_reserved_hex
 	bcs .Jump
 	!16bit_mode_only sep #$20
 	jmp .WriteLetter
 
 .Jump
 	sec
-	!8bit_mode_only sbc #$E7
-	!16bit_mode_only sbc #$FFE7
+	!8bit_mode_only sbc.b #!vwf_lowest_reserved_hex
+	!16bit_mode_only sbc.w #!vwf_lowest_reserved_hex
 	!16bit_mode_only sep #$20
 	asl
 	tax
@@ -2533,7 +2536,7 @@ TextCreation:
 	xba
 	jsr HandleVWFStackByte1_Pull
 	rep #$21
-	adc #$0003+!bitmode
+	adc #$0003
 	sta !vwftextsource
 	sep #$20
 	jmp TextCreation
@@ -2565,10 +2568,10 @@ TextCreation:
 	sec
 	sbc #!num_reserved_text_macros*3
 	tax
-	lda.l TextMacroPointers,x
+	lda TextMacroPointers,x
 	sta !vwftextsource
 	sep #$30
-	lda.b TextMacroPointers+2,x
+	lda TextMacroPointers+2,x
 +
 	sta !vwftextsource+2
 	jmp TextCreation
@@ -3748,8 +3751,8 @@ WordWidth:
 	!16bit_mode_only rep #$20
 	lda [$00]
 	sta !vwfchar
-	!8bit_mode_only cmp #$E7
-	!16bit_mode_only cmp #$FFE7
+	!8bit_mode_only cmp.b #!vwf_lowest_reserved_hex
+	!16bit_mode_only cmp.w #!vwf_lowest_reserved_hex
 	bcs .Jump
 	!16bit_mode_only sep #$20
 	!16bit_mode_only jsr IncPointer
@@ -3758,8 +3761,8 @@ WordWidth:
 
 .Jump
 	sec
-	!8bit_mode_only sbc #$E7
-	!16bit_mode_only sbc #$FFE7
+	!8bit_mode_only sbc.b #!vwf_lowest_reserved_hex
+	!16bit_mode_only sbc.w #!vwf_lowest_reserved_hex
 	!16bit_mode_only sep #$20
 	asl
 	tax
@@ -3802,7 +3805,7 @@ WordWidth:
 	xba
 	jsr HandleVWFStackByte2_Pull
 	rep #$21
-	adc #$0002+!bitmode
+	adc #$0002
 	sta !vwftextsource
 	sep #$20
 	jmp .Begin
@@ -3833,10 +3836,10 @@ WordWidth:
 	sec
 	sbc #!num_reserved_text_macros*3
 	tax
-	lda.l TextMacroPointers,x
+	lda TextMacroPointers,x
 	sta !vwftextsource
 	sep #$30
-	lda.b TextMacroPointers+2,x
+	lda TextMacroPointers+2,x
 +
 	sta !vwftextsource+2
 	jmp .Begin

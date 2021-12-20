@@ -39,7 +39,7 @@ function vwf_make_color_15(red, green, blue) = (red&%11111)|((green&%11111)<<5)|
 function vwf_get_color_index_2bpp(palette, id) = (palette*4)+id
 
 !vwf_text_color_id = 2
-!vwf_bg_color_id = 2
+!vwf_outline_color_id = 3
 
 
 
@@ -60,9 +60,9 @@ macro vwf_add_font(gfx_file, width_table_file)
 	%vwf_next_bank()
 
 	Font!vwf_num_fonts:
-	incbin <gfx_file>
+	incbin "<gfx_file>"
 	.Width
-	incsrc <width_table_file>
+	incsrc "<width_table_file>"
 
 	; RPG Hacker: Hack: If we define another font, increase the maximum for our setter.
 	!vwf_header_argument_0_maximum #= !vwf_num_fonts
@@ -73,7 +73,7 @@ endmacro
 macro vwf_add_messages(messages_file, table_file)
 	%vwf_text_start(<table_file>)
 	
-	incsrc <messages_file>
+	incsrc "<messages_file>"
 	
 	%vwf_text_end()
 endmacro
@@ -313,7 +313,7 @@ macro vwf_define_header_setter_sound(name)
 	%vwf_set_header_arg_property(!vwf_header_num_setters, "index", !vwf_header_num_setters)
 	%vwf_set_header_arg_property(!vwf_header_num_setters, "type", 1)
 	
-	function vwf_<name>(sound_id, sound_bank) = (!vwf_header_num_setters<<24)|((sound_id&$FF)<<16)|(sound_bank&$FFFF)
+	function vwf_<name>(sound_bank, sound_id) = (!vwf_header_num_setters<<24)|((sound_id&$FF)<<16)|(sound_bank&$FFFF)
 	
 	!vwf_header_num_setters #= !vwf_header_num_setters+1
 endmacro
@@ -464,7 +464,7 @@ macro vwf_verfiy_default_arguments()
 			!temp_id_value #= !{!{temp_id_define_name}}
 			!temp_bank_value #= !{!{temp_bank_define_name}}
 			
-			!temp_packed_value #= vwf_!temp_name(!temp_id_value, !temp_bank_value)&$FFFFFF
+			!temp_packed_value #= vwf_!temp_name(!temp_bank_value, !temp_id_value)&$FFFFFF
 			
 			undef "temp_id_value"
 			undef "temp_bank_value"
@@ -518,7 +518,7 @@ endstruct
 %vwf_define_header_setter_generic("box_animation", false, !vwf_enum_BoxAnimation_first, !vwf_enum_BoxAnimation_last)
 %vwf_define_header_setter_generic("text_palette", true, $00, $07)
 %vwf_define_header_setter_generic("text_color", true, vwf_make_color_15(0,0,0), vwf_make_color_15(31,31,31))
-%vwf_define_header_setter_generic("bg_color", true, vwf_make_color_15(0,0,0), vwf_make_color_15(31,31,31))
+%vwf_define_header_setter_generic("outline_color", true, vwf_make_color_15(0,0,0), vwf_make_color_15(31,31,31))
 
 %vwf_define_header_setter_generic("space_width", false, 0, 16)
 %vwf_define_header_setter_generic("text_margin", false, 0, 7)
@@ -599,7 +599,7 @@ macro vwf_header(...)
 		; $aaaa    Text palette's third color (text color)
 		; $bbbb    Text palette's fourth color (outlines color)
 		dw !vwf_header_argument_text_color_value
-		dw !vwf_header_argument_bg_color_value
+		dw !vwf_header_argument_outline_color_value
 		
 		; db %abbbcd-e
 		; %a:      Freeze gameplay
@@ -666,7 +666,7 @@ macro vwf_char(value)
 		%vwf_print_message_command_error()
 	else
 		if !bitmode == BitMode.8Bit
-			if <value> >= (!vwf_lowest_reserved_hex&$FF)
+			if <value> >= !vwf_lowest_reserved_hex&$FF
 				db $F4
 			endif
 			db <value>
@@ -765,7 +765,7 @@ endmacro
 macro vwf_wait_frames(num_frames)
 	if !vwf_message_command_error_condition
 		%vwf_print_message_command_error()
-	elseif <num_frames> < $00 || <num_frames > $FF	
+	elseif <num_frames> < $00 || <num_frames> > $FF	
 		error "%vwf_wait_frames() only supports values between ",dec($00)," and ",dec($FF)" (current: ",dec(<num_frames>),")."
 	else
 		!8bit_mode_only db $F9
@@ -777,7 +777,7 @@ endmacro
 macro vwf_set_text_speed(text_speed)
 	if !vwf_message_command_error_condition
 		%vwf_print_message_command_error()
-	elseif <text_speed> < $00 || <text_speed > $FF	
+	elseif <text_speed> < $00 || <text_speed> > $FF	
 		error "%vwf_set_text_speed() only supports values between ",dec($00)," and ",dec($FF)" (current:",dec(<text_speed>)")."
 	else
 		!8bit_mode_only db $F8
@@ -793,14 +793,14 @@ macro vwf_decimal(address, ...)
 		%vwf_print_message_command_error()
 	else
 		!temp_address_size = AddressSize.8Bit
-		!temp_leading_zeroes = 0
+		!temp_leading_zeroes = false
 		
-		if sizeof(...) > 1
-			!temp_address_size = <1>
+		if sizeof(...) > 0
+			!temp_address_size = <0>
 		endif
 		
-		if sizeof(...) > 2
-			!temp_leading_zeroes = <2>
+		if sizeof(...) > 1
+			!temp_leading_zeroes = <1>
 		endif
 		
 		if !temp_address_size < !vwf_enum_AddressSize_first || !temp_address_size > !vwf_enum_AddressSize_last
@@ -814,7 +814,9 @@ macro vwf_decimal(address, ...)
 		!8bit_mode_only db $F7
 		!16bit_mode_only dw $FFF7
 		dl <address>
-		db (!temp_address_size<<4)|!temp_leading_zeroes
+		; RPG Hacker: For some reason, I decided to reverse the "leading zeroes" bit back when I wrote the patch...
+		; What a sussy baka.
+		db (!temp_address_size<<4)|not(!temp_leading_zeroes)
 		
 		undef "temp_address_size"
 		undef "temp_leading_zeroes"
@@ -942,9 +944,9 @@ macro vwf_setup_teleport(destination_level_or_entrance, is_secondary, midway_or_
 		%vwf_print_message_command_error()
 	elseif <is_secondary> != true && <is_secondary> != false
 		error "%vwf_setup_teleport(): is_secondary needs to be either true or false."
-	elseif <is_secondary> == false && (<destination_level_or_entrance> < $000 || <destination_level_or_entrance> > $1FF)
+	elseif <is_secondary> == false && or(less(<destination_level_or_entrance>, $000), greater(<destination_level_or_entrance>, $1FF))
 		error "%vwf_setup_teleport(): destination_level must be a number between $000 and $1FF (current: $",hex(<destination_level_or_entrance>),")."
-	elseif <is_secondary> == true && (<destination_level_or_entrance> < $0000 || <destination_level_or_entrance> > $1FFF)
+	elseif <is_secondary> == true && or(less(<destination_level_or_entrance>, $0000), greater(<destination_level_or_entrance>, $1FFF))
 		error "%vwf_setup_teleport(): destination_entrance must be a number between $0000 and $1FFF (current: $",hex(<destination_level_or_entrance>),")."
 	elseif <midway_or_water_level> != true && <midway_or_water_level> != false
 		error "%vwf_setup_teleport(): midway_or_water_level needs to be either true or false."
@@ -996,8 +998,8 @@ endmacro
 macro vwf_play_bgm(bgm_id)
 	if !vwf_message_command_error_condition
 		%vwf_print_message_command_error()
-	elseif <bgm_id> < 0 || <bgm_id> > !vwf_num_fonts-1
-		error "%vwf_play_bgm() only supports values between $00 and $FF (current: $",hex(<bgm_id>)")."
+	elseif <bgm_id> < $00 || <bgm_id> > $FF
+		error "%vwf_play_bgm() only supports values between $00 and $FF (current: $",hex(<bgm_id>),")."
 	else
 		!8bit_mode_only db $EC
 		!16bit_mode_only dw $FFEC
@@ -1050,14 +1052,14 @@ endmacro
 macro binary(identifier, data)
 	warn "%binary() macro is deprecated and will disappear in a future version. Please use %vwf_add_font() or %vwf_add_messages() instead."
 	<identifier>:
-	incbin <data>
+	incbin "<data>"
 endmacro
 
 
 macro source(identifier, data)
 	warn "%source() macro is deprecated and will disappear in a future version. Please use %vwf_add_font() or %vwf_add_messages() instead."
 	<identifier>:
-	incsrc <data>
+	incsrc "<data>"
 endmacro
 
 macro textstart()

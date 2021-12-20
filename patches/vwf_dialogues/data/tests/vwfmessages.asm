@@ -4,7 +4,8 @@
 
 ; Text macros:
 
-%vwf_register_text_macro("Option2Text", %vwf_wrap( %vwf_text("Okayish "), %vwf_set_text_palette($04), %vwf_text("AVERAGE"), %vwf_set_text_palette(!default_text_palette), %vwf_text(" Test") ))
+%vwf_register_text_macro("Option2Text", %vwf_wrap( %vwf_set_text_palette($05), %vwf_char($00AC), %vwf_text(" "), %vwf_set_text_palette($04), %vwf_text("Message Boxes"), %vwf_set_text_palette(!default_text_palette), %vwf_text(" Test") ))
+%vwf_register_text_macro("Option3Text", %vwf_set_text_palette($05), %vwf_char($00AC), %vwf_text(" "), %vwf_set_text_palette($05), %vwf_text("Pointers"), %vwf_set_text_palette(!default_text_palette), %vwf_text(" Test") )
 
 
 ; Messages:
@@ -21,19 +22,25 @@
 	%vwf_change_colors(vwf_get_color_index_2bpp($06, !vwf_text_color_id), vwf_make_color_15(31, 12, 12), vwf_make_color_15(0, 0, 0))
 	
 if !assembler_ver >= 20000
-	%vwf_set_text_palette($05) : %vwf_text("🐾 👉 Pléäse sèlêct â teßt 👈 🐾") : %vwf_set_text_palette(!default_text_palette) : %vwf_line_break()
+	%vwf_set_text_palette($05) : %vwf_text("🐾") : %vwf_space()
+	%vwf_set_text_palette(!default_text_palette) : %vwf_text("👉 Pléäse sèlêct â teßt 👈") : %vwf_space()
+	%vwf_set_text_palette($05) : %vwf_text("🐾")
+	%vwf_set_text_palette(!default_text_palette) : %vwf_line_break()
 else
-	%vwf_set_text_palette($05) : %vwf_char($00AC) : %vwf_space() : %vwf_text("Please select a test") : %vwf_space() : %vwf_char($00AC) : %vwf_set_text_palette(!default_text_palette) : %vwf_line_break()
+	%vwf_set_text_palette($05) : %vwf_char($00AC) : %vwf_space()
+	%vwf_set_text_palette(!default_text_palette) : %vwf_text("Please select a test") : %vwf_space()
+	%vwf_set_text_palette($05) : %vwf_char($00AC)
+	%vwf_set_text_palette(!default_text_palette) : %vwf_line_break()
 endif
 	
 	%vwf_display_options(TestSelection,
-		%vwf_wrap( %vwf_text("Super "),
-			%vwf_set_text_palette($06), %vwf_text("UBER"),
+		%vwf_wrap( %vwf_set_text_palette($05), %vwf_char($00AC), %vwf_text(" "),
+			%vwf_set_text_palette($06), %vwf_text("Commands"),
 			%vwf_set_text_palette(!default_text_palette), %vwf_text(" Test") ),
 		%vwf_execute_text_macro("Option2Text"),
-		%vwf_text("Reserved"),
-		%vwf_text("Reserved"),
-		%vwf_text("Reserved"),
+		%vwf_execute_text_macro("Option3Text"),
+		%vwf_wrap( %vwf_set_text_palette($05), %vwf_char($00AC), %vwf_set_text_palette(!default_text_palette), %vwf_text(" Teleport Test") ),
+		%vwf_wrap( %vwf_set_text_palette($05), %vwf_char($00AC), %vwf_set_text_palette(!default_text_palette), %vwf_text(" Change Appearance Test") ),
 		%vwf_text("Reserved"),
 		%vwf_text("Reserved"),
 		%vwf_text("Reserved"),
@@ -51,9 +58,83 @@ endif
 	;%vwf_change_colors($1A, -1)
 	
 	%vwf_set_option_location(TestSelection, 0)
+		%vwf_text("This is a line.") : %vwf_line_break()
+		%vwf_text("This is a new line.") : %vwf_line_break()
+		%vwf_text("Now some text...") : %vwf_wait_frames(60) : %vwf_text(" with a long pause.") : %vwf_wait_frames(30) : %vwf_line_break()
+		%vwf_set_text_speed(5) : %vwf_text("This text appears very slowly.") : %vwf_set_text_speed(0) : %vwf_line_break()
+		%vwf_wait_for_a() : %vwf_clear()
+		
+		%vwf_text("Time for some numbers!") : %vwf_line_break()
+		%vwf_text("Mario's current coins: ") : %vwf_decimal($7E0DBF, AddressSize.8Bit, true) : %vwf_line_break()
+		%vwf_text("Mario's X pos: ") : %vwf_decimal($7E00D1, AddressSize.16Bit) : %vwf_line_break()
+		%vwf_text("Current X speed (unsigned dec): ") : %vwf_decimal($7E007B) : %vwf_line_break()
+		%vwf_text("Current X speed (hex): $") : %vwf_hex($7E007B) : %vwf_line_break()
+		%vwf_text("Current text box color : $") : %vwf_hex(!boxcolor+1) : %vwf_hex(!boxcolor) : %vwf_line_break()
+		%vwf_text("Current timer: ") : %vwf_char_at_address($7E0F31) : %vwf_char_at_address($7E0F32) : %vwf_char_at_address($7E0F33) : %vwf_line_break()
+		%vwf_wait_for_a() : %vwf_clear()
+		
+		%vwf_text("ThisLongTextDoesContain") : %vwf_char(' ') : %vwf_text("ANonBreakingSpace") : %vwf_line_break()
+		%vwf_wait_for_a() : %vwf_clear()	
+		
+		%vwf_change_colors(vwf_get_color_index_2bpp($06, !vwf_text_color_id), vwf_make_color_15(31, 24, 2), vwf_make_color_15(0, 0, 0))
+		%vwf_text("Have some text in a ") : %vwf_set_text_palette($06) : %vwf_text("different color ") : %vwf_set_text_palette(!default_text_palette) : %vwf_text("- hooray!") : %vwf_line_break()
+		%vwf_wait_for_a() : %vwf_clear()
+		
+		%vwf_set_font($01)
+		
+		pushtable
+		cleartable
+		table "vwftable_font2.txt"
+		%vwf_text("Here's some text in a different font.") : %vwf_line_break()
+		pulltable
+		
+		%vwf_set_font(!default_font)
+		%vwf_text("And now back to the default.") : %vwf_line_break()
+		%vwf_wait_for_a() : %vwf_clear()
+		
+		%vwf_text("How about a different song?") : %vwf_line_break()
+		%vwf_play_bgm($05)
+		%vwf_wait_for_a()
+		%vwf_play_bgm($02)
+		%vwf_clear()
+		
+		%vwf_text("Commands test complete!") : %vwf_line_break()
+		%vwf_wait_for_a()
+	
+		%vwf_close()
+		
 	%vwf_set_option_location(TestSelection, 1)
+		%vwf_display_message(0000)
+		%vwf_close()
+		
 	%vwf_set_option_location(TestSelection, 2)
+		%vwf_close()
+		
 	%vwf_set_option_location(TestSelection, 3)
+		%vwf_text("Where to go?") : %vwf_line_break()
+	
+		%vwf_display_options(TeleportDestination,
+			%vwf_text("Level $0105 (Start)"),
+			%vwf_text("Level $0105 (Midway)"),
+			%vwf_text("Secondary Entrance $01CB"),
+			%vwf_text("Secondary Entrance $01CB (Water)"))			
+		
+		%vwf_set_option_location(TeleportDestination, 0)
+			%vwf_setup_teleport($0105, false, false)
+			%vwf_close()
+			
+		%vwf_set_option_location(TeleportDestination, 1)
+			%vwf_setup_teleport($0105, false, true)
+			%vwf_close()
+			
+		%vwf_set_option_location(TeleportDestination, 2)
+			%vwf_setup_teleport($01CB, true, false)
+			%vwf_close()
+			
+		%vwf_set_option_location(TeleportDestination, 3)
+			%vwf_setup_teleport($01CB, true, true)
+			%vwf_close()
+		
 	%vwf_set_option_location(TestSelection, 4)
 	%vwf_set_option_location(TestSelection, 5)
 	%vwf_set_option_location(TestSelection, 6)
@@ -75,7 +156,13 @@ endif
 
 %vwf_message_start(0000)	; Message 000-1
 
-	; Message header & text go here
+	%vwf_header(vwf_x_pos(1), vwf_y_pos(1), vwf_width(14), vwf_height(3), vwf_text_alignment(TextAlignment.Left))
+	
+	%vwf_text("A relatively standard text box!") : %vwf_line_break()
+	%vwf_text("x: 1, y: 1, w: 14, h: 3, alignment: left")
+	%vwf_wait_for_a()
+	
+	%vwf_display_message(0001)
 
 %vwf_message_end()
 
@@ -83,7 +170,17 @@ endif
 
 %vwf_message_start(0001)	; Message 000-2
 
-	; Message header & text go here
+	%vwf_header(vwf_x_pos(3), vwf_y_pos(10), vwf_width(12), vwf_height(5), vwf_text_alignment(TextAlignment.Centered), vwf_font($01), vwf_text_palette($06), vwf_text_color(vwf_make_color_15(0, 0, 0)), vwf_outline_color(vwf_make_color_15(31, 31, 31)))
+	
+	pushtable
+	cleartable
+	table "vwftable_font2.txt"
+	%vwf_text("Here's one with font + color switched.") : %vwf_line_break()
+	%vwf_text("x: 3, y: 10, w: 12, h: 5, alignment: centered, font: $01, text palette: $06, text color: black, outline color: white")
+	pulltable
+	%vwf_wait_for_a()
+	
+	%vwf_display_message(0002)
 
 %vwf_message_end()
 
@@ -91,7 +188,13 @@ endif
 
 %vwf_message_start(0002)	; Message 001-1
 
-	; Message header & text go here
+	%vwf_header(vwf_text_alignment(TextAlignment.Left), vwf_space_width(15), vwf_text_margin(0), vwf_text_speed(5), vwf_button_speedup(false), vwf_enable_skipping(false))
+	
+	%vwf_text("Weird spacing and slow, unskippable text. x)") : %vwf_line_break()
+	%vwf_text("alignment: left, space width: 15, text margin: 0, text speed: 5, button speedup: false, enable skipping: false")
+	%vwf_wait_for_a()
+	
+	%vwf_display_message(0003)
 
 %vwf_message_end()
 
@@ -99,7 +202,18 @@ endif
 
 %vwf_message_start(0003)	; Message 001-2
 
-	; Message header & text go here
+	%vwf_header(vwf_height(5), vwf_freeze_game(false), vwf_auto_wait(AutoWait.None))
+
+	%vwf_text("Here's one with lots and lots of text and no auto-wait. Although you can move around in the meantime. Enjoy!") : %vwf_wait_for_a() : %vwf_clear()
+	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
+	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
+	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
+	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
+	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
+	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
+	%vwf_wait_for_a()
+	
+	%vwf_display_message(0004)
 
 %vwf_message_end()
 
@@ -107,7 +221,18 @@ endif
 
 %vwf_message_start(0004)	; Message 002-1
 
-	; Message header & text go here
+	%vwf_header(vwf_height(5), vwf_freeze_game(false), vwf_auto_wait(AutoWait.WaitFrames.60))
+
+	%vwf_text("Same as last one, but with automatic wait frames.") : %vwf_wait_for_a() : %vwf_clear()
+	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
+	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
+	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
+	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
+	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
+	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
+	%vwf_wait_for_a()
+	
+	%vwf_display_message(0005)
 
 %vwf_message_end()
 
@@ -115,7 +240,13 @@ endif
 
 %vwf_message_start(0005)	; Message 002-2
 
-	; Message header & text go here
+	%vwf_header(vwf_enable_sfx(false))
+
+	%vwf_text("A silent text box all of a sudden. This is scaaaaaaaary!") : %vwf_line_break()
+	%vwf_text("enable sfx: false")
+	%vwf_wait_for_a()
+	
+	%vwf_display_message(0006)
 
 %vwf_message_end()
 
@@ -123,7 +254,21 @@ endif
 
 %vwf_message_start(0006)	; Message 003-1
 
-	; Message header & text go here
+	%vwf_header(vwf_letter_sound($1DFC, 03), vwf_wait_sound($1DFA, 01), vwf_cursor_sound($1DF9, 02), vwf_continue_sound($1DFC, 08))
+
+	%vwf_text("Now this one uses all kinds of funny sound effects all of a sudden!") : %vwf_wait_for_a() : %vwf_clear()
+	%vwf_text("So damn funny, ahahaha! Isn't it? :'D") : %vwf_wait_for_a() : %vwf_clear()	
+	
+	%vwf_display_options(AreSoundsFunny,
+		%vwf_text("Very funny, indeed!"),
+		%vwf_text("Sure..."))
+	
+	%vwf_set_option_location(AreSoundsFunny, 0)
+	%vwf_set_option_location(AreSoundsFunny, 1)	
+		%vwf_text("letter sound: vine, wait sound: jump, cursor sound: spin jump contact, continue sound: springboard")
+		%vwf_wait_for_a()
+	
+	%vwf_display_message(0007)
 
 %vwf_message_end()
 
@@ -131,7 +276,9 @@ endif
 
 %vwf_message_start(0007)	; Message 003-2
 
-	; Message header & text go here
+	%vwf_header()
+
+	%vwf_text("Message box test complete!") : %vwf_wait_for_a()
 
 %vwf_message_end()
 

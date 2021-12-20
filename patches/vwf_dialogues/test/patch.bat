@@ -14,7 +14,7 @@ IF %ERRORLEVEL% NEQ 0 (
 	echo.
 )
 
-.\..\..\..\tools\asar\asar.exe --symbols=wla --symbols-path=".\patched.cpu.sym" -I".\..\messages\tests" .\..\vwf_dialogues.asm .\patched.smc
+.\..\..\..\tools\asar\asar.exe --symbols=wla --symbols-path=".\patched.cpu.sym" -I".\..\data\tests" -I".\..\fonts\Terranigma (E)" .\..\vwf_dialogues.asm .\patched.smc
 
 echo.
 

@@ -5059,17 +5059,9 @@ incsrc vwfcode.asm
 
 %vwf_first_bank()
 
-;-------------------------------------------------------------
-; INSERT FONT & TEXT DATA BELOW!
+MainDataStart:
+incsrc vwfdata.asm
 
-%vwf_add_font("vwffont1.bin", "vwffont1.asm")
-
-%vwf_add_messages("vwfmessages.asm", !vwf_default_table_file)
-
-
-
-; FONT & TEXT DATA END
-;-------------------------------------------------------------
 
 ; RPG Hacker: Would prefer to call this in vwfmacros.asm, but that
 ; would throw an error on !default_font, because it wouldn't know

@@ -53,15 +53,20 @@ endmacro
 
 %claim_varram(vwfmode, 1)				; Contains the current state of the text box.
 %claim_varram(message, 2)				; The 16-bit message number to display
+
+%claim_varram(boxbg, 1)
+%claim_varram(boxcolor, 6)
+%claim_varram(boxframe, 1)
+
+; RPG Hacker: RAM addresses defined above this point won't automatically get cleared on opening message boxes.
+!vwf_ram_clear_start_pos #= !varrampos
+
 %claim_varram(counter, 1)
 
 %claim_varram(width, 1)
 %claim_varram(height, 1)
 %claim_varram(xpos, 1)
 %claim_varram(ypos, 1)
-%claim_varram(boxbg, 1)
-%claim_varram(boxcolor, 6)
-%claim_varram(boxframe, 1)
 %claim_varram(boxcreate, 1)
 %claim_varram(boxpalette, 1)
 %claim_varram(freezesprites, 1)				; Flag indicating that the textbox has frozen all sprites.
@@ -483,6 +488,7 @@ FreecodeStart:
 
 InitCall:
 	jsr InitRAM	; RAM init on game start
+	jsr InitDefaults
 	lda #$03
 	sta $2101
 	jml remap_rom($008069)
@@ -491,41 +497,21 @@ InitCall:
 
 InitMode:
 	jsr InitRAM	; RAM init on Title Screen
+	jsr InitDefaults
 	ldx #$07
 	lda #$FF
 	jml remap_rom($0096B8)
 
-InitVWFRAM:
-	lda !vwfmode					;\ Preserve these RAM addresses so they don't get wiped out when initializing the VWF RAM
-	pha						;| This routine is called in VWF mode 01 when the message is already active.
-	lda !message					;|
-	pha						;|
-	lda !message+1					;|
-	pha						;/
-	jsr InitRAM					;
-	pla						;
-	sta !message+1					;
-	pla						;
-	sta !message					;
-	pla						;
-	inc						;
-	sta !vwfmode					;
-	jmp Buffer_End					;
 
-InitRAM:
-	phx
-	rep #$30
-	ldx #$0000
-	lda #$0000
 
-.InitVarRAM
-	sta !varram,x	; Initialize RAM
-	inx #2
-	cpx #!varrampos	; Number of bytes
-	bcc .InitVarRAM
-	sep #$30
+; RPG Hacker: This routine is for initializing values that shouldn't be reset on opening a message box.
+; Things like border or color settings, that should persist between text boxes.
+InitDefaults:
+	lda #$00
+	sta !vwfmode
+	sta !message
+	sta !message+1
 
-.SetDefaults
 	lda #!defbg	; Set default values
 	sta !boxbg
 	lda #!defframe
@@ -535,6 +521,30 @@ InitRAM:
 	sta !boxcolor
 	lda.b #!bgcolor>>8
 	sta !boxcolor+1
+	rts
+	
+	
+
+InitVWFRAM:
+	jsr InitRAM
+	lda !vwfmode
+	inc
+	sta !vwfmode
+	jmp Buffer_End
+
+InitRAM:
+	phx
+	rep #$30
+	ldx #$0000
+	lda #$0000
+
+.InitVarRAM
+	sta !varram+!vwf_ram_clear_start_pos,x	; Initialize RAM
+	inx #2
+	cpx #!varrampos-!vwf_ram_clear_start_pos	; Number of bytes
+	bcc .InitVarRAM
+	sep #$30
+	
 	lda #$6B
 	sta !messageasmopcode
 .End
@@ -1001,6 +1011,7 @@ LoadHeader:
 	iny
 	lda [$00],y		; Message skip location (bank)
 	sta !skipmessageloc+2
+	iny
 	lda $03
 	clc
 	adc #$03
@@ -1018,6 +1029,7 @@ LoadHeader:
 	iny
 	lda [$00],y		; Message ASM location (bank)
 	sta !messageasmopcode+3
+	iny
 	lda $03
 	clc
 	adc #$03
@@ -3125,6 +3137,37 @@ endif
 	sta !vwfmode
 	lda #$01
 	sta !clearbox
+	
+	; RPG Hacker: Backwards compatibility code. Uses a magic hex to determine
+	; if this is the new command format. Can be removed once version 1.3 has
+	; been released for a considerable amount of time.
+	lda !message
+	and !message+1
+	cmp #$FF
+	bne .Legacy
+	
+	iny
+	lda [$00],y
+	sta !message
+	iny
+	lda [$00],y
+	sta !message+1
+	iny
+	lda [$00],y		; Settings
+	
+	beq .Legacy	
+	
+	lda !vwfmode	
+	dec #2
+	sta !vwfmode
+	
+	jsr BufferGraphics_Start
+	jsr GetMessage
+	jsr LoadHeader
+	jsr InitBoxColors
+	jmp BufferWindow
+	
+.Legacy
 	jsr BufferGraphics_Start
 	jmp VWFInit
 
@@ -4357,7 +4400,17 @@ SetupColor:
 .Backup
 	%dmatransfer(!dma_channel_nmi,!dma_read_twice,$213B,!palettebackupram,#$0040)
 	%mvntransfer($0040, !palettebackupram, !palbackup, !cpu_snes)
+	
+	jsr InitBoxColors
 
+.End
+	lda !vwfmode
+	inc
+	sta !vwfmode
+	jmp VBlank_End
+	
+	
+InitBoxColors:
 	lda !boxpalette	; Set BG and letter color
 	asl #2
 	inc
@@ -4389,18 +4442,13 @@ SetupColor:
 	asl
 	phx
 	tax
-	phk
-	pla
+	lda.b #bank(Palettes+2)
 	sta $02
-	lda #$08
-	sta $211B
-	stz $211B
-	stz $211C
+	lda #$00
+	xba
 	lda !boxframe
-	sta $211C
-	nop
 	rep #$21
-	lda $2134
+	asl #3
 	adc.w #Palettes+2
 	sta $00
 	sep #$20
@@ -4417,12 +4465,8 @@ SetupColor:
 
 	lda #$01
 	sta !paletteupload
-
-.End
-	lda !vwfmode
-	inc
-	sta !vwfmode
-	jmp VBlank_End
+	
+	rts
 
 
 

@@ -733,13 +733,36 @@ macro vwf_line_break()
 	endif
 endmacro
 
-macro vwf_display_message(message_id)
+macro vwf_display_message(message_id, ...)
 	if !vwf_message_command_error_condition
 		%vwf_print_message_command_error()
 	else
+		!temp_rebuild_textbox = false
+		
+		if sizeof(...) > 0
+			!temp_rebuild_textbox = <0>
+		endif
+		
+		if !temp_rebuild_textbox != true && !temp_rebuild_textbox != false
+			error "%vwf_display_message(): ""rebuild_textbox"" must be either true or false."
+		endif
+		
 		!8bit_mode_only db $FC
 		!16bit_mode_only dw $FFFC
-		dw $<message_id>
+		
+		if !temp_rebuild_textbox == false
+			dw $<message_id>
+		elseif !temp_rebuild_textbox == true
+			; RPG Hacker: For backwards compatibility, we use a magic hex
+			; to determine if this is a new format command.
+			; Once version 1.3 has been out for a considerable amount of time,
+			; we can remove this.
+			dw $FFFF
+			dw $<message_id>
+			db !temp_rebuild_textbox
+		endif
+		
+		undef "temp_rebuild_textbox"
 	endif
 endmacro
 

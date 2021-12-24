@@ -17,6 +17,7 @@
 
 	%vwf_header(vwf_x_pos(0), vwf_y_pos(0), vwf_width(15), vwf_height(13), vwf_text_alignment(TextAlignment.Centered))
 	
+.Start
 	%vwf_change_colors(vwf_get_color_index_2bpp($04, !vwf_text_color_id), vwf_make_color_15(15, 15, 31), vwf_make_color_15(0, 0, 0))
 	%vwf_change_colors(vwf_get_color_index_2bpp($05, !vwf_text_color_id), vwf_make_color_15(6, 31, 6), vwf_make_color_15(0, 0, 0))
 	%vwf_change_colors(vwf_get_color_index_2bpp($06, !vwf_text_color_id), vwf_make_color_15(31, 12, 12), vwf_make_color_15(0, 0, 0))
@@ -47,7 +48,7 @@ endif
 		%vwf_text("Reserved"),
 		%vwf_text("Reserved"),
 		%vwf_text("Reserved"),
-		%vwf_text("Reserved"))
+		%vwf_text("Exit"))
 		
 	;%vwf_change_colors(-1, $0000)
 	;%vwf_change_colors($100, $0000)
@@ -101,7 +102,8 @@ endif
 		%vwf_text("Commands test complete!") : %vwf_line_break()
 		%vwf_wait_for_a()
 	
-		%vwf_close()
+		%vwf_clear()		
+		%vwf_set_text_pointer(.Start)
 		
 	%vwf_set_option_location(TestSelection, 1)
 		%vwf_display_message(0000)
@@ -112,12 +114,14 @@ endif
 		
 	%vwf_set_option_location(TestSelection, 3)
 		%vwf_text("Where to go?") : %vwf_line_break()
+		%vwf_text("(NOTE: Teleporting to midway requires active Lunar Magic hack.)") : %vwf_line_break()
 	
 		%vwf_display_options(TeleportDestination,
 			%vwf_text("Level $0105 (Start)"),
 			%vwf_text("Level $0105 (Midway)"),
 			%vwf_text("Secondary Entrance $01CB"),
-			%vwf_text("Secondary Entrance $01CB (Water)"))			
+			%vwf_text("Secondary Entrance $01CB (Water)"),
+			%vwf_text("Exit"))
 		
 		%vwf_set_option_location(TeleportDestination, 0)
 			%vwf_setup_teleport($0105, false, false)
@@ -134,8 +138,14 @@ endif
 		%vwf_set_option_location(TeleportDestination, 3)
 			%vwf_setup_teleport($01CB, true, true)
 			%vwf_close()
+			
+		%vwf_set_option_location(TeleportDestination, 4)
+			%vwf_clear()
+			%vwf_set_text_pointer(.Start)
 		
 	%vwf_set_option_location(TestSelection, 4)
+		%vwf_display_message(0010)
+			
 	%vwf_set_option_location(TestSelection, 5)
 	%vwf_set_option_location(TestSelection, 6)
 	%vwf_set_option_location(TestSelection, 7)
@@ -143,8 +153,8 @@ endif
 	%vwf_set_option_location(TestSelection, 9)
 	%vwf_set_option_location(TestSelection, 10)
 	%vwf_set_option_location(TestSelection, 11)
+	
 	%vwf_set_option_location(TestSelection, 12)
-
 	%vwf_set_skip_location()
 		%vwf_text("Thank you for using VWF Dialogues Patch by RPG Hacker!") : %vwf_wait_for_a()
 
@@ -257,7 +267,7 @@ endif
 	%vwf_header(vwf_letter_sound($1DFC, 03), vwf_wait_sound($1DFA, 01), vwf_cursor_sound($1DF9, 02), vwf_continue_sound($1DFC, 08))
 
 	%vwf_text("Now this one uses all kinds of funny sound effects all of a sudden!") : %vwf_wait_for_a() : %vwf_clear()
-	%vwf_text("So damn funny, ahahaha! Isn't it? :'D") : %vwf_wait_for_a() : %vwf_clear()	
+	%vwf_text("So damn funny, ahahaha! Isn't it? :'D") : %vwf_wait_for_a() : %vwf_clear()
 	
 	%vwf_display_options(AreSoundsFunny,
 		%vwf_text("Very funny, indeed!"),
@@ -268,7 +278,7 @@ endif
 		%vwf_text("letter sound: vine, wait sound: jump, cursor sound: spin jump contact, continue sound: springboard")
 		%vwf_wait_for_a()
 	
-	%vwf_display_message(0007)
+	%vwf_display_message(0007, true)
 
 %vwf_message_end()
 
@@ -276,9 +286,11 @@ endif
 
 %vwf_message_start(0007)	; Message 003-2
 
-	%vwf_header()
+	%vwf_header(vwf_box_animation(BoxAnimation.MMZ))
 
-	%vwf_text("Message box test complete!") : %vwf_wait_for_a()
+	%vwf_text("This box concludes the message box test by closing the box with animation: MMZ") : %vwf_wait_for_a()
+		
+	%vwf_display_message(0050)
 
 %vwf_message_end()
 
@@ -286,7 +298,9 @@ endif
 
 %vwf_message_start(0008)	; Message 004-1
 
-	; Message header & text go here
+	%vwf_header()
+
+	%vwf_text("Message box test complete!") : %vwf_wait_for_a()
 
 %vwf_message_end()
 
@@ -350,31 +364,310 @@ endif
 
 %vwf_message_start(0010)	; Message 008-1
 
-	; Message header & text go here
+	%vwf_header(vwf_height(5))
+
+	%vwf_text("What to customize?")
+	
+	%vwf_display_options(CustomizationSelect,
+		%vwf_text("Border"),
+		%vwf_text("Background"),
+		%vwf_text("Background color"),
+		%vwf_text("Exit"))
+	
+	%vwf_set_option_location(CustomizationSelect, 0)
+		%vwf_display_message(0011)
+	
+	%vwf_set_option_location(CustomizationSelect, 1)
+		%vwf_display_message(0012)
+		
+	%vwf_set_option_location(CustomizationSelect, 2)
+		%vwf_execute_subroutine(BoxColorStuff_InitializeRAM)
+		%vwf_display_message(0013)
+		
+	%vwf_set_option_location(CustomizationSelect, 3)		
+		%vwf_display_message(0050)
 
 %vwf_message_end()
+
+;-------------------------------------------------------
+
+macro message_box_design_change_logic(message_no, var_address, num_designs)
+	lda $16
+	bit.b #%00000010
+	beq .NotLeft
+	
+	lda <var_address>
+	dec
+	sta <var_address>
+	
+	jsr .CheckRange
+	
+	bra .Redraw
+	
+.NotLeft
+	bit.b #%00000001
+	beq .NotRight
+	
+	lda <var_address>
+	inc
+	sta <var_address>
+	
+	jsr .CheckRange
+	
+	bra .Redraw
+	
+.Redraw
+	lda.b #Message<message_no>_Refresh
+	ldx.b #Message<message_no>_Refresh>>8
+	ldy.b #Message<message_no>_Refresh>>16
+	jsl ChangeVWFTextPtr
+	rtl
+
+.NotRight
+	lda $18
+	bit #%10000000
+	beq .NotA
+	
+	lda #$29
+	sta $1DFC
+	
+	lda.b #Message<message_no>_Done
+	ldx.b #Message<message_no>_Done>>8
+	ldy.b #Message<message_no>_Done>>16
+	jsl ChangeVWFTextPtr
+
+.NotA
+	rtl
+
+
+.CheckRange:
+	lda <var_address>
+	cmp #$FF
+	bne .NotMin
+	
+	lda #<num_designs>-1
+	sta <var_address>
+	rts
+	
+.NotMin
+	cmp #<num_designs>
+	bne .NotMax
+	
+	lda #$00
+	sta <var_address>
+	
+.NotMax
+	rts
+endmacro
 
 ;-------------------------------------------------------
 
 %vwf_message_start(0011)	; Message 008-2
 
-	; Message header & text go here
+	%vwf_header(vwf_x_pos(10), vwf_y_pos(10), vwf_width(5), vwf_height(1), vwf_text_alignment(TextAlignment.Centered), vwf_enable_sfx(false), vwf_enable_message_asm(true), vwf_box_animation(BoxAnimation.Instant))
+	
+	%vwf_char($93) : %vwf_char(' ') : %vwf_hex(!boxframe) : %vwf_char(' ') : %vwf_char($94) : %vwf_freeze()
+	
+.Refresh
+	%vwf_display_message(0011, true)
+	
+.Done
+	%vwf_display_message(0010)
 
 %vwf_message_end()
+
+MessageASM0011:
+	%message_box_design_change_logic(0011, !boxframe, $10)
 
 ;-------------------------------------------------------
 
 %vwf_message_start(0012)	; Message 009-1
 
-	; Message header & text go here
+	%vwf_header(vwf_x_pos(10), vwf_y_pos(10), vwf_width(5), vwf_height(1), vwf_text_alignment(TextAlignment.Centered), vwf_enable_sfx(false), vwf_enable_message_asm(true), vwf_box_animation(BoxAnimation.Instant))
+	
+	%vwf_char($93) : %vwf_char(' ') : %vwf_hex(!boxbg) : %vwf_char(' ') : %vwf_char($94) : %vwf_freeze()
+	
+.Refresh
+	%vwf_display_message(0012, true)
+	
+.Done
+	%vwf_display_message(0010)
 
 %vwf_message_end()
 
+MessageASM0012:
+	%message_box_design_change_logic(0012, !boxbg, $0E)
+
+;-------------------------------------------------------
+
+; RPG Hacker: Yeah, whatever, we can do this here. It's just for testing, anyways.
+%claim_varram(edit_color_r, 2)
+%claim_varram(edit_color_g, 2)
+%claim_varram(edit_color_b, 2)
+%claim_varram(edit_color_id, 1)
+
+BoxColorStuff:
+
+.InitializeRAM:	
+	lda #$00
+	sta !edit_color_id
+	
+	rep #$20
+	
+	lda !boxcolor
+	and.w #%00011111
+	sta !edit_color_r
+	
+	lda !boxcolor
+	lsr #5
+	and.w #%00011111
+	sta !edit_color_g
+	
+	lda !boxcolor
+	lsr #10
+	sta !edit_color_b
+	
+	sep #$20
+	
+	rtl
+	
+.Commit:	
+	rep #$20
+	
+	lda !edit_color_b
+	asl #5
+	ora !edit_color_g
+	asl #5
+	ora !edit_color_r
+	
+	sta !boxcolor
+	
+	sep #$20
+
+	rts
+	
+.ProcessInput:
+	lda $16
+	bit.b #%00001000
+	beq .NotUp
+	
+	lda !edit_color_id
+	dec
+	cmp #$FF
+	bne .NoUnderflow
+	lda #$02
+	
+.NoUnderflow
+	sta !edit_color_id
+	
+	asl
+	tax	
+	jsr (.RedrawTable,x)
+	
+	bra .CheckLeftRight
+	
+.NotUp:
+	bit.b #%00000100
+	beq .NotDown
+	
+	lda !edit_color_id
+	inc
+	cmp #$03
+	bne .NoOverflow
+	lda #$00
+	
+.NoOverflow
+	sta !edit_color_id
+	
+	asl
+	tax	
+	jsr (.RedrawTable,x)
+	
+	bra .CheckLeftRight
+	
+.NotDown
+
+.CheckLeftRight
+	lda !edit_color_id
+	asl
+	tax
+	
+	jsr (.RoutineTable,x)
+	jsr .Commit
+	
+	rts
+	
+
+.RoutineTable
+dw .EditRed, .EditGreen, .EditBlue
+
+.RedrawTable
+dw .RedrawRed, .RedrawGreen, .RedrawBlue
+
+
+.EditRed
+	jsl BoxEditRed
+	rts
+	
+.EditGreen
+	jsl BoxEditGreen
+	rts
+	
+.EditBlue
+	jsl BoxEditBlue
+	rts
+
+
+.RedrawRed
+	jsl BoxEditRed_Redraw
+	rts
+	
+.RedrawGreen
+	jsl BoxEditGreen_Redraw
+	rts
+	
+.RedrawBlue
+	jsl BoxEditBlue_Redraw
+	rts
+	
+	
+; RPG Hacker: Very stupid, wasteful code, but whatever.
+; It's just for testing, anyways.
+
+BoxEditRed:
+%message_box_design_change_logic(0013, !edit_color_r, 32)
+
+BoxEditGreen:
+%message_box_design_change_logic(0014, !edit_color_g, 32)
+
+BoxEditBlue:
+%message_box_design_change_logic(0015, !edit_color_b, 32)
+	
+	
+MessageASM0013:
+MessageASM0014:
+MessageASM0015:
+	jsr BoxColorStuff_ProcessInput
+	rtl
+	
 ;-------------------------------------------------------
 
 %vwf_message_start(0013)	; Message 009-2
 
-	; Message header & text go here
+	%vwf_header(vwf_x_pos(9), vwf_y_pos(10), vwf_width(6), vwf_height(1), vwf_text_alignment(TextAlignment.Centered), vwf_enable_sfx(false), vwf_enable_message_asm(true), vwf_box_animation(BoxAnimation.Instant))
+	
+	%vwf_change_colors(vwf_get_color_index_2bpp($06, !vwf_text_color_id), vwf_make_color_15(31, 12, 12), vwf_make_color_15(0, 0, 0))
+
+	%vwf_char($96) : %vwf_char($95) : %vwf_char(' ') : %vwf_char($93)
+	%vwf_char(' ') : %vwf_set_text_palette($06) : %vwf_text("R:") : %vwf_set_text_palette(!default_text_palette) : %vwf_text(" ")
+	%vwf_decimal(!edit_color_r) : %vwf_char(' ') : %vwf_char($94)
+	%vwf_freeze()
+	
+.Refresh
+	%vwf_display_message(0013, true)
+	
+.Done
+	%vwf_display_message(0010)
 
 %vwf_message_end()
 
@@ -382,7 +675,20 @@ endif
 
 %vwf_message_start(0014)	; Message 00A-1
 
-	; Message header & text go here
+	%vwf_header(vwf_x_pos(9), vwf_y_pos(10), vwf_width(6), vwf_height(1), vwf_text_alignment(TextAlignment.Centered), vwf_enable_sfx(false), vwf_enable_message_asm(true), vwf_box_animation(BoxAnimation.Instant))
+	
+	%vwf_change_colors(vwf_get_color_index_2bpp($06, !vwf_text_color_id), vwf_make_color_15(6, 31, 6), vwf_make_color_15(0, 0, 0))
+
+	%vwf_char($96) : %vwf_char($95) : %vwf_char(' ') : %vwf_char($93)
+	%vwf_char(' ') : %vwf_set_text_palette($06) : %vwf_text("G:") : %vwf_set_text_palette(!default_text_palette) : %vwf_text(" ")
+	%vwf_decimal(!edit_color_g) : %vwf_char(' ') : %vwf_char($94)
+	%vwf_freeze()
+	
+.Refresh
+	%vwf_display_message(0014, true)
+	
+.Done
+	%vwf_display_message(0010)
 
 %vwf_message_end()
 
@@ -390,7 +696,20 @@ endif
 
 %vwf_message_start(0015)	; Message 00A-2
 
-	; Message header & text go here
+	%vwf_header(vwf_x_pos(9), vwf_y_pos(10), vwf_width(6), vwf_height(1), vwf_text_alignment(TextAlignment.Centered), vwf_enable_sfx(false), vwf_enable_message_asm(true), vwf_box_animation(BoxAnimation.Instant))
+	
+	%vwf_change_colors(vwf_get_color_index_2bpp($06, !vwf_text_color_id), vwf_make_color_15(15, 15, 31), vwf_make_color_15(0, 0, 0))
+
+	%vwf_char($96) : %vwf_char($95) : %vwf_char(' ') : %vwf_char($93)
+	%vwf_char(' ') : %vwf_set_text_palette($06) : %vwf_text("B:") : %vwf_set_text_palette(!default_text_palette) : %vwf_text(" ")
+	%vwf_decimal(!edit_color_b) : %vwf_char(' ') : %vwf_char($94)
+	%vwf_freeze()
+	
+.Refresh
+	%vwf_display_message(0015, true)
+	
+.Done
+	%vwf_display_message(0010)
 
 %vwf_message_end()
 

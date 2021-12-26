@@ -66,12 +66,12 @@ endif
 		%vwf_wait_for_a() : %vwf_clear()
 		
 		%vwf_text("Time for some numbers!") : %vwf_line_break()
-		%vwf_text("Mario's current coins: ") : %vwf_decimal($7E0DBF, AddressSize.8Bit, true) : %vwf_line_break()
-		%vwf_text("Mario's X pos: ") : %vwf_decimal($7E00D1, AddressSize.16Bit) : %vwf_line_break()
-		%vwf_text("Current X speed (unsigned dec): ") : %vwf_decimal($7E007B) : %vwf_line_break()
-		%vwf_text("Current X speed (hex): $") : %vwf_hex($7E007B) : %vwf_line_break()
+		%vwf_text("Mario's current coins: ") : %vwf_decimal(remap_ram($7E0DBF), AddressSize.8Bit, true) : %vwf_line_break()
+		%vwf_text("Mario's X pos: ") : %vwf_decimal(remap_ram($7E00D1), AddressSize.16Bit) : %vwf_line_break()
+		%vwf_text("Current X speed (unsigned dec): ") : %vwf_decimal(remap_ram($7E007B)) : %vwf_line_break()
+		%vwf_text("Current X speed (hex): $") : %vwf_hex(remap_ram($7E007B)) : %vwf_line_break()
 		%vwf_text("Current text box color : $") : %vwf_hex(!boxcolor+1) : %vwf_hex(!boxcolor) : %vwf_line_break()
-		%vwf_text("Current timer: ") : %vwf_char_at_address($7E0F31) : %vwf_char_at_address($7E0F32) : %vwf_char_at_address($7E0F33) : %vwf_line_break()
+		%vwf_text("Current timer: ") : %vwf_char_at_address(remap_ram($7E0F31)) : %vwf_char_at_address(remap_ram($7E0F32)) : %vwf_char_at_address(remap_ram($7E0F33)) : %vwf_line_break()
 		%vwf_wait_for_a() : %vwf_clear()
 		
 		%vwf_text("ThisLongTextDoesContain") : %vwf_char(' ') : %vwf_text("ANonBreakingSpace") : %vwf_line_break()

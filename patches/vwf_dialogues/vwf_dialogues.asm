@@ -10,7 +10,7 @@ incsrc ../shared/shared.asm
 
 
 print ""
-print "VWF Dialogues Patch - (c) 2010-2021 RPG Hacker"
+print "VWF Dialogues Patch - (c) 2010-2022 RPG Hacker"
 print ""
 
 
@@ -134,6 +134,8 @@ endmacro
 %claim_varram(cursorsrc, 2)
 %claim_varram(arrowvram, 2)
 %claim_varram(enddialog, 1)
+%claim_varram(swapmessageid, 2)
+%claim_varram(swapmessagesettings, 1)
 
 %claim_varram(messageasmopcode, 1)			; Determines whether MessageASM code will run. Contains either $5C (JML) or $6B (RTL)
 %claim_varram(messageasmloc, 3)				; 24-bit pointer to the current MessageASM routine.
@@ -1711,7 +1713,21 @@ CollapseWindow:
 .Routinetable
 	dw .NoBox,.SoEBox,.SoMBox,.MMZBox,.InstBox
 
-.End
+.End	
+	lda !counter
+	cmp #$02	
+	bne .NotDone
+
+	; RPG Hacker: Check if we still have a message box stored to show after the current one.
+	lda !swapmessagesettings
+	and.b #%10000010
+	cmp.b #%10000010
+	bne .NoNextMessage
+	
+	jsr PrepareNextMessage
+	
+.NoNextMessage
+.NotDone
 	jmp Buffer_End
 
 
@@ -3128,48 +3144,51 @@ endif
 	sta !messageasmopcode
 	ldy #$01
 	lda [$00],y
-	sta !message
+	sta !swapmessageid
 	iny
 	lda [$00],y
-	sta !message+1
-	lda !vwfmode
-	dec
-	sta !vwfmode
-	lda #$01
-	sta !clearbox
+	sta !swapmessageid+1
+	lda #%10000000
+	sta !swapmessagesettings
+	jsr IncPointer
+	jsr IncPointer
 	
-	; RPG Hacker: Backwards compatibility code. Uses a magic hex to determine
+	; RPG Hacker: Backwards compatibility hack. Uses a magic hex to determine
 	; if this is the new command format. Can be removed once version 1.3 has
 	; been released for a considerable amount of time.
-	lda !message
-	and !message+1
+	lda !swapmessageid
+	and !swapmessageid+1
 	cmp #$FF
 	bne .Legacy
 	
 	iny
 	lda [$00],y
-	sta !message
+	sta !swapmessageid
 	iny
 	lda [$00],y
-	sta !message+1
+	sta !swapmessageid+1
 	iny
 	lda [$00],y		; Settings
-	
-	beq .Legacy	
-	
-	lda !vwfmode	
-	dec #2
-	sta !vwfmode
-	
-	jsr BufferGraphics_Start
-	jsr GetMessage
-	jsr LoadHeader
-	jsr InitBoxColors
-	jmp BufferWindow
+	ora #%10000000
+	sta !swapmessagesettings
+	jsr IncPointer
+	jsr IncPointer
+	jsr IncPointer
 	
 .Legacy
-	jsr BufferGraphics_Start
-	jmp VWFInit
+	; RPG Hacker: If we don't have the "show close animation" flag set, prepare the next message right now.
+	lda !swapmessagesettings
+	and.b #%10000010
+	cmp.b #%10000000
+	bne .DontStartNow
+	
+	jsr PrepareNextMessage
+	
+.DontStartNow
+	lda #$01
+	sta !enddialog
+	jmp .End
+	
 
 .FD_LineBreak
 	!16bit_mode_only rep #$20
@@ -4503,7 +4522,17 @@ CreateWindow:
 	lda !vwfmode
 	inc
 	sta !vwfmode
-
+	
+	; RPG Hacker: Check if we still have "next message" stored from the "load message" command.
+	; If so, we gotta jump back to an earlier step.
+	lda !swapmessagesettings
+	and.b #%10000010
+	cmp.b #%10000010
+	bne .NoNextMessage
+	
+	jsr StartNextMessage
+	
+.NoNextMessage
 .Return
 	jmp VBlank_End
 
@@ -4608,6 +4637,18 @@ TextUpload:
 	!8bit_mode_only lda #$00
 	sta !vwfchar
 	!16bit_mode_only sep #$20
+	
+	; RPG Hacker: Display next message now if we're coming from a "load message"
+	; command and don't have the "show close animation" flag set.
+	lda !swapmessagesettings
+	and.b #%10000010
+	cmp.b #%10000000
+	bne .NoNextMessage
+	
+	jsr StartNextMessage
+	jmp VBlank_End
+	
+.NoNextMessage
 	jmp .End
 
 .NoEnd
@@ -4723,6 +4764,58 @@ TextUpload:
 
 .Return
 	jmp VBlank_End
+	
+	
+; RPG Hacker: This is split into two routines, because some code needs to run in the buffering phase,
+; and other code needs to run in the graphics upload phase. It might actually be save to do all of it
+; in the same one, but I don't even want to risk it, especially not with SA-1 compatibility being a factor.
+PrepareNextMessage:
+	lda !swapmessageid
+	sta !message
+	lda !swapmessageid+1
+	sta !message+1
+	
+	lda !swapmessagesettings
+	bit.b #%00000001
+	beq .NoOpenAnim
+	
+	jsr BufferGraphics_Start
+	jsr GetMessage
+	jsr LoadHeader
+	
+	bra .Return
+	
+.NoOpenAnim	
+	jsr BufferGraphics_Start
+	
+.Return	
+	rts
+	
+	
+StartNextMessage:
+	lda !swapmessagesettings
+	bit.b #%00000001
+	beq .NoOpenAnim
+	
+	lda #$06
+	sta !vwfmode
+	
+	jsr InitBoxColors
+	
+	bra .Return
+	
+.NoOpenAnim	
+	lda #$08
+	sta !vwfmode
+	
+.Return
+	lda #$00
+	sta !swapmessagesettings
+	sta !swapmessageid
+	sta !swapmessageid+1
+	
+	rts
+
 
 
 

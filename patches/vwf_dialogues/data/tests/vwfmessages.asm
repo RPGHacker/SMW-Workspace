@@ -278,7 +278,7 @@ endif
 		%vwf_text("letter sound: vine, wait sound: jump, cursor sound: spin jump contact, continue sound: springboard")
 		%vwf_wait_for_a()
 	
-	%vwf_display_message(0007, true)
+	%vwf_display_message(0007, false, true)
 
 %vwf_message_end()
 
@@ -290,7 +290,7 @@ endif
 
 	%vwf_text("This box concludes the message box test by closing the box with animation: MMZ") : %vwf_wait_for_a()
 		
-	%vwf_display_message(0050)
+	%vwf_display_message(0050, true, true)
 
 %vwf_message_end()
 
@@ -469,7 +469,7 @@ endmacro
 	%vwf_char($93) : %vwf_char(' ') : %vwf_hex(!boxframe) : %vwf_char(' ') : %vwf_char($94) : %vwf_freeze()
 	
 .Refresh
-	%vwf_display_message(0011, true)
+	%vwf_display_message(0011, false, true)
 	
 .Done
 	%vwf_display_message(0010)
@@ -488,7 +488,7 @@ MessageASM0011:
 	%vwf_char($93) : %vwf_char(' ') : %vwf_hex(!boxbg) : %vwf_char(' ') : %vwf_char($94) : %vwf_freeze()
 	
 .Refresh
-	%vwf_display_message(0012, true)
+	%vwf_display_message(0012, false, true)
 	
 .Done
 	%vwf_display_message(0010)
@@ -664,7 +664,7 @@ MessageASM0015:
 	%vwf_freeze()
 	
 .Refresh
-	%vwf_display_message(0013, true)
+	%vwf_display_message(0013, false, true)
 	
 .Done
 	%vwf_display_message(0010)
@@ -685,7 +685,7 @@ MessageASM0015:
 	%vwf_freeze()
 	
 .Refresh
-	%vwf_display_message(0014, true)
+	%vwf_display_message(0014, false, true)
 	
 .Done
 	%vwf_display_message(0010)
@@ -706,7 +706,7 @@ MessageASM0015:
 	%vwf_freeze()
 	
 .Refresh
-	%vwf_display_message(0015, true)
+	%vwf_display_message(0015, false, true)
 	
 .Done
 	%vwf_display_message(0010)

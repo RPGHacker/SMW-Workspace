@@ -240,7 +240,12 @@ pushtable
 cleartable
 table "vwftable_font2.txt"
 	
-%generate_message_test_messages(0002, 0003, false, %vwf_text("This one is small, uses centered text and also a different font and color."), 0004, vwf_x_pos(3), vwf_y_pos(10), vwf_width(12), vwf_height(5), vwf_text_alignment(TextAlignment.Centered), vwf_font($01), vwf_text_palette($06), vwf_text_color(vwf_make_color_15(0, 0, 0)), vwf_outline_color(vwf_make_color_15(31, 31, 31)))
+; RPG Hacker: The animation = instant and the show_animation = true are necessary here, because
+; the background color won't get initialized otherwise. If we start this test from test selector,
+; that usually won't be a problem, because palette commands in that test already override the BG
+; color of palette 6. However, if we run this test by itself (which happens by seeing the special
+; "Yoshi found" message), this would usually lead to a black background.
+%generate_message_test_messages(0002, 0003, true, %vwf_text("This one is small, uses centered text and also a different font and color."), 0004, vwf_x_pos(3), vwf_y_pos(10), vwf_width(12), vwf_height(5), vwf_text_alignment(TextAlignment.Centered), vwf_font($01), vwf_text_palette($06), vwf_text_color(vwf_make_color_15(0, 0, 0)), vwf_outline_color(vwf_make_color_15(31, 31, 31)), vwf_box_animation(BoxAnimation.Instant))
 
 pulltable
 

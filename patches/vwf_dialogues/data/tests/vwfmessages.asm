@@ -144,7 +144,7 @@ endif
 			%vwf_set_text_pointer(.Start)
 		
 	%vwf_set_option_location(TestSelection, 4)
-		%vwf_display_message(0010)
+		%vwf_display_message(0020)
 			
 	%vwf_set_option_location(TestSelection, 5)
 	%vwf_set_option_location(TestSelection, 6)
@@ -164,149 +164,160 @@ endif
 
 ;-------------------------------------------------------
 
-%vwf_message_start(0000)	; Message 000-1
+macro generate_message_test_messages(first_message_id, second_message_id, show_animations, text, next_message, ...)
 
-	%vwf_header(vwf_x_pos(1), vwf_y_pos(1), vwf_width(14), vwf_height(3), vwf_text_alignment(TextAlignment.Left))
+	; RPG Hacker: First message.
+	%vwf_message_start(<first_message_id>)
 	
-	%vwf_text("A relatively standard text box!") : %vwf_line_break()
-	%vwf_text("x: 1, y: 1, w: 14, h: 3, alignment: left")
-	%vwf_wait_for_a()
-	
-	%vwf_display_message(0001)
+		%vwf_header(vwf_x_pos(1), vwf_y_pos(1), vwf_width(14), vwf_height(12), vwf_text_alignment(TextAlignment.Left))
 
-%vwf_message_end()
+		%vwf_text("Next test:") : %vwf_line_break()
 
-;-------------------------------------------------------
-
-%vwf_message_start(0001)	; Message 000-2
-
-	%vwf_header(vwf_x_pos(3), vwf_y_pos(10), vwf_width(12), vwf_height(5), vwf_text_alignment(TextAlignment.Centered), vwf_font($01), vwf_text_palette($06), vwf_text_color(vwf_make_color_15(0, 0, 0)), vwf_outline_color(vwf_make_color_15(31, 31, 31)))
-	
-	pushtable
-	cleartable
-	table "vwftable_font2.txt"
-	%vwf_text("Here's one with font + color switched.") : %vwf_line_break()
-	%vwf_text("x: 3, y: 10, w: 12, h: 5, alignment: centered, font: $01, text palette: $06, text color: black, outline color: white")
-	pulltable
-	%vwf_wait_for_a()
-	
-	%vwf_display_message(0002)
-
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(0002)	; Message 001-1
-
-	%vwf_header(vwf_text_alignment(TextAlignment.Left), vwf_space_width(15), vwf_text_margin(0), vwf_text_speed(5), vwf_button_speedup(false), vwf_enable_skipping(false))
-	
-	%vwf_text("Weird spacing and slow, unskippable text. x)") : %vwf_line_break()
-	%vwf_text("alignment: left, space width: 15, text margin: 0, text speed: 5, button speedup: false, enable skipping: false")
-	%vwf_wait_for_a()
-	
-	%vwf_display_message(0003)
-
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(0003)	; Message 001-2
-
-	%vwf_header(vwf_height(5), vwf_freeze_game(false), vwf_auto_wait(AutoWait.None))
-
-	%vwf_text("Here's one with lots and lots of text and no auto-wait. Although you can move around in the meantime. Enjoy!") : %vwf_wait_for_a() : %vwf_clear()
-	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
-	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
-	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
-	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
-	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
-	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
-	%vwf_wait_for_a()
-	
-	%vwf_display_message(0004)
-
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(0004)	; Message 002-1
-
-	%vwf_header(vwf_height(5), vwf_freeze_game(false), vwf_auto_wait(AutoWait.WaitFrames.60))
-
-	%vwf_text("Same as last one, but with automatic wait frames.") : %vwf_wait_for_a() : %vwf_clear()
-	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
-	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
-	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
-	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
-	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
-	%vwf_text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
-	%vwf_wait_for_a()
-	
-	%vwf_display_message(0005)
-
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(0005)	; Message 002-2
-
-	%vwf_header(vwf_enable_sfx(false))
-
-	%vwf_text("A silent text box all of a sudden. This is scaaaaaaaary!") : %vwf_line_break()
-	%vwf_text("enable sfx: false")
-	%vwf_wait_for_a()
-	
-	%vwf_display_message(0006)
-
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(0006)	; Message 003-1
-
-	%vwf_header(vwf_letter_sound($1DFC, 03), vwf_wait_sound($1DFA, 01), vwf_cursor_sound($1DF9, 02), vwf_continue_sound($1DFC, 08))
-
-	%vwf_text("Now this one uses all kinds of funny sound effects all of a sudden!") : %vwf_wait_for_a() : %vwf_clear()
-	%vwf_text("So damn funny, ahahaha! Isn't it? :'D") : %vwf_wait_for_a() : %vwf_clear()
-	
-	%vwf_display_options(AreSoundsFunny,
-		%vwf_text("Very funny, indeed!"),
-		%vwf_text("Sure..."))
-	
-	%vwf_set_option_location(AreSoundsFunny, 0)
-	%vwf_set_option_location(AreSoundsFunny, 1)	
-		%vwf_text("letter sound: vine, wait sound: jump, cursor sound: spin jump contact, continue sound: springboard")
-		%vwf_wait_for_a()
-	
-	%vwf_display_message(0007, false, true)
-
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(0007)	; Message 003-2
-
-	%vwf_header(vwf_box_animation(BoxAnimation.MMZ))
-
-	%vwf_text("This box concludes the message box test by closing the box with animation: MMZ") : %vwf_wait_for_a()
+		!temp_i #= 0
+		while !temp_i < sizeof(...)
+			%vwf_char(' ') : %vwf_char(' ')
+			%vwf_text("<!temp_i>")
+			if !temp_i == sizeof(...)-1
+				%vwf_wait_for_a()
+			else
+				%vwf_line_break()
+			endif
+			
+			!temp_i #= !temp_i+1
+		endwhile
+		undef "temp_i"
 		
-	%vwf_display_message(0050, true, true)
+		if <show_animations> != false
+			%vwf_display_message(<second_message_id>, false, true)
+		else
+			%vwf_display_message(<second_message_id>)
+		endif
+	
+	%vwf_message_end()
 
-%vwf_message_end()
+
+
+	; RPG Hacker: Second message.
+	%vwf_message_start(<second_message_id>)
+		!temp_params = ""
+	
+		!temp_i #= 0
+		while !temp_i < sizeof(...)
+			if !temp_i == 0
+				!temp_params += "<!temp_i>"
+			else
+				!temp_params += ", <!temp_i>"
+			endif
+			
+			!temp_i #= !temp_i+1
+		endwhile
+		undef "temp_i"	
+		
+		%vwf_header(!temp_params)
+		
+		<text>
+		
+		%vwf_wait_for_a()
+		
+		if <show_animations> != false
+			%vwf_display_message(<next_message>, true, false)
+		else
+			%vwf_display_message(<next_message>)
+		endif
+		
+	%vwf_message_end()
+endmacro
 
 ;-------------------------------------------------------
 
-%vwf_message_start(0008)	; Message 004-1
+; Messages 000-1 and 000-2
+%generate_message_test_messages(0000, 0001, false, %vwf_text("A relatively standard text box!"), 0002, vwf_x_pos(1), vwf_y_pos(1), vwf_width(14), vwf_height(3), vwf_text_alignment(TextAlignment.Left))
+
+;-------------------------------------------------------
+
+; Messages 001-1 and 001-2
+pushtable
+cleartable
+table "vwftable_font2.txt"
+	
+%generate_message_test_messages(0002, 0003, false, %vwf_text("This one is small, uses centered text and also a different font and color."), 0004, vwf_x_pos(3), vwf_y_pos(10), vwf_width(12), vwf_height(5), vwf_text_alignment(TextAlignment.Centered), vwf_font($01), vwf_text_palette($06), vwf_text_color(vwf_make_color_15(0, 0, 0)), vwf_outline_color(vwf_make_color_15(31, 31, 31)))
+
+pulltable
+
+;-------------------------------------------------------
+
+; Messages 002-1 and 002-2
+%generate_message_test_messages(0004, 0005, false, %vwf_text("Weird spacing and slow, unskippable text, lol. Wasting a tester's time is fun."), 0006, vwf_text_alignment(TextAlignment.Left), vwf_space_width(15), vwf_text_margin(0), vwf_text_speed(5), vwf_button_speedup(false), vwf_enable_skipping(false))
+
+;-------------------------------------------------------
+
+; Messages 003-1 and 003-2
+%generate_message_test_messages(0006, 0007, false, %vwf_text("This text box hardly gives you enough time to read anything. Like WHAT THE FUCK, why is everything so fast? Why doesn't it stop? Why doesn't it give me any time to read anything? Like, who is supposed to read this? I mean, slow down, Satan. Slow the fuck down! I want to actually enjoy the story of this game, and not feel like I was running a marathon. Whatever, I'll just watch a playthrough of the game on YouTube and press pause so that I can read everything properly. Oh yeah, did you notice you can walk around while this text box is active?"), 0008, vwf_height(5), vwf_freeze_game(false), vwf_auto_wait(AutoWait.None))
+
+;-------------------------------------------------------
+
+; Messages 004-1 and 004-2
+%generate_message_test_messages(0008, 0009, false, %vwf_text("This text box gives us a little more time to read everything, but in reality, it's actually just way too fucking fast again. Like, come on! Why even use the 'auto wait' option like that? Why not just use 'press A' and let the player read everything at their own pace? Are you deliberately torturing us? You just want us to not enjoy your game, do you? Well, I tell you something. I'll go on SMW Central right fucking now, give this hack a bad fucking rating and then complain about its text boxes being too fucking fast for me in the review. I hope this is what you wanted!"), 000A, vwf_height(5), vwf_freeze_game(false), vwf_auto_wait(AutoWait.WaitFrames.60))
+
+;-------------------------------------------------------
+
+; Messages 005-1 and 005-2
+%generate_message_test_messages(000A, 000B, false, %vwf_text("This text box is completely silent. Not much else going on here. Just enjoy this little break after the previous torture!"), 000C, vwf_enable_sfx(false))
+
+;-------------------------------------------------------
+
+; Messages 006-1 and 006-2
+%generate_message_test_messages(000C, 000D, false,
+	%vwf_wrap( %vwf_text("This text box, on the other hand, uses some hilariously fucking funny sound effects! HAHAHA!"), %vwf_wait_for_a(), %vwf_clear(),
+		%vwf_text("I mean, that was already fucking hilarious, but check out that cursor sound effect! xDDDD"), %vwf_wait_for_a(), %vwf_clear(),	
+		%vwf_display_options(CheckFunnyCursorSound,
+			%vwf_text("Okay, let me see..."),
+			%vwf_text("HAHAHAHAHAHA!")),	
+		%vwf_set_option_location(CheckFunnyCursorSound, 0),
+		%vwf_set_option_location(CheckFunnyCursorSound, 1),
+		%vwf_text("Literally pissing myself over here!") ),
+	000E, vwf_enable_sfx(true), vwf_letter_sound($1DFC, 03), vwf_wait_sound($1DFA, 01), vwf_cursor_sound($1DF9, 02), vwf_continue_sound($1DFC, 08))
+
+;-------------------------------------------------------
+
+; Messages 007-1 and 007-2
+%generate_message_test_messages(000E, 000F, true, %vwf_text("Time to test the different box animations. This one is Mega Man Zero-styled."), 0010, vwf_box_animation(BoxAnimation.MMZ))
+
+;-------------------------------------------------------
+
+; Messages 008-1 and 008-2
+%generate_message_test_messages(0010, 0011, true, %vwf_text("Secret of Evermore-styled."), 0012, vwf_box_animation(BoxAnimation.SoE))
+
+;-------------------------------------------------------
+
+; Messages 009-1 and 009-2
+%generate_message_test_messages(0012, 0013, true, %vwf_text("Secret of Mana-styled."), 0014, vwf_box_animation(BoxAnimation.SoM))
+
+;-------------------------------------------------------
+
+; Messages 00A-1 and 00A-2
+%generate_message_test_messages(0014, 0015, true, %vwf_text("This one just appears and disappears instantly, with no animation whatsoever."), 0016, vwf_box_animation(BoxAnimation.Instant))
+
+;-------------------------------------------------------
+
+; Messages 00B-1 and 00B-2
+%generate_message_test_messages(0016, 0017, true, %vwf_text("And this one doesn't even display a box at all, only text, which saves some precious cycles."), 0018, vwf_box_animation(BoxAnimation.None))
+
+;-------------------------------------------------------
+
+%vwf_message_start(0018)	; Message 00C-1
 
 	%vwf_header()
 
 	%vwf_text("Message box test complete!") : %vwf_wait_for_a()
+	
+	%vwf_display_message(0050)
 
 %vwf_message_end()
 
 ;-------------------------------------------------------
 
-%vwf_message_start(0009)	; Message 004-2
+%vwf_message_start(0019)	; Message 00C-2
 
 	; Message header & text go here
 
@@ -314,7 +325,7 @@ endif
 
 ;-------------------------------------------------------
 
-%vwf_message_start(000A)	; Message 005-1
+%vwf_message_start(001A)	; Message 00D-1
 
 	; Message header & text go here
 
@@ -322,7 +333,7 @@ endif
 
 ;-------------------------------------------------------
 
-%vwf_message_start(000B)	; Message 005-2
+%vwf_message_start(001B)	; Message 00D-2
 
 	; Message header & text go here
 
@@ -330,7 +341,7 @@ endif
 
 ;-------------------------------------------------------
 
-%vwf_message_start(000C)	; Message 006-1
+%vwf_message_start(001C)	; Message 00E-1
 
 	; Message header & text go here
 
@@ -338,7 +349,7 @@ endif
 
 ;-------------------------------------------------------
 
-%vwf_message_start(000D)	; Message 006-2
+%vwf_message_start(001D)	; Message 00E-2
 
 	; Message header & text go here
 
@@ -346,7 +357,7 @@ endif
 
 ;-------------------------------------------------------
 
-%vwf_message_start(000E)	; Message 007-1
+%vwf_message_start(001E)	; Message 00F-1
 
 	; Message header & text go here
 
@@ -354,7 +365,7 @@ endif
 
 ;-------------------------------------------------------
 
-%vwf_message_start(000F)	; Message 007-2
+%vwf_message_start(001F)	; Message 00F-2
 
 	; Message header & text go here
 
@@ -362,7 +373,7 @@ endif
 
 ;-------------------------------------------------------
 
-%vwf_message_start(0010)	; Message 008-1
+%vwf_message_start(0020)	; Message 010-1
 
 	%vwf_header(vwf_height(5))
 
@@ -375,16 +386,16 @@ endif
 		%vwf_text("Exit"))
 	
 	%vwf_set_option_location(CustomizationSelect, 0)
-		%vwf_display_message(0011)
+		%vwf_display_message(0021)
 	
 	%vwf_set_option_location(CustomizationSelect, 1)
-		%vwf_display_message(0012)
+		%vwf_display_message(0022)
 		
 	%vwf_set_option_location(CustomizationSelect, 2)
 		%vwf_execute_subroutine(BoxColorStuff_InitializeRAM)
-		%vwf_display_message(0013)
+		%vwf_display_message(0023)
 		
-	%vwf_set_option_location(CustomizationSelect, 3)		
+	%vwf_set_option_location(CustomizationSelect, 3)
 		%vwf_display_message(0050)
 
 %vwf_message_end()
@@ -462,41 +473,41 @@ endmacro
 
 ;-------------------------------------------------------
 
-%vwf_message_start(0011)	; Message 008-2
+%vwf_message_start(0021)	; Message 010-2
 
 	%vwf_header(vwf_x_pos(10), vwf_y_pos(10), vwf_width(5), vwf_height(1), vwf_text_alignment(TextAlignment.Centered), vwf_enable_sfx(false), vwf_enable_message_asm(true), vwf_box_animation(BoxAnimation.Instant))
 	
 	%vwf_char($93) : %vwf_char(' ') : %vwf_hex(!boxframe) : %vwf_char(' ') : %vwf_char($94) : %vwf_freeze()
 	
 .Refresh
-	%vwf_display_message(0011, false, true)
+	%vwf_display_message(0021, false, true)
 	
 .Done
-	%vwf_display_message(0010)
+	%vwf_display_message(0020)
 
 %vwf_message_end()
 
-MessageASM0011:
-	%message_box_design_change_logic(0011, !boxframe, $10)
+MessageASM0021:
+	%message_box_design_change_logic(0021, !boxframe, $10)
 
 ;-------------------------------------------------------
 
-%vwf_message_start(0012)	; Message 009-1
+%vwf_message_start(0022)	; Message 011-1
 
 	%vwf_header(vwf_x_pos(10), vwf_y_pos(10), vwf_width(5), vwf_height(1), vwf_text_alignment(TextAlignment.Centered), vwf_enable_sfx(false), vwf_enable_message_asm(true), vwf_box_animation(BoxAnimation.Instant))
 	
 	%vwf_char($93) : %vwf_char(' ') : %vwf_hex(!boxbg) : %vwf_char(' ') : %vwf_char($94) : %vwf_freeze()
 	
 .Refresh
-	%vwf_display_message(0012, false, true)
+	%vwf_display_message(0022, false, true)
 	
 .Done
-	%vwf_display_message(0010)
+	%vwf_display_message(0020)
 
 %vwf_message_end()
 
-MessageASM0012:
-	%message_box_design_change_logic(0012, !boxbg, $0E)
+MessageASM0022:
+	%message_box_design_change_logic(0022, !boxbg, $0E)
 
 ;-------------------------------------------------------
 
@@ -635,24 +646,24 @@ dw .RedrawRed, .RedrawGreen, .RedrawBlue
 ; It's just for testing, anyways.
 
 BoxEditRed:
-%message_box_design_change_logic(0013, !edit_color_r, 32)
+%message_box_design_change_logic(0023, !edit_color_r, 32)
 
 BoxEditGreen:
-%message_box_design_change_logic(0014, !edit_color_g, 32)
+%message_box_design_change_logic(0024, !edit_color_g, 32)
 
 BoxEditBlue:
-%message_box_design_change_logic(0015, !edit_color_b, 32)
+%message_box_design_change_logic(0025, !edit_color_b, 32)
 	
 	
-MessageASM0013:
-MessageASM0014:
-MessageASM0015:
+MessageASM0023:
+MessageASM0024:
+MessageASM0025:
 	jsr BoxColorStuff_ProcessInput
 	rtl
 	
 ;-------------------------------------------------------
 
-%vwf_message_start(0013)	; Message 009-2
+%vwf_message_start(0023)	; Message 011-2
 
 	%vwf_header(vwf_x_pos(9), vwf_y_pos(10), vwf_width(6), vwf_height(1), vwf_text_alignment(TextAlignment.Centered), vwf_enable_sfx(false), vwf_enable_message_asm(true), vwf_box_animation(BoxAnimation.Instant))
 	
@@ -664,16 +675,16 @@ MessageASM0015:
 	%vwf_freeze()
 	
 .Refresh
-	%vwf_display_message(0013, false, true)
+	%vwf_display_message(0023, false, true)
 	
 .Done
-	%vwf_display_message(0010)
+	%vwf_display_message(0020)
 
 %vwf_message_end()
 
 ;-------------------------------------------------------
 
-%vwf_message_start(0014)	; Message 00A-1
+%vwf_message_start(0024)	; Message 012-1
 
 	%vwf_header(vwf_x_pos(9), vwf_y_pos(10), vwf_width(6), vwf_height(1), vwf_text_alignment(TextAlignment.Centered), vwf_enable_sfx(false), vwf_enable_message_asm(true), vwf_box_animation(BoxAnimation.Instant))
 	
@@ -685,16 +696,16 @@ MessageASM0015:
 	%vwf_freeze()
 	
 .Refresh
-	%vwf_display_message(0014, false, true)
+	%vwf_display_message(0024, false, true)
 	
 .Done
-	%vwf_display_message(0010)
+	%vwf_display_message(0020)
 
 %vwf_message_end()
 
 ;-------------------------------------------------------
 
-%vwf_message_start(0015)	; Message 00A-2
+%vwf_message_start(0025)	; Message 012-2
 
 	%vwf_header(vwf_x_pos(9), vwf_y_pos(10), vwf_width(6), vwf_height(1), vwf_text_alignment(TextAlignment.Centered), vwf_enable_sfx(false), vwf_enable_message_asm(true), vwf_box_animation(BoxAnimation.Instant))
 	
@@ -706,138 +717,10 @@ MessageASM0015:
 	%vwf_freeze()
 	
 .Refresh
-	%vwf_display_message(0015, false, true)
+	%vwf_display_message(0025, false, true)
 	
 .Done
-	%vwf_display_message(0010)
-
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(0016)	; Message 00B-1
-
-	; Message header & text go here
-
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(0017)	; Message 00B-2
-
-	; Message header & text go here
-
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(0018)	; Message 00C-1
-
-	; Message header & text go here
-
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(0019)	; Message 00C-2
-
-	; Message header & text go here
-
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(001A)	; Message 00D-1
-
-	; Message header & text go here
-
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(001B)	; Message 00D-2
-
-	; Message header & text go here
-
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(001C)	; Message 00E-1
-
-	; Message header & text go here
-
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(001D)	; Message 00E-2
-
-	; Message header & text go here
-
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(001E)	; Message 00F-1
-
-	; Message header & text go here
-
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(001F)	; Message 00F-2
-
-	; Message header & text go here
-
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(0020)	; Message 010-1
-
-	; Message header & text go here
-
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(0021)	; Message 010-2
-
-	; Message header & text go here
-
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(0022)	; Message 011-1
-
-	; Message header & text go here
-
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(0023)	; Message 011-2
-
-	; Message header & text go here
-
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(0024)	; Message 012-1
-
-	; Message header & text go here
-
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(0025)	; Message 012-2
-
-	; Message header & text go here
+	%vwf_display_message(0020)
 
 %vwf_message_end()
 

@@ -607,8 +607,7 @@ OriginalMessageBox:
 	beq .NoOriginalMessageBoxRequested
 	
 if !hijackbox == true
-	lda #$00
-	xba
+	ldx #$00
 	;lda !vwfmode	; Already displaying a message?
 	;beq .CallDialogue
 	;stz remap_ram($1426)
@@ -649,7 +648,6 @@ if !hijackbox == true
 	dec
 .SetMessage
 	stz remap_ram($1426)
-	rep #$20
 	jsl DisplayAMessage
 else	
 	jml remap_rom($00A1DF)	; Run original message box and skip frame simulation

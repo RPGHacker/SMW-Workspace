@@ -846,20 +846,20 @@ MessageASM0025:
 
 	%vwf_header()
 		
-	%vwf_text("This text box uses text macros to spell 'Mario' and 'Luigi':") : %vwf_line_break()
-	%vwf_execute_text_macro("Mario") : %vwf_text(" ") : %vwf_execute_text_macro("Luigi") : %vwf_wait_for_a() : %vwf_clear()
+	%vwf_text("Text macro:") : %vwf_wait_for_a() : %vwf_clear()
+	%vwf_text("This is a ") : %vwf_execute_text_macro("Mario") : %vwf_text(" game! Oh yeah, ") : %vwf_execute_text_macro("Luigi") : %vwf_text(" is also here.") : %vwf_wait_for_a() : %vwf_clear()
 	
-	%vwf_text("This text box uses a nested text macro to spell 'Super Mario':") : %vwf_line_break()
-	%vwf_execute_text_macro("SuperMario") : %vwf_wait_for_a() : %vwf_clear()
+	%vwf_text("Nested text macro:") : %vwf_wait_for_a() : %vwf_clear()
+	%vwf_text("Welcome to ") : %vwf_execute_text_macro("SuperMario") : %vwf_text(" World!") : %vwf_wait_for_a() : %vwf_clear()
 	
-	%vwf_text("This text box uses an indexed text macro group to spell 'Mario' or 'Luigi', depending on the current player:") : %vwf_line_break()
-	%vwf_execute_text_macro_by_indexed_group("PlayerName", remap_ram($7E0DB3)) : %vwf_wait_for_a() : %vwf_clear()
+	%vwf_text("Indexed text macro group:") : %vwf_wait_for_a() : %vwf_clear()
+	%vwf_text("Hey there, ") : %vwf_execute_text_macro_by_indexed_group("PlayerName", remap_ram($7E0DB3)) : %vwf_text(" - how are you doing?") : %vwf_wait_for_a() : %vwf_clear()
 	
-	%vwf_text("Same as above, but using a nested macro:") : %vwf_line_break()
-	%vwf_execute_text_macro("CurrentPlayer") : %vwf_wait_for_a() : %vwf_clear()
+	%vwf_text("Indexed text macro group inside a text macro:") : %vwf_wait_for_a() : %vwf_clear()
+	%vwf_text("Welcome back, ") : %vwf_execute_text_macro("CurrentPlayer") : %vwf_text(" - good to see you again!") : %vwf_wait_for_a() : %vwf_clear()
 	
-	%vwf_text("Same as above, but also including the player's current power-up state:") : %vwf_line_break()
-	%vwf_execute_text_macro("CurrentPlayerWithPowerup") : %vwf_wait_for_a() : %vwf_clear()
+	%vwf_text("Multiple indexed text macro groups inside a multi-level deep text macro:") : %vwf_wait_for_a() : %vwf_clear()
+	%vwf_text("If that ain't the infamous ") : %vwf_execute_text_macro("CurrentPlayerWithPowerup") : %vwf_text(" - what brought you here?") : %vwf_wait_for_a() : %vwf_clear()
 	
 	%vwf_display_message(0031)
 

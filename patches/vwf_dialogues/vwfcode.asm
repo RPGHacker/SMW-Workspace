@@ -10,14 +10,15 @@
 ; This routine lets you display a message and force the current textbox to close if one is already up.
 ; Call this routine from within your custom block/sprite/patch code.
 ; Entry code:
-; REP #$20
 ; LDA.w #MessageNumber
+; LDX.w #MessageNumber>>8
 ; JSL DisplayAMessage
 
 
 DisplayAMessage:
 	STA !message
-	SEP #$20
+	TXA
+	STA !message+1
 	LDA !vwfmode
 	BNE .ForceActiveMessageToClose
 	INC

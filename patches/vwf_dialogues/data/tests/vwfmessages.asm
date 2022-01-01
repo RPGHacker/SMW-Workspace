@@ -8,6 +8,37 @@
 %vwf_register_text_macro("Option3Text", %vwf_set_text_palette($05), %vwf_char($00AC), %vwf_text(" "), %vwf_set_text_palette($05), %vwf_text("Pointers"), %vwf_set_text_palette(!default_text_palette), %vwf_text(" Test") )
 
 
+%vwf_register_text_macro("Mario", %vwf_change_colors(vwf_get_color_index_2bpp($05, !vwf_text_color_id), vwf_make_color_15(31, 12, 12), vwf_make_color_15(0, 0, 0)), %vwf_set_text_palette($05), %vwf_text("Mario"), %vwf_set_text_palette(!default_text_palette) )
+
+%vwf_register_text_macro("Luigi", %vwf_change_colors(vwf_get_color_index_2bpp($06, !vwf_text_color_id), vwf_make_color_15(6, 31, 6), vwf_make_color_15(0, 0, 0)), %vwf_set_text_palette($06), %vwf_text("Luigi"), %vwf_set_text_palette(!default_text_palette) )
+
+
+%vwf_register_text_macro("SmallPowerup", %vwf_text("Small") )
+%vwf_register_text_macro("SuperPowerup", %vwf_text("Super") )
+%vwf_register_text_macro("CapePowerup", %vwf_text("Cape") )
+%vwf_register_text_macro("FirePowerup", %vwf_text("Fire") )
+
+
+%vwf_register_text_macro("SuperMario", %vwf_execute_text_macro("SuperPowerup"), %vwf_char(' '), %vwf_execute_text_macro("Mario"))
+
+
+%vwf_start_text_macro_group("PlayerName")
+	%vwf_add_text_macro_to_group("Mario")
+	%vwf_add_text_macro_to_group("Luigi")
+%vwf_end_text_macro_group()
+
+%vwf_start_text_macro_group("PlayerPowerup")
+	%vwf_add_text_macro_to_group("SmallPowerup")
+	%vwf_add_text_macro_to_group("SuperPowerup")
+	%vwf_add_text_macro_to_group("CapePowerup")
+	%vwf_add_text_macro_to_group("FirePowerup")
+%vwf_end_text_macro_group()
+
+%vwf_register_text_macro("CurrentPlayer", %vwf_execute_text_macro_by_indexed_group("PlayerName", remap_ram($7E0DB3)))
+
+%vwf_register_text_macro("CurrentPlayerWithPowerup", %vwf_execute_text_macro_by_indexed_group("PlayerPowerup", remap_ram($7E0019)), %vwf_char(' '), %vwf_execute_text_macro("CurrentPlayer"))
+
+
 ; Messages:
 
 ; RPG Hacker: Really, message $0050 (Yoshi's House) is the most important one for us, since it's the quickest one to get to.
@@ -58,7 +89,7 @@ endif
 	;%vwf_change_colors($1A, $10000)
 	;%vwf_change_colors($1A, -1)
 	
-	%vwf_set_option_location(TestSelection, 0)
+	%vwf_set_option_location(TestSelection, 0)	
 		%vwf_text("This is a line.") : %vwf_line_break()
 		%vwf_text("This is a new line.") : %vwf_line_break()
 		%vwf_text("Now some text...") : %vwf_wait_frames(60) : %vwf_text(" with a long pause.") : %vwf_wait_frames(30) : %vwf_line_break()
@@ -110,7 +141,7 @@ endif
 		%vwf_close()
 		
 	%vwf_set_option_location(TestSelection, 2)
-		%vwf_close()
+		%vwf_display_message(0030)
 		
 	%vwf_set_option_location(TestSelection, 3)
 		%vwf_text("Where to go?") : %vwf_line_break()
@@ -813,7 +844,24 @@ MessageASM0025:
 
 %vwf_message_start(0030)	; Message 018-1
 
-	; Message header & text go here
+	%vwf_header()
+		
+	%vwf_text("This text box uses text macros to spell 'Mario' and 'Luigi':") : %vwf_line_break()
+	%vwf_execute_text_macro("Mario") : %vwf_text(" ") : %vwf_execute_text_macro("Luigi") : %vwf_wait_for_a() : %vwf_clear()
+	
+	%vwf_text("This text box uses a nested text macro to spell 'Super Mario':") : %vwf_line_break()
+	%vwf_execute_text_macro("SuperMario") : %vwf_wait_for_a() : %vwf_clear()
+	
+	%vwf_text("This text box uses an indexed text macro group to spell 'Mario' or 'Luigi', depending on the current player:") : %vwf_line_break()
+	%vwf_execute_text_macro_by_indexed_group("PlayerName", remap_ram($7E0DB3)) : %vwf_wait_for_a() : %vwf_clear()
+	
+	%vwf_text("Same as above, but using a nested macro:") : %vwf_line_break()
+	%vwf_execute_text_macro("CurrentPlayer") : %vwf_wait_for_a() : %vwf_clear()
+	
+	%vwf_text("Same as above, but also including the player's current power-up state:") : %vwf_line_break()
+	%vwf_execute_text_macro("CurrentPlayerWithPowerup") : %vwf_wait_for_a() : %vwf_clear()
+	
+	%vwf_display_message(0031)
 
 %vwf_message_end()
 
@@ -821,23 +869,109 @@ MessageASM0025:
 
 %vwf_message_start(0031)	; Message 018-2
 
-	; Message header & text go here
+	%vwf_header(vwf_enable_message_asm(true))
+	
+	%vwf_text("This text box uses MessageASM to animate the text color, WHOOOA!")
+	%vwf_wait_for_a() : %vwf_clear()
+	
+	%vwf_display_message(0032)
 
 %vwf_message_end()
+
+MessageASM0031:
+	!temp_target_address #= !palettebackupram+(vwf_get_color_index_2bpp(!default_text_palette, !vwf_text_color_id)*2)
+	
+	lda #$00
+	xba
+	lda $13
+	
+	rep #$30
+	asl
+	tax
+	
+	lda SillyColorAnimTable,x
+	sta !temp_target_address
+	sep #$30
+	
+	lda #$01
+	sta !paletteupload
+	
+	undef "temp_target_address"
+	
+	rtl
+	
+SillyColorAnimTable:
+	!temp_i #= 0
+	while !temp_i < 256
+		!temp_max_val #= 31
+		!temp_min_val #= 8
+		!temp_speed #= 4.0		
+		 
+		!temp_range_mult #= (!temp_max_val-!temp_min_val)/2
+		!temp_offset #= !temp_range_mult+!temp_min_val
+		
+		!temp_channel_val #=          (cos((3.14159265359*2)*((!temp_i/256)*!temp_speed))*!temp_range_mult)+!temp_offset
+		!temp_reverse_channel_val #=  (sin((3.14159265359*2)*((!temp_i/256)*!temp_speed))*!temp_range_mult)+!temp_offset
+		
+		dw vwf_make_color_15(!temp_reverse_channel_val, !temp_channel_val, 3)
+		
+		undef "temp_max_val"
+		undef "temp_min_val"
+		undef "temp_speed"
+		
+		undef "temp_range_mult"
+		undef "temp_offset"
+		
+		undef "temp_channel_val"
+		undef "temp_reverse_channel_val"
+	
+		!temp_i #= !temp_i+1
+	endwhile
+	undef "temp_i"
 
 ;-------------------------------------------------------
 
 %vwf_message_start(0032)	; Message 019-1
 
-	; Message header & text go here
+	%vwf_header(vwf_enable_message_asm(true), vwf_enable_skipping(false))	
+	
+	%vwf_text("This text box is completely frozen via %vwf_freeze().") : %vwf_line_break()
+	%vwf_text("Hold L + R to continue.") : %vwf_freeze()
+
+.Continue
+	%vwf_display_message(0033)
 
 %vwf_message_end()
+
+MessageASM0032:
+	lda $17
+	and.b #%00110000
+	cmp.b #%00110000
+	bne .NotPressed
+
+	lda #$29
+	sta $1DFC
+	
+	lda.b #Message0032_Continue
+	ldx.b #Message0032_Continue>>8
+	ldy.b #Message0032_Continue>>16
+	jsl ChangeVWFTextPtr
+	
+.NotPressed
+	rtl
 
 ;-------------------------------------------------------
 
 %vwf_message_start(0033)	; Message 019-2
 
-	; Message header & text go here
+	%vwf_header()
+
+	%vwf_clear()
+
+	%vwf_text("Pointers test complete!") : %vwf_line_break()
+	%vwf_wait_for_a()
+	
+	%vwf_display_message(0050)
 
 %vwf_message_end()
 

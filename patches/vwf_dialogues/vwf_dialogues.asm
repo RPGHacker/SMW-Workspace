@@ -192,6 +192,7 @@ true	= 1
 !vwf_highest_message_id = 0
 
 !vwf_num_text_macros = 0
+!vwf_num_text_macro_groups = 0
 
 !vwf_num_fonts = 0
 !vwf_num_text_files = 0
@@ -2537,7 +2538,7 @@ TextCreation:
 .Routinetable
 	dw .E7_EndTextMacro
 	dw .E8_TextMacro
-	dw .FF_End	; Reserved
+	dw .E9_TextMacroGroup
 	dw .FF_End	; Reserved
 	dw .EB_DoNothing
 	dw .EC_PlayBGM
@@ -2565,24 +2566,29 @@ TextCreation:
 	jsr HandleVWFStackByte1_Pull
 	sta !vwftextsource+2
 	jsr HandleVWFStackByte1_Pull
-	xba
+	sta !vwftextsource+1
 	jsr HandleVWFStackByte1_Pull
-	rep #$21
-	adc #$0003
 	sta !vwftextsource
-	sep #$20
 	jmp TextCreation
 
 .E8_TextMacro
+	rep #$20
 	lda $00
+	clc
+	adc.w #$0003
+	sep #$20
+	
 	jsr HandleVWFStackByte1_Push
-	lda $01
+	xba
 	jsr HandleVWFStackByte1_Push
 	lda $02
 	jsr HandleVWFStackByte1_Push
+	
 	ldy #$01
 	rep #$30
 	lda.b [$00],y
+	
+.TextMacroShared
 	sta $0C
 	asl
 	clc
@@ -2605,8 +2611,68 @@ TextCreation:
 	sep #$30
 	lda TextMacroPointers+2,x
 +
-	sta !vwftextsource+2
+	sta !vwftextsource+2	
 	jmp TextCreation
+	
+.E9_TextMacroGroup	
+	rep #$20
+	lda $00
+	clc
+	adc.w #$0005
+	sep #$20
+	
+	jsr HandleVWFStackByte1_Push
+	xba
+	jsr HandleVWFStackByte1_Push
+	lda $02
+	jsr HandleVWFStackByte1_Push
+	
+	; Load RAM address	
+	ldy #$01
+	lda.b [$00],y
+	sta $0C
+	iny
+	lda.b [$00],y
+	sta $0D
+	iny
+	lda.b [$00],y
+	sta $0E
+	
+	lda #$00
+	pha
+	lda [$0C]
+	pha
+	
+	; Load group ID
+	iny
+	lda #$00
+	xba
+	lda.b [$00],y
+		
+	rep #$20
+	sta $0C
+	asl
+	clc
+	adc $0C
+	tax
+	sep #$20
+	
+	lda TextMacroGroupPointers,x
+	sta $0C
+	lda TextMacroGroupPointers+1,x
+	sta $0D
+	lda TextMacroGroupPointers+2,x
+	sta $0E
+	
+	rep #$30
+	pla
+	asl
+	tay
+	lda [$0C],y
+	clc
+	adc.w #!num_reserved_text_macros
+	
+	jmp .TextMacroShared
 
 .EB_DoNothing
 	lda #$01
@@ -3869,7 +3935,7 @@ WordWidth:
 .Routinetable
 	dw .E7_EndTextMacro
 	dw .E8_TextMacro
-	dw .FF_End	; Reserved
+	dw .E9_TextMacroGroup
 	dw .FF_End	; Reserved
 	dw .EB_DoNothing
 	dw .EC_PlayBGM
@@ -3897,23 +3963,28 @@ WordWidth:
 	jsr HandleVWFStackByte2_Pull
 	sta !vwftextsource+2
 	jsr HandleVWFStackByte2_Pull
-	xba
+	sta !vwftextsource+1
 	jsr HandleVWFStackByte2_Pull
-	rep #$21
-	adc #$0002
 	sta !vwftextsource
-	sep #$20
 	jmp .Begin
 
 .E8_TextMacro
+	rep #$20
 	lda $00
+	clc
+	adc.w #$0002
+	sep #$20
+	
 	jsr HandleVWFStackByte2_Push
-	lda $01
+	xba
 	jsr HandleVWFStackByte2_Push
 	lda $02
 	jsr HandleVWFStackByte2_Push
+	
 	rep #$30
 	lda.b [$00]
+	
+.TextMacroShared
 	sta $0C
 	asl
 	clc
@@ -3938,6 +4009,65 @@ WordWidth:
 +
 	sta !vwftextsource+2
 	jmp .Begin
+	
+.E9_TextMacroGroup
+	rep #$20
+	lda $00
+	clc
+	adc.w #$0004
+	sep #$20
+	
+	jsr HandleVWFStackByte2_Push
+	xba
+	jsr HandleVWFStackByte2_Push
+	lda $02
+	jsr HandleVWFStackByte2_Push
+	
+	; Load RAM address
+	lda.b [$00]
+	sta $0C	
+	ldy #$01
+	lda.b [$00],y
+	sta $0D
+	iny
+	lda.b [$00],y
+	sta $0E
+	
+	lda #$00
+	pha
+	lda [$0C]
+	pha
+	
+	; Load group ID
+	iny
+	lda #$00
+	xba
+	lda.b [$00],y
+		
+	rep #$20
+	sta $0C
+	asl
+	clc
+	adc $0C
+	tax
+	sep #$20
+	
+	lda TextMacroGroupPointers,x
+	sta $0C
+	lda TextMacroGroupPointers+1,x
+	sta $0D
+	lda TextMacroGroupPointers+2,x
+	sta $0E
+	
+	rep #$30
+	pla
+	asl
+	tay
+	lda [$0C],y
+	clc
+	adc.w #!num_reserved_text_macros
+
+	jmp .TextMacroShared
 
 .EE_ChangeColor
 .EF_Teleport

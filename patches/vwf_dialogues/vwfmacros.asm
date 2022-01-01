@@ -127,6 +127,26 @@ TextMacroPointers:
 		!temp_i #= !temp_i+1
 	endwhile
 	undef "temp_i"
+	
+TextMacroGroupPointers:
+	!temp_i #= 0
+	while !temp_i < !vwf_num_text_macro_groups
+		dl TextMacroGroup!temp_i
+		!temp_i #= !temp_i+1
+	endwhile
+	undef "temp_i"	
+	
+	!temp_i #= 0
+	while !temp_i < !vwf_num_text_macro_groups
+		TextMacroGroup!temp_i:		
+			!temp_name := !{vwf_text_macro_group_!{temp_i}_name}
+			
+			!{vwf_text_macro_group_!{temp_name}_sequence}
+			
+			undef "temp_name"		
+		!temp_i #= !temp_i+1
+	endwhile
+	undef "temp_i"
 endmacro
 
 
@@ -156,7 +176,9 @@ endmacro
 
 macro vwf_text_end()
 	if !vwf_current_message_id != $10000
-		error "A %vwf_message_start() (message !vwf_current_message_id) seems to be missing a %vwf_message_end()."
+		error "A %vwf_message_start() (message !vwf_current_message_id) seems to be missing a %vwf_message_end()."		
+	elseif defined("vwf_current_text_macro_group")
+		error "A %vwf_start_text_macro_group() (group '!vwf_current_text_macro_group') seems to be missing a %vwf_end_text_macro_group()."	
 	else		
 		!vwf_current_message_name = ""
 		!vwf_current_message_asm_name = ""
@@ -259,12 +281,13 @@ macro vwf_register_text_macro(name, ...)
 	TextMacro!vwf_num_text_macros:
 		!vwf_inside_text_macro = true
 		
-		!temp_i #= 0
-		while !temp_i < sizeof(...)
-			<!temp_i>
-			!temp_i #= !temp_i+1
+		; RPG Hacker: Weird name, because inner commands might use !temp_i.
+		!temp_tm_i #= 0
+		while !temp_tm_i < sizeof(...)
+			<!temp_tm_i>
+			!temp_tm_i #= !temp_tm_i+1
 		endwhile
-		undef "temp_i"
+		undef "temp_tm_i"
 	
 		%vwf_text_macro_end()
 		undef "vwf_inside_text_macro"
@@ -279,6 +302,51 @@ macro vwf_register_text_macro(name, ...)
 		endif
 		
 		!vwf_num_text_macros #= !vwf_num_text_macros+1
+	endif
+endmacro
+
+macro vwf_start_text_macro_group(name)
+	if defined("vwf_current_text_macro_group")
+		error "Can't start a new text macro group without closing the previous one."
+	elseif defined("vwf_text_macro_group_<name>_defined")
+		error "A text macro group called '<name>' already exists."
+	else
+		!vwf_current_text_macro_group := <name>
+		!{vwf_text_macro_group_!{vwf_num_text_macro_groups}_name} := <name>
+		!vwf_text_macro_group_<name>_defined := true
+		!vwf_text_macro_group_<name>_id #= !vwf_num_text_macro_groups
+		!vwf_text_macro_group_<name>_size #= 0
+		!vwf_text_macro_group_<name>_sequence := ""
+		
+		!vwf_num_text_macro_groups #= !vwf_num_text_macro_groups+1
+	endif
+endmacro
+
+macro vwf_add_text_macro_to_group(macro_name)
+	if not(defined("vwf_current_text_macro_group"))
+		error "%vwf_add_text_macro_to_group() can only be called from within a text macro group (i.e. between %vwf_start_text_macro_group() and %vwf_end_text_macro_group())."
+	elseif not(defined("vwf_text_macro_<macro_name>_defined"))
+		error "%vwf_add_text_macro_to_group(): Couldn't find text macro ""<macro_name>""."
+	else
+		!temp_name := !vwf_current_text_macro_group
+		
+		if !{vwf_text_macro_group_!{temp_name}_size} == 0
+			!{vwf_text_macro_group_!{temp_name}_sequence} := "dw !vwf_text_macro_<macro_name>_id"
+		else
+			!{vwf_text_macro_group_!{temp_name}_sequence} += ",!vwf_text_macro_<macro_name>_id"
+			!{vwf_text_macro_group_!{temp_name}_sequence} := !{vwf_text_macro_group_!{temp_name}_sequence}
+		endif
+		
+		!{vwf_text_macro_group_!{temp_name}_size} #= !{vwf_text_macro_group_!{temp_name}_size}+1
+		undef "temp_name"
+	endif
+endmacro
+
+macro vwf_end_text_macro_group()
+	if not(defined("vwf_current_text_macro_group"))
+		error "Can't call %vwf_end_text_macro_group() without calling %vwf_start_text_macro_group() first."
+	else
+		undef "vwf_current_text_macro_group"
 	endif
 endmacro
 
@@ -1051,8 +1119,21 @@ macro vwf_freeze()
 	endif
 endmacro
 
-; RPG Hacker: $EA and $E9 are currently reserved, but I don't know why.
-; I think Yoshifanatic did that when working on v1.3, and I'm sticking to it, ust to be safe.
+; RPG Hacker: $EA is currently reserved.
+
+macro vwf_execute_text_macro_by_indexed_group(group_name, index)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	elseif not(defined("vwf_text_macro_group_<group_name>_defined"))
+		error "%vwf_execute_text_macro_by_group(): Couldn't find text macro group ""<group_name>""."
+	else
+		!8bit_mode_only db $E9
+		!16bit_mode_only dw $FFE9
+		
+		dl <index>
+		db !vwf_text_macro_group_<group_name>_id
+	endif
+endmacro
 
 macro vwf_execute_text_macro(name)
 	if !vwf_message_command_error_condition

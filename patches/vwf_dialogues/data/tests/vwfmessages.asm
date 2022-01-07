@@ -19,7 +19,7 @@
 %vwf_register_text_macro("FirePowerup", %vwf_text("Fire") )
 
 
-%vwf_register_text_macro("SuperMario", %vwf_execute_text_macro("SuperPowerup"), %vwf_char(' '), %vwf_execute_text_macro("Mario"))
+%vwf_register_text_macro("SuperMario", %vwf_execute_text_macro("SuperPowerup"), %vwf_non_breaking_space(), %vwf_execute_text_macro("Mario"))
 
 
 %vwf_start_text_macro_group("PlayerName")
@@ -36,7 +36,7 @@
 
 %vwf_register_text_macro("CurrentPlayer", %vwf_execute_text_macro_by_indexed_group("PlayerName", remap_ram($7E0DB3)))
 
-%vwf_register_text_macro("CurrentPlayerWithPowerup", %vwf_execute_text_macro_by_indexed_group("PlayerPowerup", remap_ram($7E0019)), %vwf_char(' '), %vwf_execute_text_macro("CurrentPlayer"))
+%vwf_register_text_macro("CurrentPlayerWithPowerup", %vwf_execute_text_macro_by_indexed_group("PlayerPowerup", remap_ram($7E0019)), %vwf_non_breaking_space(), %vwf_execute_text_macro("CurrentPlayer"))
 
 
 ; Messages:
@@ -73,8 +73,8 @@ endif
 		%vwf_execute_text_macro("Option3Text"),
 		%vwf_wrap( %vwf_set_text_palette($05), %vwf_char($00AC), %vwf_set_text_palette(!default_text_palette), %vwf_text(" Teleport Test") ),
 		%vwf_wrap( %vwf_set_text_palette($05), %vwf_char($00AC), %vwf_set_text_palette(!default_text_palette), %vwf_text(" Change Appearance Test") ),
-		%vwf_text("Reserved"),
-		%vwf_text("Reserved"),
+		%vwf_wrap( %vwf_set_text_palette($05), %vwf_char($00AC), %vwf_set_text_palette(!default_text_palette), %vwf_text(" Routines Test") ),
+		%vwf_wrap( %vwf_set_text_palette($05), %vwf_char($00AC), %vwf_set_text_palette(!default_text_palette), %vwf_text(" Error Handling Test") ),
 		%vwf_text("Reserved"),
 		%vwf_text("Reserved"),
 		%vwf_text("Reserved"),
@@ -105,7 +105,7 @@ endif
 		%vwf_text("Current timer: ") : %vwf_char_at_address(remap_ram($7E0F31)) : %vwf_char_at_address(remap_ram($7E0F32)) : %vwf_char_at_address(remap_ram($7E0F33)) : %vwf_line_break()
 		%vwf_wait_for_a() : %vwf_clear()
 		
-		%vwf_text("ThisLongTextDoesContain") : %vwf_char(' ') : %vwf_text("ANonBreakingSpace") : %vwf_line_break()
+		%vwf_text("ThisLongTextDoesContain") : %vwf_non_breaking_space() : %vwf_text("ANonBreakingSpace") : %vwf_line_break()
 		%vwf_wait_for_a() : %vwf_clear()	
 		
 		%vwf_change_colors(vwf_get_color_index_2bpp($06, !vwf_text_color_id), vwf_make_color_15(31, 24, 2), vwf_make_color_15(0, 0, 0))
@@ -178,7 +178,11 @@ endif
 		%vwf_display_message(0020)
 			
 	%vwf_set_option_location(TestSelection, 5)
+		%vwf_display_message(0040)
+	
 	%vwf_set_option_location(TestSelection, 6)
+		%vwf_display_message(0060)
+	
 	%vwf_set_option_location(TestSelection, 7)
 	%vwf_set_option_location(TestSelection, 8)
 	%vwf_set_option_location(TestSelection, 9)
@@ -195,7 +199,7 @@ endif
 
 ;-------------------------------------------------------
 
-macro generate_message_test_messages(first_message_id, second_message_id, show_animations, text, next_message, ...)
+macro generate_message_test_messages(first_message_id, second_message_id, show_animations, alternate_font, text, next_message, ...)
 
 	; RPG Hacker: First message.
 	%vwf_message_start(<first_message_id>)
@@ -206,7 +210,7 @@ macro generate_message_test_messages(first_message_id, second_message_id, show_a
 
 		!temp_i #= 0
 		while !temp_i < sizeof(...)
-			%vwf_char(' ') : %vwf_char(' ')
+			%vwf_non_breaking_space() : %vwf_non_breaking_space()
 			%vwf_text("<!temp_i>")
 			if !temp_i == sizeof(...)-1
 				%vwf_wait_for_a()
@@ -229,6 +233,12 @@ macro generate_message_test_messages(first_message_id, second_message_id, show_a
 
 
 	; RPG Hacker: Second message.
+	if <alternate_font> != false
+		pushtable
+		cleartable
+		table "vwftable_font2.txt"
+	endif
+	
 	%vwf_message_start(<second_message_id>)
 		!temp_params = ""
 	
@@ -257,53 +267,51 @@ macro generate_message_test_messages(first_message_id, second_message_id, show_a
 		endif
 		
 	%vwf_message_end()
+	
+	if <alternate_font> != false
+		pulltable
+	endif
 endmacro
 
 ;-------------------------------------------------------
 
 ; Messages 000-1 and 000-2
-%generate_message_test_messages(0000, 0001, false, %vwf_text("A relatively standard text box!"), 0002, vwf_x_pos(1), vwf_y_pos(1), vwf_width(14), vwf_height(3), vwf_text_alignment(TextAlignment.Left))
+%generate_message_test_messages(0000, 0001, false, false, %vwf_text("A relatively standard text box!"), 0002, vwf_x_pos(1), vwf_y_pos(1), vwf_width(14), vwf_height(3), vwf_text_alignment(TextAlignment.Left))
 
 ;-------------------------------------------------------
 
-; Messages 001-1 and 001-2
-pushtable
-cleartable
-table "vwftable_font2.txt"
-	
+; Messages 001-1 and 001-2	
 ; RPG Hacker: The animation = instant and the show_animation = true are necessary here, because
 ; the background color won't get initialized otherwise. If we start this test from test selector,
 ; that usually won't be a problem, because palette commands in that test already override the BG
 ; color of palette 6. However, if we run this test by itself (which happens by seeing the special
 ; "Yoshi found" message), this would usually lead to a black background.
-%generate_message_test_messages(0002, 0003, true, %vwf_text("This one is small, uses centered text and also a different font and color."), 0004, vwf_x_pos(3), vwf_y_pos(10), vwf_width(12), vwf_height(5), vwf_text_alignment(TextAlignment.Centered), vwf_font($01), vwf_text_palette($06), vwf_text_color(vwf_make_color_15(0, 0, 0)), vwf_outline_color(vwf_make_color_15(31, 31, 31)), vwf_box_animation(BoxAnimation.Instant))
-
-pulltable
+%generate_message_test_messages(0002, 0003, true, true, %vwf_text("This one is small, uses centered text and also a different font and color."), 0004, vwf_x_pos(3), vwf_y_pos(10), vwf_width(12), vwf_height(5), vwf_text_alignment(TextAlignment.Centered), vwf_font($01), vwf_text_palette($06), vwf_text_color(vwf_make_color_15(0, 0, 0)), vwf_outline_color(vwf_make_color_15(31, 31, 31)), vwf_box_animation(BoxAnimation.Instant))
 
 ;-------------------------------------------------------
 
 ; Messages 002-1 and 002-2
-%generate_message_test_messages(0004, 0005, false, %vwf_text("Weird spacing and slow, unskippable text, lol. Wasting a tester's time is fun."), 0006, vwf_text_alignment(TextAlignment.Left), vwf_space_width(15), vwf_text_margin(0), vwf_text_speed(5), vwf_button_speedup(false), vwf_enable_skipping(false))
+%generate_message_test_messages(0004, 0005, false, false, %vwf_text("Weird spacing and slow, unskippable text, lol. Wasting a tester's time is fun."), 0006, vwf_text_alignment(TextAlignment.Left), vwf_space_width(15), vwf_text_margin(0), vwf_text_speed(5), vwf_button_speedup(false), vwf_enable_skipping(false))
 
 ;-------------------------------------------------------
 
 ; Messages 003-1 and 003-2
-%generate_message_test_messages(0006, 0007, false, %vwf_text("This text box hardly gives you enough time to read anything. Like WHAT THE FUCK, why is everything so fast? Why doesn't it stop? Why doesn't it give me any time to read anything? Like, who is supposed to read this? I mean, slow down, Satan. Slow the fuck down! I want to actually enjoy the story of this game, and not feel like I was running a marathon. Whatever, I'll just watch a playthrough of the game on YouTube and press pause so that I can read everything properly. Oh yeah, did you notice you can walk around while this text box is active?"), 0008, vwf_height(5), vwf_freeze_game(false), vwf_auto_wait(AutoWait.None))
+%generate_message_test_messages(0006, 0007, false, false, %vwf_text("This text box hardly gives you enough time to read anything. Like WHAT THE FUCK, why is everything so fast? Why doesn't it stop? Why doesn't it give me any time to read anything? Like, who is supposed to read this? I mean, slow down, Satan. Slow the fuck down! I want to actually enjoy the story of this game, and not feel like I was running a marathon. Whatever, I'll just watch a playthrough of the game on YouTube and press pause so that I can read everything properly. Oh yeah, did you notice you can walk around while this text box is active?"), 0008, vwf_height(5), vwf_freeze_game(false), vwf_auto_wait(AutoWait.None))
 
 ;-------------------------------------------------------
 
 ; Messages 004-1 and 004-2
-%generate_message_test_messages(0008, 0009, false, %vwf_text("This text box gives us a little more time to read everything, but in reality, it's actually just way too fucking fast again. Like, come on! Why even use the 'auto wait' option like that? Why not just use 'press A' and let the player read everything at their own pace? Are you deliberately torturing us? You just want us to not enjoy your game, do you? Well, I tell you something. I'll go on SMW Central right fucking now, give this hack a bad fucking rating and then complain about its text boxes being too fucking fast for me in the review. I hope this is what you wanted!"), 000A, vwf_height(5), vwf_freeze_game(false), vwf_auto_wait(AutoWait.WaitFrames.60))
+%generate_message_test_messages(0008, 0009, false, false, %vwf_text("This text box gives us a little more time to read everything, but in reality, it's actually just way too fucking fast again. Like, come on! Why even use the 'auto wait' option like that? Why not just use 'press A' and let the player read everything at their own pace? Are you deliberately torturing us? You just want us to not enjoy your game, do you? Well, I tell you something. I'll go on SMW Central right fucking now, give this hack a bad fucking rating and then complain about its text boxes being too fucking fast for me in the review. I hope this is what you wanted!"), 000A, vwf_height(5), vwf_freeze_game(false), vwf_auto_wait(AutoWait.WaitFrames.60))
 
 ;-------------------------------------------------------
 
 ; Messages 005-1 and 005-2
-%generate_message_test_messages(000A, 000B, false, %vwf_text("This text box is completely silent. Not much else going on here. Just enjoy this little break after the previous torture!"), 000C, vwf_enable_sfx(false))
+%generate_message_test_messages(000A, 000B, false, false, %vwf_text("This text box is completely silent. Not much else going on here. Just enjoy this little break after the previous torture!"), 000C, vwf_enable_sfx(false))
 
 ;-------------------------------------------------------
 
 ; Messages 006-1 and 006-2
-%generate_message_test_messages(000C, 000D, false,
+%generate_message_test_messages(000C, 000D, false, false,
 	%vwf_wrap( %vwf_text("This text box, on the other hand, uses some hilariously fucking funny sound effects! HAHAHA!"), %vwf_wait_for_a(), %vwf_clear(),
 		%vwf_text("I mean, that was already fucking hilarious, but check out that cursor sound effect! xDDDD"), %vwf_wait_for_a(), %vwf_clear(),	
 		%vwf_display_options(CheckFunnyCursorSound,
@@ -317,27 +325,27 @@ pulltable
 ;-------------------------------------------------------
 
 ; Messages 007-1 and 007-2
-%generate_message_test_messages(000E, 000F, true, %vwf_text("Time to test the different box animations. This one is Mega Man Zero-styled."), 0010, vwf_box_animation(BoxAnimation.MMZ))
+%generate_message_test_messages(000E, 000F, true, false, %vwf_text("Time to test the different box animations. This one is Mega Man Zero-styled."), 0010, vwf_box_animation(BoxAnimation.MMZ))
 
 ;-------------------------------------------------------
 
 ; Messages 008-1 and 008-2
-%generate_message_test_messages(0010, 0011, true, %vwf_text("Secret of Evermore-styled."), 0012, vwf_box_animation(BoxAnimation.SoE))
+%generate_message_test_messages(0010, 0011, true, false, %vwf_text("Secret of Evermore-styled."), 0012, vwf_box_animation(BoxAnimation.SoE))
 
 ;-------------------------------------------------------
 
 ; Messages 009-1 and 009-2
-%generate_message_test_messages(0012, 0013, true, %vwf_text("Secret of Mana-styled."), 0014, vwf_box_animation(BoxAnimation.SoM))
+%generate_message_test_messages(0012, 0013, true, false, %vwf_text("Secret of Mana-styled."), 0014, vwf_box_animation(BoxAnimation.SoM))
 
 ;-------------------------------------------------------
 
 ; Messages 00A-1 and 00A-2
-%generate_message_test_messages(0014, 0015, true, %vwf_text("This one just appears and disappears instantly, with no animation whatsoever."), 0016, vwf_box_animation(BoxAnimation.Instant))
+%generate_message_test_messages(0014, 0015, true, false, %vwf_text("This one just appears and disappears instantly, with no animation whatsoever."), 0016, vwf_box_animation(BoxAnimation.Instant))
 
 ;-------------------------------------------------------
 
 ; Messages 00B-1 and 00B-2
-%generate_message_test_messages(0016, 0017, true, %vwf_text("And this one doesn't even display a box at all, only text, which saves some precious cycles."), 0018, vwf_box_animation(BoxAnimation.None))
+%generate_message_test_messages(0016, 0017, true, false, %vwf_text("And this one doesn't even display a box at all, only text, which saves some precious cycles."), 0018, vwf_box_animation(BoxAnimation.None))
 
 ;-------------------------------------------------------
 
@@ -513,7 +521,7 @@ endmacro
 
 	%vwf_header(vwf_x_pos(10), vwf_y_pos(10), vwf_width(5), vwf_height(1), vwf_text_alignment(TextAlignment.Centered), vwf_enable_sfx(false), vwf_enable_message_asm(true), vwf_box_animation(BoxAnimation.Instant))
 	
-	%vwf_char($93) : %vwf_char(' ') : %vwf_hex(!boxframe) : %vwf_char(' ') : %vwf_char($94) : %vwf_freeze()
+	%vwf_char($93) : %vwf_non_breaking_space() : %vwf_hex(!boxframe) : %vwf_non_breaking_space() : %vwf_char($94) : %vwf_freeze()
 	
 .Refresh
 	%vwf_display_message(0021, false, true)
@@ -532,7 +540,7 @@ MessageASM0021:
 
 	%vwf_header(vwf_x_pos(10), vwf_y_pos(10), vwf_width(5), vwf_height(1), vwf_text_alignment(TextAlignment.Centered), vwf_enable_sfx(false), vwf_enable_message_asm(true), vwf_box_animation(BoxAnimation.Instant))
 	
-	%vwf_char($93) : %vwf_char(' ') : %vwf_hex(!boxbg) : %vwf_char(' ') : %vwf_char($94) : %vwf_freeze()
+	%vwf_char($93) : %vwf_non_breaking_space() : %vwf_hex(!boxbg) : %vwf_non_breaking_space() : %vwf_char($94) : %vwf_freeze()
 	
 .Refresh
 	%vwf_display_message(0022, false, true)
@@ -705,9 +713,9 @@ MessageASM0025:
 	
 	%vwf_change_colors(vwf_get_color_index_2bpp($06, !vwf_text_color_id), vwf_make_color_15(31, 12, 12), vwf_make_color_15(0, 0, 0))
 
-	%vwf_char($96) : %vwf_char($95) : %vwf_char(' ') : %vwf_char($93)
-	%vwf_char(' ') : %vwf_set_text_palette($06) : %vwf_text("R:") : %vwf_set_text_palette(!default_text_palette) : %vwf_text(" ")
-	%vwf_decimal(!edit_color_r) : %vwf_char(' ') : %vwf_char($94)
+	%vwf_char($96) : %vwf_char($95) : %vwf_non_breaking_space() : %vwf_char($93)
+	%vwf_non_breaking_space() : %vwf_set_text_palette($06) : %vwf_text("R:") : %vwf_set_text_palette(!default_text_palette) : %vwf_text(" ")
+	%vwf_decimal(!edit_color_r) : %vwf_non_breaking_space() : %vwf_char($94)
 	%vwf_freeze()
 	
 .Refresh
@@ -726,9 +734,9 @@ MessageASM0025:
 	
 	%vwf_change_colors(vwf_get_color_index_2bpp($06, !vwf_text_color_id), vwf_make_color_15(6, 31, 6), vwf_make_color_15(0, 0, 0))
 
-	%vwf_char($96) : %vwf_char($95) : %vwf_char(' ') : %vwf_char($93)
-	%vwf_char(' ') : %vwf_set_text_palette($06) : %vwf_text("G:") : %vwf_set_text_palette(!default_text_palette) : %vwf_text(" ")
-	%vwf_decimal(!edit_color_g) : %vwf_char(' ') : %vwf_char($94)
+	%vwf_char($96) : %vwf_char($95) : %vwf_non_breaking_space() : %vwf_char($93)
+	%vwf_non_breaking_space() : %vwf_set_text_palette($06) : %vwf_text("G:") : %vwf_set_text_palette(!default_text_palette) : %vwf_text(" ")
+	%vwf_decimal(!edit_color_g) : %vwf_non_breaking_space() : %vwf_char($94)
 	%vwf_freeze()
 	
 .Refresh
@@ -747,9 +755,9 @@ MessageASM0025:
 	
 	%vwf_change_colors(vwf_get_color_index_2bpp($06, !vwf_text_color_id), vwf_make_color_15(15, 15, 31), vwf_make_color_15(0, 0, 0))
 
-	%vwf_char($96) : %vwf_char($95) : %vwf_char(' ') : %vwf_char($93)
-	%vwf_char(' ') : %vwf_set_text_palette($06) : %vwf_text("B:") : %vwf_set_text_palette(!default_text_palette) : %vwf_text(" ")
-	%vwf_decimal(!edit_color_b) : %vwf_char(' ') : %vwf_char($94)
+	%vwf_char($96) : %vwf_char($95) : %vwf_non_breaking_space() : %vwf_char($93)
+	%vwf_non_breaking_space() : %vwf_set_text_palette($06) : %vwf_text("B:") : %vwf_set_text_palette(!default_text_palette) : %vwf_text(" ")
+	%vwf_decimal(!edit_color_b) : %vwf_non_breaking_space() : %vwf_char($94)
 	%vwf_freeze()
 	
 .Refresh
@@ -861,9 +869,49 @@ MessageASM0025:
 	%vwf_text("Multiple indexed text macro groups inside a multi-level deep text macro:") : %vwf_wait_for_a() : %vwf_clear()
 	%vwf_text("If that ain't the infamous ") : %vwf_execute_text_macro("CurrentPlayerWithPowerup") : %vwf_text(" - what brought you here?") : %vwf_wait_for_a() : %vwf_clear()
 	
-	%vwf_display_message(0031)
+	%vwf_text("A couple of buffered macros:") : %vwf_execute_subroutine(InitializeBufferedMacros1) : %vwf_wait_for_a() : %vwf_clear()
+	%vwf_text("Hey now, who do we have here? If it isn't our friends ") : %vwf_execute_buffered_text_macro(0) : %vwf_text(" and ") : %vwf_execute_buffered_text_macro(1) : %vwf_text("!") : %vwf_wait_for_a() : %vwf_clear()
+	
+	%vwf_display_message(0034)
 
 %vwf_message_end()
+
+InitializeBufferedMacros1:
+	jsl ResetBufferedTextMacros
+	
+	jsl BeginBufferedTextMacro
+	%add_to_buffered_text_macro(.Str1)
+	%add_to_buffered_text_macro(.Str2)
+	%add_to_buffered_text_macro(.Str3)
+	%add_to_buffered_text_macro(.Str4)
+	jsl EndBufferedTextMacro
+	
+	jsl BeginBufferedTextMacro
+	%add_to_buffered_text_macro(.Str1)
+	%add_to_buffered_text_macro(.Str2)
+	%add_to_buffered_text_macro(.Str5)
+	%add_to_buffered_text_macro(.Str6)
+	jsl EndBufferedTextMacro
+	
+	rtl
+	
+.Str1:
+	%vwf_inline(%vwf_text("Buf"))
+	
+.Str2:
+	%vwf_inline(%vwf_text("fered"))
+	
+.Str3:
+	%vwf_inline(%vwf_text(" Mar"))
+	
+.Str4:
+	%vwf_inline(%vwf_text("io"))
+	
+.Str5:
+	%vwf_inline(%vwf_text(" Lui"))
+	
+.Str6:
+	%vwf_inline(%vwf_text("gi"))
 
 ;-------------------------------------------------------
 
@@ -979,9 +1027,211 @@ MessageASM0032:
 
 %vwf_message_start(0034)	; Message 01A-1
 
-	; Message header & text go here
+	%vwf_header(vwf_x_pos(0), vwf_y_pos(0), vwf_width(15), vwf_height(13), vwf_text_alignment(TextAlignment.Left))
+	
+	%vwf_execute_subroutine(InitializePlayerName)
+	
+.RedrawPlayerName
+	%vwf_clear() : %vwf_text("Please enter a player name!") : %vwf_line_break()
+	%vwf_text("Current: ") : %vwf_execute_buffered_text_macro(0) : %vwf_line_break()
+	
+	%vwf_display_options(PlayerNameEntry,
+		%vwf_text("SU"),
+		%vwf_text("PER"),
+		%vwf_text("MA"),
+		%vwf_text("RI"),
+		%vwf_text("O"),
+		%vwf_text("LU"),
+		%vwf_text("I"),
+		%vwf_text("GI"),
+		%vwf_text("(Space)"),
+		%vwf_text("Reset"),
+		%vwf_text("Done"))
+	
+	%vwf_set_option_location(PlayerNameEntry, 0)
+		%vwf_execute_subroutine(EditPlayerName_Add0)
+	
+	%vwf_set_option_location(PlayerNameEntry, 1)
+		%vwf_execute_subroutine(EditPlayerName_Add1)
+		
+	%vwf_set_option_location(PlayerNameEntry, 2)
+		%vwf_execute_subroutine(EditPlayerName_Add2)
+		
+	%vwf_set_option_location(PlayerNameEntry, 3)
+		%vwf_execute_subroutine(EditPlayerName_Add3)
+		
+	%vwf_set_option_location(PlayerNameEntry, 4)
+		%vwf_execute_subroutine(EditPlayerName_Add4)
+		
+	%vwf_set_option_location(PlayerNameEntry, 5)
+		%vwf_execute_subroutine(EditPlayerName_Add5)
+		
+	%vwf_set_option_location(PlayerNameEntry, 6)
+		%vwf_execute_subroutine(EditPlayerName_Add6)
+		
+	%vwf_set_option_location(PlayerNameEntry, 7)
+		%vwf_execute_subroutine(EditPlayerName_Add7)
+		
+	%vwf_set_option_location(PlayerNameEntry, 8)
+		%vwf_execute_subroutine(EditPlayerName_Add8)
+		
+	%vwf_set_option_location(PlayerNameEntry, 9)
+		%vwf_execute_subroutine(EditPlayerName_Clear)
+		
+	
+	%vwf_set_option_location(PlayerNameEntry, 10)
+		%vwf_text("Welcome, ") : %vwf_execute_buffered_text_macro(0) : %vwf_text("!") : %vwf_wait_for_a()
+	
+		%vwf_display_message(0031)
 
 %vwf_message_end()
+
+
+; Again... we can do this, because it's just for testing.
+!player_name_max_length = 16*(1+!bitmode)
+%claim_varram(player_name_length, 2)
+%claim_varram(player_name, !player_name_max_length)
+
+
+InitializePlayerName:
+	jsl ResetBufferedTextMacros
+	
+	jsl BeginBufferedTextMacro
+	jsl EndBufferedTextMacro
+	
+	lda #$00
+	sta !player_name_length
+	sta !player_name_length+1
+	
+	rtl
+	
+EditPlayerName:
+
+.Add0
+	pea .Str0
+	bra .Commit
+	
+.Add1
+	pea .Str1
+	bra .Commit
+	
+.Add2
+	pea .Str2
+	bra .Commit
+	
+.Add3
+	pea .Str3
+	bra .Commit
+	
+.Add4
+	pea .Str4
+	bra .Commit
+	
+.Add5
+	pea .Str5
+	bra .Commit
+	
+.Add6
+	pea .Str6
+	bra .Commit
+	
+.Add7
+	pea .Str7
+	bra .Commit
+	
+.Add8
+	pea .Str8
+	bra .Commit
+
+.Clear
+	jsl InitializePlayerName
+	bra .Redraw
+	
+.Commit
+	phb
+	lda.b #bank(.Str0)
+	pha
+	plb
+	
+	rep #$30
+	
+	ldy.w #$0000
+	; Load size into A and copy it into $06 for easy access.
+	lda ($02,s),y
+	sta $06
+	
+	; Now skip past the length specifier in the address on stack.
+	lda $02,s
+	inc #2
+	sta $02,s
+	
+	; Load player name length into X, so that we can append at the end.
+	lda !player_name_length
+	tax
+	
+.Copy
+	; Make sure we don't overflow our maximum allowed length.
+	cpx.w #!player_name_max_length
+	bcs .Done
+
+	lda ($02,s),y
+	sta !player_name,x
+	inx
+	iny
+	
+	; Damn, this doesn't exist.
+	cpy $06
+	bcc .Copy
+	
+.Done
+	plb
+
+	txa
+	sta !player_name_length
+	
+	pla
+	
+	sep #$30
+	
+	jsl ResetBufferedTextMacros
+	
+	jsl BeginBufferedTextMacro
+	%add_to_buffered_text_macro(!player_name_length)
+	jsl EndBufferedTextMacro
+	
+.Redraw
+	lda.b #Message0034_RedrawPlayerName
+	ldx.b #Message0034_RedrawPlayerName>>8
+	ldy.b #Message0034_RedrawPlayerName>>16
+	jsl ChangeVWFTextPtr
+	rtl
+	
+.Str0
+	%vwf_inline( %vwf_text("SU") )
+	
+.Str1
+	%vwf_inline( %vwf_text("PER") )
+	
+.Str2
+	%vwf_inline( %vwf_text("MA") )
+	
+.Str3
+	%vwf_inline( %vwf_text("RI") )
+	
+.Str4
+	%vwf_inline( %vwf_text("O") )
+	
+.Str5
+	%vwf_inline( %vwf_text("LU") )
+	
+.Str6
+	%vwf_inline( %vwf_text("I") )
+	
+.Str7
+	%vwf_inline( %vwf_text("GI") )
+	
+.Str8
+	%vwf_inline( %vwf_non_breaking_space() )
 
 ;-------------------------------------------------------
 
@@ -1323,9 +1573,69 @@ MessageASM0032:
 
 %vwf_message_start(0060)	; Message 10C-1
 
-	; Message header & text go here
+	%vwf_header(vwf_x_pos(0), vwf_y_pos(0), vwf_width(15), vwf_height(13), vwf_text_alignment(TextAlignment.Centered))
+
+	%vwf_text("What error do you want to test?") : %vwf_line_break()
+	
+	%vwf_display_options(ErrorCheck,
+		%vwf_text("Text macro ID overflow"),
+		%vwf_text("Text macro buffer overflow"),
+		%vwf_text("Exit"))
+	
+	%vwf_set_option_location(ErrorCheck, 0)
+		%vwf_execute_subroutine(IdOverflowTest)
+		%vwf_text("If you can read this text, then no error was triggered. Please adjust the test to make sure the respective error is triggered.") : %vwf_wait_for_a() : %vwf_close()
+		
+	%vwf_set_option_location(ErrorCheck, 1)
+		%vwf_execute_subroutine(BufferOverflowTest)
+		%vwf_text("If you can read this text, then no error was triggered. Please adjust the test to make sure the respective error is triggered.") : %vwf_wait_for_a() : %vwf_close()
+		
+	%vwf_set_option_location(ErrorCheck, 2)
+		%vwf_display_message(0050)
 
 %vwf_message_end()
+
+IdOverflowTest:
+	jsl ResetBufferedTextMacros
+	
+	; There should be at least !num_reserved_text_macros+1 calls to both macros here to trigger the error handling.
+	jsl BeginBufferedTextMacro
+	jsl EndBufferedTextMacro
+	
+	jsl BeginBufferedTextMacro
+	jsl EndBufferedTextMacro
+	
+	jsl BeginBufferedTextMacro
+	jsl EndBufferedTextMacro
+	
+	jsl BeginBufferedTextMacro
+	jsl EndBufferedTextMacro
+	
+	jsl BeginBufferedTextMacro
+	jsl EndBufferedTextMacro
+	
+	jsl BeginBufferedTextMacro
+	jsl EndBufferedTextMacro
+	
+	rtl
+	
+BufferOverflowTest:
+	jsl ResetBufferedTextMacros
+	
+	jsl BeginBufferedTextMacro
+	%add_to_buffered_text_macro(.ErrorString)
+	jsl EndBufferedTextMacro
+	
+	rtl
+	
+.ErrorString
+	; This string should be larger than !buffered_text_macro_buffer_size to trigger the error handling.
+	%vwf_inline(%vwf_text("wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww "),
+	%vwf_text("wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww "),
+	%vwf_text("wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww "),
+	%vwf_text("wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww "),
+	%vwf_text("wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww "),
+	%vwf_text("wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww wwwwwwww "))
 
 ;-------------------------------------------------------
 

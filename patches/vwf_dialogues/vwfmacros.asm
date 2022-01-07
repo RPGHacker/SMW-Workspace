@@ -41,6 +41,10 @@ function vwf_get_color_index_2bpp(palette, id) = (palette*4)+id
 !vwf_text_color_id = 2
 !vwf_outline_color_id = 3
 
+; RPG Hacker: This exists as a define, because regular space in all tables is defined as FFFE.
+; If we pass that to %vwf_char() macro, we would get garbage in 16-Bit mode, rather than escaping a space.
+!vwf_nbsp = $00FE
+
 
 
 ; Resource management macros
@@ -193,6 +197,7 @@ endmacro
 macro vwf_define_invalid_message_handlers()		
 	!vwf_defining_internal_message = true
 	
+	
 	%vwf_message_start(10001)
 	
 	HandleUndefinedMessage!vwf_num_text_files:
@@ -202,6 +207,31 @@ macro vwf_define_invalid_message_handlers()
 		%vwf_wait_for_a()
 	
 	%vwf_message_end()
+	
+	
+	%vwf_message_start(10002)
+	
+	HandleTextMacroBufferOverflow!vwf_num_text_files:
+		%vwf_header(vwf_x_pos(1), vwf_y_pos(1), vwf_width(14), vwf_height(3), vwf_freeze_game(true), vwf_text_speed(0), vwf_auto_wait(AutoWait.WaitForA), vwf_enable_skipping(false), vwf_enable_message_asm(false))
+		
+	HandleTextMacroBufferOverflow!{vwf_num_text_files}_Content:
+		%vwf_clear() : %vwf_text("Text macro buffer overflow while calling AddToBufferedTextMacro. This is a bug, please contact the hack author.")
+		%vwf_wait_for_a()
+	
+	%vwf_message_end()
+	
+	
+	%vwf_message_start(10003)
+	
+	HandleTextMacroIdOverflow!vwf_num_text_files:
+		%vwf_header(vwf_x_pos(1), vwf_y_pos(1), vwf_width(14), vwf_height(3), vwf_freeze_game(true), vwf_text_speed(0), vwf_auto_wait(AutoWait.WaitForA), vwf_enable_skipping(false), vwf_enable_message_asm(false))
+		
+	HandleTextMacroIdOverflow!{vwf_num_text_files}_Content:
+		%vwf_clear() : %vwf_text("Trying to use too many buffered text macros. This is a bug, please contact the hack author.")
+		%vwf_wait_for_a()
+	
+	%vwf_message_end()
+	
 	
 	undef "vwf_defining_internal_message"	
 endmacro
@@ -275,7 +305,9 @@ macro vwf_register_text_macro(name, ...)
 	if defined("vwf_text_macro_<name>_defined")
 		error "%vwf_register_text_macro(): Text macro redefinition: <name>"
 	elseif defined("vwf_inside_text_macro")
-		error "%vwf_register_text_macro(): Can't define nested text macros."
+		error "%vwf_register_text_macro(): Can't register a text macro from within another one."
+	elseif !vwf_current_message_id != $10000
+		error "%vwf_register_text_macro(): Can't register a text macro from within a message."
 	else
 
 	TextMacro!vwf_num_text_macros:
@@ -298,7 +330,7 @@ macro vwf_register_text_macro(name, ...)
 		if !bitmode == BitMode.8Bit
 			!vwf_text_macro_<name>_sequence := "db $E8 : dw !vwf_num_text_macros+!num_reserved_text_macros"
 		else
-			!vwf_text_macro_<name>_sequence := "db $FFE8 : dw !vwf_num_text_macros+!num_reserved_text_macros"
+			!vwf_text_macro_<name>_sequence := "dw $FFE8 : dw !vwf_num_text_macros+!num_reserved_text_macros"
 		endif
 		
 		!vwf_num_text_macros #= !vwf_num_text_macros+1
@@ -347,6 +379,29 @@ macro vwf_end_text_macro_group()
 		error "Can't call %vwf_end_text_macro_group() without calling %vwf_start_text_macro_group() first."
 	else
 		undef "vwf_current_text_macro_group"
+	endif
+endmacro
+
+
+macro vwf_inline(...)
+	if defined("vwf_inside_text_macro") || !vwf_current_message_id != $10000
+		error "%vwf_inline(): Can't be called from within a message, a text macro or another inline block."
+	else
+		?TextBlock:
+			dw ?.End-?.Begin
+		?.Begin
+			!vwf_inside_text_macro = true
+			
+			; RPG Hacker: Weird name, because inner commands might use !temp_i.
+			!temp_tm_i #= 0
+			while !temp_tm_i < sizeof(...)
+				<!temp_tm_i>
+				!temp_tm_i #= !temp_tm_i+1
+			endwhile
+			undef "temp_tm_i"
+		
+			undef "vwf_inside_text_macro"		
+		?.End
 	endif
 endmacro
 
@@ -639,8 +694,10 @@ macro vwf_header(...)
 		; Header format:
 		
 		; db $aa
-		; $aa:    Font number		
-		db !vwf_header_argument_font_value
+		; $aa:    Font number
+		if !bitmode == BitMode.8Bit
+			db !vwf_header_argument_font_value
+		endif
 		
 		; db %aaaaabbb,%bbccccdd,%ddeeeeff,%ffgggggg
 		; %aaaaa:  Text box X pos
@@ -745,6 +802,10 @@ macro vwf_char(value)
 			dw <value>
 		endif
 	endif
+endmacro
+
+macro vwf_non_breaking_space()
+	%vwf_char(!vwf_nbsp)
 endmacro
 
 ; RPG Hacker: TODO: Ideally, this macro should prevent anything contained
@@ -1142,6 +1203,18 @@ macro vwf_execute_text_macro(name)
 		error "%vwf_execute_text_macro(): Couldn't find text macro ""<name>""."
 	else
 		!vwf_text_macro_<name>_sequence
+	endif
+endmacro
+
+macro vwf_execute_buffered_text_macro(id)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	elseif <id> >= !num_reserved_text_macros || <id> < 0
+		error "%vwf_execute_buffered_text_macro(): ID for buffered text macros must be a value between 0 and ",dec(!num_reserved_text_macros-1),". Current: ",dec(<id>)
+	else
+		!8bit_mode_only db $E8
+		!16bit_mode_only  dw $FFE8
+		dw <id>
 	endif
 endmacro
 

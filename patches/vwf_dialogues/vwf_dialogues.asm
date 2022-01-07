@@ -161,7 +161,7 @@ endmacro
 %claim_varram(vwftbufferedtextpointerindex, 1)		; Index for the which 24-bit buffered text macro pointer should be updated.
 %claim_varram(vwftbufferedtextindex, 2)			; 16-bit index into the text buffer, used for handling where to write in the table for consecuative text buffers.
 %claim_varram(vwftbufferedtextpointers, !num_reserved_text_macros*3)	; 24-bit pointer table for the buffered text macros.
-%claim_varram(vwftextbuffer, 512)			; Buffer dedicated for uploading VWF text to in order to display variable text.
+%claim_varram(vwftextbuffer, !buffered_text_macro_buffer_size)			; Buffer dedicated for uploading VWF text to in order to display variable text.
 
 !vwfbuffer_emptytile = !tileram
 !vwfbuffer_bgtile = !tileram+$10
@@ -2538,7 +2538,7 @@ TextCreation:
 	dw .E8_TextMacro
 	dw .E9_TextMacroGroup
 	dw .FF_End	; Reserved
-	dw .EB_DoNothing
+	dw .EB_LockTextBox
 	dw .EC_PlayBGM
 	dw .ED_ClearBox
 	dw .EE_ChangeColor
@@ -2672,10 +2672,13 @@ TextCreation:
 	
 	jmp .TextMacroShared
 
-.EB_DoNothing
+.EB_LockTextBox
 	lda #$01
 	sta !forcesfx
-	JMP .End
+	; RPG Hacker: In 16-bit mode, the $FF part of the command is automatically skipped.
+	; Need to decrement the pointer here, otherwise the text box will explode.
+	!16bit_mode_only jsr DecPointer
+	jmp .End
 
 .EC_PlayBGM
 	ldy #$01
@@ -3566,6 +3569,15 @@ IncPointer:
 	rts
 
 
+DecPointer:
+	rep #$20
+	lda !vwftextsource
+	dec
+	sta !vwftextsource
+	sep #$20
+	rts
+
+
 ReadPointer:
 	rep #$20
 	lda !vwftextsource
@@ -3935,7 +3947,7 @@ WordWidth:
 	dw .E8_TextMacro
 	dw .E9_TextMacroGroup
 	dw .FF_End	; Reserved
-	dw .EB_DoNothing
+	dw .EB_LockTextBox
 	dw .EC_PlayBGM
 	dw .ED_ClearBox
 	dw .EE_ChangeColor
@@ -4231,7 +4243,7 @@ WordWidth:
 	sta !vwftextsource+2
 	jmp .Begin
 
-.EB_DoNothing
+.EB_LockTextBox
 .ED_ClearBox
 .F0_Choices
 .FC_LoadMessage
@@ -4275,7 +4287,7 @@ WordWidth:
 
 ; This loads up graphics and tilemaps to VRAM.
 
-VBlank:
+VBlank:	
 	phx
 	phy
 	pha
@@ -4780,9 +4792,11 @@ TextUpload:
 	jmp .End
 
 .NoEnd
+	!16bit_mode_only rep #$20
 	lda !vwfchar
 	!8bit_mode_only cmp #$FA	; Waiting for A button?
 	!16bit_mode_only cmp #$FFFA
+	!16bit_mode_only sep #$20
 	!16bit_mode_only sep #$20
 	beq .CheckButton
 	jmp .Upload

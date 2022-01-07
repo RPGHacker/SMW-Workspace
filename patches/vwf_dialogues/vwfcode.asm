@@ -10,289 +10,258 @@
 ; This routine lets you display a message and force the current textbox to close if one is already up.
 ; Call this routine from within your custom block/sprite/patch code.
 ; Entry code:
-; LDA.w #MessageNumber
-; LDX.w #MessageNumber>>8
-; JSL DisplayAMessage
+; lda.w #MessageNumber
+; ldx.w #MessageNumber>>8
+; jsl DisplayAMessage
 
 
 DisplayAMessage:
-	STA !message
-	TXA
-	STA !message+1
-	LDA !vwfmode
-	BNE .ForceActiveMessageToClose
-	INC
-	STA !vwfmode
-	LDA #$6B
-	STA !messageasmopcode
-	RTL
+	sta !message
+	txa
+	sta !message+1
+	lda !vwfmode
+	bne .ForceActiveMessageToClose
+	inc
+	sta !vwfmode
+	lda #$6B
+	sta !messageasmopcode
+	rtl
 
 .ForceActiveMessageToClose
-	LDA #$01
-	STA !vwfactiveflag
-	RTL
+	lda #$01
+	sta !vwfactiveflag
+	rtl
 
 
 ; This routine allows you to change the text pointer to wherever you specify
 ; Entry code:
-; LDA.b #TextPointer
-; LDX.b #TextPointer>>8
-; LDY.b #TextPointer>>16
-; JML ChangeVWFTextPtr
+; lda.b #TextPointer
+; ldx.b #TextPointer>>8
+; ldy.b #TextPointer>>16
+; jsl ChangeVWFTextPtr
 
 ChangeVWFTextPtr:
-	STA !vwftextsource
-	TXA
-	STA !vwftextsource+1
-	TYA
-	STA !vwftextsource+2
-	RTL
+	sta !vwftextsource
+	txa
+	sta !vwftextsource+1
+	tya
+	sta !vwftextsource+2
+	rtl
 
 ; This routine allows you to change the MessageASM pointer to wherever you specify
 ; Entry code:
-; LDA.b #ASMPointer
-; LDX.b #ASMPointer>>8
-; LDY.b #ASMPointer>>16
-; JML ChangeMessageASMPtr
+; lda.b #ASMPointer
+; ldx.b #ASMPointer>>8
+; ldy.b #ASMPointer>>16
+; jsl ChangeMessageASMPtr
 
 ChangeMessageASMPtr:
-	STA !messageasmloc
-	TXA
-	STA !messageasmloc+1
-	TYA
-	STA !messageasmloc+2
-	RTL
+	sta !messageasmloc
+	txa
+	sta !messageasmloc+1
+	tya
+	sta !messageasmloc+2
+	rtl
 
 ; This routine allows you to change the message skip pointer to wherever you specify
 ; Entry code:
-; LDA.b #TextPointer
-; LDX.b #TextPointer>>8
-; LDY.b #TextPointer>>16
-; JML ChangeMessageSkipPtr
+; lda.b #TextPointer
+; ldx.b #TextPointer>>8
+; ldy.b #TextPointer>>16
+; jsl ChangeMessageSkipPtr
 
 ChangeMessageSkipPtr:
-	STA !skipmessageloc
-	TXA
-	STA !skipmessageloc+1
-	TYA
-	STA !skipmessageloc+2
-	RTL
+	sta !skipmessageloc
+	txa
+	sta !skipmessageloc+1
+	tya
+	sta !skipmessageloc+2
+	rtl
 
 ; This routine lets you check if the player skipped the current message with start.
 ; It only works if the current message was set to be skippable initially. 
 ;Entry code:
-; JSL CheckIfMessageWasSkipped
-; BCS .MessageWasSkipped
+; jsl CheckIfMessageWasSkipped
+; bcs .MessageWasSkipped
 
 CheckIfMessageWasSkipped:
-	CLC
-	LDA !initialskipmessageflag
-	BEQ .NoSkipping
-	LDA !skipmessageflag
-	BNE .NoSkipping
-	SEC
+	clc
+	lda !initialskipmessageflag
+	beq .NoSkipping
+	lda !skipmessageflag
+	bne .NoSkipping
+	sec
 .NoSkipping
-	RTL
-
-; This routine lets you buffer, then display a string of text that can potentially change. For example displaying the name
-; of a randomly selected item.
-; Entry code 1:
-; (Some code that sets X to a multiple of 2)
-; REP #$30
-; STZ $03
-; LDY.w #.StringTable>>16
-; LDA.l .StringTable,x
-; JML BufferVWFText_Main
+	rtl
+	
+	
+; Resets all buffered text macros.
+; The text buffer is reset to position 0, and the ID for the next text macro is reset to 0.
+ResetBufferedTextMacros:
+	lda #$00
+	sta !vwftbufferedtextpointerindex
+	sta !vwftbufferedtextindex
+	sta !vwftbufferedtextindex+1
+	rtl
+	
+	
+; Begins constructing a new buffered text macro, starting at text macro ID 0 and incrementing
+; that ID for every additional call to this routine. Must be followed by calls to AddToBufferedTextMacro
+; and, eventually, a call to EndBufferedTextMacro to finish the macro.
+BeginBufferedTextMacro:
+	lda !vwftbufferedtextpointerindex
+	cmp.b #!num_reserved_text_macros*3
+	bcc .NumOkay
+	
+	; If we try using too many buffered text macros, generate an error message inside the text box and return.
+	lda.b #HandleTextMacroIdOverflow0_Content
+	ldx.b #HandleTextMacroIdOverflow0_Content>>8
+	ldy.b #HandleTextMacroIdOverflow0_Content>>16
+	jsl ChangeVWFTextPtr
+	rtl
+	
+.NumOkay
+	tax
+	rep #$21
+	lda.w #!vwftextbuffer
+	adc !vwftbufferedtextindex
+	sta !vwftbufferedtextpointers,x
+	sep #$20
+	
+	inx #2
+	lda.b #bank(!vwftextbuffer)
+	sta !vwftbufferedtextpointers,x
+	
+	inx
+	txa
+	sta !vwftbufferedtextpointerindex
+	
+	rtl
+	
+	
+; Adds text to to a buffered text macro that was started with BeginBufferedTextMacro.
 ;
-; Entry code 2:
-; (Some code that sets X to a multiple of 2)
-; REP #$30
-; SEC
-; ROL $03
-; LDA.w #TextPointer
-; STA $04
-; LDA.w #TextPointer>>8
-; STA $05
-; LDY.w #.StringTable>>16
-; LDA.l .StringTable,x
-; JML BufferVWFText_Main
+; Usage:
+; lda.b #StrData
+; sta $00
+; lda.b #StrData>>8
+; sta $01
+; lda.b #StrData>>16
+; sta $02
+; jsl AddToBufferedTextMacro
 ;
-;.StringTable
-;dw .String1,.String2,.String3 ...
+; Alternatively, you may use the %add_to_buffered_text_macro() macro like this:
+; 
+; %add_to_buffered_text_macro(StrData)
 ;
-;.String1
-;db "Insert any valid text/commands here",$E7
+; This routine assumes that the text data is preceded by a 16-bit length, specifying
+; the amount of bytes to copy. Example:
+; 
+; StrData:
+;	dw .End-.Start
+;	.End
+;	db "ABC"
+;	.Start
 ;
+; The easiest way to achieve this is to use the %vwf_inline() macro, which automatically
+; adds the length specifier and supports all the macros that regular messages support.
+; Example:
 ;
-; Notes:
-; - If using Entry Code 1, use the $E8 command to call text macros 0000-000F. The order you buffer the strings is in ascending order starting from 0000.
-; - If using Entry Code 2, "TextPointer" is where the textbox should jump to after the buffered text is done displaying since command byte $FB
-; is automatically stored at the end of the buffered text. Useful for displaying stuff like the speaker's name at the start of a text box automatically.
-; You should only use this entry code once if you plan on buffering multiple strings consecuatively.
-; - The buffered strings must end with command byte $E7 to signify the end of the string.
-; - It's highly recommended that you call this at the start of a text box and buffer all the necessary text ahead of time. Otherwise, word wrapping
-; might not work correctly. Check if !isnotatstartoftext is non-zero to see if you're at the start of the current text box.
-; - If you plan on buffering multiple text strings, do so consecuatively, where the first call to this routine is to BufferVWFText_Main, while each
-; subsequent call is to BufferVWFText_Entry2. Also, change the JML for all but the last the call to BufferVWFText in a row to JSL.
+; StrData:
+;	%vwf_inline( %vwf_text("ABC") ) 
+AddToBufferedTextMacro:
+	rep #$30
+	
+	; Load our source address into X so that we can overwrite $00 and $01 down below.
+	ldx $00
+	inx #2	; Skip past length specifier
+	
+	; Also load the length while we still have the pointer in $00.
+	lda [$00]
+	pha
+	
+	; Verify that it isn't over the limit already.
+	adc !vwftbufferedtextindex
+	cmp.w #!buffered_text_macro_buffer_size+1
+	bcc .SizeOkay
+	
+	; If we overflow the buffer, generate an error message inside the text box and return.
+	pla
+	sep #$30
+	lda.b #HandleTextMacroBufferOverflow0_Content
+	ldx.b #HandleTextMacroBufferOverflow0_Content>>8
+	ldy.b #HandleTextMacroBufferOverflow0_Content>>16
+	jsl ChangeVWFTextPtr
+	rtl
+	
+.SizeOkay
+	; Construct the destination address.
+	lda.w #!vwftextbuffer
+	clc
+	adc !vwftbufferedtextindex
+	tay
+	
+	; Construct an MVN in RAM. It's the only way to specify the source bank dynamically.
+	; Conveniently, that one is already stored in $02, so we only need to overwrite $00 and $01.
+	; Plus $03 to store an RTL.
+	lda.w #($54)|((!vwftbufferedtextpointers>>8)&$FF00)	; $54 = MVN opcode
+	sta $00
+	lda.w #$6B	; $6B = RTL opcode
+	sta $03
+	
+	lda $01,s	; Don't want to pull the length off the stack yet
+	dec		; MVN needs length-1
+	
+	; Not sure if this will work in SA-1 builds, but let's see.
+	phb
+	jsl remap_ram($7E0000)
+	plb
+	
+	pla
+	clc
+	adc !vwftbufferedtextindex
+	sta !vwftbufferedtextindex
+	
+	sep #$30
+	
+	rtl
+	
+; Convenience macro, for when we want to add to a hard-coded address to the buffer. 
+macro add_to_buffered_text_macro(address)
+	lda.b #<address>
+	sta $00
+	lda.b #<address>>>8
+	sta $01
+	lda.b #<address>>>16
+	sta $02
+	jsl AddToBufferedTextMacro
+endmacro
+	
 
-BufferVWFText:
-.Main
-	STY $02
-	STA $00
-	LDA #$0000
-	STA !vwftbufferedtextpointerindex
-	STA !vwftbufferedtextindex
-	BRA +
+; Finishes construction of a buffered text macro that was started by calling BeginBufferedTextMacro.
+; After calling this macro, the respective text macro can be used in messages via %vwf_execute_buffered_text_macro(id).
+; To get the ID number of a macro, count the number of calls BeginBufferedTextMacro since your call to ResetBufferedTextMacros
+; and subtract 1. So the first call to BeginBufferedTextMacro would be text macro 0, the second call would be text macro 1 etc.
+EndBufferedTextMacro:
+	%add_to_buffered_text_macro(.EndMacroData)
+	rtl
+	
+.EndMacroData
+	%vwf_inline( %vwf_text_macro_end() )
 
-.Entry2
-	STY $02
-	STA $00
-	LDA !vwftbufferedtextindex
-+
-	TAY
-	LDA !vwftbufferedtextpointerindex
-	AND #$00FF
-	TAX
-	TYA
-	CLC
-	ADC.w #!vwftextbuffer
-	STA !vwftbufferedtextpointers,x
-	SEP #$20
-	LDA.b #!vwftextbuffer>>16
-	STA !vwftbufferedtextpointers+2,x
-	TYX
-	LDY #$0000
-.Loop
-	LDA [$00],Y
-	CMP #$E7
-	BNE +
-	JMP .DoneVWFBuffer
-
-+
-	STA !vwftextbuffer,x
-	INY
-	INX
-	BCC .Loop
-	PHX
-	SEC
-	SBC #$E7
-	TAX
-	CPX.w #$F0-$E7
-	BNE .NotDisplayOptionCommand
-	PLX
-	JMP .HandleF0Command
-
-.NotDisplayOptionCommand
-	LDA.l .CommandSizeTable,x
-	PLX
-	CMP #$01
-	BEQ .Store8BitData
-	CMP #$02
-	BEQ .Store16BitData
-	CMP #$03
-	BEQ .Store24BitData
-	CMP #$04
-	BEQ .Store32BitData
-	BRA .Loop
-
-.Store32BitData
-	LDA [$00],Y
-	STA !vwftextbuffer,x
-	INY
-	INX
-.Store24BitData
-	LDA [$00],Y
-	STA !vwftextbuffer,x
-	INY
-	INX
-.Store16BitData
-	LDA [$00],Y
-	STA !vwftextbuffer,x
-	INY
-	INX
-.Store8BitData
-	LDA [$00],Y
-	STA !vwftextbuffer,x
-	INY
-	INX
-	JMP .Loop
-
-.DoneVWFBuffer
-	STA !vwftextbuffer,x
-	LDA !vwftbufferedtextpointerindex
-	CLC
-	ADC #$03
-	STA !vwftbufferedtextpointerindex
-	LDA $03
-	BEQ .NoTextHijack
-	STZ $03
-	LDA $04
-	XBA
-	LDA #$FB
-	REP #$21
-	STA !vwftextbuffer,x
-	LDA $05
-	STA !vwftextbuffer+2,x
-	TXA
-	ADC #$0004
-	STA !vwftbufferedtextindex
-	SEP #$30
-	LDY.b #!vwftextbuffer>>16
-	LDX.b #!vwftextbuffer>>8
-	LDA.b #!vwftextbuffer
-	JML ChangeVWFTextPtr
-
-.NoTextHijack
-	INX
-	TXA
-	STA !vwftbufferedtextindex
-	SEP #$30
-	RTL
-
-.HandleF0Command
-	LDA [$00],Y
-	STA !vwftextbuffer,x
-	INY
-	INX
-	AND #$F0
-	LSR #4
-	STA $0E
--
-	LDA [$00],Y
-	STA !vwftextbuffer,x
-	INY
-	INX
-	LDA [$00],Y
-	STA !vwftextbuffer,x
-	INY
-	INX
-	LDA [$00],Y
-	STA !vwftextbuffer,x
-	INY
-	INX
-	DEC $0E
-	BNE -
-	JMP .Loop
-
-.CommandSizeTable					; Commands...
-	db $00,$02,$00,$00,$00				; $E7-$EB
-	db $01,$00,$02,$03,$02				; $EC-$F0
-	db $03,$01,$01,$01,$03				; $F1-$F5
-	db $03,$04,$01,$01,$00				; $F6-$FA
-	db $03,$02,$00,$00,$00				; $FB-$FF
 
 ; These two routines lets you toggle MessageASM. Call directly with the $F1 command or within a MessageASM routine.
 
 ToggleMessageASMPtr:
 .Disable
-	LDA #$6B
-	BRA +
+	lda #$6B
+	bra +
 
 .Enable
-	LDA #$5C
+	lda #$5C
 +
-	STA !messageasmopcode
-	RTL
+	sta !messageasmopcode
+	rtl
 
 
 ; These three routines let you warp to the overworld and trigger an event (if desired).
@@ -302,22 +271,22 @@ ToggleMessageASMPtr:
 
 CloseMessageAndGoToOverworld:
 .NormalExit
-	LDA #$01
-	TAY
-	BRA +
+	lda #$01
+	tay
+	bra +
 
 .SecretExit
-	LDA #$02
-	LDY #$01
-	BRA +
+	lda #$02
+	ldy #$01
+	bra +
 
 .StartPlusSelect
-	LDA #$80
-	LDY #$00
+	lda #$80
+	ldy #$00
 +
-	STA remap_ram($0DD5)
-	STY remap_ram($13CE)
-	INC remap_ram($1DE9)
-	LDA #$0B
-	STA remap_ram($0100)
-	RTL
+	sta remap_ram($0DD5)
+	sty remap_ram($13CE)
+	inc remap_ram($1DE9)
+	lda #$0B
+	sta remap_ram($0100)
+	rtl

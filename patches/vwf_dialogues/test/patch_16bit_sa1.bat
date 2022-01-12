@@ -14,7 +14,7 @@ IF %ERRORLEVEL% NEQ 0 (
 	echo.
 )
 
-.\..\..\..\tools\asar\asar.exe --symbols=wla --symbols-path=".\patched_16bit_sa1.cpu.sym" -D"bitmode=BitMode.16Bit" -I".\..\data\tests" -I".\..\fonts\Terranigma (E)" .\..\vwf_dialogues.asm .\patched_16bit_sa1.smc
+.\..\..\..\tools\asar\asar.exe --symbols=wla --symbols-path=".\patched_16bit_sa1.cpu.sym" -D"bitmode=BitMode.16Bit" -I".\..\builds\tests" -I".\..\.." .\..\vwf_dialogues.asm .\patched_16bit_sa1.smc
 
 echo.
 

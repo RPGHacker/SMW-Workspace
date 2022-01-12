@@ -4,26 +4,27 @@ set patchname=vwf_dialogues
 
 set vwf_dir="%~dp0"
 
+cd %vwf_dir%
+
 IF EXIST "./%patchname%.zip" (
     del "./%patchname%.zip"
 )
 
-cd %vwf_dir%
-cd ..
+"C:\Program Files\7-Zip\7z.exe" a ./%patchname%.zip README.md ../../LICENSE blocks/ %patchname%.asm vwfroutines.asm data/ vwfmacros.asm builds/smw/ scripts/generate_widths.py
 
-"C:\Program Files\7-Zip\7z.exe" a ./%patchname%/%patchname%.zip %patchname%/README.md ../LICENSE %patchname%/blocks/ %patchname%/fonts/ %patchname%/%patchname%.asm %patchname%/vwfcode.asm %patchname%/vwfconfig.cfg %patchname%/vwffont1.asm %patchname%/vwffont1.bin %patchname%/vwfframes.asm %patchname%/vwfframes.bin %patchname%/vwfmacros.asm %patchname%/data/smw/vwfmessages.asm %patchname%/data/smw/vwfdata.asm %patchname%/vwfpatterns.bin %patchname%/vwftable_ascii.txt %patchname%/vwftable_utf8.txt %patchname%/scripts/generate_widths.py
+"C:\Program Files\7-Zip\7z.exe" rn ./%patchname%.zip README.md readme.txt LICENSE license.txt
 
-"C:\Program Files\7-Zip\7z.exe" rn ./%patchname%/%patchname%.zip %patchname%/README.md %patchname%/readme.txt LICENSE %patchname%/license.txt
+"C:\Program Files\7-Zip\7z.exe" rn ./%patchname%.zip builds/smw/data data
 
-"C:\Program Files\7-Zip\7z.exe" rn ./%patchname%/%patchname%.zip %patchname%/data/smw/vwfmessages.asm %patchname%/vwfmessages.asm %patchname%/data/smw/vwfdata.asm %patchname%/vwfdata.asm
+"C:\Program Files\7-Zip\7z.exe" a ./%patchname%.zip ../shared ../../LICENSE
 
-"C:\Program Files\7-Zip\7z.exe" a ./%patchname%/%patchname%.zip shared/README.md ../LICENSE shared/includes shared/shared.asm
+"C:\Program Files\7-Zip\7z.exe" rn ./%patchname%.zip shared/README.md shared/readme.txt LICENSE shared/license.txt
 
-"C:\Program Files\7-Zip\7z.exe" rn ./%patchname%/%patchname%.zip shared/README.md shared/readme.txt LICENSE shared/license.txt
+"C:\Program Files\7-Zip\7z.exe" d ./%patchname%.zip shared/unit_tests builds
 
-cd ..
+cd ..\..
 
 "C:\Program Files\7-Zip\7z.exe" a ./patches/%patchname%/%patchname%.zip docs/vwf/manual
 
-"C:\Program Files\7-Zip\7z.exe" rn ./patches/%patchname%/%patchname%.zip docs/vwf/manual %patchname%/manual
+"C:\Program Files\7-Zip\7z.exe" rn ./patches/%patchname%/%patchname%.zip docs/vwf/manual manual
 

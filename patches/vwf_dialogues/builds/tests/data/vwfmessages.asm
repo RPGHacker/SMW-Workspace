@@ -500,12 +500,12 @@ macro message_box_design_change_logic(message_no, var_address, num_designs)
 	cmp #$FF
 	bne .NotMin
 	
-	lda #<num_designs>-1
+	lda.b #<num_designs>-1
 	sta <var_address>
 	rts
 	
 .NotMin
-	cmp #<num_designs>
+	cmp.b #<num_designs>
 	bne .NotMax
 	
 	lda #$00
@@ -532,7 +532,7 @@ endmacro
 %vwf_message_end()
 
 MessageASM0021:
-	%message_box_design_change_logic(0021, !boxframe, $10)
+	%message_box_design_change_logic(0021, !boxframe, !num_frames)
 
 ;-------------------------------------------------------
 
@@ -551,7 +551,7 @@ MessageASM0021:
 %vwf_message_end()
 
 MessageASM0022:
-	%message_box_design_change_logic(0022, !boxbg, $0E)
+	%message_box_design_change_logic(0022, !boxbg, !num_bg_patterns)
 
 ;-------------------------------------------------------
 
@@ -1580,6 +1580,8 @@ EditPlayerName:
 	%vwf_display_options(ErrorCheck,
 		%vwf_text("Text macro ID overflow"),
 		%vwf_text("Text macro buffer overflow"),
+		%vwf_text("Undefined message (defined ID)"),
+		%vwf_text("Undefined message (undefined ID)"),
 		%vwf_text("Exit"))
 	
 	%vwf_set_option_location(ErrorCheck, 0)
@@ -1591,6 +1593,12 @@ EditPlayerName:
 		%vwf_text("If you can read this text, then no error was triggered. Please adjust the test to make sure the respective error is triggered.") : %vwf_wait_for_a() : %vwf_close()
 		
 	%vwf_set_option_location(ErrorCheck, 2)
+		%vwf_display_message(0061)
+		
+	%vwf_set_option_location(ErrorCheck, 3)
+		%vwf_display_message(EEEE)
+		
+	%vwf_set_option_location(ErrorCheck, 4)
 		%vwf_display_message(0050)
 
 %vwf_message_end()
@@ -1641,7 +1649,8 @@ BufferOverflowTest:
 
 %vwf_message_start(0061)	; Message 10C-2
 
-	; Message header & text go here
+	; LEAVE THIS MESSAGE BLANK!
+	; It is used in the error handling test.
 
 %vwf_message_end()
 

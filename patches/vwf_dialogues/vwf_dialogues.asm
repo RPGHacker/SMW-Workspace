@@ -5,8 +5,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-incsrc vwfconfig.cfg
-incsrc ../shared/shared.asm
+incsrc data/vwfconfig.cfg
+incsrc shared/shared.asm
 
 
 print ""
@@ -212,9 +212,9 @@ endif
 !cpu_sa1 = 1
 
 if !assembler_ver >= 20000
-	!vwf_default_table_file = "vwftable_utf8.txt"
+	!vwf_default_table_file = "data/vwftable_utf8.txt"
 else
-	!vwf_default_table_file = "vwftable_ascii.txt"
+	!vwf_default_table_file = "data/vwftable_ascii.txt"
 endif
 
 ; RPG Hacker: IMPORTANT: Adjust this define when adding any new commands to the patch!
@@ -515,14 +515,14 @@ InitDefaults:
 	sta !message
 	sta !message+1
 
-	lda #!defbg	; Set default values
+	lda #!default_text_box_bg_pattern	; Set default values
 	sta !boxbg
-	lda #!defframe
+	lda #!default_text_box_frame
 	sta !boxframe
 
-	lda.b #!bgcolor
+	lda.b #!default_text_box_bg_color
 	sta !boxcolor
-	lda.b #!bgcolor>>8
+	lda.b #!default_text_box_bg_color>>8
 	sta !boxcolor+1
 	rts
 	
@@ -1151,7 +1151,7 @@ BufferGraphics:
 
 	; Copy text box graphics over to RAM
 
-	%bwramtransfer($0010,!boxbg,Patterns,!vwfbuffer_bgtile)
+	%bwramtransfer($0010,!boxbg,BgPatterns,!vwfbuffer_bgtile)
 	%bwramtransfer($0090,!boxframe,Frames,!vwfbuffer_frame)
 
 	rts
@@ -4601,14 +4601,14 @@ InitBoxColors:
 	asl
 	phx
 	tax
-	lda.b #bank(Palettes+2)
+	lda.b #bank(FramePalettes+2)
 	sta $02
 	lda #$00
 	xba
 	lda !boxframe
 	rep #$21
 	asl #3
-	adc.w #Palettes+2
+	adc.w #FramePalettes+2
 	sta $00
 	sep #$20
 	ldy #$00
@@ -5311,36 +5311,62 @@ Emptytile:
 
 
 
-;;;;;;;;;;;;;;;;
-;[CUSTOMTABLES];
-;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;
+;Main Data Section;
+;;;;;;;;;;;;;;;;;;;
 
-Palettes:
-incsrc vwfframes.asm
+!frame_palette_num_math = ((FramePalettesEnd-FramePalettes)/8)
 
-
-
+!frame_num_math = ((FramesEnd-Frames)/(9*8*2))
 
 
-;;;;;;;;;;;;;;;;
-;External Files;
-;;;;;;;;;;;;;;;;
-
+!num_frames := !frame_palette_num_math
+NumFrames:
+	db !num_frames
+	
+	
 Frames:
-incbin vwfframes.bin
+incbin data/gfx/vwfframes.bin
+FramesEnd:
 
-Patterns:
-incbin vwfpatterns.bin
+FramePalettes:
+	%define_frames()
+FramePalettesEnd:
 
-Code:
-incsrc vwfcode.asm
+
+assert !frame_num_math == round(!frame_num_math, 0), "vwfframes.bin has an unexpected size. Should be divisible by ",dec(9*8*2),"."
+
+assert !frame_palette_num_math == round(!frame_palette_num_math, 0), "%define_frames() has an unexpected size. Should be divisible by 8."
+
+assert !frame_num_math == !frame_palette_num_math, "The number of text box frames in vwfframes.bin and the number of frame properties in %define_frames() mismatch. Found ",double(!frame_num_math)," frames and ",double(!frame_palette_num_math)," frame properties."
+
+
+!bg_pattern_num_math = ((BgPatternsEnd-BgPatterns)/(8*2))
+
+
+!num_bg_patterns := !bg_pattern_num_math
+NumBgPatterns:
+	db !num_bg_patterns
+	
+	
+BgPatterns:
+incbin data/gfx/vwfbgpatterns.bin
+BgPatternsEnd:
+
+
+assert !bg_pattern_num_math == round(!bg_pattern_num_math, 0), "vwfbgpatterns.bin has an unexpected size. Should be divisible by ",dec(8*2),"."
+
+
+SharedRoutines:
+	incsrc vwfroutines.asm
 
 
 %vwf_first_bank()
 
 MainDataStart:
-incsrc vwfdata.asm
-
+	; RPG Hacker: Using ?= for this, so that we can overwrite it for the test suite.
+	!vwf_data_include ?= %define_data()
+	!vwf_data_include
 
 ; RPG Hacker: Would prefer to call this in vwfmacros.asm, but that
 ; would throw an error on !default_font, because it wouldn't know

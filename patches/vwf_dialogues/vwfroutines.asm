@@ -1,21 +1,55 @@
-;-------------------------------------------------------
 
-; Custom code meant for your VWF messages goes here.
+; This file contains mostly shared routines.
+; That is, routines that will be callable from both inside and outside of the patch.
+macro vwf_register_shared_routine(label)
+	<label>:
+	
+	!{vwf_shared_routine_!{vwf_num_shared_routines}_label_name} = <label>
+	
+	!vwf_num_shared_routines #= !vwf_num_shared_routines+1
+endmacro
 
-;-------------------------------------------------------
 
-; Some useful routines for your VWF messages.
+macro vwf_generate_shared_routines_table()
+	pushtable
+	
+	%vwf_label_name_ascii_table()
+	
+	dw !vwf_num_shared_routines
+	
+	!temp_i #= 0
+	while !temp_i < !vwf_num_shared_routines	
+		; Use 0 as a terminator. There currently is no "string_length()" in Asar.
+		; Shouldn't make much of a difference, anyways.
+		db "!{vwf_shared_routine_!{temp_i}_label_name}",0
+		dl !{vwf_shared_routine_!{temp_i}_label_name}
+	
+		!temp_i #= !temp_i+1
+	endwhile
+	undef "temp_i"
+	
+	pulltable
+endmacro
+
+
+; This routine checks whether a VWF Dialogues message box is currently open.
+; Usage:
+; jsl VWF_IsMessageActive
+; bne .MessageIsActive
+%vwf_register_shared_routine(VWF_IsMessageActive)	
+	lda !vwfmode
+	rtl
 
 
 ; This routine lets you display a message and force the current textbox to close if one is already up.
 ; Call this routine from within your custom block/sprite/patch code.
 ; Entry code:
-; lda.w #MessageNumber
-; ldx.w #MessageNumber>>8
-; jsl DisplayAMessage
+; lda.b #MessageNumber
+; ldx.b #MessageNumber>>8
+; jsl VWF_DisplayAMessage
 
 
-DisplayAMessage:
+%vwf_register_shared_routine(VWF_DisplayAMessage)
 	sta !message
 	txa
 	sta !message+1
@@ -38,9 +72,9 @@ DisplayAMessage:
 ; lda.b #TextPointer
 ; ldx.b #TextPointer>>8
 ; ldy.b #TextPointer>>16
-; jsl ChangeVWFTextPtr
+; jsl VWF_ChangeVWFTextPtr
 
-ChangeVWFTextPtr:
+%vwf_register_shared_routine(VWF_ChangeVWFTextPtr)
 	sta !vwftextsource
 	txa
 	sta !vwftextsource+1
@@ -53,9 +87,9 @@ ChangeVWFTextPtr:
 ; lda.b #ASMPointer
 ; ldx.b #ASMPointer>>8
 ; ldy.b #ASMPointer>>16
-; jsl ChangeMessageASMPtr
+; jsl VWF_ChangeMessageASMPtr
 
-ChangeMessageASMPtr:
+%vwf_register_shared_routine(VWF_ChangeMessageASMPtr)
 	sta !messageasmloc
 	txa
 	sta !messageasmloc+1
@@ -68,9 +102,9 @@ ChangeMessageASMPtr:
 ; lda.b #TextPointer
 ; ldx.b #TextPointer>>8
 ; ldy.b #TextPointer>>16
-; jsl ChangeMessageSkipPtr
+; jsl VWF_ChangeMessageSkipPtr
 
-ChangeMessageSkipPtr:
+%vwf_register_shared_routine(VWF_ChangeMessageSkipPtr)
 	sta !skipmessageloc
 	txa
 	sta !skipmessageloc+1
@@ -81,10 +115,10 @@ ChangeMessageSkipPtr:
 ; This routine lets you check if the player skipped the current message with start.
 ; It only works if the current message was set to be skippable initially. 
 ;Entry code:
-; jsl CheckIfMessageWasSkipped
+; jsl VWF_CheckIfMessageWasSkipped
 ; bcs .MessageWasSkipped
 
-CheckIfMessageWasSkipped:
+%vwf_register_shared_routine(VWF_CheckIfMessageWasSkipped)
 	clc
 	lda !initialskipmessageflag
 	beq .NoSkipping
@@ -97,7 +131,7 @@ CheckIfMessageWasSkipped:
 	
 ; Resets all buffered text macros.
 ; The text buffer is reset to position 0, and the ID for the next text macro is reset to 0.
-ResetBufferedTextMacros:
+%vwf_register_shared_routine(VWF_ResetBufferedTextMacros)
 	lda #$00
 	sta !vwftbufferedtextpointerindex
 	sta !vwftbufferedtextindex
@@ -108,7 +142,7 @@ ResetBufferedTextMacros:
 ; Begins constructing a new buffered text macro, starting at text macro ID 0 and incrementing
 ; that ID for every additional call to this routine. Must be followed by calls to AddToBufferedTextMacro
 ; and, eventually, a call to EndBufferedTextMacro to finish the macro.
-BeginBufferedTextMacro:
+%vwf_register_shared_routine(VWF_BeginBufferedTextMacro)
 	lda !vwftbufferedtextpointerindex
 	cmp.b #!num_reserved_text_macros*3
 	bcc .NumOkay
@@ -117,7 +151,7 @@ BeginBufferedTextMacro:
 	lda.b #HandleTextMacroIdOverflow0_Content
 	ldx.b #HandleTextMacroIdOverflow0_Content>>8
 	ldy.b #HandleTextMacroIdOverflow0_Content>>16
-	jsl ChangeVWFTextPtr
+	jsl VWF_ChangeVWFTextPtr
 	rtl
 	
 .NumOkay
@@ -148,7 +182,7 @@ BeginBufferedTextMacro:
 ; sta $01
 ; lda.b #StrData>>16
 ; sta $02
-; jsl AddToBufferedTextMacro
+; jsl VWF_AddToBufferedTextMacro
 ;
 ; Alternatively, you may use the %add_to_buffered_text_macro() macro like this:
 ; 
@@ -169,7 +203,7 @@ BeginBufferedTextMacro:
 ;
 ; StrData:
 ;	%vwf_inline( %vwf_text("ABC") ) 
-AddToBufferedTextMacro:
+%vwf_register_shared_routine(VWF_AddToBufferedTextMacro)
 	rep #$30
 	
 	; Load our source address into X so that we can overwrite $00 and $01 down below.
@@ -191,7 +225,7 @@ AddToBufferedTextMacro:
 	lda.b #HandleTextMacroBufferOverflow0_Content
 	ldx.b #HandleTextMacroBufferOverflow0_Content>>8
 	ldy.b #HandleTextMacroBufferOverflow0_Content>>16
-	jsl ChangeVWFTextPtr
+	jsl VWF_ChangeVWFTextPtr
 	rtl
 	
 .SizeOkay
@@ -234,7 +268,7 @@ macro add_to_buffered_text_macro(address)
 	sta $01
 	lda.b #<address>>>16
 	sta $02
-	jsl AddToBufferedTextMacro
+	jsl VWF_AddToBufferedTextMacro
 endmacro
 	
 
@@ -242,7 +276,7 @@ endmacro
 ; After calling this macro, the respective text macro can be used in messages via %vwf_execute_buffered_text_macro(id).
 ; To get the ID number of a macro, count the number of calls BeginBufferedTextMacro since your call to ResetBufferedTextMacros
 ; and subtract 1. So the first call to BeginBufferedTextMacro would be text macro 0, the second call would be text macro 1 etc.
-EndBufferedTextMacro:
+%vwf_register_shared_routine(VWF_EndBufferedTextMacro)
 	%add_to_buffered_text_macro(.EndMacroData)
 	rtl
 	
@@ -252,7 +286,7 @@ EndBufferedTextMacro:
 
 ; These two routines lets you toggle MessageASM. Call directly with the $F1 command or within a MessageASM routine.
 
-ToggleMessageASMPtr:
+%vwf_register_shared_routine(VWF_ToggleMessageASMPtr)
 .Disable
 	lda #$6B
 	bra +
@@ -269,7 +303,7 @@ ToggleMessageASMPtr:
 ; Note that if you're using Lunar Magic 3.00+, then you can set a secondary entrance to exit to the overworld.
 ; In that case, use the $EF command and set it to the appropriate secondary entrance.
 
-CloseMessageAndGoToOverworld:
+%vwf_register_shared_routine(VWF_CloseMessageAndGoToOverworld)
 .NormalExit
 	lda #$01
 	tay

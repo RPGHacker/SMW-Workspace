@@ -27,3 +27,17 @@ IF %ERRORLEVEL% NEQ 0 (
 	echo Patched "vwf_dialogues.asm" to "patched.smc".
 	echo.
 )
+
+.\..\..\..\tools\asar\asar2.exe -I".\..\builds\tests" -I".\..\code\external" .\uberasm\asar_patch.asm .\patched.smc
+
+echo.
+
+IF %ERRORLEVEL% NEQ 0 (
+	echo Patching "uberasm.asm" to "patched.smc" failed.
+	echo.
+	pause
+	exit %ERRORLEVEL%
+) ELSE (
+	echo Patched "uberasm.asm" to "patched.smc".
+	echo.
+)

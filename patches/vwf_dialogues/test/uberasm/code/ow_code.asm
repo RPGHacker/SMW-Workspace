@@ -1,0 +1,14 @@
+MainOWcode:
+	RTS
+Yoshislandcode:
+	RTS
+VanillaDomecode:
+	RTS
+ForestIllusioncode:
+	RTS
+BowserofValleycode:
+	RTS
+SpecialWorldcode:
+	RTS
+Starworldcode:
+	RTS

@@ -10,7 +10,7 @@ IF EXIST "./%patchname%.zip" (
     del "./%patchname%.zip"
 )
 
-"C:\Program Files\7-Zip\7z.exe" a ./%patchname%.zip README.md ../../LICENSE blocks/ %patchname%.asm vwfroutines.asm data/ vwfmacros.asm builds/smw/ scripts/generate_widths.py
+"C:\Program Files\7-Zip\7z.exe" a ./%patchname%.zip README.md ../../LICENSE %patchname%.asm vwfroutines.asm data/ vwfmacros.asm builds/smw/ code/
 
 "C:\Program Files\7-Zip\7z.exe" rn ./%patchname%.zip README.md readme.txt LICENSE license.txt
 

@@ -1,0 +1,2 @@
+nmi_code:
+	RTS

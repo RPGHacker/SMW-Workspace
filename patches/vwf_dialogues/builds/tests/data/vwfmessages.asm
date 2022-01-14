@@ -475,7 +475,7 @@ macro message_box_design_change_logic(message_no, var_address, num_designs)
 	lda.b #Message<message_no>_Refresh
 	ldx.b #Message<message_no>_Refresh>>8
 	ldy.b #Message<message_no>_Refresh>>16
-	jsl ChangeVWFTextPtr
+	jsl VWF_ChangeVWFTextPtr
 	rtl
 
 .NotRight
@@ -489,7 +489,7 @@ macro message_box_design_change_logic(message_no, var_address, num_designs)
 	lda.b #Message<message_no>_Done
 	ldx.b #Message<message_no>_Done>>8
 	ldy.b #Message<message_no>_Done>>16
-	jsl ChangeVWFTextPtr
+	jsl VWF_ChangeVWFTextPtr
 
 .NotA
 	rtl
@@ -877,21 +877,21 @@ MessageASM0025:
 %vwf_message_end()
 
 InitializeBufferedMacros1:
-	jsl ResetBufferedTextMacros
+	jsl VWF_ResetBufferedTextMacros
 	
-	jsl BeginBufferedTextMacro
+	jsl VWF_BeginBufferedTextMacro
 	%add_to_buffered_text_macro(.Str1)
 	%add_to_buffered_text_macro(.Str2)
 	%add_to_buffered_text_macro(.Str3)
 	%add_to_buffered_text_macro(.Str4)
-	jsl EndBufferedTextMacro
+	jsl VWF_EndBufferedTextMacro
 	
-	jsl BeginBufferedTextMacro
+	jsl VWF_BeginBufferedTextMacro
 	%add_to_buffered_text_macro(.Str1)
 	%add_to_buffered_text_macro(.Str2)
 	%add_to_buffered_text_macro(.Str5)
 	%add_to_buffered_text_macro(.Str6)
-	jsl EndBufferedTextMacro
+	jsl VWF_EndBufferedTextMacro
 	
 	rtl
 	
@@ -1003,7 +1003,7 @@ MessageASM0032:
 	lda.b #Message0032_Continue
 	ldx.b #Message0032_Continue>>8
 	ldy.b #Message0032_Continue>>16
-	jsl ChangeVWFTextPtr
+	jsl VWF_ChangeVWFTextPtr
 	
 .NotPressed
 	rtl
@@ -1094,10 +1094,10 @@ MessageASM0032:
 
 
 InitializePlayerName:
-	jsl ResetBufferedTextMacros
+	jsl VWF_ResetBufferedTextMacros
 	
-	jsl BeginBufferedTextMacro
-	jsl EndBufferedTextMacro
+	jsl VWF_BeginBufferedTextMacro
+	jsl VWF_EndBufferedTextMacro
 	
 	lda #$00
 	sta !player_name_length
@@ -1193,17 +1193,17 @@ EditPlayerName:
 	
 	sep #$30
 	
-	jsl ResetBufferedTextMacros
+	jsl VWF_ResetBufferedTextMacros
 	
-	jsl BeginBufferedTextMacro
+	jsl VWF_BeginBufferedTextMacro
 	%add_to_buffered_text_macro(!player_name_length)
-	jsl EndBufferedTextMacro
+	jsl VWF_EndBufferedTextMacro
 	
 .Redraw
 	lda.b #Message0034_RedrawPlayerName
 	ldx.b #Message0034_RedrawPlayerName>>8
 	ldy.b #Message0034_RedrawPlayerName>>16
-	jsl ChangeVWFTextPtr
+	jsl VWF_ChangeVWFTextPtr
 	rtl
 	
 .Str0
@@ -1325,7 +1325,11 @@ EditPlayerName:
 
 %vwf_message_start(0040)	; Message 020-1
 
-	; Message header & text go here
+	%vwf_header()
+	
+	%vwf_text("Hey, did you know? Hold L and press either X or Y anywhere in this hack for a secret message.") : %vwf_wait_for_a() : %vwf_clear()
+	%vwf_text("The L + X message even works while a message is already open. I'm serious, try it right now!") : %vwf_wait_for_a() : %vwf_clear()
+	%vwf_text("Routines test complete!") : %vwf_wait_for_a()
 
 %vwf_message_end()
 
@@ -1333,7 +1337,9 @@ EditPlayerName:
 
 %vwf_message_start(0041)	; Message 020-2
 
-	; Message header & text go here
+	%vwf_header()
+	
+	%vwf_text("You found the secret L + X UberASM test message! AWESOME!") : %vwf_wait_for_a()
 
 %vwf_message_end()
 
@@ -1341,7 +1347,9 @@ EditPlayerName:
 
 %vwf_message_start(0042)	; Message 021-1
 
-	; Message header & text go here
+	%vwf_header()
+	
+	%vwf_text("You found the secret L + Y UberASM test message! AWESOME!") : %vwf_wait_for_a()
 
 %vwf_message_end()
 
@@ -1604,35 +1612,35 @@ EditPlayerName:
 %vwf_message_end()
 
 IdOverflowTest:
-	jsl ResetBufferedTextMacros
+	jsl VWF_ResetBufferedTextMacros
 	
 	; There should be at least !num_reserved_text_macros+1 calls to both macros here to trigger the error handling.
-	jsl BeginBufferedTextMacro
-	jsl EndBufferedTextMacro
+	jsl VWF_BeginBufferedTextMacro
+	jsl VWF_EndBufferedTextMacro
 	
-	jsl BeginBufferedTextMacro
-	jsl EndBufferedTextMacro
+	jsl VWF_BeginBufferedTextMacro
+	jsl VWF_EndBufferedTextMacro
 	
-	jsl BeginBufferedTextMacro
-	jsl EndBufferedTextMacro
+	jsl VWF_BeginBufferedTextMacro
+	jsl VWF_EndBufferedTextMacro
 	
-	jsl BeginBufferedTextMacro
-	jsl EndBufferedTextMacro
+	jsl VWF_BeginBufferedTextMacro
+	jsl VWF_EndBufferedTextMacro
 	
-	jsl BeginBufferedTextMacro
-	jsl EndBufferedTextMacro
+	jsl VWF_BeginBufferedTextMacro
+	jsl VWF_EndBufferedTextMacro
 	
-	jsl BeginBufferedTextMacro
-	jsl EndBufferedTextMacro
+	jsl VWF_BeginBufferedTextMacro
+	jsl VWF_EndBufferedTextMacro
 	
 	rtl
 	
 BufferOverflowTest:
-	jsl ResetBufferedTextMacros
+	jsl VWF_ResetBufferedTextMacros
 	
-	jsl BeginBufferedTextMacro
+	jsl VWF_BeginBufferedTextMacro
 	%add_to_buffered_text_macro(.ErrorString)
-	jsl EndBufferedTextMacro
+	jsl VWF_EndBufferedTextMacro
 	
 	rtl
 	

@@ -197,6 +197,8 @@ true	= 1
 !vwf_num_fonts = 0
 !vwf_num_text_files = 0
 
+!vwf_num_shared_routines = 0
+
 !vwf_prev_freespace = AutoFreespaceCleaner
 
 if !use_sa1_mapping
@@ -406,6 +408,81 @@ endmacro
 
 
 
+; A macro that defines character mappings for just the ASCII characters that are allowed in label names.
+; Note: In Asar 1.9, just calling cleartable should do the job. But I'm not sure if that'll still work in Asar 2.0,
+; so have this slightly annoying solution instead.
+
+macro vwf_label_name_ascii_table()
+	'0' = $30
+	'1' = $31
+	'2' = $32
+	'3' = $33
+	'4' = $34
+	'5' = $35
+	'6' = $36
+	'7' = $37
+	'8' = $38
+	'9' = $39
+	
+	'A' = $41
+	'B' = $42
+	'C' = $43
+	'D' = $44
+	'E' = $45
+	'F' = $46
+	'G' = $47
+	'H' = $48
+	'I' = $49
+	'J' = $4A
+	'K' = $4B
+	'L' = $4C
+	'M' = $4D
+	'N' = $4E
+	'O' = $4F
+	'P' = $50
+	'Q' = $51
+	'R' = $52
+	'S' = $53
+	'T' = $54
+	'U' = $55
+	'V' = $56
+	'W' = $57
+	'X' = $58
+	'Y' = $59
+	'Z' = $5A
+	
+	'_' = $5F
+	
+	'a' = $61
+	'b' = $62
+	'c' = $63
+	'd' = $64
+	'e' = $65
+	'f' = $66
+	'g' = $67
+	'h' = $68
+	'i' = $69
+	'j' = $6A
+	'k' = $6B
+	'l' = $6C
+	'm' = $6D
+	'n' = $6E
+	'o' = $6F
+	'p' = $70
+	'q' = $71
+	'r' = $72
+	's' = $73
+	't' = $74
+	'u' = $75
+	'v' = $76
+	'w' = $77
+	'x' = $78
+	'y' = $79
+	'z' = $7A
+endmacro
+
+
+
 
 
 ;;;;;;;;;
@@ -484,10 +561,9 @@ FreecodeStart:
 ;RAM Initialization;
 ;;;;;;;;;;;;;;;;;;;;
 
-
 ; This section handles RAM initialization. It initializes the used
 ; RAM addresses at game startup, title screen and Game Over to
-; prevent glitches and possible crahses.
+; prevent glitches and possible crashes.
 
 InitCall:
 	jsr InitRAM	; RAM init on game start
@@ -589,10 +665,26 @@ CheckIfVWFActive:
 	jsr Buffer					; Run the VWF buffer code.
 .NotActive
 	rts
+	
+	
+	
+	
 
 ;;;;;;;;;;;;;;;;;;;;
 ;Message Box Hijack;
 ;;;;;;;;;;;;;;;;;;;;
+
+; RPG Hacker: This needs to go right in front of OriginalMessageBox.
+; It's the pointer to the SharedRoutines table, and Asar will search
+; backwards from OriginalMessageBox to find it.
+pushtable
+
+%vwf_label_name_ascii_table()
+
+db "VWFR"
+dl SharedRoutinesTable
+
+cleartable
 
 
 ; This hijacks SMW's original message routine to work with VWF
@@ -648,7 +740,7 @@ if !hijackbox == true
 	dec
 .SetMessage
 	stz remap_ram($1426)
-	jsl DisplayAMessage
+	jsl VWF_DisplayAMessage
 else	
 	jml remap_rom($00A1DF)	; Run original message box and skip frame simulation
 endif
@@ -5377,6 +5469,9 @@ MainDataStart:
 
 %vwf_generate_pointers()
 
+SharedRoutinesTable:
+	%vwf_generate_shared_routines_table()
+
 
 print ""
 print "Patch inserted at $",hex(FreecodeStart),"."
@@ -5401,7 +5496,7 @@ print dec(!varrampos)," bytes of \!varram used."
 print ""
 print "VWF Creation Routine at address $",hex(GenerateVWF),"."
 print "Pattern Addition Routine at address $",hex(AddPattern),"."
-print "DisplayAMessage routine located at $",hex(DisplayAMessage),"."
+print "DisplayAMessage routine located at $",hex(VWF_DisplayAMessage),"."
 
 print ""
 print "VWF State register at address $",hex(!vwfmode),"."

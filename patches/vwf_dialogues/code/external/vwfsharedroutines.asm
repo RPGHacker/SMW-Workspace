@@ -1,80 +1,6 @@
 ; RPG Hacker: Note: We can't use includeonce here, because this file is meant to be copied alongside multiple resources
 ; and could be included multiple times from different locations.
-if not(defined("vwf_shared_routines_parsed"))
-	; A macro that defines character mappings for just the ASCII characters that are allowed in label names.
-	; Note: In Asar 1.9, just calling cleartable should do the job. But I'm not sure if that'll still work in Asar 2.0,
-	; so have this slightly annoying solution instead.
-	
-	macro vwf_label_name_ascii_table()
-		'0' = $30
-		'1' = $31
-		'2' = $32
-		'3' = $33
-		'4' = $34
-		'5' = $35
-		'6' = $36
-		'7' = $37
-		'8' = $38
-		'9' = $39
-		
-		'A' = $41
-		'B' = $42
-		'C' = $43
-		'D' = $44
-		'E' = $45
-		'F' = $46
-		'G' = $47
-		'H' = $48
-		'I' = $49
-		'J' = $4A
-		'K' = $4B
-		'L' = $4C
-		'M' = $4D
-		'N' = $4E
-		'O' = $4F
-		'P' = $50
-		'Q' = $51
-		'R' = $52
-		'S' = $53
-		'T' = $54
-		'U' = $55
-		'V' = $56
-		'W' = $57
-		'X' = $58
-		'Y' = $59
-		'Z' = $5A
-		
-		'_' = $5F
-		
-		'a' = $61
-		'b' = $62
-		'c' = $63
-		'd' = $64
-		'e' = $65
-		'f' = $66
-		'g' = $67
-		'h' = $68
-		'i' = $69
-		'j' = $6A
-		'k' = $6B
-		'l' = $6C
-		'm' = $6D
-		'n' = $6E
-		'o' = $6F
-		'p' = $70
-		'q' = $71
-		'r' = $72
-		's' = $73
-		't' = $74
-		'u' = $75
-		'v' = $76
-		'w' = $77
-		'x' = $78
-		'y' = $79
-		'z' = $7A
-	endmacro
-	
-	
+if not(defined("vwf_shared_routines_parsed"))	
 	macro vwf_add_char_to_label_name(define_name, char_value)
 		; RPG Hacker: Yeah, this code stinks a lot. Like, a lot a lot.
 		; AFAIK, there's currently no elegant method of doing this.
@@ -233,15 +159,14 @@ if not(defined("vwf_shared_routines_parsed"))
 			
 			print "Detected VWF Dialogues Patch message box hijack at $",hex(!vwf_freecode_location),". Searching for shared routines table."		
 		
-		
-			pushtable
-		
-			%vwf_label_name_ascii_table()
-			
+					
 			; Second sanity check. The pointer to the shared routines table is marked with a "VWFR". Check if it's present.
 			!vwf_shared_routines_fourcc #= read4(!vwf_freecode_location-7)
+			; RPG Hacker: This magic hex is actually a FourCC, "VWFR", spelled backwards due to being little endian.
+			; Including it as a magic hex value so that I don't have to initialize a table with ASCII mappings.
+			!vwf_shared_routines_expected_fourcc  = $52465756
 			
-			if !vwf_shared_routines_fourcc == 'V'|('W'<<8)|('F'<<16)|('R'<<24)
+			if !vwf_shared_routines_fourcc == !vwf_shared_routines_expected_fourcc
 				print "Detected FourCC at $",hex(!vwf_freecode_location-7),". Parsing shared routines."
 				
 				!vwf_shared_routines_table_location #= read3(!vwf_freecode_location-3)
@@ -272,9 +197,6 @@ if not(defined("vwf_shared_routines_parsed"))
 			else
 				print "No FourCC detected at $",hex(!vwf_freecode_location-7),". Must either be a different patch, or an unknown version of VWF Dialogues."
 			endif
-		
-		
-			pulltable
 		else
 			print "No JML found at address $00A1DA. VWF Dialogues Patch is either not patched to this ROM, or is a version prior to v1.3."
 		endif

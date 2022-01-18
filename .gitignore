@@ -21,6 +21,7 @@ tools/snes9x1.51.ep10r2/Saves
 tools/zsnesw151-FuSoYa-8MB_R2/zinput.cfg
 tools/zsnesw151-FuSoYa-8MB_R2/zmovie.cfg
 tools/zsnesw151-FuSoYa-8MB_R2/zsnesw.cfg
+*.bml
 *.log
 sysLMRestore/
 patches/vwf2/*
@@ -30,3 +31,6 @@ patches/*/*.zip
 
 # HxD loves creating .bak files automatically.
 *.bak
+
+# Temporary files and directories
+__pycache__

@@ -10,17 +10,17 @@ IF EXIST "./%patchname%.zip" (
     del "./%patchname%.zip"
 )
 
-"C:\Program Files\7-Zip\7z.exe" a ./%patchname%.zip README.md ../../LICENSE %patchname%.asm vwfroutines.asm data/ vwfmacros.asm builds/smw/ code/
+"C:\Program Files\7-Zip\7z.exe" a ./%patchname%.zip README.md ../../LICENSE %patchname%.asm vwfroutines.asm data vwfmacros.asm code
 
 "C:\Program Files\7-Zip\7z.exe" rn ./%patchname%.zip README.md readme.txt LICENSE license.txt
 
-"C:\Program Files\7-Zip\7z.exe" rn ./%patchname%.zip builds/smw/data data
+"C:\Program Files\7-Zip\7z.exe" rn ./%patchname%.zip data/smw/data data
 
 "C:\Program Files\7-Zip\7z.exe" a ./%patchname%.zip ../shared ../../LICENSE
 
 "C:\Program Files\7-Zip\7z.exe" rn ./%patchname%.zip shared/README.md shared/readme.txt LICENSE shared/license.txt
 
-"C:\Program Files\7-Zip\7z.exe" d ./%patchname%.zip shared/unit_tests builds
+"C:\Program Files\7-Zip\7z.exe" d ./%patchname%.zip shared/unit_tests builds data/smw data/testing
 
 cd ..\..
 

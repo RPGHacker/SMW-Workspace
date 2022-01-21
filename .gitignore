@@ -24,7 +24,10 @@ tools/zsnesw151-FuSoYa-8MB_R2/zsnesw.cfg
 *.bml
 *.log
 sysLMRestore/
+rominfo.txt
 patches/vwf2/*
+stderr.txt
+stdout.txt
 
 # Exclude output files of packaging.
 patches/*/*.zip
@@ -34,3 +37,4 @@ patches/*/*.zip
 
 # Temporary files and directories
 __pycache__
+builds

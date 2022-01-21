@@ -1,7 +1,0 @@
-This is the info for the last game you ran.
-
-File: patched.smc Header: Yes
-SUPER MARIOWORLD          TYPE:SA-1     
-INTERLEAVED:No               CHKSUM:OK  
-VIDEO:NTSC    BANK:Lo     CRC32:0FF0E202
-                                        

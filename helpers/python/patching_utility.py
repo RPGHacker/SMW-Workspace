@@ -3,54 +3,103 @@ import os
 import shutil
 import subprocess
 import re
-from typing import NamedTuple
+import pathlib
+import dataclasses
+from dataclasses import dataclass
+from typing import List
 
 
 _asar_paths = {
 	'1.9': os.path.join(os.path.dirname(__file__), '../../tools/asar/asar.exe'),
-	'2.0': os.path.join(os.path.dirname(__file__), '../../tools/asar/asar2.exe'),
+	'2.0': os.path.join(os.path.dirname(__file__), '../../tools/asar2/asar.exe'),
 }
 
 _clean_rom_path = os.path.join(os.path.dirname(__file__), '../../baserom')
 
+
+rom_extension = '.smc'
+
+
+
+@dataclass
+class Action:
+	pass
+
+@dataclass
+class Patch(Action):
+	path: str
+	include_paths: List[str]
+	defines: List[str]
+	
+@dataclass
+class PatchConfig:
+	module_path: dataclasses.InitVar[str]
+	output_dir: str = ''
+	rom_base_name: str = ''
+	actions: List[Action] = dataclasses.field(default_factory=lambda: [])
+	
+	# Pass in the directory of the calling patch_config.py module here.
+	# This is only used to initialize some variables with reasonable defaults.
+	def __post_init__(self, module_path):
+		self.output_dir = os.path.join(module_path, 'builds')	
+		self.rom_base_name = os.path.basename(os.path.abspath(module_path))
+
 	
 class PatchingUtility:
-
-	class Patch(NamedTuple):
-		path: 'str'
-		include_paths: 'list[str]' = []
-		defines: 'list[str]' = []
-	
 	def __init__(self):
 		self._parser = argparse.ArgumentParser(description='Applies this patch and all dependencies to a clean SMW ROM to create a patched output ROM.')
 		
-		self._parser.add_argument('--asar_ver', choices=['1.9', '2.0'], default='1.9')
-		self._parser.add_argument('--rom_type', choices=['normal', 'sa-1'], default='normal')
-		self._parser.add_argument('--rom_size', choices=['1mb', '2mb', '3mb', '4mb', '6mb', '8mb'], default='2mb')
+		self._option_values = {}
+		self._option_default_indices = {}
 		
-	def add_option(self, name, values=None, default=None):
-		self._parser.add_argument(name, choices=values, default=default)
+		self.add_option('--asar_ver', values=['1.9', '2.0'], default_index=0)
+		self.add_option('--rom_type', values=['normal', 'sa-1'], default_index=0)
+		self.add_option('--rom_size', values=['1mb', '2mb', '3mb', '4mb', '6mb', '8mb'], default_index=1)
 		
-	def parse_options(self):
-		options = self._parser.parse_args()
+	def add_option(self, name, values = None, default_index=0):
+		self._option_values[name] = values
+		self._option_default_indices[name] = default_index
+		self._parser.add_argument(name, choices=values, default=values[default_index])
 		
-		if options.rom_type == 'normal' and options.rom_size not in ['1mb', '2mb', '3mb', '4mb']:
-			raise ValueError('Non-SA-1 ROMs only support sizes up to 4 MB.')
-		elif options.rom_type == 'sa-1' and options.rom_size == '1mb':
-			raise ValueError('SA-1 ROMs require a size of a at least 2 MB.')
-	
-		return options
+	def get_option_values(self):
+		return self._option_values
 		
-	def construct_output_rom_name(self, base_name, options):
-		rom_name = base_name
+	def get_option_default_value(self, name):
+		return self._option_default_indices[name]
 		
-		if options.rom_type == 'sa-1':
-			rom_name += '_sa1'
+	def parse_options(self, args = None, exit_on_error = True):
+		try:
+			options = self._parser.parse_args(args)
 			
-		if options.asar_ver == '2.0':
-			rom_name += '_asar2'
+			if options.rom_type == 'normal' and options.rom_size not in ['1mb', '2mb', '3mb', '4mb']:
+				raise ValueError('Non-SA-1 ROMs only support sizes up to 4 MB.')
+			elif options.rom_type == 'sa-1' and options.rom_size == '1mb':
+				raise ValueError('SA-1 ROMs require a size of a at least 2 MB.')
+		
+			return options
+		except:
+			print(exit_on_error)
+			if exit_on_error:
+				raise
+			return None
+		
+	def construct_output_file_name(self, patch_config: PatchConfig, options, ext = None):
+		rom_name = patch_config.rom_base_name
+		
+		string_options = vars(options)
+		
+		for option_name, value in string_options.items():
+			rom_name += '_{sanitized_value}'.format(sanitized_value=re.sub(r"[^a-zA-Z0-9_]", '', value))
+			
+		if ext != None:
+			if ext[0] != '.':
+				rom_name += '.'
+			rom_name += ext
 			
 		return rom_name
+		
+	def construct_output_rom_name(self, patch_config: PatchConfig, options):
+		return self.construct_output_file_name(patch_config, options, rom_extension)
 		
 	def get_base_rom_path(self, options):
 		rom_name = 'lm' + options.rom_size
@@ -62,21 +111,23 @@ class PatchingUtility:
 		
 		return os.path.join(_clean_rom_path, rom_name)
 		
-	def apply_patches(self, output_path, output_base_name, patches, options):
-		rom_name = self.construct_output_rom_name(output_base_name, options)
+	def apply_patches(self, patch_config: PatchConfig, options):
+		pathlib.Path(patch_config.output_dir).mkdir(parents = True, exist_ok = True)
+	
+		rom_name = self.construct_output_file_name(patch_config, options)
 		
 		base_rom_path = self.get_base_rom_path(options)
-		output_rom_path = os.path.join(output_path, rom_name + '.smc')
-		output_symbols_path = os.path.join(output_path, rom_name + '.cpu.sym')
-		output_sa1_symbols_path = os.path.join(output_path, rom_name + '.sa1.sym')
+		output_rom_path = os.path.join(patch_config.output_dir, rom_name + rom_extension)
+		output_symbols_path = os.path.join(patch_config.output_dir, rom_name + '.cpu.sym')
+		output_sa1_symbols_path = os.path.join(patch_config.output_dir, rom_name + '.sa1.sym')
 		
 		symbols_output = {}				
 		source_file_base_id = 0
 		
 		shutil.copyfile(base_rom_path, output_rom_path)
 	
-		for patch in patches:
-			patch_symbols_path = os.path.join(output_path, os.path.basename(patch.path) + '.cpu.sym')
+		for patch in patch_config.actions:
+			patch_symbols_path = os.path.join(patch_config.output_dir, os.path.basename(patch.path) + '.cpu.sym')
 			
 			command_line = [os.path.normpath(_asar_paths[options.asar_ver])]
 			

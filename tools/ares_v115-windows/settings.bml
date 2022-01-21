@@ -1,12 +1,12 @@
 Video
-  Driver: OpenGL 3.2
+  Driver: Direct3D 9.0
   Monitor: Primary
   Format: ARGB24
   Exclusive: false
-  Blocking: false
+  Blocking: true
   Flush: false
-  Shader: Blur
-  Multiplier: 2
+  Shader: None
+  Multiplier: 3
   Output: Scale
   AspectCorrection: true
   AdaptiveSizing: true
@@ -19,10 +19,10 @@ Video
   InterframeBlending: true
   Overscan: false
 Audio
-  Driver: waveOut
-  Device: Default
+  Driver: XAudio 2.1
+  Device: Speakers (Sound Blaster Z)
   Frequency: 44100
-  Latency: 192
+  Latency: 40
   Exclusive: false
   Blocking: true
   Dynamic: false
@@ -35,7 +35,7 @@ Input
 General
   ShowStatusBar: true
   Rewind: false
-  RunAhead: false
+  RunAhead: true
   AutoSaveMemory: true
   FastBoot: true
   AutoDebug: false
@@ -51,8 +51,8 @@ Paths
   Debugging
   Firmware
 Recent
-  Game-1: Super Famicom;E:/GitHub/SMW-Workspace/patches/vwf_dialogues/test/patched_sa1.smc
-  Game-2: Super Famicom;E:/GitHub/SMW-Workspace/patches/vwf_dialogues/test/patched.smc
+  Game-1: Super Famicom;E:/GitHub/SMW-Workspace/patches/vwf_dialogues/builds/vwf_dialogues_19_normal_2mb_8bit.smc
+  Game-2
   Game-3
   Game-4
   Game-5
@@ -63,10 +63,10 @@ Recent
 VirtualPad
   X-axis: ;;
   Y-axis: ;;
-  Up: 0x1/0/86;0x45e028e/1/1/Lo;
-  Down: 0x1/0/87;0x45e028e/1/1/Hi;
-  Left: 0x1/0/88;0x45e028e/1/0/Lo;
-  Right: 0x1/0/89;0x45e028e/1/0/Hi;
+  Up: 0x1/0/86;0x45e028e/1/1/Lo;0x45e028e/0/1/Lo
+  Down: 0x1/0/87;0x45e028e/1/1/Hi;0x45e028e/0/1/Hi
+  Left: 0x1/0/88;0x45e028e/1/0/Lo;0x45e028e/0/0/Lo
+  Right: 0x1/0/89;0x45e028e/1/0/Hi;0x45e028e/0/0/Hi
   Select: 0x1/0/65;0x45e028e/3/4;
   Start: 0x1/0/91;0x45e028e/3/5;
   A: 0x1/0/60;0x45e028e/3/0;
@@ -81,7 +81,7 @@ VirtualPad
   C-Right: ;;
 Hotkey
   ToggleFullscreen: 0x1/0/11;;
-  FastForward: 0x1/0/15;0x45e028e/2/0/Lo;
+  FastForward: 0x1/0/15;0x45e028e/3/8;
   Rewind: 0x1/0/28;;
   SaveState: 0x1/0/5;;
   LoadState: 0x1/0/7;;
@@ -99,7 +99,7 @@ FamicomDiskSystem
     BIOS.Japan
 SuperFamicom
   Visible: true
-  Path: E:/GitHub/SMW-Workspace/patches/vwf_dialogues/test/
+  Path: E:/GitHub/SMW-Workspace/patches/vwf_dialogues/builds/
 SG-1000
   Visible: true
   Path

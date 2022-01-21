@@ -1,0 +1,2 @@
+statusbar_code:
+	RTS

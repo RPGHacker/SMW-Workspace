@@ -6,7 +6,7 @@ For testing convenience, please follow the instructions listed in README.md insi
 
 For better readibility of Asar code (especially using my rather unique coding style), I recommend downloading Notepad++ and importing the [Asar syntax highlighting extension](https://github.com/RPGHacker/asar/blob/master/ext/notepad-plus-plus/syntax-highlighting.xml) from the [official Asar repository](https://github.com/RPGHacker/asar) as a user-defined language. This adds some decent syntax highlighting for Asar-compatible ASM code to Notepad++.
 
-# Patching & Test
+# Patching & Testing
 To make patching and testing the patches in this repository easier, a few Python helper scripts are provided (currently Windows-only) that you can use by installing Python version 3.8 or above. Simply running patch_manager.pyw will open a little helper GUI application that lets you select patches to apply and lets you start them directly in an emulator. This works by searching for patch_config.py files in the directories of each patch, which define how the patch is to be applied.
 
 NOTE: Starting patch_manager.pyw by double-clicking might have long start-up times on Windows. It might be faster to pass script file path to Python directly via the command line.

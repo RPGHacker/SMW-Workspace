@@ -6,7 +6,7 @@
 
 
 incsrc ttconfig.cfg
-incsrc ../shared/shared.asm
+incsrc shared/shared.asm
 
 
 print "Tolerance Timer v1.0 - (c) RPG Hacker"

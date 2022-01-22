@@ -33,7 +33,7 @@ class MainWindow(tkinter.Tk):
 		
 		
 		self._patch_frame = ttk.LabelFrame(self, text='Patch')
-		self._patch_frame.grid(column=0, row=0, sticky='news', padx=5, pady=5)
+		self._patch_frame.grid(column=0, row=0, sticky='news', padx=(10, 10), pady=(10, 5))
 		
 		self._patch_frame.rowconfigure(2, weight=1)
 		self._patch_frame.columnconfigure(0, weight=1)
@@ -74,7 +74,7 @@ class MainWindow(tkinter.Tk):
 		
 		
 		self._run_frame = ttk.LabelFrame(self, text='Run')
-		self._run_frame.grid(column=0, row=1, sticky='ews', padx=5, pady=5)
+		self._run_frame.grid(column=0, row=1, sticky='ews', padx=(10, 10), pady=(5, 10))
 		
 		self._run_frame.rowconfigure(0, weight=1)
 		self._run_frame.columnconfigure(0, weight=1)

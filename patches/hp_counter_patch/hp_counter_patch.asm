@@ -5,9 +5,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-incsrc ../free_7F4000/freeconfig.cfg
+incsrc free_7F4000/freeconfig.cfg
 incsrc hpconfig.cfg
-incsrc ../shared/shared.asm
+incsrc shared/shared.asm
 
 
 print "HP/MP Counter Patch - (c) RPG Hacker"

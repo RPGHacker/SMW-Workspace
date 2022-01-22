@@ -1,6 +1,3 @@
-HEADER
-LOROM
-
 !true = 1	;\Do not change these.
 !false = 0	;/
 

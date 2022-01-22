@@ -7,6 +7,7 @@ import patching_utility
 patcher = patching_utility.PatchingUtility()
 
 patcher.add_option('--bit_mode', values=['8-bit', '16-bit'], default_index=0)
+patcher.add_option('--message_box_hijack', values=['enable', 'disable'], default_index=0)
 
 	
 patch_config = patching_utility.PatchConfig( os.path.dirname(__file__),
@@ -38,5 +39,8 @@ if __name__ == '__main__':
 	
 	if options.bit_mode == '16-bit':
 		patch_config.actions[0].defines.append('bitmode=BitMode.16Bit')
+		
+	if options.message_box_hijack == 'disable':
+		patch_config.actions[0].defines.append('hijackbox=false')
 		
 	patcher.apply_patches(patch_config, options)

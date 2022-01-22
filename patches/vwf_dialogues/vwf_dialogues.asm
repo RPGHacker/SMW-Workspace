@@ -532,6 +532,9 @@ org remap_rom($009F6F)
 ; Hijack message box to call VWF dialogue
 org remap_rom($00A1DA)
 	jml OriginalMessageBox
+	; This code should never get executed. It's literally only here because
+	; static freespace requires an autoclean. A prot won't work.
+	autoclean jml SharedRoutines
 	nop
 
 ; SRAM expansion ($07 => 2^7 kb = 128 kb)
@@ -547,6 +550,22 @@ endif
 ;;;;;;;;;;;;;;;;;
 ;MAIN CODE START;
 ;;;;;;;;;;;;;;;;;
+
+
+
+; RPG Hacker: We use static freespace for shared routines, so that re-applying
+; the patch won't move them around all the time. This would probably get very
+; annoying for average end users.
+freespace ram,static
+
+SharedRoutines:
+	incsrc vwfroutines.asm	
+
+; A little bit of padding after the shared routines, just in case we do need
+; to grow the free space. Routines themselves also have padding between them.
+skip 128
+
+SharedRoutinesEnd:
 
 
 freecode : prot Kleenex
@@ -742,7 +761,8 @@ if !hijackbox == true
 	stz remap_ram($1426)
 	jsl VWF_DisplayAMessage
 else	
-	jml remap_rom($00A1DF)	; Run original message box and skip frame simulation
+	jsl remap_rom($05B10C)	; Run original message box
+	jml remap_rom($00A1E3)	; Skip frame simulation
 endif
 	
 .NoOriginalMessageBoxRequested
@@ -2960,7 +2980,7 @@ endif
 	lda !firsttile
 	sta $0F
 
-	jsl GenerateVWF
+	jsl VWF_GenerateVWF
 
 	lda !vwfwidth
 	clc
@@ -2983,7 +3003,7 @@ endif
 	lda.b #!vwfbuffer_cursor>>16
 	sta $05
 
-	jsl AddPattern
+	jsl VWF_AddPattern
 
 .F0NoBG
 	rep #$20
@@ -3539,7 +3559,7 @@ endif
 	lda !firsttile
 	sta $0F
 
-	jsl GenerateVWF
+	jsl VWF_GenerateVWF
 
 	lda !boxcreate
 	beq .End
@@ -3557,7 +3577,7 @@ endif
 	lda #$06
 	sta $06
 
-	jsl AddPattern
+	jsl VWF_AddPattern
 
 .End
 	jmp Buffer_End
@@ -5162,235 +5182,6 @@ BackupTilemap:
 	sta !cursorfix
 
 	rts
-
-
-
-
-
-;;;;;;;;;;;;;;
-;VWF Routines;
-;;;;;;;;;;;;;;
-
-; The actual VWF Creation routine.
-
-;$00 : Text
-;$03 : GFX 1
-;$06 : Width
-;$09 : Destination
-;$0C : Number of Bytes -> GFX 2
-;$0E : Current Pixel
-;$0F : First Tile?
-
-GenerateVWF:
-	lda $0E
-	sta !currentpixel
-	lda $0F
-	sta !firsttile
-	rep #$20
-	lda $0C
-	sta !vwfbytes
-	sep #$20
-	lda $05	; Get GFX 2 Offset
-	sta $0E
-	rep #$21
-	lda $03
-	adc #$0020
-	sta $0C
-
-.Read
-	lda [$00]	; Read character
-	inc $00
-	!16bit_mode_only inc $00
-	!8bit_mode_only sep #$20
-	sta !vwfchar
-	!16bit_mode_only sep #$20
-	!16bit_mode_only lda !vwfchar+1
-	!16bit_mode_only sta !font
-	!16bit_mode_only jsr GetFont
-	!16bit_mode_only lda $05
-	!16bit_mode_only sta $0E
-	!16bit_mode_only rep #$21
-	!16bit_mode_only lda $03
-	!16bit_mode_only adc #$0020
-	!16bit_mode_only sta $0C
-	!16bit_mode_only sep #$20
-	!16bit_mode_only lda !vwfchar
-	tay
-	lda [$06],y	; Get width
-	sta !vwfwidth
-	lda !vwfmaxwidth
-	sec
-	sbc !vwfwidth
-	sta !vwfmaxwidth
-
-.Begin
-	lda !vwfchar	; Get letter offset into Y
-	sta select(!use_sa1_mapping,$2251,$211B)
-	stz select(!use_sa1_mapping,$2252,$211B)
-	stz select(!use_sa1_mapping,$2250,$211C)
-	lda #$40
-	sta select(!use_sa1_mapping,$2253,$211C)
-	if !use_sa1_mapping : stz $2254
-	rep #$10
-	ldy select(!use_sa1_mapping,$2306,$2134)
-	ldx #$0000
-
-.Draw
-	lda !currentpixel
-	sta $0F
-	lda [$03],y	; Load one pixelrow of letter
-	sta !vwftileram,x
-	lda [$0C],y
-	sta !vwftileram+32,x
-	lda #$00
-	sta !vwftileram+64,x
-
-.Check
-	lda $0F
-	beq .Skip
-	lda !vwftileram,x	; Shift to the right
-	lsr
-	sta !vwftileram,x
-	lda !vwftileram+32,x
-	ror
-	sta !vwftileram+32,x
-	lda !vwftileram+64,x
-	ror
-	sta !vwftileram+64,x
-	dec $0F
-	bra .Check
-
-.Skip
-	iny
-	inx
-	cpx #$0020
-	bne .Draw
-	sep #$10
-	ldx #$00
-	txy
-
-	lda !firsttile	; Skip one step if first tile in line
-	beq .Combine
-	lda #$00
-	sta !firsttile
-	bra .Copy
-
-.Combine
-	lda !vwftileram,x	; Combine old graphic with new
-	ora [$09],y
-	sta [$09],y
-	inx
-	iny
-	cpx #$20
-	bne .Combine
-
-.Copy
-	lda !vwftileram,x	; Copy remaining part of letter
-	sta [$09],y
-	inx
-	iny
-	cpx #$60
-	bne .Copy
-
-if !use_sa1_mapping
-	lda #$01
-	sta $2250
-endif
-	lda !currentpixel	; Adjust destination address
-	clc
-	adc !vwfwidth
-	sta select(!use_sa1_mapping,$2251,$4204)
-	stz select(!use_sa1_mapping,$2252,$4205)
-	lda #$08
-	sta select(!use_sa1_mapping,$2253,$4206)
-if !use_sa1_mapping
-	stz $2254
-	nop
-	bra $00
-else
-	nop #8
-endif
-	lda select(!use_sa1_mapping,$2308,$4216)
-	sta !currentpixel
-	rep #$20
-	lda select(!use_sa1_mapping,$2306,$4214)
-	asl
-	pha
-	clc
-	adc !tile
-	sta !tile
-	pla
-	clc
-	sep #$20
-	adc !vwfbufferindex
-	sta !vwfbufferindex
-	lda select(!use_sa1_mapping,$2306,$4214)
-	clc
-	adc !currentx
-	sta !currentx
-	lda select(!use_sa1_mapping,$2306,$4214)
-	sta select(!use_sa1_mapping,$2251,$211B)
-	stz select(!use_sa1_mapping,$2250,$211B)
-	stz select(!use_sa1_mapping,$2252,$211C)
-	lda #$20
-	sta select(!use_sa1_mapping,$2253,$211C)
-if !use_sa1_mapping
-	stz $2254
-	nop
-endif
-	rep #$21
-	lda select(!use_sa1_mapping,$2306,$2134)
-	adc $09
-	sta $09
-
-	lda !vwfbytes	; Adjust number of bytes
-	dec
-	sta !vwfbytes
-	beq .End
-	jmp .Read
-
-.End
-	sep #$20
-	rtl
-
-
-
-
-
-; Adds the background pattern to letters.
-
-
-;$00 : Graphic
-;$03 : Destination
-;$06 : Number of tiles
-
-AddPattern:
-	ldy #$00
-
-.Combine
-	iny
-	lda [$03],y
-	eor #$FF
-	dey
-	and [$00],y
-	ora [$03],y
-	sta [$03],y
-
-	iny #2
-	cpy #$10
-	bne .Combine
-
-	rep #$21
-	lda $03
-	adc #$0010
-	sta $03
-	sep #$20
-	dec $06
-	lda $06
-	bne AddPattern
-
-.End
-	rtl
 	
 
 
@@ -5449,10 +5240,6 @@ BgPatternsEnd:
 assert !bg_pattern_num_math == round(!bg_pattern_num_math, 0), "vwfbgpatterns.bin has an unexpected size. Should be divisible by ",dec(8*2),"."
 
 
-SharedRoutines:
-	incsrc vwfroutines.asm
-
-
 %vwf_first_bank()
 
 MainDataStart:
@@ -5494,9 +5281,18 @@ print freespaceuse," bytes of free space used."
 print dec(!varrampos)," bytes of \!varram used."
 
 print ""
-print "VWF Creation Routine at address $",hex(GenerateVWF),"."
-print "Pattern Addition Routine at address $",hex(AddPattern),"."
-print "DisplayAMessage routine located at $",hex(VWF_DisplayAMessage),"."
+print "Shared routines inserted at start address $",hex(SharedRoutines)
+print "Reserved ",dec(SharedRoutinesEnd-SharedRoutines)," bytes of free space for shared routines."
+print ""
+
+!temp_i #= 0
+while !temp_i < !vwf_num_shared_routines
+	print "Shared routine '!{vwf_shared_routine_!{temp_i}_label_name}' at address $",hex(!{vwf_shared_routine_!{temp_i}_label_name}),"."
+
+	!temp_i #= !temp_i+1
+endwhile
+undef "temp_i"
+
 
 print ""
 print "VWF State register at address $",hex(!vwfmode),"."

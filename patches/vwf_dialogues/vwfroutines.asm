@@ -3,6 +3,7 @@
 ; That is, routines that will be callable from both inside and outside of the patch.
 macro vwf_register_shared_routine(label)
 	<label>:
+	.SharedRoutineStart
 	
 	!{vwf_shared_routine_!{vwf_num_shared_routines}_label_name} = <label>
 	
@@ -32,7 +33,246 @@ macro vwf_generate_shared_routines_table()
 endmacro
 
 
+
+; The actual VWF creation routine. Renders VWF text into a memory buffer.
+;
+; Included as a shared routine for advanced users only. Probably not useful,
+; nor needed, for average users of this patch.
+;
+; NOTE: Uses SA-1 registers in SA-1 ROMs. When using an SA-1 ROM, make sure
+; to call this from the SA-1 CPU only.
+; 
+; Parameters:
+; $00: Pointer (24-bit) to the raw character data
+;      1 byte per character in 8-bit mode, 2 bytes per character in 16-bit mode.
+;      Each value here is considered a character index into the font.
+;      No special commands are supported here.
+; $03: Pointer (24-bit) to font
+; $06: Pointer (24-bit) to character width table
+; $09: Pointer (24-bit) to memory buffer receiving VWF text
+; $0C: Length of the text data in characters
+;      During processing: Pointer (24-bit) to font, offset by two 8x8 tile (to access right half of 16x16 tiles)
+; $0E: Current pixel offset into destination memory buffer
+; $0F: #$01 if this is writing first tile in the current buffer, otherwise #$00
+%vwf_register_shared_routine(VWF_GenerateVWF)
+	lda $0E
+	sta !currentpixel
+	lda $0F
+	sta !firsttile
+	rep #$20
+	lda $0C
+	sta !vwfbytes
+	sep #$20
+	lda $05	; Get GFX 2 Offset
+	sta $0E
+	rep #$21
+	lda $03
+	adc #$0020
+	sta $0C
+
+.Read
+	lda [$00]	; Read character
+	inc $00
+	!16bit_mode_only inc $00
+	!8bit_mode_only sep #$20
+	sta !vwfchar
+	!16bit_mode_only sep #$20
+	!16bit_mode_only lda !vwfchar+1
+	!16bit_mode_only sta !font
+	!16bit_mode_only jsr GetFont
+	!16bit_mode_only lda $05
+	!16bit_mode_only sta $0E
+	!16bit_mode_only rep #$21
+	!16bit_mode_only lda $03
+	!16bit_mode_only adc #$0020
+	!16bit_mode_only sta $0C
+	!16bit_mode_only sep #$20
+	!16bit_mode_only lda !vwfchar
+	tay
+	lda [$06],y	; Get width
+	sta !vwfwidth
+	lda !vwfmaxwidth
+	sec
+	sbc !vwfwidth
+	sta !vwfmaxwidth
+
+.Begin
+	lda !vwfchar	; Get letter offset into Y
+	sta select(!use_sa1_mapping,$2251,$211B)
+	stz select(!use_sa1_mapping,$2252,$211B)
+	stz select(!use_sa1_mapping,$2250,$211C)
+	lda #$40
+	sta select(!use_sa1_mapping,$2253,$211C)
+	if !use_sa1_mapping : stz $2254
+	rep #$10
+	ldy select(!use_sa1_mapping,$2306,$2134)
+	ldx #$0000
+
+.Draw
+	lda !currentpixel
+	sta $0F
+	lda [$03],y	; Load one pixelrow of letter
+	sta !vwftileram,x
+	lda [$0C],y
+	sta !vwftileram+32,x
+	lda #$00
+	sta !vwftileram+64,x
+
+.Check
+	lda $0F
+	beq .Skip
+	lda !vwftileram,x	; Shift to the right
+	lsr
+	sta !vwftileram,x
+	lda !vwftileram+32,x
+	ror
+	sta !vwftileram+32,x
+	lda !vwftileram+64,x
+	ror
+	sta !vwftileram+64,x
+	dec $0F
+	bra .Check
+
+.Skip
+	iny
+	inx
+	cpx #$0020
+	bne .Draw
+	sep #$10
+	ldx #$00
+	txy
+
+	lda !firsttile	; Skip one step if first tile in line
+	beq .Combine
+	lda #$00
+	sta !firsttile
+	bra .Copy
+
+.Combine
+	lda !vwftileram,x	; Combine old graphic with new
+	ora [$09],y
+	sta [$09],y
+	inx
+	iny
+	cpx #$20
+	bne .Combine
+
+.Copy
+	lda !vwftileram,x	; Copy remaining part of letter
+	sta [$09],y
+	inx
+	iny
+	cpx #$60
+	bne .Copy
+
+if !use_sa1_mapping
+	lda #$01
+	sta $2250
+endif
+	lda !currentpixel	; Adjust destination address
+	clc
+	adc !vwfwidth
+	sta select(!use_sa1_mapping,$2251,$4204)
+	stz select(!use_sa1_mapping,$2252,$4205)
+	lda #$08
+	sta select(!use_sa1_mapping,$2253,$4206)
+if !use_sa1_mapping
+	stz $2254
+	nop
+	bra $00
+else
+	nop #8
+endif
+	lda select(!use_sa1_mapping,$2308,$4216)
+	sta !currentpixel
+	rep #$20
+	lda select(!use_sa1_mapping,$2306,$4214)
+	asl
+	pha
+	clc
+	adc !tile
+	sta !tile
+	pla
+	clc
+	sep #$20
+	adc !vwfbufferindex
+	sta !vwfbufferindex
+	lda select(!use_sa1_mapping,$2306,$4214)
+	clc
+	adc !currentx
+	sta !currentx
+	lda select(!use_sa1_mapping,$2306,$4214)
+	sta select(!use_sa1_mapping,$2251,$211B)
+	stz select(!use_sa1_mapping,$2250,$211B)
+	stz select(!use_sa1_mapping,$2252,$211C)
+	lda #$20
+	sta select(!use_sa1_mapping,$2253,$211C)
+if !use_sa1_mapping
+	stz $2254
+	nop
+endif
+	rep #$21
+	lda select(!use_sa1_mapping,$2306,$2134)
+	adc $09
+	sta $09
+
+	lda !vwfbytes	; Adjust number of bytes
+	dec
+	sta !vwfbytes
+	beq .End
+	jmp .Read
+
+.End
+	sep #$20
+	rtl
+
+skip 16
+
+
+
+; Adds the background pattern to VWF text in memory.
+; 
+; Included as a shared routine for advanced users only. Probably not useful,
+; nor needed, for average users of this patch.
+; 
+; Parameters:
+; $00: Pointer (24-bit) to pattern GFX
+; $03: Pointer (24-bit) to memory buffer containing VWF text created via VWF_GenerateVWF
+; $06: Number of tiles in memory buffer
+%vwf_register_shared_routine(VWF_AddPattern)
+.Begin
+	ldy #$00
+
+.Combine
+	iny
+	lda [$03],y
+	eor #$FF
+	dey
+	and [$00],y
+	ora [$03],y
+	sta [$03],y
+
+	iny #2
+	cpy #$10
+	bne .Combine
+
+	rep #$21
+	lda $03
+	adc #$0010
+	sta $03
+	sep #$20
+	dec $06
+	lda $06
+	bne .Begin
+
+.End
+	rtl
+
+skip 16
+
+
 ; This routine checks whether a VWF Dialogues message box is currently open.
+; 
 ; Usage:
 ; jsl VWF_IsMessageActive
 ; bne .MessageIsActive
@@ -40,15 +280,16 @@ endmacro
 	lda !vwfmode
 	rtl
 
+skip 16
+
 
 ; This routine lets you display a message and force the current textbox to close if one is already up.
 ; Call this routine from within your custom block/sprite/patch code.
+; 
 ; Entry code:
 ; lda.b #MessageNumber
 ; ldx.b #MessageNumber>>8
 ; jsl VWF_DisplayAMessage
-
-
 %vwf_register_shared_routine(VWF_DisplayAMessage)
 	sta !message
 	txa
@@ -66,14 +307,16 @@ endmacro
 	sta !vwfactiveflag
 	rtl
 
+skip 16
+
 
 ; This routine allows you to change the text pointer to wherever you specify
+; 
 ; Entry code:
 ; lda.b #TextPointer
 ; ldx.b #TextPointer>>8
 ; ldy.b #TextPointer>>16
 ; jsl VWF_ChangeVWFTextPtr
-
 %vwf_register_shared_routine(VWF_ChangeVWFTextPtr)
 	sta !vwftextsource
 	txa
@@ -82,13 +325,16 @@ endmacro
 	sta !vwftextsource+2
 	rtl
 
+skip 16
+
+
 ; This routine allows you to change the MessageASM pointer to wherever you specify
+; 
 ; Entry code:
 ; lda.b #ASMPointer
 ; ldx.b #ASMPointer>>8
 ; ldy.b #ASMPointer>>16
 ; jsl VWF_ChangeMessageASMPtr
-
 %vwf_register_shared_routine(VWF_ChangeMessageASMPtr)
 	sta !messageasmloc
 	txa
@@ -97,13 +343,16 @@ endmacro
 	sta !messageasmloc+2
 	rtl
 
+skip 16
+
+
 ; This routine allows you to change the message skip pointer to wherever you specify
+; 
 ; Entry code:
 ; lda.b #TextPointer
 ; ldx.b #TextPointer>>8
 ; ldy.b #TextPointer>>16
 ; jsl VWF_ChangeMessageSkipPtr
-
 %vwf_register_shared_routine(VWF_ChangeMessageSkipPtr)
 	sta !skipmessageloc
 	txa
@@ -112,12 +361,15 @@ endmacro
 	sta !skipmessageloc+2
 	rtl
 
+skip 16
+
+
 ; This routine lets you check if the player skipped the current message with start.
 ; It only works if the current message was set to be skippable initially. 
-;Entry code:
+; 
+; Entry code:
 ; jsl VWF_CheckIfMessageWasSkipped
 ; bcs .MessageWasSkipped
-
 %vwf_register_shared_routine(VWF_CheckIfMessageWasSkipped)
 	clc
 	lda !initialskipmessageflag
@@ -127,6 +379,8 @@ endmacro
 	sec
 .NoSkipping
 	rtl
+
+skip 16
 	
 	
 ; Resets all buffered text macros.
@@ -137,6 +391,8 @@ endmacro
 	sta !vwftbufferedtextindex
 	sta !vwftbufferedtextindex+1
 	rtl
+
+skip 16
 	
 	
 ; Begins constructing a new buffered text macro, starting at text macro ID 0 and incrementing
@@ -171,6 +427,8 @@ endmacro
 	sta !vwftbufferedtextpointerindex
 	
 	rtl
+
+skip 16
 	
 	
 ; Adds text to to a buffered text macro that was started with BeginBufferedTextMacro.
@@ -259,6 +517,9 @@ endmacro
 	sep #$30
 	
 	rtl
+
+skip 16
+
 	
 ; Convenience macro, for when we want to add to a hard-coded address to the buffer. 
 macro add_to_buffered_text_macro(address)
@@ -283,9 +544,10 @@ endmacro
 .EndMacroData
 	%vwf_inline( %vwf_text_macro_end() )
 
+skip 16
 
-; These two routines lets you toggle MessageASM. Call directly with the $F1 command or within a MessageASM routine.
 
+; This routine lets you toggle MessageASM. Call directly with the %vwf_execute_subroutine() command or within a MessageASM routine.
 %vwf_register_shared_routine(VWF_ToggleMessageASMPtr)
 .Disable
 	lda #$6B
@@ -297,12 +559,13 @@ endmacro
 	sta !messageasmopcode
 	rtl
 
+skip 16
+
 
 ; These three routines let you warp to the overworld and trigger an event (if desired).
 ; Call directly with the $F1 command.
 ; Note that if you're using Lunar Magic 3.00+, then you can set a secondary entrance to exit to the overworld.
 ; In that case, use the $EF command and set it to the appropriate secondary entrance.
-
 %vwf_register_shared_routine(VWF_CloseMessageAndGoToOverworld)
 .NormalExit
 	lda #$01
@@ -324,3 +587,5 @@ endmacro
 	lda #$0B
 	sta remap_ram($0100)
 	rtl
+
+skip 16

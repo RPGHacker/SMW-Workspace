@@ -1,0 +1,1 @@
+start pythonw.exe patch_manager.pyw

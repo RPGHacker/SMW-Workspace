@@ -9,7 +9,7 @@ For better readibility of Asar code (especially using my rather unique coding st
 # Patching & Testing
 To make patching and testing the patches in this repository easier, a few Python helper scripts are provided (currently Windows-only) that you can use by installing Python version 3.8 or above. Simply running patch_manager.pyw will open a little helper GUI application that lets you select patches to apply and lets you start them directly in an emulator. This works by searching for patch_config.py files in the directories of each patch, which define how the patch is to be applied.
 
-NOTE: Starting patch_manager.pyw by double-clicking might have long start-up times on Windows. It might be faster to pass script file path to Python directly via the command line.
+**NOTE:** Starting patch_manager.pyw by double-clicking it might have long start-up times on Windows, due to its native Python launcher pyw.exe being ridiculously slow. It might be faster to pass the script file path to Python directly via the command line. Alternatively, you can try running patch_manager.bat, which will directly pass the script to pythonw.exe. However, if you have multiple Python installations on your system, this might end up picking the wrong one.
 
 # License
 All of my own patches (currently all the contents of the patches directory) are licensed under the MIT license. Please check the LICENSE file for details.

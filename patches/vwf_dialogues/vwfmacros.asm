@@ -118,6 +118,7 @@ Pointers:
 		!temp_i #= !temp_i+1
 	endwhile
 	undef "temp_i"
+PointersEnd:
 	
 	if !temp_num_gaps >= 50
 		warn "Found !temp_num_gaps gaps in message IDs. Gaps in message IDs waste freespace, so it's recommended to avoid excessive usage of them."

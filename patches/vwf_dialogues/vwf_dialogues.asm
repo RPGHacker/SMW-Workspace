@@ -2343,6 +2343,21 @@ ClearBox:
 
 
 GetMessage:
+	rep #$20
+	lda !message
+	cmp.w #(PointersEnd-Pointers)/3
+	bcc .IdOkay
+	
+	; ID is too high. Let's load an error handling message.
+	lda.w #HandleUndefinedMessage0
+	sta !vwftextsource
+	sep #$20
+	lda.b #HandleUndefinedMessage0>>16
+	sta !vwftextsource+2
+	rts
+
+.IdOkay
+	sep #$20
 	lda !message
 	sta select(!use_sa1_mapping,$2251,$211B)
 	lda !message+1

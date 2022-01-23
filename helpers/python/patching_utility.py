@@ -10,8 +10,9 @@ from typing import List
 
 
 _asar_paths = {
-	'1.9': os.path.join(os.path.dirname(__file__), '../../tools/asar/asar.exe'),
-	'2.0': os.path.join(os.path.dirname(__file__), '../../tools/asar2/asar.exe'),
+	'1.81': os.path.join(os.path.dirname(__file__), '../../tools/asar181/asar.exe'),
+	'1.9': os.path.join(os.path.dirname(__file__), '../../tools/asar19/asar.exe'),
+	'2.0': os.path.join(os.path.dirname(__file__), '../../tools/asar20/asar.exe'),
 }
 
 _clean_rom_path = os.path.join(os.path.dirname(__file__), '../../baserom')
@@ -52,7 +53,7 @@ class PatchingUtility:
 		self._option_values = {}
 		self._option_default_indices = {}
 		
-		self.add_option('--asar_ver', values=['1.9', '2.0'], default_index=0)
+		self.add_option('--asar_ver', values=['1.81', '1.9', '2.0'], default_index=1)
 		self.add_option('--rom_type', values=['normal', 'sa-1'], default_index=0)
 		self.add_option('--rom_size', values=['1mb', '2mb', '3mb', '4mb', '6mb', '8mb'], default_index=1)
 		

@@ -346,6 +346,25 @@ skip 16
 skip 16
 
 
+; This routine lets you toggle MessageASM. Call directly with the %vwf_execute_subroutine() command or within a MessageASM routine.
+%vwf_register_shared_routine(VWF_ToggleMessageASM)
+	lda !messageasmopcode
+	cmp #$5C
+	bne .Enable
+
+.Disable
+	lda #$6B
+	bra +
+
+.Enable
+	lda #$5C
++
+	sta !messageasmopcode
+	rtl
+
+skip 16
+
+
 ; This routine allows you to change the message skip pointer to wherever you specify
 ; 
 ; Entry code:
@@ -364,20 +383,53 @@ skip 16
 skip 16
 
 
-; This routine lets you check if the player skipped the current message with start.
-; It only works if the current message was set to be skippable initially. 
-; 
-; Entry code:
-; jsl VWF_CheckIfMessageWasSkipped
-; bcs .MessageWasSkipped
-%vwf_register_shared_routine(VWF_CheckIfMessageWasSkipped)
-	clc
-	lda !initialskipmessageflag
-	beq .NoSkipping
+; This routine lets you toggle message skip. Call directly with the %vwf_execute_subroutine() command or within a MessageASM routine.
+%vwf_register_shared_routine(VWF_ToggleMessageSkip)
 	lda !skipmessageflag
-	bne .NoSkipping
-	sec
-.NoSkipping
+	and.b #$01
+	eor.b #$01
+	sta !skipmessageflag
+	rtl
+	
+skip 16
+
+
+; This routine lets you check if the player skipped the current message with start.
+; 
+; Usage:
+; jsl VWF_WasMessageSkipped
+; bne .MessageWasSkipped
+%vwf_register_shared_routine(VWF_WasMessageSkipped)
+	lda !messagewasskipped	
+	rtl
+
+skip 16
+
+
+; These three routines let you warp to the overworld and trigger an event (if desired).
+; Call directly with the $F1 command.
+; Note that if you're using Lunar Magic 3.00+, then you can set a secondary entrance to exit to the overworld.
+; In that case, use the $EF command and set it to the appropriate secondary entrance.
+%vwf_register_shared_routine(VWF_CloseMessageAndGoToOverworld)
+.NormalExit
+	lda #$01
+	tay
+	bra +
+
+.SecretExit
+	lda #$02
+	ldy #$01
+	bra +
+
+.StartPlusSelect
+	lda #$80
+	ldy #$00
++
+	sta remap_ram($0DD5)
+	sty remap_ram($13CE)
+	inc remap_ram($1DE9)
+	lda #$0B
+	sta remap_ram($0100)
 	rtl
 
 skip 16
@@ -543,49 +595,5 @@ endmacro
 	
 .EndMacroData
 	%vwf_inline( %vwf_text_macro_end() )
-
-skip 16
-
-
-; This routine lets you toggle MessageASM. Call directly with the %vwf_execute_subroutine() command or within a MessageASM routine.
-%vwf_register_shared_routine(VWF_ToggleMessageASMPtr)
-.Disable
-	lda #$6B
-	bra +
-
-.Enable
-	lda #$5C
-+
-	sta !messageasmopcode
-	rtl
-
-skip 16
-
-
-; These three routines let you warp to the overworld and trigger an event (if desired).
-; Call directly with the $F1 command.
-; Note that if you're using Lunar Magic 3.00+, then you can set a secondary entrance to exit to the overworld.
-; In that case, use the $EF command and set it to the appropriate secondary entrance.
-%vwf_register_shared_routine(VWF_CloseMessageAndGoToOverworld)
-.NormalExit
-	lda #$01
-	tay
-	bra +
-
-.SecretExit
-	lda #$02
-	ldy #$01
-	bra +
-
-.StartPlusSelect
-	lda #$80
-	ldy #$00
-+
-	sta remap_ram($0DD5)
-	sty remap_ram($13CE)
-	inc remap_ram($1DE9)
-	lda #$0B
-	sta remap_ram($0100)
-	rtl
 
 skip 16

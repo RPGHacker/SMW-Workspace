@@ -147,7 +147,7 @@ endmacro
 %claim_varram(l3mainscreenflag, 1)			; Backup of the layer 3 main screen bit from RAM address $0D9D (mirror of $212C)
 %claim_varram(l3subscreenflag, 1)			; Backup of the layer 3 sub screen bit from RAM address $0D9E (mirror of $212D)
 %claim_varram(isnotatstartoftext, 1)			; Flag indicating that the text box has just been cleared. Intended to provide an easy way to sync up MessageASM code with the start of a new textbox.
-%claim_varram(initialskipmessageflag, 1)		; Flag indicating that the current textbox originally had the message skip function enabled. Intended to allow you to revert the state of the other skip message flag if it's been disabled.
+%claim_varram(messagewasskipped, 1)		; Flag indicating whether the message was skipped by the player pressing Start
 %claim_varram(vwfbufferdest, 3)				; 24-bit pointer to the location in the tile buffer to read from when uploading text graphics.
 %claim_varram(vwfbufferindex, 1)			; Index to the text graphics buffer determining where in the buffer to store tiles.
 
@@ -1014,11 +1014,13 @@ LoadHeader:
 	sta !boxcreate	
 	
 	lda [$00],y		; Message skip flag
-	and #$02
+	and.b #%00000010
+	lsr
 	sta !skipmessageflag
-	sta !initialskipmessageflag
+	lda #$00
+	sta !messagewasskipped
 	lda [$00],y		; Message ASM Flag
-	and #$01
+	and.b #%00000001
 	beq .NoMessageASM
 	lda #$5C
 	bra .StoreMessageASMOpcode
@@ -1114,7 +1116,7 @@ LoadHeader:
 	sta $03
 
 .NoSounds
-	lda !initialskipmessageflag
+	lda !skipmessageflag
 	beq .NoMessageSkipPointer
 	rep #$21
 	lda [$00],y		; Message skip location (address)
@@ -2438,6 +2440,7 @@ TextCreation:
 	sta !currentchoice
 	sta !skipmessageflag
 	inc
+	sta !messagewasskipped
 	sta !clearbox
 	jmp .NoButton
 

@@ -1329,9 +1329,19 @@ EditPlayerName:
 	
 	%vwf_text("Hey, did you know? Hold L and press either X or Y anywhere in this hack for a secret message.") : %vwf_wait_for_a() : %vwf_clear()
 	%vwf_text("The L + X message even works while a message is already open. I'm serious, try it right now!") : %vwf_wait_for_a() : %vwf_clear()
-	%vwf_text("Routines test complete!") : %vwf_wait_for_a()
+	
+	%vwf_text("Now... Using VWF_DisplayAMessage to switch to another message in 3... 2... 1...") : %vwf_wait_for_a() : %vwf_execute_subroutine(Message0040_ChangeTextPtr)
+	
+	%vwf_text("Uh-oh! You should never get to see this text!") : %vwf_wait_for_a()
 
 %vwf_message_end()
+
+Message0040_ChangeTextPtr:
+	lda.b #$43
+	ldx.b #$00
+	jsl VWF_DisplayAMessage
+
+	rtl
 
 ;-------------------------------------------------------
 
@@ -1357,9 +1367,104 @@ EditPlayerName:
 
 %vwf_message_start(0043)	; Message 021-2
 
-	; Message header & text go here
+	%vwf_header(vwf_height(4), vwf_enable_skipping(true), vwf_enable_message_asm(false))
+	
+	%vwf_text("Success! Now using VWF_ChangeVWFTextPtr to change the text pointer in 3... 2... 1...") : %vwf_wait_for_a() : %vwf_clear() : %vwf_execute_subroutine(.ChangeTextPtr_1)
+	
+	%vwf_text("Uh-oh! You should never get to see this text!") : %vwf_wait_for_a()
+	
+.Success
+	%vwf_text("Success! Now using VWF_ChangeMessageASMPtr and VWF_ToggleMessageASM to animate text color in 3... 2... 1...") : %vwf_execute_subroutine(.ChangeTextPtr_2) : %vwf_wait_for_a() : %vwf_clear()
+	
+	%vwf_change_colors(vwf_get_color_index_2bpp($07, !vwf_text_color_id), vwf_make_color_15(31, 31, 31))
+	
+	%vwf_execute_subroutine(.DisableSkipping) : %vwf_text("Message skip is now disabled for this one message alone. Try it by pressing start!") : %vwf_wait_for_a() : %vwf_clear()
+	
+	%vwf_execute_subroutine(.EnableSkipping) : %vwf_text("Now it's enabled again, but points to a different location. Try it, press start!") : %vwf_wait_for_a() : %vwf_clear()
+	
+.ModifiedSkipLocation
+	%vwf_execute_subroutine(.ResetSkipping) : %vwf_text("Now whether you skipped or not, you will always arrive at this text box here.") : %vwf_wait_for_a() : %vwf_clear() : %vwf_execute_subroutine(.SkipCheck)
+	
+.NoSkip
+	%vwf_text("But only because you DIDN'T skip, you're getting to see this text box!") : %vwf_wait_for_a() : %vwf_clear() : %vwf_set_text_pointer(.Continue)
+
+.DidSkip
+	%vwf_text("However, this text box is visible only to players who DID skip!") : %vwf_wait_for_a() : %vwf_clear()
+
+.Continue
+	%vwf_text("Return to the overworld now?")
+
+	%vwf_display_options(ReturnToOW,
+		%vwf_text("Yes"),
+		%vwf_text("No"))
+	
+	%vwf_set_option_location(ReturnToOW, 0)
+		%vwf_execute_subroutine(.ReturnToOW)
+		%vwf_set_text_pointer(.TheEnd)
+	
+	%vwf_set_option_location(ReturnToOW, 1)
+
+.TheEnd
+	%vwf_text("Routines test complete!") : %vwf_wait_for_a()
 
 %vwf_message_end()
+
+.ChangeTextPtr_1:
+	lda.b #.Success
+	ldx.b #.Success>>8
+	ldy.b #.Success>>16
+	jsl VWF_ChangeVWFTextPtr
+
+	rtl
+	
+.ChangeTextPtr_2:
+	lda.b #MessageASM0031
+	ldx.b #MessageASM0031>>8
+	ldy.b #MessageASM0031>>16
+	jsl VWF_ChangeMessageASMPtr
+	
+	jsl VWF_ToggleMessageASM
+
+	rtl
+	
+.DisableSkipping:	
+	jsl VWF_ToggleMessageASM
+	jsl VWF_ToggleMessageSkip
+
+	rtl
+	
+.EnableSkipping:
+	lda.b #.ModifiedSkipLocation
+	ldx.b #.ModifiedSkipLocation>>8
+	ldy.b #.ModifiedSkipLocation>>16
+	jsl VWF_ChangeMessageSkipPtr
+
+	jsl VWF_ToggleMessageSkip
+	rtl
+	
+.ResetSkipping:
+	lda.b #.SkipLocation
+	ldx.b #.SkipLocation>>8
+	ldy.b #.SkipLocation>>16
+	jsl VWF_ChangeMessageSkipPtr
+	
+	rtl
+	
+.SkipCheck:
+	jsl VWF_WasMessageSkipped
+	beq ..NotSkipped
+	
+	lda.b #.DidSkip
+	ldx.b #.DidSkip>>8
+	ldy.b #.DidSkip>>16
+	jsl VWF_ChangeVWFTextPtr
+
+..NotSkipped
+	rtl
+	
+.ReturnToOW
+	jsl VWF_CloseMessageAndGoToOverworld
+	rtl
 
 ;-------------------------------------------------------
 

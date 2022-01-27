@@ -184,7 +184,7 @@ if not(defined("vwf_shared_routines_parsed"))
 						%vwf_add_char_to_label_name("temp_routine_name", read1(!vwf_shared_routines_table_location+!temp_table_offset))
 					
 						!temp_table_offset #= !temp_table_offset+1
-					endif
+					endwhile
 					
 					%vwf_define_shared_routine_label(!temp_routine_name, read3(!vwf_shared_routines_table_location+!temp_table_offset+1))
 					!{vwf_shared_routine_!{temp_routine_name}_exists} = 1
@@ -193,7 +193,7 @@ if not(defined("vwf_shared_routines_parsed"))
 				
 					!temp_table_offset #= !temp_table_offset+4
 					!temp_routine_no #= !temp_routine_no+1
-				endif
+				endwhile
 				undef "temp_routine_no"
 				undef "temp_table_offset"
 			else

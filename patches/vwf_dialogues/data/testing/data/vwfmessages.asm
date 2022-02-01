@@ -97,7 +97,6 @@ endif
 		%vwf_wait_for_a() : %vwf_clear()
 		
 		%vwf_text("Time for some numbers!") : %vwf_line_break()
-		print hex(remap_ram($7E0DBF))
 		%vwf_text("Mario's current coins: ") : %vwf_decimal(remap_ram($7E0DBF), AddressSize.8Bit, true) : %vwf_line_break()
 		%vwf_text("Mario's X pos: ") : %vwf_decimal(remap_ram($7E00D1), AddressSize.16Bit) : %vwf_line_break()
 		%vwf_text("Current X speed (unsigned dec): ") : %vwf_decimal(remap_ram($7E007B)) : %vwf_line_break()

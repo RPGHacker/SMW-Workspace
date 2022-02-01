@@ -43,7 +43,7 @@ function vwf_get_color_index_2bpp(palette, id) = (palette*4)+id
 
 ; RPG Hacker: This exists as a define, because regular space in all tables is defined as FFFE.
 ; If we pass that to %vwf_char() macro, we would get garbage in 16-Bit mode, rather than escaping a space.
-!vwf_nbsp = $00FE
+!vwf_nbsp_char = $00FE
 
 
 
@@ -428,6 +428,10 @@ macro vwf_define_header_setter_generic(name, is_hex, minimum, maximum)
 	
 	function vwf_<name>(value) = (!vwf_header_num_setters<<24)|value
 	
+	if !enable_short_aliases != false
+		function <name>(value) = vwf_<name>(value)
+	endif
+	
 	!vwf_header_num_setters #= !vwf_header_num_setters+1
 endmacro
 
@@ -438,6 +442,10 @@ macro vwf_define_header_setter_sound(name)
 	%vwf_set_header_arg_property(!vwf_header_num_setters, "type", 1)
 	
 	function vwf_<name>(sound_bank, sound_id) = (!vwf_header_num_setters<<24)|((sound_id&$FF)<<16)|(sound_bank&$FFFF)
+	
+	if !enable_short_aliases != false
+		function <name>(sound_bank, sound_id) = vwf_<name>(sound_bank, sound_id)
+	endif
 	
 	!vwf_header_num_setters #= !vwf_header_num_setters+1
 endmacro
@@ -806,7 +814,7 @@ macro vwf_char(value)
 endmacro
 
 macro vwf_non_breaking_space()
-	%vwf_char(!vwf_nbsp)
+	%vwf_char(!vwf_nbsp_char)
 endmacro
 
 ; RPG Hacker: TODO: Ideally, this macro should prevent anything contained
@@ -1138,8 +1146,8 @@ macro vwf_change_colors(palette_start, ...)
 			!8bit_mode_only db $EE
 			!16bit_mode_only dw $FFEE
 			
-			if <!temp_i> < $0000 || <!temp_i> > $FFFF
-				error "%vwf_change_colors(): colors must be numbers between $0000 and $FFFF. Please use the vwf_make_color_15() function. (Current at ",dec(!temp_i),": $",hex(<!temp_i>),")."
+			if <!temp_i> < $0000 || <!temp_i> > $7FFF
+				error "%vwf_change_colors(): colors must be numbers between $0000 and $7FFF. Please use the vwf_make_color_15() function. (Current at ",dec(!temp_i),": $",hex(<!temp_i>),")."
 			endif
 			
 			db <palette_start>+!temp_i
@@ -1148,6 +1156,20 @@ macro vwf_change_colors(palette_start, ...)
 			!temp_i #= !temp_i+1
 		endwhile
 		undef "temp_i"
+	endif
+endmacro
+
+; This macro is just a neat little shortcut that does multiple things at once.
+macro vwf_set_text_color(palette_no, text_color)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	elseif <palette_no> < $00 || <palette_no> > $07
+		error "%vwf_set_text_color(): palette_no must be a number between $00 and $07 (current: $",hex(<palette_no>),")."
+	elseif <text_color> < $0000 || <text_color> > $7FFF
+		error "%vwf_set_text_color(): text_color must be a number between $0000 and $7FFF. Please use the vwf_make_color_15() function. (current: $",hex(<text_color>),")."
+	else
+		%vwf_change_colors(vwf_get_color_index_2bpp(<palette_no>, !vwf_text_color_id), <text_color>, vwf_make_color_15(0, 0, 0))
+		%vwf_set_text_palette(<palette_no>)
 	endif
 endmacro
 
@@ -1228,6 +1250,67 @@ macro vwf_text_macro_end()
 		!16bit_mode_only dw $FFE7
 	endif
 endmacro
+
+
+
+; Define short aliases only if the user opted in for them.
+; This is in case someone wants to include this patch from within another one. These short defines
+; might easily cause a conflict, so we give the user the ability to disable them.
+if !enable_short_aliases != false
+	!text = %vwf_text
+	!str = %vwf_text
+	
+	!char = %vwf_char
+	!chr = %vwf_char
+	!ram_char = %vwf_char_at_address
+	!ram_chr = %vwf_char_at_address
+	
+	!nbsp = %vwf_non_breaking_space()
+	
+	!n = %vwf_line_break()
+	!lf = %vwf_line_break()
+	!break = %vwf_line_break()
+	!new_line = %vwf_line_break()
+	
+	!sp = %vwf_space()
+	!space = %vwf_space()
+	
+	!clear = %vwf_clear()
+	!skip_loc = %vwf_set_skip_location()
+	!close = %vwf_close()
+	
+	!press_a = %vwf_wait_for_a()
+	!wait_frames = %vwf_wait_frames
+	!set_speed = %vwf_set_text_speed
+	
+	!freeze = %vwf_freeze()
+	!halt = %vwf_freeze()
+	!jump = %vwf_set_text_pointer	
+	!open_message = %vwf_display_message
+	
+	!font = %vwf_set_font
+	!edit_pal = %vwf_change_colors
+	!set_pal = %vwf_set_text_palette	
+	!set_color = %vwf_set_text_color
+	!reset_color = %vwf_set_text_palette(!default_text_palette)
+	!rgb_15 = vwf_make_color_15
+	
+	!dec = %vwf_decimal
+	!hex = %vwf_hex
+	
+	!play_bgm = %vwf_play_bgm
+	!teleport = %vwf_setup_teleport
+	
+	!options = %vwf_display_options
+	!opt_loc = %vwf_set_option_location
+	
+	!execute = %vwf_execute_subroutine
+	!exec = %vwf_execute_subroutine
+	
+	!macro = %vwf_execute_text_macro
+	!macro_group = %vwf_execute_text_macro_by_indexed_group
+	!macro_buf = %vwf_execute_buffered_text_macro
+endif
 
 
 

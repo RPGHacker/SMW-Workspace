@@ -78,9 +78,9 @@ endmacro
 %claim_varram(beepcursorbank, 2)			; The RAM address stored to by the above.
 %claim_varram(beepchoice, 1)				; The sound effect ID to play when pressing A.
 %claim_varram(beepchoicebank, 2)			; The RAM address stored to by the above.
-%claim_varram(font, 1)
+%claim_varram(vwf_font, 1)
 %claim_varram(edge, 1)
-%claim_varram(space, 1)
+%claim_varram(vwf_space, 1)
 %claim_varram(frames, 1)
 %claim_varram(layout, 1)
 %claim_varram(soundoff, 1)				; Flag that disables all the normal textbox sounds
@@ -111,7 +111,7 @@ endmacro
 %claim_varram(clearbox, 1)
 %claim_varram(wait, 1)
 %claim_varram(timer, 1)
-%claim_varram(teleport, 1)				; Flag indicating whether a teleport should take place.
+%claim_varram(vwf_teleport, 1)			; Flag indicating whether a teleport should take place.
 %claim_varram(telepdest, 1)				; Data that gets stored to the table at $19B8 when the teleport function is active.
 %claim_varram(telepprop, 1)				; Data that gets stored to the table at $19D8 when the teleport function is active.
 %claim_varram(forcesfx, 1)
@@ -955,7 +955,7 @@ LoadHeader:
 	ldy #$00
 
 	!8bit_mode_only lda [$00],y	; Font
-	!8bit_mode_only sta !font
+	!8bit_mode_only sta !vwf_font
 	!8bit_mode_only iny
 
 	lda [$00],y	; X position
@@ -996,7 +996,7 @@ LoadHeader:
 	and #$03C0
 	lsr #6
 	sep #$20
-	sta !space
+	sta !vwf_space
 	iny
 
 	lda [$00],y	; Text speed
@@ -2155,7 +2155,7 @@ InitLine:
 	pha
 	lda !vwftextsource+2
 	pha
-	lda !font
+	lda !vwf_font
 	pha
 
 .WidthBegin
@@ -2188,7 +2188,7 @@ InitLine:
 
 	lda !vwfwidth
 	clc
-	adc !space
+	adc !vwf_space
 	bcs .WidthEnd
 	cmp !vwfmaxwidth
 	bcs .WidthEnd
@@ -2205,7 +2205,7 @@ InitLine:
 	sta !currentpixel
 
 	pla
-	sta !font
+	sta !vwf_font
 	pla
 	sta !vwftextsource+2
 	pla
@@ -2894,7 +2894,7 @@ endif
 	ora $04
 	sta !telepprop
 	lda #$01
-	sta !teleport
+	sta !vwf_teleport
 	jsr IncPointer
 	jsr IncPointer
 	jsr IncPointer
@@ -2969,7 +2969,7 @@ endif
 	sta !firsttile
 
 	!16bit_mode_only lda !cursor+1
-	!16bit_mode_only sta !font
+	!16bit_mode_only sta !vwf_font
 
 	jsr GetFont
 
@@ -3127,7 +3127,7 @@ endif
 .F2_ChangeFont
 	ldy #$01
 	lda [$00],y
-	sta !font
+	sta !vwf_font
 	jsr IncPointer
 	jsr IncPointer
 	jmp .NoButton
@@ -3406,7 +3406,7 @@ endif
 .FE_Space
 	jsr IncPointer
 	lda !vwfmaxwidth
-	cmp !space
+	cmp !vwf_space
 	bcs .PutSpace
 	jsr InitLine
 	lda !clearbox
@@ -3420,7 +3420,7 @@ endif
 .PutSpace
 	lda !vwfmaxwidth
 	sec
-	sbc !space
+	sbc !vwf_space
 	sta !vwfmaxwidth
 
 if !use_sa1_mapping
@@ -3429,7 +3429,7 @@ if !use_sa1_mapping
 endif
 	lda !currentpixel
 	clc
-	adc !space
+	adc !vwf_space
 	sta select(!use_sa1_mapping,$2251,$4204)
 	cmp #$08
 	bcc .NoNewTile
@@ -3469,7 +3469,7 @@ endif
 	pha
 	lda !vwftextsource+2
 	pha
-	lda !font
+	lda !vwf_font
 	pha
 	lda !vwfchar
 	pha
@@ -3483,7 +3483,7 @@ endif
 	pla
 	sta !vwfchar
 	pla
-	sta !font
+	sta !vwf_font
 	pla
 	sta !vwftextsource+2
 	pla
@@ -3522,7 +3522,7 @@ endif
 
 .WriteLetter
 	!16bit_mode_only lda !vwfchar+1
-	!16bit_mode_only sta !font
+	!16bit_mode_only sta !vwf_font
 	jsr GetFont
 
 	rep #$20
@@ -3643,7 +3643,7 @@ GetFont:
 	sta select(!use_sa1_mapping,$2251,$211B)
 	stz select(!use_sa1_mapping,$2252,$211B)
 	stz select(!use_sa1_mapping,$2250,$211C)
-	lda !font
+	lda !vwf_font
 	sta select(!use_sa1_mapping,$2253,$211C)
 if !use_sa1_mapping
 	stz $2254
@@ -4219,7 +4219,7 @@ WordWidth:
 
 .F2_ChangeFont
 	lda [$00]
-	sta !font
+	sta !vwf_font
 	jsr IncPointer
 	jmp .GetFont
 
@@ -4384,7 +4384,7 @@ WordWidth:
 
 .Add
 	!16bit_mode_only lda !vwfchar+1
-	!16bit_mode_only sta !font
+	!16bit_mode_only sta !vwf_font
 	!16bit_mode_only jsr GetFont
 	lda !vwfchar
 	tay
@@ -4501,11 +4501,11 @@ VBlankEnd:
 	lda #$00
 	sta !freezesprites
 	
-	lda !teleport	; Check if teleport set
+	lda !vwf_teleport	; Check if teleport set
 	beq .NoTeleport
 
 	lda #$00
-	sta !teleport
+	sta !vwf_teleport
 
 if read1($05D7B9) == $22					;\ Account for LM 3.00's level dimension hijacks.
 	jsl.l read3($05D7BA)					;|

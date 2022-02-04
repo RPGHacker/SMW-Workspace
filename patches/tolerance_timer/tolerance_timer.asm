@@ -1,4 +1,4 @@
-@asar 1.50
+@asar 1.90
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 ;Tolerance Timer Patch;
@@ -12,7 +12,6 @@ incsrc shared/shared.asm
 print "Tolerance Timer v1.0 - (c) RPG Hacker"
 
 
-math pri on
 math round off
 
 pushtable
@@ -35,7 +34,7 @@ namespace tolerance_timer_
 
 ; Code to execute when the game checks whether Mario can jump
 
-if !allow_late_or_early_jumps == 1
+if !allow_late_or_early_jumps == true
 org remap_rom($00D5F2)
 	autoclean jml OnCheckJumpPossible
 endif
@@ -43,7 +42,7 @@ endif
 	
 ; Code to execute when the player successfully jumps
 
-if !allow_late_or_early_jumps == 1
+if !allow_late_or_early_jumps == true
 org remap_rom($00D63C)
 	autoclean jml OnJump
 endif
@@ -51,7 +50,7 @@ endif
 	
 ; Code to execute when the game checks whether we're pressing any jump button
 	
-if !allow_early_jumps == 1
+if !allow_early_jumps == true
 org remap_rom($00D618)
 	autoclean jml OnCheckJumpButtonPressed
 endif
@@ -80,7 +79,7 @@ FreecodeStart:
 
 ; Hijacks the check that determines whether Mario can jump (so that we can potentially make him jump with a delay)
 
-if !allow_late_or_early_jumps == 1
+if !allow_late_or_early_jumps == true
 OnCheckJumpPossible:
 	
 .Recover:
@@ -107,7 +106,7 @@ if !allow_late_jumps == 1
 	.CantJump:
 endif
 
-if !allow_early_jumps == 1
+if !allow_early_jumps == true
 		; We're currently in the air and no late jump is possible, so check if an early jump is possible instead
 		lda remap_ram($16)
 		ora remap_ram($18)
@@ -144,7 +143,7 @@ endif
 	}
 
 .CanJump:
-if !allow_late_jumps == 1
+if !allow_late_jumps == true
 	lda #!late_jump_num_frames
 	sta remap_ram(!late_jump_timer)
 	lda remap_ram($7B)
@@ -168,9 +167,9 @@ endif
 
 ; Hijacks the routine that starts Mario's jump so that we can clear flags and process early jumps
 	
-if !allow_late_or_early_jumps == 1
+if !allow_late_or_early_jumps == true
 OnJump:
-if !allow_late_jumps == 1
+if !allow_late_jumps == true
 	lda remap_ram($72)
 	; cmp #$00
 	beq .NoLateJump
@@ -233,14 +232,14 @@ endif
 	{
 	; If A is being pressed during the current frame, we give it priority and don't check for early jumps to begin with
 	.APressed:	
-if !allow_early_jumps == 1
+if !allow_early_jumps == true
 		%sta_zero_or_stz(remap_ram(!early_jump_timer))
 endif
 		jml remap_rom($00D640)
 	}	
 
 .ANotPressed:
-if !allow_early_jumps == 1
+if !allow_early_jumps == true
 	lda remap_ram(!early_jump_timer)
 	; cmp #$00
 	beq .NoEarlyJump
@@ -270,7 +269,7 @@ endif
 
 ; Hijacks the routine that checks if a jump button is pressed so that we can apply early jump logic
 
-if !allow_early_jumps == 1
+if !allow_early_jumps == true
 OnCheckJumpButtonPressed:
 	lda remap_ram(!early_jump_timer)
 	; cmp #$00

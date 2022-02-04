@@ -1,4 +1,4 @@
-@asar 1.50
+@asar 1.90
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;OW Tilemap Reload Patch;
@@ -6,13 +6,12 @@
 
 
 incsrc freeconfig.cfg
-incsrc ../shared/shared.asm
+incsrc shared/shared.asm
 
 
 print "Free 7F4000 v1.0 - (c) RPG Hacker"
 
 
-math pri on
 math round off
 
 pushtable
@@ -61,7 +60,7 @@ FreecodeStart:
 ; Hijacks OW load to make it reload some tilemap data if necessary
 
 HandleOWReload:
-if !use_dirty_flag_for_ow_reload == 1
+if !use_dirty_flag_for_ow_reload == true
 	lda remap_ram(!ow_dirty_flag)
 	; cmp #$00
 	beq .Recover

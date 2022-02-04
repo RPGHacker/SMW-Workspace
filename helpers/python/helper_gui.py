@@ -45,12 +45,15 @@ class MainWindow(tkinter.Tk):
 		self._patch_combo_box.grid(column=0, row=1, sticky='ew', padx=5, pady=5)
 		self._patch_combo_box.bind('<<ComboboxSelected>>', self._patch_combo_box_value_changed)
 		
+		self._browse_button = ttk.Button(self._patch_frame, text='Browse', command=self._browse_button_clicked)
+		self._browse_button.grid(column=1, row=1, padx=5, pady=5)
+		
 		self._patch_button = ttk.Button(self._patch_frame, text='Create ROM', command=self._patch_button_clicked)
-		self._patch_button.grid(column=1, row=1, padx=5, pady=5)
+		self._patch_button.grid(column=2, row=1, padx=5, pady=5)
 		
 		
 		self._options_outer_frame = ttk.LabelFrame(self._patch_frame, text='Options')
-		self._options_outer_frame.grid(column=0, row=2, sticky='nesw', padx=5, pady=5, columnspan=2)
+		self._options_outer_frame.grid(column=0, row=2, sticky='nesw', padx=5, pady=5, columnspan=3)
 		
 		self._options_middle_frame = tkinter.Frame(self._options_outer_frame, highlightbackground='#E0E0E0', highlightcolor='#E0E0E0', highlightthickness=1, bd=0)
 		self._options_middle_frame.pack(side='left', fill='both', expand=True, padx=5, pady=5)
@@ -105,6 +108,15 @@ class MainWindow(tkinter.Tk):
 		
 	def _options_canvas_configure(self, event):
 		self._options_canvas.itemconfig(self._options_canvas_frame, width = event.width)
+		
+	def _browse_button_clicked(self):
+		subprocess_args = [ 'start' ]
+	
+		# Append patch path
+		subprocess_args.append(os.path.abspath(os.path.dirname(self._patch_paths[self._patch_combo_box.get()])))
+		
+		print('Opening explorer window.\nCommand line:\n{command_line}'.format(command_line=' '.join(f'"{arg}"' if ' ' in arg else f'{arg}' for arg in subprocess_args)))
+		subprocess.run(subprocess_args, shell=True)
 		
 	def _patch_button_clicked(self):
 		# We already have the loaded patch modules, so we could just run the patcher function directly.

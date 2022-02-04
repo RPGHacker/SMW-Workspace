@@ -56,12 +56,12 @@ endmacro
 ; $0F: #$01 if this is writing first tile in the current buffer, otherwise #$00
 %vwf_register_shared_routine(VWF_GenerateVWF)
 	lda $0E
-	sta !currentpixel
+	sta !vwf_current_pixel
 	lda $0F
-	sta !firsttile
+	sta !vwf_first_tile
 	rep #$20
 	lda $0C
-	sta !vwfbytes
+	sta !vwf_num_bytes
 	sep #$20
 	lda $05	; Get GFX 2 Offset
 	sta $0E
@@ -73,63 +73,63 @@ endmacro
 .Read
 	lda [$00]	; Read character
 	inc $00
-	!16bit_mode_only inc $00
-	!8bit_mode_only sep #$20
-	sta !vwfchar
-	!16bit_mode_only sep #$20
-	!16bit_mode_only lda !vwfchar+1
-	!16bit_mode_only sta !font
-	!16bit_mode_only jsr GetFont
-	!16bit_mode_only lda $05
-	!16bit_mode_only sta $0E
-	!16bit_mode_only rep #$21
-	!16bit_mode_only lda $03
-	!16bit_mode_only adc #$0020
-	!16bit_mode_only sta $0C
-	!16bit_mode_only sep #$20
-	!16bit_mode_only lda !vwfchar
+	!vwf_16bit_mode_only inc $00
+	!vwf_8bit_mode_only sep #$20
+	sta !vwf_char
+	!vwf_16bit_mode_only sep #$20
+	!vwf_16bit_mode_only lda !vwf_char+1
+	!vwf_16bit_mode_only sta !vwf_font
+	!vwf_16bit_mode_only jsr GetFont
+	!vwf_16bit_mode_only lda $05
+	!vwf_16bit_mode_only sta $0E
+	!vwf_16bit_mode_only rep #$21
+	!vwf_16bit_mode_only lda $03
+	!vwf_16bit_mode_only adc #$0020
+	!vwf_16bit_mode_only sta $0C
+	!vwf_16bit_mode_only sep #$20
+	!vwf_16bit_mode_only lda !vwf_char
 	tay
 	lda [$06],y	; Get width
-	sta !vwfwidth
-	lda !vwfmaxwidth
+	sta !vwf_char_width
+	lda !vwf_max_width
 	sec
-	sbc !vwfwidth
-	sta !vwfmaxwidth
+	sbc !vwf_char_width
+	sta !vwf_max_width
 
 .Begin
-	lda !vwfchar	; Get letter offset into Y
-	sta select(!use_sa1_mapping,$2251,$211B)
-	stz select(!use_sa1_mapping,$2252,$211B)
-	stz select(!use_sa1_mapping,$2250,$211C)
+	lda !vwf_char	; Get letter offset into Y
+	sta.w select(!use_sa1_mapping,$2251,$211B)
+	stz.w select(!use_sa1_mapping,$2252,$211B)
+	stz.w select(!use_sa1_mapping,$2250,$211C)
 	lda #$40
-	sta select(!use_sa1_mapping,$2253,$211C)
+	sta.w select(!use_sa1_mapping,$2253,$211C)
 	if !use_sa1_mapping : stz $2254
 	rep #$10
-	ldy select(!use_sa1_mapping,$2306,$2134)
+	ldy.w select(!use_sa1_mapping,$2306,$2134)
 	ldx #$0000
 
 .Draw
-	lda !currentpixel
+	lda !vwf_current_pixel
 	sta $0F
 	lda [$03],y	; Load one pixelrow of letter
-	sta !vwftileram,x
+	sta !vwf_tile_ram,x
 	lda [$0C],y
-	sta !vwftileram+32,x
+	sta !vwf_tile_ram+32,x
 	lda #$00
-	sta !vwftileram+64,x
+	sta !vwf_tile_ram+64,x
 
 .Check
 	lda $0F
 	beq .Skip
-	lda !vwftileram,x	; Shift to the right
+	lda !vwf_tile_ram,x	; Shift to the right
 	lsr
-	sta !vwftileram,x
-	lda !vwftileram+32,x
+	sta !vwf_tile_ram,x
+	lda !vwf_tile_ram+32,x
 	ror
-	sta !vwftileram+32,x
-	lda !vwftileram+64,x
+	sta !vwf_tile_ram+32,x
+	lda !vwf_tile_ram+64,x
 	ror
-	sta !vwftileram+64,x
+	sta !vwf_tile_ram+64,x
 	dec $0F
 	bra .Check
 
@@ -142,14 +142,14 @@ endmacro
 	ldx #$00
 	txy
 
-	lda !firsttile	; Skip one step if first tile in line
+	lda !vwf_first_tile	; Skip one step if first tile in line
 	beq .Combine
 	lda #$00
-	sta !firsttile
+	sta !vwf_first_tile
 	bra .Copy
 
 .Combine
-	lda !vwftileram,x	; Combine old graphic with new
+	lda !vwf_tile_ram,x	; Combine old graphic with new
 	ora [$09],y
 	sta [$09],y
 	inx
@@ -158,7 +158,7 @@ endmacro
 	bne .Combine
 
 .Copy
-	lda !vwftileram,x	; Copy remaining part of letter
+	lda !vwf_tile_ram,x	; Copy remaining part of letter
 	sta [$09],y
 	inx
 	iny
@@ -169,13 +169,13 @@ if !use_sa1_mapping
 	lda #$01
 	sta $2250
 endif
-	lda !currentpixel	; Adjust destination address
+	lda !vwf_current_pixel	; Adjust destination address
 	clc
-	adc !vwfwidth
-	sta select(!use_sa1_mapping,$2251,$4204)
-	stz select(!use_sa1_mapping,$2252,$4205)
+	adc !vwf_char_width
+	sta.w select(!use_sa1_mapping,$2251,$4204)
+	stz.w select(!use_sa1_mapping,$2252,$4205)
 	lda #$08
-	sta select(!use_sa1_mapping,$2253,$4206)
+	sta.w select(!use_sa1_mapping,$2253,$4206)
 if !use_sa1_mapping
 	stz $2254
 	nop
@@ -183,42 +183,42 @@ if !use_sa1_mapping
 else
 	nop #8
 endif
-	lda select(!use_sa1_mapping,$2308,$4216)
-	sta !currentpixel
+	lda.w select(!use_sa1_mapping,$2308,$4216)
+	sta !vwf_current_pixel
 	rep #$20
-	lda select(!use_sa1_mapping,$2306,$4214)
+	lda.w select(!use_sa1_mapping,$2306,$4214)
 	asl
 	pha
 	clc
-	adc !tile
-	sta !tile
+	adc !vwf_tile
+	sta !vwf_tile
 	pla
 	clc
 	sep #$20
-	adc !vwfbufferindex
-	sta !vwfbufferindex
-	lda select(!use_sa1_mapping,$2306,$4214)
+	adc !vwf_buffer_index
+	sta !vwf_buffer_index
+	lda.w select(!use_sa1_mapping,$2306,$4214)
 	clc
-	adc !currentx
-	sta !currentx
-	lda select(!use_sa1_mapping,$2306,$4214)
-	sta select(!use_sa1_mapping,$2251,$211B)
-	stz select(!use_sa1_mapping,$2250,$211B)
-	stz select(!use_sa1_mapping,$2252,$211C)
+	adc !vwf_current_x
+	sta !vwf_current_x
+	lda.w select(!use_sa1_mapping,$2306,$4214)
+	sta.w select(!use_sa1_mapping,$2251,$211B)
+	stz.w select(!use_sa1_mapping,$2250,$211B)
+	stz.w select(!use_sa1_mapping,$2252,$211C)
 	lda #$20
-	sta select(!use_sa1_mapping,$2253,$211C)
+	sta.w select(!use_sa1_mapping,$2253,$211C)
 if !use_sa1_mapping
 	stz $2254
 	nop
 endif
 	rep #$21
-	lda select(!use_sa1_mapping,$2306,$2134)
+	lda.w select(!use_sa1_mapping,$2306,$2134)
 	adc $09
 	sta $09
 
-	lda !vwfbytes	; Adjust number of bytes
+	lda !vwf_num_bytes	; Adjust number of bytes
 	dec
-	sta !vwfbytes
+	sta !vwf_num_bytes
 	beq .End
 	jmp .Read
 
@@ -277,7 +277,7 @@ skip 16
 ; jsl VWF_IsMessageActive
 ; bne .MessageIsActive
 %vwf_register_shared_routine(VWF_IsMessageActive)	
-	lda !vwfmode
+	lda !vwf_mode
 	rtl
 
 skip 16
@@ -291,20 +291,20 @@ skip 16
 ; ldx.b #MessageNumber>>8
 ; jsl VWF_DisplayAMessage
 %vwf_register_shared_routine(VWF_DisplayAMessage)
-	sta !message
+	sta !vwf_message
 	txa
-	sta !message+1
-	lda !vwfmode
+	sta !vwf_message+1
+	lda !vwf_mode
 	bne .ForceActiveMessageToClose
 	inc
-	sta !vwfmode
+	sta !vwf_mode
 	lda #$6B
-	sta !messageasmopcode
+	sta !vwf_message_asm_opcode
 	rtl
 
 .ForceActiveMessageToClose
 	lda #$01
-	sta !vwfactiveflag
+	sta !vwf_active_flag
 	rtl
 
 skip 16
@@ -318,11 +318,11 @@ skip 16
 ; ldy.b #TextPointer>>16
 ; jsl VWF_ChangeVWFTextPtr
 %vwf_register_shared_routine(VWF_ChangeVWFTextPtr)
-	sta !vwftextsource
+	sta !vwf_text_source
 	txa
-	sta !vwftextsource+1
+	sta !vwf_text_source+1
 	tya
-	sta !vwftextsource+2
+	sta !vwf_text_source+2
 	rtl
 
 skip 16
@@ -336,11 +336,11 @@ skip 16
 ; ldy.b #ASMPointer>>16
 ; jsl VWF_ChangeMessageASMPtr
 %vwf_register_shared_routine(VWF_ChangeMessageASMPtr)
-	sta !messageasmloc
+	sta !vwf_message_asm_loc
 	txa
-	sta !messageasmloc+1
+	sta !vwf_message_asm_loc+1
 	tya
-	sta !messageasmloc+2
+	sta !vwf_message_asm_loc+2
 	rtl
 
 skip 16
@@ -348,7 +348,7 @@ skip 16
 
 ; This routine lets you toggle MessageASM. Call directly with the %vwf_execute_subroutine() command or within a MessageASM routine.
 %vwf_register_shared_routine(VWF_ToggleMessageASM)
-	lda !messageasmopcode
+	lda !vwf_message_asm_opcode
 	cmp #$5C
 	bne .Enable
 
@@ -359,7 +359,7 @@ skip 16
 .Enable
 	lda #$5C
 +
-	sta !messageasmopcode
+	sta !vwf_message_asm_opcode
 	rtl
 
 skip 16
@@ -373,11 +373,11 @@ skip 16
 ; ldy.b #TextPointer>>16
 ; jsl VWF_ChangeMessageSkipPtr
 %vwf_register_shared_routine(VWF_ChangeMessageSkipPtr)
-	sta !skipmessageloc
+	sta !vwf_skip_message_loc
 	txa
-	sta !skipmessageloc+1
+	sta !vwf_skip_message_loc+1
 	tya
-	sta !skipmessageloc+2
+	sta !vwf_skip_message_loc+2
 	rtl
 
 skip 16
@@ -385,10 +385,10 @@ skip 16
 
 ; This routine lets you toggle message skip. Call directly with the %vwf_execute_subroutine() command or within a MessageASM routine.
 %vwf_register_shared_routine(VWF_ToggleMessageSkip)
-	lda !skipmessageflag
+	lda !vwf_skip_message_flag
 	and.b #$01
 	eor.b #$01
-	sta !skipmessageflag
+	sta !vwf_skip_message_flag
 	rtl
 	
 skip 16
@@ -398,9 +398,9 @@ skip 16
 ; 
 ; Usage:
 ; jsl VWF_WasMessageSkipped
-; bne .MessageWasSkipped
+; bne .message_was_skipped
 %vwf_register_shared_routine(VWF_WasMessageSkipped)
-	lda !messagewasskipped	
+	lda !vwf_message_was_skipped	
 	rtl
 
 skip 16
@@ -439,9 +439,9 @@ skip 16
 ; The text buffer is reset to position 0, and the ID for the next text macro is reset to 0.
 %vwf_register_shared_routine(VWF_ResetBufferedTextMacros)
 	lda #$00
-	sta !vwftbufferedtextpointerindex
-	sta !vwftbufferedtextindex
-	sta !vwftbufferedtextindex+1
+	sta !vwf_tm_buffers_text_pointer_index
+	sta !vwf_tm_buffers_text_index
+	sta !vwf_tm_buffers_text_index+1
 	rtl
 
 skip 16
@@ -451,8 +451,8 @@ skip 16
 ; that ID for every additional call to this routine. Must be followed by calls to AddToBufferedTextMacro
 ; and, eventually, a call to EndBufferedTextMacro to finish the macro.
 %vwf_register_shared_routine(VWF_BeginBufferedTextMacro)
-	lda !vwftbufferedtextpointerindex
-	cmp.b #!num_reserved_text_macros*3
+	lda !vwf_tm_buffers_text_pointer_index
+	cmp.b #!vwf_num_reserved_text_macros*3
 	bcc .NumOkay
 	
 	; If we try using too many buffered text macros, generate an error message inside the text box and return.
@@ -465,18 +465,18 @@ skip 16
 .NumOkay
 	tax
 	rep #$21
-	lda.w #!vwftextbuffer
-	adc !vwftbufferedtextindex
-	sta !vwftbufferedtextpointers,x
+	lda.w #!vwf_tm_buffers_text_buffer
+	adc !vwf_tm_buffers_text_index
+	sta !vwf_tm_buffers_text_pointers,x
 	sep #$20
 	
 	inx #2
-	lda.b #bank(!vwftextbuffer)
-	sta !vwftbufferedtextpointers,x
+	lda.b #bank(!vwf_tm_buffers_text_buffer)
+	sta !vwf_tm_buffers_text_pointers,x
 	
 	inx
 	txa
-	sta !vwftbufferedtextpointerindex
+	sta !vwf_tm_buffers_text_pointer_index
 	
 	rtl
 
@@ -525,8 +525,8 @@ skip 16
 	pha
 	
 	; Verify that it isn't over the limit already.
-	adc !vwftbufferedtextindex
-	cmp.w #!buffered_text_macro_buffer_size+1
+	adc !vwf_tm_buffers_text_index
+	cmp.w #!vwf_buffered_text_macro_buffer_size+1
 	bcc .SizeOkay
 	
 	; If we overflow the buffer, generate an error message inside the text box and return.
@@ -540,15 +540,15 @@ skip 16
 	
 .SizeOkay
 	; Construct the destination address.
-	lda.w #!vwftextbuffer
+	lda.w #!vwf_tm_buffers_text_buffer
 	clc
-	adc !vwftbufferedtextindex
+	adc !vwf_tm_buffers_text_index
 	tay
 	
 	; Construct an MVN in RAM. It's the only way to specify the source bank dynamically.
 	; Conveniently, that one is already stored in $02, so we only need to overwrite $00 and $01.
 	; Plus $03 to store an RTL.
-	lda.w #($54)|((!vwftbufferedtextpointers>>8)&$FF00)	; $54 = MVN opcode
+	lda.w #($54)|((!vwf_tm_buffers_text_pointers>>8)&$FF00)	; $54 = MVN opcode
 	sta $00
 	lda.w #$6B	; $6B = RTL opcode
 	sta $03
@@ -563,8 +563,8 @@ skip 16
 	
 	pla
 	clc
-	adc !vwftbufferedtextindex
-	sta !vwftbufferedtextindex
+	adc !vwf_tm_buffers_text_index
+	sta !vwf_tm_buffers_text_index
 	
 	sep #$30
 	

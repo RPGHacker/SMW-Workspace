@@ -17,7 +17,7 @@ class MainWindow(tkinter.Tk):
 			self.event_generate('<<ComboboxSelected>>')
 			return ret_val
 
-	def __init__(self, patches_path: str, tools_path: str):
+	def __init__(self, patches_path: str, tools_path: str) -> None:
 		super().__init__()
 		
 		
@@ -109,7 +109,7 @@ class MainWindow(tkinter.Tk):
 	def _options_canvas_configure(self, event):
 		self._options_canvas.itemconfig(self._options_canvas_frame, width = event.width)
 		
-	def _browse_button_clicked(self):
+	def _browse_button_clicked(self) -> None:
 		subprocess_args = [ 'start' ]
 	
 		# Append patch path
@@ -118,7 +118,7 @@ class MainWindow(tkinter.Tk):
 		print('Opening explorer window.\nCommand line:\n{command_line}'.format(command_line=' '.join(f'"{arg}"' if ' ' in arg else f'{arg}' for arg in subprocess_args)))
 		subprocess.run(subprocess_args, shell=True)
 		
-	def _patch_button_clicked(self):
+	def _patch_button_clicked(self) -> None:
 		# We already have the loaded patch modules, so we could just run the patcher function directly.
 		# However, that would print any output in the GUI applications terminal window (or not at all).
 		# Or we would have to implement our own simple terminal and capture output.
@@ -138,7 +138,7 @@ class MainWindow(tkinter.Tk):
 		print('Running patcher in separate terminal.\nCommand line:\n{command_line}'.format(command_line=' '.join(f'"{arg}"' if ' ' in arg else f'{arg}' for arg in subprocess_args)))
 		subprocess.run(subprocess_args, shell=True)
 		
-	def _run_button_clicked(self):	
+	def _run_button_clicked(self) -> None:	
 		subprocess_args = [ 'start' ]
 		
 		# Append emulator path
@@ -169,7 +169,7 @@ class MainWindow(tkinter.Tk):
 		else:
 			messagebox.showerror('Error', 'ROM not found:\n\n{rom}\n\nPlease make sure to create the ROM before attempting to start it in an emulator.'.format(rom=os.path.normpath(os.path.abspath(rom_path))))
 		
-	def _rebuild_options(self):
+	def _rebuild_options(self) -> None:
 		for name, widgets in self._current_option_widgets.items():
 			for widget in widgets:
 				widget.destroy()
@@ -192,7 +192,7 @@ class MainWindow(tkinter.Tk):
 			
 			self._current_option_widgets[option_name].append(option_combobox)
 			
-	def _parse_tools(self, tools_path: str):
+	def _parse_tools(self, tools_path: str) -> None:
 		executables = glob.glob(os.path.join(tools_path, '**/*.exe'), recursive = True)
 		
 		self._emulator_paths = {}
@@ -204,7 +204,7 @@ class MainWindow(tkinter.Tk):
 				self._emulator_paths[emulator_name] = executable
 				self._emulator_names.append(emulator_name)
 				
-	def _parse_patches(self, patches_path: str):
+	def _parse_patches(self, patches_path: str) -> None:
 		patch_configs = glob.glob(os.path.join(patches_path, '**/patch_config.py'), recursive = True)
 		
 		self._patch_modules = {}
@@ -222,12 +222,12 @@ class MainWindow(tkinter.Tk):
 			self._patch_names.append(patch_name)
 				
 
-def run_helper_gui(patches_path: str, tools_path: str):
+def run_helper_gui(patches_path: str, tools_path: str) -> None:
 	main_window = MainWindow(patches_path, tools_path)
 	main_window.mainloop()
 	
 	
-def main():
+def main() -> None:
 	run_helper_gui(os.path.join(os.path.dirname(__file__), '../../patches'), os.path.join(os.path.dirname(__file__), '../../tools'))
 	
 

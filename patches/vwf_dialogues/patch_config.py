@@ -34,7 +34,7 @@ patch_config = patching_utility.PatchConfig( os.path.dirname(__file__),
 )
 
 
-def main():
+def main() -> None:
 	options = patcher.parse_options()
 	
 	if options.messages_file == 'smw':

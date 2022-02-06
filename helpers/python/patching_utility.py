@@ -6,7 +6,7 @@ import re
 import pathlib
 import dataclasses
 from dataclasses import dataclass
-from typing import List
+from typing import List, Dict
 
 
 _asar_paths = {
@@ -41,13 +41,13 @@ class PatchConfig:
 	
 	# Pass in the directory of the calling patch_config.py module here.
 	# This is only used to initialize some variables with reasonable defaults.
-	def __post_init__(self, module_path):
+	def __post_init__(self, module_path: str) -> None:
 		self.output_dir = os.path.join(module_path, 'builds')	
 		self.rom_base_name = os.path.basename(os.path.abspath(module_path))
 
 	
 class PatchingUtility:
-	def __init__(self):
+	def __init__(self) -> None:
 		self._parser = argparse.ArgumentParser(description='Applies this patch and all dependencies to a clean SMW ROM to create a patched output ROM.')
 		
 		self._option_values = {}
@@ -57,18 +57,18 @@ class PatchingUtility:
 		self.add_option('--rom_type', values=['normal', 'sa-1'], default_index=0)
 		self.add_option('--rom_size', values=['1mb', '2mb', '3mb', '4mb', '6mb', '8mb'], default_index=1)
 		
-	def add_option(self, name: str, values: List[str] = None, default_index: int = 0):
+	def add_option(self, name: str, values: List[str] = None, default_index: int = 0) -> None:
 		self._option_values[name] = values
 		self._option_default_indices[name] = default_index
 		self._parser.add_argument(name, choices=values, default=values[default_index])
 		
-	def get_option_values(self):
+	def get_option_values(self) -> Dict[str, str]:
 		return self._option_values
 		
-	def get_option_default_value(self, name: str):
+	def get_option_default_value(self, name: str) -> str:
 		return self._option_default_indices[name]
 		
-	def parse_options(self, args: List[str] = None, exit_on_error: bool = True):
+	def parse_options(self, args: List[str] = None, exit_on_error: bool = True) -> argparse.Namespace:
 		try:
 			options = self._parser.parse_args(args)
 			
@@ -84,7 +84,7 @@ class PatchingUtility:
 				raise
 			return None
 		
-	def construct_output_file_name(self, patch_config: PatchConfig, options: argparse.Namespace, ext: str = None):
+	def construct_output_file_name(self, patch_config: PatchConfig, options: argparse.Namespace, ext: str = None) -> str:
 		rom_name = patch_config.rom_base_name
 		
 		string_options = vars(options)
@@ -99,7 +99,7 @@ class PatchingUtility:
 			
 		return rom_name
 		
-	def construct_output_rom_name(self, patch_config: PatchConfig, options: argparse.Namespace):
+	def construct_output_rom_name(self, patch_config: PatchConfig, options: argparse.Namespace) -> str:
 		return self.construct_output_file_name(patch_config, options, rom_extension)
 		
 	def get_base_rom_path(self, options):
@@ -112,7 +112,7 @@ class PatchingUtility:
 		
 		return os.path.join(_clean_rom_path, rom_name)
 		
-	def apply_patches(self, patch_config: PatchConfig, options: argparse.Namespace):
+	def apply_patches(self, patch_config: PatchConfig, options: argparse.Namespace) -> None:
 		pathlib.Path(patch_config.output_dir).mkdir(parents = True, exist_ok = True)
 	
 		rom_name = self.construct_output_file_name(patch_config, options)
@@ -238,3 +238,4 @@ class PatchingUtility:
 			shutil.copyfile(output_symbols_path, output_sa1_symbols_path)
 				
 		print("All patches applied successfully!")
+		

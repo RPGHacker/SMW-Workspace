@@ -7,6 +7,7 @@
 ; Unit Test: RAM Remapping
 
 incsrc shared/shared.asm
+incsrc shared/ram_getters.asm
 
 
 !num_tests_performed = 0

@@ -57,7 +57,7 @@ class PatchingUtility:
 		self.add_option('--rom_type', values=['normal', 'sa-1'], default_index=0)
 		self.add_option('--rom_size', values=['1mb', '2mb', '3mb', '4mb', '6mb', '8mb'], default_index=1)
 		
-	def add_option(self, name, values = None, default_index=0):
+	def add_option(self, name: str, values: List[str] = None, default_index: int = 0):
 		self._option_values[name] = values
 		self._option_default_indices[name] = default_index
 		self._parser.add_argument(name, choices=values, default=values[default_index])
@@ -65,10 +65,10 @@ class PatchingUtility:
 	def get_option_values(self):
 		return self._option_values
 		
-	def get_option_default_value(self, name):
+	def get_option_default_value(self, name: str):
 		return self._option_default_indices[name]
 		
-	def parse_options(self, args = None, exit_on_error = True):
+	def parse_options(self, args: List[str] = None, exit_on_error: bool = True):
 		try:
 			options = self._parser.parse_args(args)
 			
@@ -84,7 +84,7 @@ class PatchingUtility:
 				raise
 			return None
 		
-	def construct_output_file_name(self, patch_config: PatchConfig, options, ext = None):
+	def construct_output_file_name(self, patch_config: PatchConfig, options: argparse.Namespace, ext: str = None):
 		rom_name = patch_config.rom_base_name
 		
 		string_options = vars(options)
@@ -99,7 +99,7 @@ class PatchingUtility:
 			
 		return rom_name
 		
-	def construct_output_rom_name(self, patch_config: PatchConfig, options):
+	def construct_output_rom_name(self, patch_config: PatchConfig, options: argparse.Namespace):
 		return self.construct_output_file_name(patch_config, options, rom_extension)
 		
 	def get_base_rom_path(self, options):
@@ -112,7 +112,7 @@ class PatchingUtility:
 		
 		return os.path.join(_clean_rom_path, rom_name)
 		
-	def apply_patches(self, patch_config: PatchConfig, options):
+	def apply_patches(self, patch_config: PatchConfig, options: argparse.Namespace):
 		pathlib.Path(patch_config.output_dir).mkdir(parents = True, exist_ok = True)
 	
 		rom_name = self.construct_output_file_name(patch_config, options)

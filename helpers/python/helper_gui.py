@@ -12,12 +12,12 @@ class MainWindow(tkinter.Tk):
 			super(MainWindow.BetterComboBox, self).set(value)
 			self.event_generate('<<ComboboxSelected>>')
 			
-		def current(self, newindex=None):
+		def current(self, newindex = None):
 			ret_val = super(MainWindow.BetterComboBox, self).current(newindex)
 			self.event_generate('<<ComboboxSelected>>')
 			return ret_val
 
-	def __init__(self, patches_path, tools_path):
+	def __init__(self, patches_path: str, tools_path: str):
 		super().__init__()
 		
 		
@@ -192,7 +192,7 @@ class MainWindow(tkinter.Tk):
 			
 			self._current_option_widgets[option_name].append(option_combobox)
 			
-	def _parse_tools(self, tools_path):
+	def _parse_tools(self, tools_path: str):
 		executables = glob.glob(os.path.join(tools_path, '**/*.exe'), recursive = True)
 		
 		self._emulator_paths = {}
@@ -204,7 +204,7 @@ class MainWindow(tkinter.Tk):
 				self._emulator_paths[emulator_name] = executable
 				self._emulator_names.append(emulator_name)
 				
-	def _parse_patches(self, patches_path):
+	def _parse_patches(self, patches_path: str):
 		patch_configs = glob.glob(os.path.join(patches_path, '**/patch_config.py'), recursive = True)
 		
 		self._patch_modules = {}
@@ -222,9 +222,15 @@ class MainWindow(tkinter.Tk):
 			self._patch_names.append(patch_name)
 				
 
-def run_helper_gui(patches_path, tools_path):
+def run_helper_gui(patches_path: str, tools_path: str):
 	main_window = MainWindow(patches_path, tools_path)
 	main_window.mainloop()
+	
+	
+def main():
+	run_helper_gui(os.path.join(os.path.dirname(__file__), '../../patches'), os.path.join(os.path.dirname(__file__), '../../tools'))
+	
 
 if __name__ == '__main__':
-	run_helper_gui(os.path.join(os.path.dirname(__file__), '../../patches'), os.path.join(os.path.dirname(__file__), '../../tools'))
+	main()
+	

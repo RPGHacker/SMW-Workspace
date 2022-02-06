@@ -22,8 +22,12 @@ patch_config = patching_utility.PatchConfig( os.path.dirname(__file__),
 )
 
 
-
-if __name__ == '__main__':	
+def main():
 	options = patcher.parse_options()
 		
 	patcher.apply_patches(patch_config, options)
+	
+	
+if __name__ == '__main__':
+	main()
+	

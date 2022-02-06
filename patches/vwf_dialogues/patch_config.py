@@ -34,8 +34,7 @@ patch_config = patching_utility.PatchConfig( os.path.dirname(__file__),
 )
 
 
-
-if __name__ == '__main__':	
+def main():
 	options = patcher.parse_options()
 	
 	if options.messages_file == 'smw':
@@ -48,3 +47,8 @@ if __name__ == '__main__':
 		patch_config.actions[0].defines.append('hijackbox=false')
 		
 	patcher.apply_patches(patch_config, options)
+	
+
+if __name__ == '__main__':
+	main()
+	

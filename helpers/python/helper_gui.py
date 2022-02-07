@@ -5,6 +5,8 @@ import os
 import glob
 import importlib.util
 import subprocess
+from typing import Dict, List, cast
+from types import ModuleType
 
 class MainWindow(tkinter.Tk):
 	class BetterComboBox(ttk.Combobox):
@@ -73,7 +75,7 @@ class MainWindow(tkinter.Tk):
 		self._options_canvas_frame = self._options_canvas.create_window((4,4), window=self._options_inner_frame, anchor='nw')
 		self._options_canvas.bind("<Configure>", self._options_canvas_configure)
 		
-		self._current_option_widgets = {}
+		self._current_option_widgets: Dict[str, List[tkinter.Widget]] = {}
 		
 		
 		self._run_frame = ttk.LabelFrame(self, text='Run')
@@ -123,7 +125,7 @@ class MainWindow(tkinter.Tk):
 		# However, that would print any output in the GUI applications terminal window (or not at all).
 		# Or we would have to implement our own simple terminal and capture output.
 		# It's simpler to just relay the patching to another terminal application.
-		subprocess_args = [ 'start', 'cmd', '/K', 'python.exe' ]
+		subprocess_args: List[str] = [ 'start', 'cmd', '/K', 'python.exe' ]
 	
 		# Append patch path
 		subprocess_args.append(os.path.abspath(self._patch_paths[self._patch_combo_box.get()]))
@@ -139,7 +141,7 @@ class MainWindow(tkinter.Tk):
 		subprocess.run(subprocess_args, shell=True)
 		
 	def _run_button_clicked(self) -> None:	
-		subprocess_args = [ 'start' ]
+		subprocess_args: List[str] = [ 'start' ]
 		
 		# Append emulator path
 		subprocess_args.append(self._emulator_paths[self._run_combo_box.get()])
@@ -156,10 +158,15 @@ class MainWindow(tkinter.Tk):
 		patch_config = self._patch_modules[self._patch_combo_box.get()].patch_config
 		patcher = self._patch_modules[self._patch_combo_box.get()].patcher
 		
-		parsed_options = patcher.parse_options(options, False)
+		# We don't want the GUI to exit from failing to parse options, so we catch SystemExit.
+		try:
+			parsed_options = patcher.parse_options(options, False)
+		except SystemExit:
+			print('Failed to parse options for generating output ROM name.\nOptions:\n{command_line}'.format(command_line=' '.join(f'"{arg}"' if ' ' in arg else f'{arg}' for arg in options)))
+			return
 		
-		rom_name = patcher.construct_output_rom_name(patch_config, parsed_options)
-		rom_path = os.path.join(patch_config.output_dir, rom_name)
+		rom_name: str = patcher.construct_output_rom_name(patch_config, parsed_options)
+		rom_path: str = os.path.join(patch_config.output_dir, rom_name)
 		
 		if os.path.exists(rom_path):
 			subprocess_args.append(os.path.abspath(rom_path))
@@ -174,7 +181,7 @@ class MainWindow(tkinter.Tk):
 			for widget in widgets:
 				widget.destroy()
 			
-		self._current_option_widgets = {}
+		self._current_option_widgets.clear()
 		
 		current_module = self._patch_modules[self._patch_combo_box.get()]
 		
@@ -193,30 +200,32 @@ class MainWindow(tkinter.Tk):
 			self._current_option_widgets[option_name].append(option_combobox)
 			
 	def _parse_tools(self, tools_path: str) -> None:
-		executables = glob.glob(os.path.join(tools_path, '**/*.exe'), recursive = True)
+		executables: List[str] = glob.glob(os.path.join(tools_path, '**/*.exe'), recursive = True)
 		
-		self._emulator_paths = {}
-		self._emulator_names = []
+		self._emulator_paths: Dict[str, str] = {}
+		self._emulator_names: List[str] = []
 		
 		for executable in executables:
 			if any([substring in os.path.basename(executable).lower() for substring in ['bsnes', 'higan', 'snes9x', 'zsnes', 'lucia']]):
-				emulator_name = os.path.relpath(executable, tools_path)
+				emulator_name: str = os.path.relpath(executable, tools_path)
 				self._emulator_paths[emulator_name] = executable
 				self._emulator_names.append(emulator_name)
 				
 	def _parse_patches(self, patches_path: str) -> None:
 		patch_configs = glob.glob(os.path.join(patches_path, '**/patch_config.py'), recursive = True)
 		
-		self._patch_modules = {}
-		self._patch_paths = {}
-		self._patch_names = []
+		self._patch_modules: Dict[str, ModuleType] = {}
+		self._patch_paths: Dict[str, str] = {}
+		self._patch_names: List[str] = []
 		
 		for patch_no, patch_config_path in enumerate(patch_configs):
-			patch_config_spec = importlib.util.spec_from_file_location('patch_config_{num}'.format(num=patch_no), patch_config_path)
+			# This code currently just assumes that that the .py file contains a valid module spec.
+			# No error checking is done here.
+			patch_config_spec = cast(importlib.machinery.ModuleSpec, importlib.util.spec_from_file_location('patch_config_{num}'.format(num=patch_no), patch_config_path))
 			patch_config_module = importlib.util.module_from_spec(patch_config_spec)
-			patch_config_spec.loader.exec_module(patch_config_module)
+			cast(importlib.abc.Loader, patch_config_spec.loader).exec_module(patch_config_module)
 		
-			patch_name = os.path.dirname(os.path.relpath(patch_config_path, patches_path))
+			patch_name: str = os.path.dirname(os.path.relpath(patch_config_path, patches_path))
 			self._patch_modules[patch_name] = patch_config_module
 			self._patch_paths[patch_name] = patch_config_path
 			self._patch_names.append(patch_name)

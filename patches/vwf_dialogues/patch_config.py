@@ -2,6 +2,7 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../helpers/python'))
 import patching_utility
+from typing import cast
 
 
 patcher = patching_utility.PatchingUtility()
@@ -37,14 +38,16 @@ patch_config = patching_utility.PatchConfig( os.path.dirname(__file__),
 def main() -> None:
 	options = patcher.parse_options()
 	
+	vwf_dialogues_asm = cast(patching_utility.Patch, patch_config.actions[0])
+	
 	if options.messages_file == 'smw':
-		patch_config.actions[0].include_paths[0] = os.path.join(os.path.dirname(__file__), 'data/smw')
+		vwf_dialogues_asm.include_paths[0] = os.path.join(os.path.dirname(__file__), 'data/smw')
 	
 	if options.bit_mode == '16-bit':
-		patch_config.actions[0].defines.append('vwf_bitmode=VWF_BitMode.16Bit')
+		vwf_dialogues_asm.defines.append('vwf_bitmode=VWF_BitMode.16Bit')
 		
 	if options.message_box_hijack == 'disable':
-		patch_config.actions[0].defines.append('hijackbox=false')
+		vwf_dialogues_asm.defines.append('hijackbox=false')
 		
 	patcher.apply_patches(patch_config, options)
 	

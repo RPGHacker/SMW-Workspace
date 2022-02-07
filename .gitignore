@@ -37,4 +37,5 @@ patches/*/*.zip
 
 # Temporary files and directories
 __pycache__
+.mypy_cache
 builds

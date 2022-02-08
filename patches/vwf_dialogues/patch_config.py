@@ -49,7 +49,7 @@ def main() -> None:
 	if options.message_box_hijack == 'disable':
 		vwf_dialogues_asm.defines.append('hijackbox=false')
 		
-	patcher.apply_patches(patch_config, options)
+	patcher.create_rom(patch_config, options)
 	
 
 if __name__ == '__main__':

@@ -25,7 +25,7 @@ patch_config = patching_utility.PatchConfig( os.path.dirname(__file__),
 def main() -> None:
 	options = patcher.parse_options()
 		
-	patcher.apply_patches(patch_config, options)
+	patcher.create_rom(patch_config, options)
 	
 	
 if __name__ == '__main__':

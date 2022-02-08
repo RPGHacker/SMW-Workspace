@@ -52,22 +52,33 @@ rom_extension: str = '.smc'
 
 
 def format_command_line(command_line_args: List[str]) -> str:
+	"""Formats a command line array in a way that is easy to read, yet can
+	also be copied directly into cmd.exe to run the respective command line."""
 	return '{command_line}'.format(command_line=' '.join(f'"{arg}"' if ' ' in arg else f'{arg}' for arg in command_line_args))
 
 
 @dataclass
 class ActionOutput:
+	"""Defines all outputs of a patching_utility.Action that the patcher
+	requires for further processing."""
 	output_symbols_path: Optional[str] = None
 	
 	
 @dataclass
 class Action:
+	"""The base class for actions the patcher can perform."""
 	def run(self, patch_config: 'PatchConfig', options: argparse.Namespace, output_rom_path: str) -> ActionOutput:
 		raise NotImplementedError()
 	
 	
 @dataclass
 class PatchConfig:
+	"""Defines the setup that is required to get from a clean SMW ROM to a test ROM
+	for	a specific patch. Certain shared aspects (like basic Lunar Magic
+	hacks, ROM size and SA-1 Pack) are handled automatically under the hood. Add
+	further Actions to define patches and resources needed for testing the patch.
+	Pass in the path to your patch_config.py to automatically initialize the
+	output directory and ROM name."""
 	module_path: dataclasses.InitVar[str]
 	output_dir: str = ''
 	rom_base_name: str = ''
@@ -82,6 +93,7 @@ class PatchConfig:
 
 @dataclass
 class Patch(Action):
+	"""Defines a patch to apply with Asar."""
 	path: str
 	include_paths: List[str] = dataclasses.field(default_factory=lambda: [])
 	defines: List[str] = dataclasses.field(default_factory=lambda: [])
@@ -143,6 +155,7 @@ class _CopyCleanRom(Action):
 		
 @dataclass
 class FlipsPatch(Action):
+	"""Defines a patch to apply with Flips."""
 	path: str
 	
 	def run(self, patch_config: PatchConfig, options: argparse.Namespace, output_rom_path: str) -> ActionOutput:
@@ -174,6 +187,7 @@ class FlipsPatch(Action):
 		
 @dataclass
 class InsertLevel(Action):
+	"""Defines a level file to insert with Lunar Magic."""
 	path: str
 	level_number: int
 	
@@ -220,6 +234,8 @@ class _ExpandRom(Action):
 
 	
 class PatchingUtility:
+	"""This class is the actual patcher utility that creates the test rom based on
+	PatchConfig that is passed in."""
 	def __init__(self) -> None:
 		self._parser = argparse.ArgumentParser(description='Applies this patch and all dependencies to a clean SMW ROM to create a patched output ROM.')
 		
@@ -231,17 +247,22 @@ class PatchingUtility:
 		self.add_option('--rom_size', values=list(_rom_size_mappings.keys()), default_index=1)
 		
 	def add_option(self, name: str, values: List[str], default_index: int = 0) -> None:
+		"""Registers a command line option with possible values for this patcher."""
 		self._option_values[name] = values
 		self._option_default_indices[name] = default_index
 		self._parser.add_argument(name, choices=values, default=values[default_index])
 		
 	def get_option_values(self) -> Dict[str, List[str]]:
+		"""Returns all possible options registered for this patcher."""
 		return self._option_values
 		
-	def get_option_default_value(self, name: str) -> int:
+	def get_option_default_index(self, name: str) -> int:
+		"""Returns the default index for a registered option."""
 		return self._option_default_indices[name]
 		
-	def parse_options(self, args: List[str] = None, exit_on_error: bool = True) -> argparse.Namespace:
+	def parse_options(self, args: List[str] = None) -> argparse.Namespace:
+		"""Parses option values, either from command line arguments, or from an optional
+		list."""
 		options = self._parser.parse_args(args)
 		
 		if options.rom_size in _unsupported_rom_sizes[options.rom_type]:
@@ -250,6 +271,8 @@ class PatchingUtility:
 		return options
 		
 	def construct_output_file_name(self, patch_config: PatchConfig, options: argparse.Namespace, ext: Optional[str] = None) -> str:
+		"""Constructs the base name of the output ROM, based on patch config and parsed
+		options."""
 		rom_name: str = patch_config.rom_base_name
 		
 		string_options = vars(options)
@@ -266,9 +289,12 @@ class PatchingUtility:
 		return rom_name
 		
 	def construct_output_rom_name(self, patch_config: PatchConfig, options: argparse.Namespace) -> str:
+		"""Constructs the name of the output ROM, based on patch config and parsed
+		options, using the default ROM extension."""
 		return self.construct_output_file_name(patch_config, options, rom_extension)
 		
-	def apply_patches(self, patch_config: PatchConfig, options: argparse.Namespace) -> None:
+	def create_rom(self, patch_config: PatchConfig, options: argparse.Namespace) -> None:
+		"""Uses patch config and parsed options to create the final output ROM."""
 		pathlib.Path(patch_config.output_dir).mkdir(parents = True, exist_ok = True)
 	
 		rom_name: str = self.construct_output_file_name(patch_config, options)

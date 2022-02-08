@@ -161,7 +161,7 @@ class MainWindow(tkinter.Tk):
 		
 		# We don't want the GUI to exit from failing to parse options, so we catch SystemExit.
 		try:
-			parsed_options = patcher.parse_options(options, False)
+			parsed_options = patcher.parse_options(options)
 		except SystemExit:
 			print('Failed to parse options for generating output ROM name.\nOptions:\n{command_line}'.format(command_line=patching_utility.format_command_line(options)))
 			return
@@ -196,7 +196,7 @@ class MainWindow(tkinter.Tk):
 			
 			option_combobox = MainWindow.BetterComboBox(self._options_inner_frame, state='readonly', values=values)
 			option_combobox.grid(column=1, row=index, sticky='new', padx=5, pady=5)
-			option_combobox.current(current_module.patcher.get_option_default_value(option_name))
+			option_combobox.current(current_module.patcher.get_option_default_index(option_name))
 			
 			self._current_option_widgets[option_name].append(option_combobox)
 			

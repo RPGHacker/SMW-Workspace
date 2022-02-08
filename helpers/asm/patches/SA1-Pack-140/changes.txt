@@ -1,0 +1,141 @@
+SA-1 Pack v1.40:
+	- Adds MaxTile, a system responsible for managing OAM slots across the entire game. Via dynamic allocation, the system allows to you use ALL OAM slots for anything, including standard sprites with pretty high compatibility with previous resources. See MaxTile documentation for more information.
+	- The addition of MaxTile also fixes a few priority issues caused by NoMoreSpriteTileLimits.
+	- Now it's possible to detect SA-1 Pack and its version. See Programming guide for more information.
+
+SA-1 Pack v1.36:
+	- Fixed a visual glitch in the bonus game, where one of the boxes (and its item) is floating on screen, a bit higher than the ground and scrolling vertically. Thanks goes to RaspberryAlpine for finding out this.
+	- Made the DMA transfer on the LZ2/LZ3 decompression retry if it gets interrupted. Although NMI/IRQ does not interrupt DMA, HDMAs can actually will DMA get interrupted. Thanks goes to p4plus2 for revealing that detail for me.
+	- Updated programming guide to include details about common routines on SMW and on which processor SA-1 Pack uses (either SNES or SA-1). Also organized the documentation a bit.
+
+SA-1 Pack v1.35:
+	- Added the "finish OAM" hook, an extremely useful feature for programmers. See $40:0110-$40:0112 for more details on BW-RAM docs.
+	- Added DMA remap which moves all game DMA logic to channel 2 and Windowing HDMA to channel 1, freeing up channel 7 for custom HDMA. In addition, DMA channel 0 is now reserved for transfers during game play (outside interrupts), fixing a rare bug on the LZ2/LZ3 decompressor when you decompress a GFX file while the game is running and *just* when the DMA executes, a NMI occurs and the DMA settings end up reseted. For the effectiveness of this solution, please change all patches to use DMA channel 2 instead of 0 or 1. This fixes issue #14 on GitHub.
+	- Made all levels by default use Sprite Memory Header 0x08, allowing to all original levels have up to 22 sprites on screen. Note that I have included some logic to not take in account boss fight levels and levels that has wigglers (Forest of Illusion and Outrageous), since they are not compatible with.
+	- Fixed bank switching getting incorrectly reset to original values after reapplying SA-1 Pack, which makes ROMs larger than 4 MB completely unplayable. This fixes issue #15 on GitHub
+	- Fixed an issue where the Layer 3 tilemap would glitch if a custom game over screen was used. Caused by a remap error. Thanks MFG for figuring out and providing the fix. Merges pull request #18 on GitHub.
+	- Fixed some inconsistencies on the programming guide.
+	- Minor changes on readme file.
+
+SA-1 Pack v1.32:
+	- Fixed an oversight in the Lives Exchanger fix. (LX5)
+	- Fixed a rare bug involving the tile generation routine. (Tattletale)
+	- Minor code cleanup.
+
+SA-1 Pack v1.31:
+	- Added support to Dynamic levels patch, built-in in Lunar Magic.
+	- **Change Super No More Sprite Tile Limits setting header from 0x10 to 0x08**. This important change fixes various graphical glitches present in Bowser battle, such as Princess Toadstool appearing "in the front" of the clown car, Bowser's bowling ball having parts of its OAM tiles disappearing and additionally it fixes the softlock after beating Bowser, where the fireworks animation simply doesn't show out. However, this implies into having to you edit all levels that you used to have Sprite Header Index as 0x10 and change it to 0x08, otherwise you won't have more than 10 sprites on screen. The sprite header index 0x08 will not cause any problem on the original game because along index 0x03 and 0x05, it's unused in the original game while 0x10 was used for Bowser's battle scenes. This also now means you can play SMW normally using this patch, without having to use something else to fix Bowser.
+	- Sprite resetting/cleaning routine now runs on SA-1 CPU. This should make level loading a few milliseconds faster.
+	- Minor cleanup and rearrangements on the sprite loading routines.
+	- Fixed live exchange not being properly updated on hardware. Patch by LX5.
+	- Fixed graphical glitches when a mushroom (and likely other powerups) falls during Morton, Ludwig and Roy battles. SMW made it use a fixed OAM slot just for their battles, but Arujus while building the More Sprites patch thought the fixed slot would be used during normal levels as well and removed it thinking it would cause problems. I have undo that change and both works now.
+	- Fixed sprite loading routine not running on SA-1 CPU during initialization. Now the routine is 100% SA-1 CPU.
+	- Fixed minor grammar error on notable changes and on this document.
+
+SA-1 Pack v1.30:
+	- Rewrote SMW's IRQ handling system. Now it runs on RAM, gives PPU IRQ priority over SA-1 IRQ, added support for custom IRQ codes.
+	- Added support for bypassing SMW's NMI routine to run on specific scanline as an IRQ, also known as "IRQ-as-NMI". In practice this trick, used in many games including Yoshi's Island, Super Mario RPG, Star Fox and more will allow for much more DMA uploads per time, which implies into more ExAnimations, Dynamic Sprites, etc., in sacrifice of vertical screen resolution.
+	- IRQ and NMI now preserves $2224 and Direct Page. Direct Page usage and BW-RAM mapping is now allowed on SNES CPU side as well.
+	- Rewrote most of the documents, including the README, to include more information and use markdown styling, which includes the BW-RAM, I-RAM, Memory Map Summary and Sprite Remap documents.
+	- README and all other documents are now in .html format on the release .zip file.
+	- Split some of the routines in sa1.asm to separate files.
+	- Added W-RAM document.
+	- Added known issues document.
+	- Added notable changes document.
+	- Added programming document, which was part of the README originally.
+	- Updated quick guide to include updated information.
+	- Added remap.asm with hybrid SA-1 Pack/normal definitions.
+	- Made the SA-1 dynamic vectors loads value from vector info on initialization instead of static default vectors from SMW.
+
+SA-1 Pack v1.27:
+	- Fixed Snes9x 1.56 crashing the game on SMW ROMs without Addmusic installed. This occurs because of the increased SA-1 CPU base clock.
+	- Fixed Asar 1.60 reporting error when applying the patch, due of changes in the label preprocessor.
+	- Fixed a missing channel change (from 0 to 1) on part of the CC-DMA setup. CC-DMA should work again.
+	- Migrated SA-1 Pack source code to GitHub, now available at https://github.com/VitorVilela7/SA1-Pack
+	- Migrated README to Markdown (ExE-Boss)
+
+SA-1 Pack v1.26:
+	- Fixed Sprite <-> Sprite interaction missing several sprite pointer changes, making certain sprite tables corrupted. One of the most notables consequences of the glitch were the blue shelless koopas not being able to hold a shell thrown from behind.
+	- Fixed Yoshi spitting fire (from a red shell or if red yoshi) slight off position (around -16 pixels from where it was supposed to), due of yet another missing sprite pointer change.
+	- Fixed one missing wait for h-blank call, which seems the responsible for generating the lag in ZSNES for mode 7 bosses.
+	- Fixed Dynamic Sprites setting !SLOTSUSED to #$01 instead of #$00 after upload. This bug happened because the channel used to DMA transfer was changed to #$02 instead of #$01 and the same value was subtracted to determine !SLOTSUSED value. Also slight optimized the code, by setting the zero store before the jump table.
+	- Updated the Quick Guide, with more recent instructions regarding resource compatibility.
+	- Rewrote part of the read me.
+	- Add a memory map summary file to the docs folder, which contains basically all memory changes the SA-1 does. Useful for converting resources.
+	- Registered SA-1 main loop address, as JML, at $008A74.
+	- Removed some unused code related to h-blank detection.
+	- Removed a leftover print pc from Overworld hijack.
+	- Removed most of the compatible tools/patches/block/etc. pages as Dropbox will be killing them soon.
+
+SA-1 Pack v1.25:
+	- Fixed SNES NMI and IRQ vectors override not getting written correctly ($220C, $220E). These registers are SA-1 only write and they were being written on SNES CPU side, making real hardware crash. None of the major emulators currently emulate this register properly.
+	- Added a code on RESET routine to put the SA-1 CPU on sleep state before booting and setting up initial variables. The same procedure is done on most commercial games so I decided to include it on SA-1 Pack just to be safe in real hardware.
+	- Added a code for clearing DMA state ($2230) on SA-1 RESET routine.
+	- Made all DMAs invoked by the patch use channel 1 instead of 0. This should make the DMA remap patch work with SA-1 ROMs without requiring to modify any of the SA-1 Pack code.
+	- Made DSX (Dynamic Sprites) patch code optional, requested by anonimzwx.
+	- Made some minor grammar fixes.
+
+SA-1 Pack v1.24:
+	- Fixed Character Conversion DMA randomly freezing the game when SA-1 is unable to receive IRQs.
+
+SA-1 Pack v1.23:
+	- Made the dynamic sprite uploader only run on level and title screen game mode. This may fix some issues with dynamic sprites getting garbaged graphics on fade in/out or even unwanted uploads.
+
+SA-1 Pack v1.22:
+	- Fixed a bug where the arrow used in CONTINUE/END text wasn't being rendered in bsnes and other saner emulators that blocks WRAM access from SA-1 CPU.
+
+SA-1 Pack v1.21:
+	- Fixed another bug when more than 84 sprites gets loaded. Interesting how the cause was the same as another one I fixed on version v1.20, so this time I had sure that no similar bugs will appear.
+	- Made all files have @includefrom sa1.asm to avoid possible patching problems.
+	- Made the ZSNES detection optional.
+
+SA-1 Pack v1.20:
+	- Moved routines $00E2BD and $00C47E to SA-1 side on level game mode, which seems to handle mario physics, mario oam, most sprites types (shooters, generators, clusters, extended, minor extended, bounce, score and smoke) plus block/map16 handling. With that, the CPU usage on levels decreased a lot, almost by half.
+	- Moved almost all overworld code to SA-1 CPU. Now the CPU usage on overworld is around 22% and the [!] blocks spreading event runs without slowdown chance.
+	- Made the sprite C6 (Light) update every frame instead of every four frames.
+	- Fixed IRQ issues with ZSNES and bsnes accuracy. Layer 3 won't glitch anymore.
+	- Fixed LZ3 making the ROM crash if "case 00" wraps a bank.
+	- Fixed stairs GFX being messed up. The cause was of wrong bank being used on two STA opcodes on clear stack routine.
+	- Fixed an issue with sprite loading code, which could crash the ROM if more than 84 sprites gets loaded when placed on specific positions.
+	- Fixed pos-Bowser's battle.
+	- Fixed fireworks.
+	- Fixed two missing addresses from The Last Remap patch.
+	- Lowercased files lzx.asm, lz2.asm and lz3.asm. It should make SA-1 Pack patchable on case-sensitive OS.
+	- Restored old and fast MVN code on LZ2/LZ3 patches, but if ZSNES runs the old (slow) code will be used.
+
+SA-1 Pack v1.12:
+	- Fixed a incompatibility issue with Lunar Magic's Overworld Editor. The ROM crashes if you save
+	the overworld to your ROM because the LM modifies a specific byte making a JML be JML $7Fxxxx on
+	SA-1 side, freezing the game at black screen.
+
+SA-1 Pack v1.11:
+	- Fixed a bug on LZ2/LZ3 patch which on rare cases makes the GFX decompress incorrectly.
+
+SA-1 Pack v1.10:
+	- Added Arujus's Sprite Remap, allowing up to ~20 sprites to be processed on screen.
+	- Modified most of sprite loading code, allowing up to 255 sprites per level.
+	- Optimized SMW's circle routine, removing all slowdown on level clear and other screens.
+	- No More Sprite Tile Limits patch is now integrated, due of a limitation on Arujus's patch.
+	- Fixed a ZSNES freeze/crash when the SA-1 CPU calls SNES CPU (fixes all sprites which edits level tiles, like monty moles).
+	- Fixed lot of grammar/spelling errors on read me, comments and documents.
+	- Fixed lot of issues on I-RAM map.
+	- Removed Lunar Fix since Lunar Magic 2.20 supports SA-1 Pack now.
+	- Added changes.txt.
+
+SA-1 Pack v1.03:
+	- Fixed some IRQ timing bug.
+	- Fixed Reznor's bridge.
+	- Optimized a bit the patch and removed two useless features.
+	- (Lunar Fix) Added a fix related with level C7 and File Select background palette.
+	- (Lunar Fix) Fixed a major bug which layer 2, vertical and vertical+layer 2 levels had the screen totally glitched.
+
+SA-1 Pack v1.02/v1.01:
+	- All features from standard and deluxe pack with ZSNES compatibility. Character Conversion DMA is included too, but it doesn't work totaly with ZSNES.
+	- Map16 remap: moves $7E:C800-$7E:FFFF and $7F:C800-$7F:FFFF to $40:C800-$40:FFFF & $41:C800-$41:FFFF.
+	- Level loading boost: Since Map16 memory has been remapped, now SA-1 handles the level loading.
+	- LZ2 now works on ZSNES
+	- Added LZ3 patch. Works on ZSNES, of course.
+	- Includes a few OAM boost patches.
+	
+SA-1 Pack v1.00:
+	- First version of patch which only included sprite boost.

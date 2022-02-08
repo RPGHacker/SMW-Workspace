@@ -5,6 +5,8 @@
 *.sym
 *.sav
 *.bsz
+baserom/*
+!baserom/README.md
 
 !tools/asar137/help.sfc #Aside from this one (which is empty, anyways)
 
@@ -28,6 +30,7 @@ rominfo.txt
 patches/vwf2/*
 stderr.txt
 stdout.txt
+*.conf
 
 # Exclude output files of packaging.
 patches/*/*.zip

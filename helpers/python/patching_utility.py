@@ -15,11 +15,44 @@ _asar_paths: Dict[str, str] = {
 	'2.0': os.path.join(os.path.dirname(__file__), '../../tools/asar20/asar.exe'),
 }
 
-_clean_rom_path: str = os.path.join(os.path.dirname(__file__), '../../baserom')
+_lm_path: str = os.path.join(os.path.dirname(__file__), '../../tools/lm331/Lunar Magic.exe')
+
+_flips_path: str = os.path.join(os.path.dirname(__file__), '../../tools/floating/flips.exe')
+
+
+_clean_rom_path: str = os.path.join(os.path.dirname(__file__), '../../baserom/smw.smc')
+
+_expand_patch_path: str = os.path.join(os.path.dirname(__file__), '../asm/asar_expand.asm')
+
+_lm_base_patch_path: str = os.path.join(os.path.dirname(__file__), '../asm/lunar_magic_base.asm')
+
+_level_105_path: str = os.path.join(os.path.dirname(__file__), '../smw/level_105.mwl')
+
+_sa1_pack_base_dir: str = os.path.join(os.path.dirname(__file__), '../asm/patches/SA1-Pack-140')
+
+
+_rom_types: List[str] = [ 'normal', 'sa-1' ]
+
+_rom_size_mappings: Dict[str, int] = {
+	'1mb': 1 * 1024 * 1024,
+	'2mb': 2 * 1024 * 1024,
+	'3mb': 3 * 1024 * 1024,
+	'4mb': 4 * 1024 * 1024,
+	'6mb': 6 * 1024 * 1024,
+	'8mb': 8 * 1024 * 1024,
+}
+
+_unsupported_rom_sizes: Dict[str, List[str]] = {
+	'normal': ['6mb', '8mb'],
+	'sa-1': ['1mb'],
+}
 
 
 rom_extension: str = '.smc'
 
+
+def format_command_line(command_line_args: List[str]) -> str:
+	return '{command_line}'.format(command_line=' '.join(f'"{arg}"' if ' ' in arg else f'{arg}' for arg in command_line_args))
 
 
 @dataclass
@@ -50,11 +83,11 @@ class PatchConfig:
 @dataclass
 class Patch(Action):
 	path: str
-	include_paths: List[str]
-	defines: List[str]
+	include_paths: List[str] = dataclasses.field(default_factory=lambda: [])
+	defines: List[str] = dataclasses.field(default_factory=lambda: [])
 	
 	def run(self, patch_config: PatchConfig, options: argparse.Namespace, output_rom_path: str) -> ActionOutput:
-		output = ActionOutput()		
+		output = ActionOutput()
 		
 		patch_symbols_path: str = os.path.join(patch_config.output_dir, os.path.basename(self.path) + '.cpu.sym')
 		
@@ -75,9 +108,9 @@ class Patch(Action):
 		command_line.append(os.path.normpath(output_rom_path))
 		
 		print('')
-		print('Patching: \n{command_line}'.format(command_line=' '.join(f'"{arg}"' if ' ' in arg else f'{arg}' for arg in command_line)))
+		print('Patching (Asar): \n{command_line}'.format(command_line=format_command_line(command_line)))
 				
-		print('')			
+		print('')
 		print('Output:')
 		
 		ret_val = subprocess.run(command_line)
@@ -90,6 +123,100 @@ class Patch(Action):
 		output.output_symbols_path = patch_symbols_path
 		
 		return output
+		
+
+# There's probably no good reason to make this class public in its current form.
+@dataclass
+class _CopyCleanRom(Action):	
+	def run(self, patch_config: PatchConfig, options: argparse.Namespace, output_rom_path: str) -> ActionOutput:
+		output = ActionOutput()
+		
+		print('')
+		print('Copying:\n"{clean_rom}" to "{output_rom}":'.format(clean_rom=_clean_rom_path, output_rom=output_rom_path))
+		
+		shutil.copyfile(_clean_rom_path, output_rom_path)
+		
+		print('')
+
+		return output
+		
+		
+@dataclass
+class FlipsPatch(Action):
+	path: str
+	
+	def run(self, patch_config: PatchConfig, options: argparse.Namespace, output_rom_path: str) -> ActionOutput:
+		output = ActionOutput()
+		
+		command_line: List[str] = [_flips_path]
+			
+		command_line.append('--apply')
+			
+		command_line.append(self.path)
+			
+		command_line.append(output_rom_path)
+		
+		print('')
+		print('Patching (Flips): \n{command_line}'.format(command_line=format_command_line(command_line)))
+				
+		print('')
+		print('Output:')
+		
+		ret_val = subprocess.run(command_line)
+		
+		print('')
+		
+		if ret_val.returncode != 0:
+			raise RuntimeError("Patching failed! Please check Flips' error output above.")
+		
+		return output
+		
+		
+@dataclass
+class InsertLevel(Action):
+	path: str
+	level_number: int
+	
+	def run(self, patch_config: PatchConfig, options: argparse.Namespace, output_rom_path: str) -> ActionOutput:
+		output = ActionOutput()
+		
+		command_line: List[str] = [_lm_path]
+			
+		command_line.append('-ImportLevel')
+			
+		command_line.append(output_rom_path)
+			
+		command_line.append(self.path)
+			
+		command_line.append(str(self.level_number))
+		
+		print('')
+		print('Inserting level (Lunar Magic): \n{command_line}'.format(command_line=format_command_line(command_line)))
+				
+		print('')
+		print('Output:')
+		
+		ret_val = subprocess.run(command_line)
+		
+		print('')
+		
+		if ret_val.returncode != 0:
+			raise RuntimeError("Running Lunar Magic failed! Please check Flips' error output above.")
+		
+		return output
+		
+	
+# ROM size is controlled via an option, so probably no good reason to expose this class.
+@dataclass
+class _ExpandRom(Action):
+	new_size_in_bytes: dataclasses.InitVar[int]
+	patch: Patch = dataclasses.field(default_factory=lambda: Patch(path=_expand_patch_path))
+	
+	def __post_init__(self, new_size_in_bytes: int) -> None:
+		self.patch.defines.append('cmdl_arg_rom_size={size_in_bytes}'.format(size_in_bytes=new_size_in_bytes))
+
+	def run(self, patch_config: PatchConfig, options: argparse.Namespace, output_rom_path: str) -> ActionOutput:
+		return self.patch.run(patch_config, options, output_rom_path)
 
 	
 class PatchingUtility:
@@ -99,9 +226,9 @@ class PatchingUtility:
 		self._option_values: Dict[str, List[str]] = {}
 		self._option_default_indices: Dict[str, int] = {}
 		
-		self.add_option('--asar_ver', values=['1.81', '1.9', '2.0'], default_index=1)
-		self.add_option('--rom_type', values=['normal', 'sa-1'], default_index=0)
-		self.add_option('--rom_size', values=['1mb', '2mb', '3mb', '4mb', '6mb', '8mb'], default_index=1)
+		self.add_option('--asar_ver', values=list(_asar_paths.keys()), default_index=1)
+		self.add_option('--rom_type', values=_rom_types, default_index=0)
+		self.add_option('--rom_size', values=list(_rom_size_mappings.keys()), default_index=1)
 		
 	def add_option(self, name: str, values: List[str], default_index: int = 0) -> None:
 		self._option_values[name] = values
@@ -117,10 +244,8 @@ class PatchingUtility:
 	def parse_options(self, args: List[str] = None, exit_on_error: bool = True) -> argparse.Namespace:
 		options = self._parser.parse_args(args)
 		
-		if options.rom_type == 'normal' and options.rom_size not in ['1mb', '2mb', '3mb', '4mb']:
-			raise ValueError('Non-SA-1 ROMs only support sizes up to 4 MB.')
-		elif options.rom_type == 'sa-1' and options.rom_size == '1mb':
-			raise ValueError('SA-1 ROMs require a size of a at least 2 MB.')
+		if options.rom_size in _unsupported_rom_sizes[options.rom_type]:
+			raise ValueError('ROM size "{rom_size}" not supported for ROM type "{rom_type}". Please try a different size.'.format(rom_size=options.rom_size, rom_type=options.rom_type))
 		
 		return options
 		
@@ -143,22 +268,11 @@ class PatchingUtility:
 	def construct_output_rom_name(self, patch_config: PatchConfig, options: argparse.Namespace) -> str:
 		return self.construct_output_file_name(patch_config, options, rom_extension)
 		
-	def get_base_rom_path(self, options):
-		rom_name: str = 'lm' + options.rom_size
-		
-		if options.rom_type == 'sa-1':
-			rom_name += '_sa1'
-			
-		rom_name += '.smc'
-		
-		return os.path.join(_clean_rom_path, rom_name)
-		
 	def apply_patches(self, patch_config: PatchConfig, options: argparse.Namespace) -> None:
 		pathlib.Path(patch_config.output_dir).mkdir(parents = True, exist_ok = True)
 	
 		rom_name: str = self.construct_output_file_name(patch_config, options)
 		
-		base_rom_path: str = self.get_base_rom_path(options)
 		output_rom_path: str = os.path.join(patch_config.output_dir, rom_name + rom_extension)
 		output_symbols_path: str = os.path.join(patch_config.output_dir, rom_name + '.cpu.sym')
 		output_sa1_symbols_path: str = os.path.join(patch_config.output_dir, rom_name + '.sa1.sym')
@@ -166,9 +280,34 @@ class PatchingUtility:
 		symbols_output: Dict[str, List[str]] = {}				
 		source_file_base_id: int = 0
 		
-		shutil.copyfile(base_rom_path, output_rom_path)
+		action_list: List[Action] = []
+		
+		action_list.append(_CopyCleanRom())
+		
+		action_list.append(Patch(_lm_base_patch_path))
+		
+		# Cap the expansion size to 4 MB here, because the patch can't handle more.
+		# 6 MB and 8 MB require custom patches that are included with SA-1 Pack.
+		expansion_size = min(_rom_size_mappings[options.rom_size], _rom_size_mappings['4mb'])
+			
+		action_list.append(_ExpandRom(_rom_size_mappings[options.rom_size]))
+		
+		if options.rom_type == 'sa-1':
+			sa1_main_patch_path = os.path.join(_sa1_pack_base_dir, 'sa1.asm')
+			action_list.append(Patch(sa1_main_patch_path))
+			
+			if options.rom_size == '6mb':
+				sa1_6mb_patch_path = os.path.join(_sa1_pack_base_dir, '6mb.asm')
+				action_list.append(Patch(sa1_6mb_patch_path))
+			elif options.rom_size == '8mb':
+				sa1_8mb_patch_path = os.path.join(_sa1_pack_base_dir, '8mb.asm')
+				action_list.append(Patch(sa1_8mb_patch_path))
+			
+		action_list.append(InsertLevel(_level_105_path, 105))
+		
+		action_list.extend(patch_config.actions)
 	
-		for action in patch_config.actions:			
+		for action in action_list:
 			output = action.run(patch_config, options, output_rom_path)
 			
 			# Do some processing on symbol files, so that we can merge outputs of symbol files further below
@@ -228,10 +367,10 @@ class PatchingUtility:
 								
 							if not reject_line:
 								symbols_output.setdefault(current_group, []).append(line.strip())
+							
+					source_file_base_id += num_source_files_in_symbols_file
 					
 				os.remove(output.output_symbols_path)
-							
-			source_file_base_id += num_source_files_in_symbols_file
 		
 		# Output new merged symbols file.
 		with open(output_symbols_path, 'w') as symbols_file:

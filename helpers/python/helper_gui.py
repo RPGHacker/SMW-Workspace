@@ -7,6 +7,7 @@ import importlib.util
 import subprocess
 from typing import Dict, List, cast
 from types import ModuleType
+import patching_utility
 
 class MainWindow(tkinter.Tk):
 	class BetterComboBox(ttk.Combobox):
@@ -117,7 +118,7 @@ class MainWindow(tkinter.Tk):
 		# Append patch path
 		subprocess_args.append(os.path.abspath(os.path.dirname(self._patch_paths[self._patch_combo_box.get()])))
 		
-		print('Opening explorer window.\nCommand line:\n{command_line}'.format(command_line=' '.join(f'"{arg}"' if ' ' in arg else f'{arg}' for arg in subprocess_args)))
+		print('Opening explorer window.\nCommand line:\n{command_line}'.format(command_line=patching_utility.format_command_line(subprocess_args)))
 		subprocess.run(subprocess_args, shell=True)
 		
 	def _patch_button_clicked(self) -> None:
@@ -137,7 +138,7 @@ class MainWindow(tkinter.Tk):
 				if isinstance(widget, MainWindow.BetterComboBox):
 					subprocess_args.append(widget.get())
 		
-		print('Running patcher in separate terminal.\nCommand line:\n{command_line}'.format(command_line=' '.join(f'"{arg}"' if ' ' in arg else f'{arg}' for arg in subprocess_args)))
+		print('Running patcher in separate terminal.\nCommand line:\n{command_line}'.format(command_line=patching_utility.format_command_line(subprocess_args)))
 		subprocess.run(subprocess_args, shell=True)
 		
 	def _run_button_clicked(self) -> None:	
@@ -162,7 +163,7 @@ class MainWindow(tkinter.Tk):
 		try:
 			parsed_options = patcher.parse_options(options, False)
 		except SystemExit:
-			print('Failed to parse options for generating output ROM name.\nOptions:\n{command_line}'.format(command_line=' '.join(f'"{arg}"' if ' ' in arg else f'{arg}' for arg in options)))
+			print('Failed to parse options for generating output ROM name.\nOptions:\n{command_line}'.format(command_line=patching_utility.format_command_line(options)))
 			return
 		
 		rom_name: str = patcher.construct_output_rom_name(patch_config, parsed_options)
@@ -171,7 +172,7 @@ class MainWindow(tkinter.Tk):
 		if os.path.exists(rom_path):
 			subprocess_args.append(os.path.abspath(rom_path))
 			
-			print('Starting ROM in emulator.\nCommand line:\n{command_line}'.format(command_line=' '.join(f'"{arg}"' if ' ' in arg else f'{arg}' for arg in subprocess_args)))
+			print('Starting ROM in emulator.\nCommand line:\n{command_line}'.format(command_line=patching_utility.format_command_line(subprocess_args)))
 			subprocess.run(subprocess_args, shell=True)
 		else:
 			messagebox.showerror('Error', 'ROM not found:\n\n{rom}\n\nPlease make sure to create the ROM before attempting to start it in an emulator.'.format(rom=os.path.normpath(os.path.abspath(rom_path))))

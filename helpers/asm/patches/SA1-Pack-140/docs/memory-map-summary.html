@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> memory-map-summary.html</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>
+<a id="user-content-memory-map-summary" class="anchor" href="#memory-map-summary" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Memory Map Summary</h1>
+<p>This is a quick summary of the memory changes made by the SAS Memory Map and by SA-1 Pack.</p>
+<h2>
+<a id="user-content-hybrid-remapping" class="anchor" href="#hybrid-remapping" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Hybrid Remapping</h2>
+<p>It's possible to write code that works with both SA-1 Pack SMW ROMs and regular SMW ROMs by detecting the ROM mapper and using a couple of defines depending of the ROM type detected. Take a look at <a href="remap.asm">remap.asm</a>.</p>
+<p>More important than making hybrid ASM code, it's understanding how the SA-1 memory map works and how you can make your code potentially much faster and with a higher compatibility on SA-1 SMW ROMs. This document contains a well-summarized information about the SA-1 memory map.</p>
+<h2>
+<a id="user-content-rom-memory-map" class="anchor" href="#rom-memory-map" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>ROM Memory Map</h2>
+<p>SA-1 features the Super MMC, a memory controller that can support ROMs larger than 4 MB. It offers bank switching support though registers<code>$2220-$2223</code>, which allows switching ROM data in blocks of 1 MB.</p>
+<h3>
+<a id="user-content-lorom-banks" class="anchor" href="#lorom-banks" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>LoROM banks</h3>
+<p>Applies for any ROM size.</p>
+<table>
+<thead>
+<tr>
+<th>Bank Range</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>$00-$1F</code></td>
+<td>1st Mbyte of the ROM. Super MMC register<code>$2220</code>CXB.</td>
+</tr>
+<tr>
+<td><code>$20-$3F</code></td>
+<td>2nd Mbyte of the ROM. Super MMC register<code>$2221</code>DXB.</td>
+</tr>
+<tr>
+<td><code>$80-$9F</code></td>
+<td>3rd Mbyte of the ROM. Super MMC register<code>$2222</code>EXB.</td>
+</tr>
+<tr>
+<td><code>$A0-$BF</code></td>
+<td>4th Mbyte of the ROM. Super MMC register<code>$2223</code>FXB.</td>
+</tr>
+</tbody>
+</table>
+<h3>
+<a id="user-content-hirom-banks" class="anchor" href="#hirom-banks" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>HiROM banks</h3>
+<p>Applies for ROMs up to 4 MB.</p>
+<table>
+<thead>
+<tr>
+<th>Bank Range</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>$C0-$CF</code></td>
+<td>1st Mbyte of the ROM. Super MMC register<code>$2220</code>CXB.</td>
+</tr>
+<tr>
+<td><code>$D0-$DF</code></td>
+<td>2nd Mbyte of the ROM. Super MMC register<code>$2221</code>DXB.</td>
+</tr>
+<tr>
+<td><code>$E0-$EF</code></td>
+<td>3rd Mbyte of the ROM. Super MMC register<code>$2222</code>EXB.</td>
+</tr>
+<tr>
+<td><code>$F0-$FF</code></td>
+<td>4th Mbyte of the ROM. Super MMC register<code>$2223</code>FXB.</td>
+</tr>
+</tbody>
+</table>
+<h3>
+<a id="user-content-exhirom-banks" class="anchor" href="#exhirom-banks" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>ExHiROM banks</h3>
+<p>Applies for ROMs larger than 4 MB and up to 8 MB. LoROM mapping is not affected for the way SA-1 Pack configures the SAS Memory Map.</p>
+<table>
+<thead>
+<tr>
+<th>Bank Range</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>$C0-$CF</code></td>
+<td>5th Mbyte of the ROM. Super MMC register<code>$2220</code>CXB.</td>
+</tr>
+<tr>
+<td><code>$D0-$DF</code></td>
+<td>6th Mbyte of the ROM. Super MMC register<code>$2221</code>DXB.</td>
+</tr>
+<tr>
+<td><code>$E0-$EF</code></td>
+<td>7th Mbyte of the ROM. Super MMC register<code>$2222</code>EXB.</td>
+</tr>
+<tr>
+<td><code>$F0-$FF</code></td>
+<td>8th Mbyte of the ROM. Super MMC register<code>$2223</code>FXB.</td>
+</tr>
+</tbody>
+</table>
+<h3>
+<a id="user-content-dual-rom-system" class="anchor" href="#dual-rom-system" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Dual ROM System</h3>
+<p>The Dual ROM system works by merging two or more ROMs in a single one and selecting which ROM image to project using the Super MMC registers. For example, two 4 MB ROMs can be merged and the first ROM can be loaded by loading values<code>$00-$03</code>to the registers<code>$2220-$2223</code> and the second ROM can be loaded by loading values<code>$04-$07</code>to the same registers.</p>
+<p>In practice, the Dual ROM system allows to either merge two games together or double the amount of resources available (levels, map16, music, sprites, overworlds, etc.) with the compromise of having to control two or more gamepak ROMs at the same time.</p>
+<p>SA-1 Pack currently does not include a Dual ROM system controller.</p>
+<h2>
+<a id="user-content-ram-memory-map" class="anchor" href="#ram-memory-map" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>RAM Memory Map</h2>
+<p>The SA-1 CPU (C-CPU) can't access the W-RAM, therefore to transfer some routine to it it's required to remap most of the game memory either to I-RAM or BW-RAM. Other than that, both S-CPU and C-CPU memory maps are fairly similar.</p>
+<h3>
+<a id="user-content-ram-banks" class="anchor" href="#ram-banks" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>RAM banks</h3>
+<table>
+<thead>
+<tr>
+<th align="center">Banks</th>
+<th align="center">Access</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>$00-$3F</code></td>
+<td align="center">C-CPU</td>
+<td>I-RAM at addresses<code>$0000-$07FF</code> @ 10.74 MHz</td>
+</tr>
+<tr>
+<td align="center"><code>$00-$3F</code></td>
+<td align="center">S-CPU</td>
+<td>W-RAM at addresses<code>$0000-$1FFF</code> @ 2.68 MHz</td>
+</tr>
+<tr>
+<td align="center"><code>$00-$3F</code></td>
+<td align="center">Both</td>
+<td>I-RAM at addresses<code>$3000-$37FF</code> @ 10.74 MHz</td>
+</tr>
+<tr>
+<td align="center"><code>$00-$3F</code></td>
+<td align="center">Both</td>
+<td>BW-RAM Virtual Memory at addresses<code>$6000-$7FFF</code> @ 5.37 MHz</td>
+</tr>
+<tr>
+<td align="center"><code>$40-$4F</code></td>
+<td align="center">Both</td>
+<td>BW-RAM @ 5.37 MHz</td>
+</tr>
+<tr>
+<td align="center"><code>$60-$6F</code></td>
+<td align="center">C-CPU</td>
+<td>BW-RAM Virtual Bitmap Memory @ 5.37 MHz</td>
+</tr>
+<tr>
+<td align="center"><code>$7E-$7F</code></td>
+<td align="center">S-CPU</td>
+<td>W-RAM @ 2.68 MHz</td>
+</tr>
+<tr>
+<td align="center"><code>$80-$BF</code></td>
+<td align="center">C-CPU</td>
+<td>I-RAM at addresses<code>$0000-$07FF</code> @ 10.74 MHz</td>
+</tr>
+<tr>
+<td align="center"><code>$80-$BF</code></td>
+<td align="center">S-CPU</td>
+<td>W-RAM at addresses<code>$0000-$1FFF</code> @ 2.68 MHz</td>
+</tr>
+<tr>
+<td align="center"><code>$80-$BF</code></td>
+<td align="center">Both</td>
+<td>I-RAM at addresses<code>$3000-$37FF</code> @ 10.74 MHz</td>
+</tr>
+<tr>
+<td align="center"><code>$80-$BF</code></td>
+<td align="center">Both</td>
+<td>BW-RAM Virtual Memory at addresses<code>$6000-$7FFF</code> @ 5.37 MHz</td>
+</tr>
+</tbody>
+</table>
+<h3>
+<a id="user-content-16-bit-absolute-addresses" class="anchor" href="#16-bit-absolute-addresses" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>16-bit (Absolute) Addresses</h3>
+<table>
+<thead>
+<tr>
+<th align="center">From</th>
+<th align="center">To</th>
+<th>Comment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>$0000-$00FF</code></td>
+<td align="center"><code>$3000-$30FF</code></td>
+<td>Note that you don't need to change direct page opcodes, like<code>LDA $19</code>. The remap only applies to 16-bit opcodes such as<code>JML [$0000]</code>or<code>STA $00B6,y</code>.</td>
+</tr>
+<tr>
+<td align="center"><code>$0100-$1FFF</code></td>
+<td align="center"><code>$6100-$7FFF</code></td>
+<td>You also can change data bank to <code>$40</code> and stay with the address, paying attention to the other RAM addresses outside the range.</td>
+</tr>
+</tbody>
+</table>
+<h3>
+<a id="user-content-24-bit-absolute-long-addresses" class="anchor" href="#24-bit-absolute-long-addresses" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>24-bit (Absolute Long) Addresses</h3>
+<table>
+<thead>
+<tr>
+<th align="center">From</th>
+<th align="center">To</th>
+<th>Comment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>$7E:1938-$7E:19B7</code></td>
+<td align="center"><code>$41:8A00-$41:8AFE</code></td>
+<td>Used to be 16-bit (absolute) addressed, now 24-bit (absolute long) to accommodate more sprite entries per level (from 128 to 255).</td>
+</tr>
+<tr>
+<td align="center"><code>$7E:C800-$7E:FFFF</code></td>
+<td align="center"><code>$40:C800-$40:FFFF</code></td>
+<td>Map16 low byte plus Overworld related data.</td>
+</tr>
+<tr>
+<td align="center"><code>$7F:9A7B-$7F:9C7A</code></td>
+<td align="center"><code>$41:8800-$41:89FF</code></td>
+<td>Wiggler's segment buffer.</td>
+</tr>
+<tr>
+<td align="center"><code>$7F:C700-$7F:FFFF</code></td>
+<td align="center"><code>$41:C800-$41:FFFF</code></td>
+<td>Map16 high byte.</td>
+</tr>
+</tbody>
+</table>
+<h3>
+<a id="user-content-s-ram" class="anchor" href="#s-ram" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>S-RAM</h3>
+<p>The S-RAM (static memory) banks used to be banks<code>$70-$71</code>, but the SAS Memory Map replaces it with BW-RAM, which is also used as work RAM and has is allocated though banks<code>$40-$43</code>. The remapped addresses are stated below.</p>
+<table>
+<thead>
+<tr>
+<th align="center">From</th>
+<th align="center">To</th>
+<th>Comment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>$70:0000-$70:07FF</code></td>
+<td align="center"><code>$41:C000-$41:C7FF</code></td>
+<td>Original save memory (2 kB big). Not everything is used.</td>
+</tr>
+<tr>
+<td align="center"><code>$70:0800-$70:27FF</code></td>
+<td align="center"><code>$41:A000-$41:BFFF</code></td>
+<td>Expansion area planned for SMW hacks.</td>
+</tr>
+</tbody>
+</table>
+<h3>
+<a id="user-content-sprite-tables" class="anchor" href="#sprite-tables" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Sprite Tables</h3>
+<p>Although the sprite tables are all 16-bit (absolute) addresses and therefore were remapped together to the BW-RAM, Arujus's More Sprites patch had to move them again to accommodate the expanded 22 sprites slots limits. Read more at <a href="Sprite-Remap.html">Sprite Remap</a> doc.</p>
+
+</body>
+</html>

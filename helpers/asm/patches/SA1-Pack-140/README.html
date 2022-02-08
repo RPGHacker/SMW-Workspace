@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> README.html</title>
+  <link rel="stylesheet" href="docs/style.css">
+</head>
+<body>
+<pre><code>   _____             __     _____           _
+  / ____|  /\       /_ |   |  __ \         | |
+ | (___   /  \ ______| |   | |__) |_ _  ___| | __
+  \___ \ / /\ \______| |   |  ___/ _` |/ __| |/ /
+  ____) / ____ \     | |   | |  | (_| | (__|   &lt;
+ |_____/_/    \_\    |_|   |_|   \__,_|\___|_|\_\
+   by Vitor Vilela                 Version 1.40
+</code></pre>
+<p>The SA-1 Pack is a package of patches for activating and optimizing the SA-1
+system for the SMW ROM, with emphasis on eliminating slowdown, game limitations
+and accelerating the engine to the maximum possible.</p>
+<h1>
+<a id="user-content-what-is-it" class="anchor" href="#what-is-it" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>What is it?</h1>
+<p>SA-1 is a co-processor used on some special SNES games, made to work together
+with the Super NES CPU and enhance its processing speed, graphics and memory.</p>
+<p>With its base 10.74 MHz clock, the SA-1 CPU is four times faster than the
+normal SNES CPU processing. The SA-1 CPU and SNES CPU also runs simultaneously,
+which can result in five times faster processing over game with a standard cart
+setup. With that much power, the Super Accelerator System (SAS) can be used to
+handle the SMW engine much faster than the normal, allowing more sprites to be
+processed at once, more in-game effects, faster level loading and much more.</p>
+<p>The CPU also benefits from a better memory map controller, so it's does not get
+paused by WRAM refreshes and by HDMA updates, making the effective speed up to
+7x faster than normal.</p>
+<p>SA-1 Pack not just activates the co-processor, but also modifies a good part of
+the game engine to use and explore the chip features, which gives an extreme
+boost to the overall performance of the game.</p>
+<h2>
+<a id="user-content-game-features" class="anchor" href="#game-features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Game Features</h2>
+<ul>
+<li>Makes the game run from 3x to 7x faster than normal.</li>
+<li>Increase the maximum amount of sprites at once on screen to 22.</li>
+<li>Increase the maximum amount of sprites on a single sub-level to 255.</li>
+<li>Adds MaxTile, a system that allows to place much more large sprites on levels.</li>
+<li>Reduces loading time of all levels and maps.</li>
+<li>Increase the maximum ROM size to 8 MB.</li>
+<li>Offers enhanced bitmap and arithmetic capabilities for better graphics
+performance.</li>
+</ul>
+<h2>
+<a id="user-content-system-features" class="anchor" href="#system-features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>System Features</h2>
+<ul>
+<li>16-bit 65c816 processor clocked at 10.74 MHz.</li>
+<li>2 kB fast internal work memory (I-RAM), clocked at 10.74 MHz.</li>
+<li>Multi-processor processing, with parallel operating mode and memory sharing
+control.</li>
+<li>Large capacity memory, with a total capability of 8 MB of ROM and 256 kB of
+BW-RAM, both clocked at 5.37 MHz (with effective ROM speed being 10.74 MHz due
+of the 16-bit data bus).</li>
+<li>High speed arithmetic hardware of multiplication, division and cumulative
+sum.</li>
+<li>Bitmap and Character Conversion functions for fast graphics manipulation.</li>
+<li>Custom DMA circuit for fast transfers between ROM, I-RAM and BW-RAM.</li>
+<li>Variable-Length Bit data processing for enhanced algorithms such as graphics
+and data compression.</li>
+<li>Super MMC memory mapping capabilities for BW-RAM and bank switching for
+multiple ROM image access and mirroring.</li>
+</ul>
+<h1>
+<a id="user-content-compatibility" class="anchor" href="#compatibility" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Compatibility</h1>
+<p>SA-1 Pack is the most complex patch ever made to Super Mario World. It modifies
+pretty much the entire game, because the patch moves most of the game logic
+memory to another region which the SA-1 system can access and modify. In
+addition to that, a lot of the game routines are slight edited to call the SA-1
+CPU during the most heavy operations and even make some of the routines run in
+parallel (SNES and SA-1 executing code at the same time, in parallel). Together
+that, some of the game enhancements involves some more deep modifying of the
+game engine, for example, the More Sprites enhancement, which expands the
+maximum number of sprites to 22 or the level limits expander, which makes it
+possible to have up to 255 sprites on a single level and much more...</p>
+<p>Fortunately, that does not mean there will be game bugs. Although the patch is
+extremely complex, extensive tests and verifications have been done and the
+patch is stable and completely functional. In addition to that, when bugs are
+found they can be easily fixed without requiring making a new ROM port and
+updates are warranted to come quickly, as soon as possible when one finds a
+certain bug in most of the games.</p>
+<p>The main implications when using the SA-1 patches are resource and emulator
+incompatibilities.</p>
+<h2>
+<a id="user-content-resource-compatibility" class="anchor" href="#resource-compatibility" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Resource Compatibility</h2>
+<p>Any patch or tool made for editing Super Mario World must be designed to detect
+the presence of the SA-1 Pack and behave properly when the system is present on
+the ROM. The resource is responsible for using the correct memory mapping, RAM
+remapping and for calling the SA-1 CPU on its code, without having to the user
+manually modify it.</p>
+<p>Tools made for editing graphics and music are exempt from this, unless if they
+edit the ROM directly as well.</p>
+<p>Sprites and blocks must be converted for SA-1 compatibility as well, but you
+can download the SA-1 Convert Tool which allows converting them automatically
+for you.</p>
+<p>Overall, the most important is checking for patch and tool compatibility. On
+<a href="https://www.smwcentral.net/" rel="nofollow">SMW Central</a>, you can verify if a certain
+resource is compatible or not with SA-1 by checking for the<code>sa-1</code>tag in the
+submission information.</p>
+<p><a href="https://fusoya.eludevisibility.org/lm/index.html" rel="nofollow">Lunar Magic</a> has native SA-1
+support since version 2.20.</p>
+<p>For more information about converting a certain resource to SA-1 compatibility
+manually, check the docs folder and the technical files included, specially the
+<a href="docs/memory-map-summary.html">Memory Map Summary</a>.</p>
+<h2>
+<a id="user-content-emulator-compatibility" class="anchor" href="#emulator-compatibility" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Emulator Compatibility</h2>
+<p>SA-1 is an enhancement chip used on many SNES games. Although quite popular,
+unfortunately the SA-1 chip lacks proper emulation support for some of the
+known emulators available to download. Older emulators may not have some of
+the chip features implemented or may have unstable, slow emulation which can
+make the game slower, unstable or even completely unplayable. It's extremely
+important to use an accurate and updated emulator when playing not just
+regular SA-1 games, but any SMW hack with SA-1 Pack applied. Currently it's
+strongly recommended to play SA-1 games with Snes9x 1.56 or newer and
+bsnes/higan/ares. Older or different emulators may not work properly.</p>
+<p>ZSNES in particular, while an extremely popular emulator (specially on the
+last decade), it lacks many SA-1 features and support, which makes it strongly
+<strong>not</strong> recommended to play games with. Although I still make (many) efforts
+for keeping reasonable compatibility with ZSNES, there's absolutely no warranty
+of performance and stability when playing SMW SA-1 games with it.</p>
+<p>SA-1 Pack is fully compatible with real hardware. It works on both hacked SA-1
+carts and sd2snes, with a good performance.</p>
+<p>For more information about emulator and hardware compatibility, check out the
+<a href="docs/known-issues.html">Known Issues</a> document.</p>
+<h1>
+<a id="user-content-installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h1>
+<p>As far working with SA-1 can be tedious at start (specially checking for
+resource compatibility), with the current development and available compatible
+resources, it's already doable to pretty much anyone who got a fair experience
+with SMW Hacking to use it.</p>
+<p>In order to get started, grab a new clean ROM. Japanese or European versions
+will not work. If you already edited your ROM with Lunar Magic it won't work
+either.</p>
+<p>Apply the sa1.asm patxh using <a href="https://github.com/RPGHacker/asar">Asar</a>.
+You don't need to expand your ROM manually, the tool automatically
+does that for you.</p>
+<p>Then feel free to test it with your preferred emulator. If it works properly,
+somewhere in your emulator it should display SA-1, e.g. ROM+RAM+BAT+SA-1 in
+Snes9x. If you're unsure, try editing level 106, change sprite header memory
+to 0x08 and insert 20 naked koopas in the level. If all of them display correctly,
+SA-1 Pack was successfully inserted.</p>
+<p>Now you can apply all other patches/tools that should run before Lunar Magic.
+Remember that they should have SA-1 compatibility or else they will likely
+corrupt your ROM.</p>
+<p>After it, you can now use Lunar Magic on your ROM. Remember to use at
+least version 2.20+.</p>
+<p>To enable the double (22 sprites) system, don't forget to change your sprite
+header memory to 0x08, except in vanilla boss battles, they won't work
+correctly because of the new sprite memory system.</p>
+<p><strong>IMPORTANT:</strong> Since version 1.31 the sprite header index for activing the
+22 sprites mode is now <strong>0x08</strong> and not 0x10 as it used to be.</p>
+<p>In addition, if you change the <strong>GFX decompression option</strong> on Lunar Magic, you must
+reapply sa1.asm to your ROM so the proper <em>fast</em> GFX decompression routine is
+used. This is important for fast level decompression and compatibility with
+certain advanced resources.</p>
+<h1>
+<a id="user-content-faq" class="anchor" href="#faq" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>F.A.Q</h1>
+<dl>
+<dt>
+ Q: Is it really hard to work with SA-1 Pack?
+</dt>
+<dd>
+ A: The main difficulty is at converting .asm resources manually, which is only
+ required if your desired resource is not available. Other than that, today
+ it's reasonable easy to use SA-1 Pack.
+</dd>
+<dt>
+ Q: After editing my ROM on Lunar Magic, the ROM crashes or glitches before the
+ title screen. What's going on?
+</dt>
+<dd>
+ A: Your Lunar Magic version isn't compatible with SA-1 Pack. Please update to
+ at least version 3.00.
+</dd>
+<dt>
+ Q: I can't insert more than 10 sprites on my ROM, why?
+</dt>
+<dd>
+ A: Please change open the "Change Properties in Sprite Header" dialog and change
+ the sprite memory index to <b>08</b>. 
+</dd>
+<dt>
+ Q: After expanding my ROM to 8MB, ZSNES won't open the ROM anymore.
+</dt>
+<dd>
+ A: ZSNES doesn't support 8MB ROMs, only up to 6MB. Try restoring your ROM to a
+ previous state using Lunar Magic or with a backup. You can also try FuSoYa's
+ custom ZSNES build.
+</dd>
+<dt>
+ Q: Whenever I apply a patch to my ROM, it starts crashing.
+</dt>
+<dd>
+ A: Make sure that the patch is SA-1 compatible. Patches that are not designed
+ to work with SA-1 Pack will 99% likely crash your ROM.
+</dd>
+<dt>
+ Q: Whenever I use a certain tool, the ROM crashes as well...
+</dt>
+<dd>
+ A: Make sure that the tool is SA-1 compatible. Compatible tools will have the
+ "sa-1" tag on the SMW Central sections. If the tool you're looking for is not
+ compatible with SA-1, try asking for help in the forums for assistance or
+ alternatives.
+</dd>
+<dt>
+ Q: If I insert a custom block or custom sprite, the ROM crashes or glitches
+ when the block/sprite is present.
+</dt>
+<dd>
+ A: Blocks and sprites may need to be converted to SA-1. If case the one you
+ downloaded is not compatible with SA-1, you can use the SA-1 Convert tool to
+ automatically convert them for you.
+</dd>
+<dt>
+ Q: How I can make something compatible with SA-1?
+</dt>
+<dd>
+ A: Check out the [Programming](docs/programming.html) section for more
+ information. You will need some ASM knowledge to edit .asm files beforehand.
+</dd>
+<dt>
+ Q: If I change "Compression Options for this ROM" on Lunar Magic, the ROM gets
+ a little slower on loading screens. Why?
+</dt>
+<dd>
+ A: You have to reapply sa1.asm after you change the compression option, since
+ SA-1 processes that specific part and it needs a specific decompresser to work
+ property.
+</dd>
+</dl>
+<h1>
+<a id="user-content-credits" class="anchor" href="#credits" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Credits</h1>
+<p>SA-1 Pack wouldn't be that awesome without help from these people:</p>
+<ul>
+<li>33953YoShI (LZ2 patch, optimized FinishOAMWrite, original Japanese patch inspiration)</li>
+<li>Adam (testing)</li>
+<li>Arujus (More Sprites patch)</li>
+<li>Alcaro (ZSNES detection code)</li>
+<li>edit1754 (LZ2/3 patches)</li>
+<li>Ersanio (LZ2 patch)</li>
+<li>FuSoYa (6-8MB mapping support/idea, LZ3 patch, LM support)</li>
+<li>Koopster (testing and documentation)</li>
+<li>LX5 (bug fixes, testing, support with maxtile)</li>
+<li>Lui37 (testing)</li>
+<li>Min (LZ2 patch)</li>
+<li>smkdan (LZ2 patches and assistance for fixing VRAM patch)</li>
+<li>Ripperon-X (testing)</li>
+<li>Tattletale (bug fixes, testing)</li>
+<li>Vitor Vilela (that crazy author that did most of the things)</li>
+<li>You (for using it :D)</li>
+</ul>
+<p>Special thanks also for all my patrons that supports my work, specially:</p>
+<ul>
+<li>kccheng</li>
+<li>hyp36rmax</li>
+<li>Jake Mauer</li>
+</ul>
+<h1>
+<a id="user-content-read-more" class="anchor" href="#read-more" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Read More</h1>
+<p>There's more documents and information available in the docs sub-folder:</p>
+<p><a href="docs/programming.html">Programming</a> is a full guide about the wonderland SA-1
+Pack programming and many special features you can use in your ROM hack.
+Additionally, how to convert any incompatible resource to SA-1 Pack compatible
+resource.</p>
+<p><a href="docs/notable-changes.html">Notable Changes</a> is a list of notable changes
+between a normal, SlowROM SMW ROM and a SA-1 Pack SMW ROM.</p>
+<p><a href="docs/known-issues.html">Known Issues</a> is a list of currently known SA-1 Pack
+issues for each known SNES emulator and hardware. Issues varies between
+emulator bugs and SA-1 Pack bugs, which are properly marked for each case.</p>
+<p><a href="docs/memory-map-summary.html">Memory Map Summary</a> contains a summary about all
+memory changes between the normal SMW ROM and the SA-1 SMW ROM, either because
+of the SA-1 ROM mapping or SA-1 Pack memory remaps. Worth reading for who is
+interested in converting resources to SA-1 format or is interested in
+understanding how the patch works.</p>
+<p><a href="docs/BW-RAM.html">BW-RAM</a> contains the map of all BW-RAM related addresses and
+information about its mapping capabilities.</p>
+<p><a href="docs/I-RAM.html">I-RAM</a> contains the map of all I-RAM related addresses and
+information about its mapping capabilities.</p>
+<p><a href="docs/W-RAM.html">W-RAM</a> contains the map of all SNES WRAM related addresses,
+focused in the differences between normal SMW WRAM map and SA-1 Pack WRAM map.</p>
+<p><a href="docs/Sprite-Remap.html">Sprite Remap</a> is a summary about all the sprite table
+remaps made by More Sprites patch.</p>
+<p><a href="docs/maxtile.html">MaxTile</a> contains the complete documentation how to use and
+explore the MaxTile system to the maximum power. It also contains explanation
+on how it works behind scenes.</p>
+<p><a href="docs/remap.asm">remap.asm</a> contains an .asm macro containing all SA-1 Pack
+related remaps for using in patches, blocks and sprites.</p>
+<h1>
+<a id="user-content-useful-links" class="anchor" href="#useful-links" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Useful Links</h1>
+<ul>
+<li>SMW Central: <a href="https://www.smwcentral.net/" rel="nofollow">https://www.smwcentral.net/</a>
+</li>
+<li>SA-1 Convert: <a href="https://www.smwcentral.net/?p=section&amp;a=details&amp;id=6853" rel="nofollow">https://www.smwcentral.net/?p=section&amp;a=details&amp;id=6853</a>
+</li>
+<li>Official Thread: <a href="https://www.smwcentral.net/?p=viewthread&amp;t=58895" rel="nofollow">https://www.smwcentral.net/?p=viewthread&amp;t=58895</a>
+</li>
+<li>SA-1 Pack Basic Tutorial: <a href="https://www.smwcentral.net/?p=viewthread&amp;t=71953" rel="nofollow">https://www.smwcentral.net/?p=viewthread&amp;t=71953</a>
+</li>
+<li>Romi's Sprite Tool with SA-1 compatibility: <a href="https://bin.smwcentral.net/u/8251/st140.zip" rel="nofollow">https://bin.smwcentral.net/u/8251/st140.zip</a>
+</li>
+</ul>
+<h4>
+<a id="user-content-technical-documents" class="anchor" href="#technical-documents" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Technical documents</h4>
+<p>Useful documents for understanding SA-1:</p>
+<ul>
+<li>SNES Dev. Book: <a href="https://www.romhacking.net/docs/226/" rel="nofollow">https://www.romhacking.net/docs/226/</a>
+</li>
+<li>SA-1 Registers: <a href="https://wiki.superfamicom.org/sa-1-registers" rel="nofollow">https://wiki.superfamicom.org/sa-1-registers</a>
+</li>
+<li>SA-1 Graphics Rotation Demo: <a href="https://bin.smwcentral.net/u/8251/rotate2.zip" rel="nofollow">https://bin.smwcentral.net/u/8251/rotate2.zip</a>
+</li>
+</ul>
+<h4>
+<a id="user-content-personal" class="anchor" href="#personal" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Personal</h4>
+<p>You can contact make though the following links:</p>
+<ul>
+<li>My SMWC profile: <a href="https://smwc.me/u/8251" rel="nofollow">https://smwc.me/u/8251</a>
+</li>
+<li>My Github profile: <a href="https://github.com/VitorVilela7">https://github.com/VitorVilela7</a>
+</li>
+<li>My Twitter profile: <a href="https://twitter.com/HackerVilela" rel="nofollow">https://twitter.com/HackerVilela</a>
+</li>
+</ul>
+
+</body>
+</html>

@@ -65,9 +65,18 @@ class ActionOutput:
 	
 	
 @dataclass
+class ActionArgs:
+	"""Defines all the args that an Action.run() method might need."""
+	patch_config: 'PatchConfig'
+	options: argparse.Namespace
+	output_rom_path: str
+	output_temp_path: str
+	
+	
+@dataclass
 class Action:
 	"""The base class for actions the patcher can perform."""
-	def run(self, patch_config: 'PatchConfig', options: argparse.Namespace, output_rom_path: str) -> ActionOutput:
+	def run(self, args: ActionArgs,) -> ActionOutput:
 		raise NotImplementedError()
 	
 	
@@ -98,12 +107,12 @@ class Patch(Action):
 	include_paths: List[str] = dataclasses.field(default_factory=lambda: [])
 	defines: List[str] = dataclasses.field(default_factory=lambda: [])
 	
-	def run(self, patch_config: PatchConfig, options: argparse.Namespace, output_rom_path: str) -> ActionOutput:
+	def run(self, args: ActionArgs,) -> ActionOutput:
 		output = ActionOutput()
 		
-		patch_symbols_path: str = os.path.join(patch_config.output_dir, os.path.basename(self.path) + '.cpu.sym')
+		patch_symbols_path: str = os.path.join(args.output_temp_path, os.path.basename(self.path) + '.cpu.sym')
 		
-		command_line: List[str] = [os.path.normpath(_asar_paths[options.asar_ver])]
+		command_line: List[str] = [os.path.normpath(_asar_paths[args.options.asar_ver])]
 		
 		for include_path in self.include_paths:
 			command_line.append('-I{path}'.format(path=os.path.normpath(include_path)))
@@ -117,7 +126,7 @@ class Patch(Action):
 			
 		command_line.append(os.path.normpath(self.path))
 		
-		command_line.append(os.path.normpath(output_rom_path))
+		command_line.append(os.path.normpath(args.output_rom_path))
 		
 		print('')
 		print('Patching (Asar): \n{command_line}'.format(command_line=format_command_line(command_line)))
@@ -140,13 +149,13 @@ class Patch(Action):
 # There's probably no good reason to make this class public in its current form.
 @dataclass
 class _CopyCleanRom(Action):	
-	def run(self, patch_config: PatchConfig, options: argparse.Namespace, output_rom_path: str) -> ActionOutput:
+	def run(self, args: ActionArgs,) -> ActionOutput:
 		output = ActionOutput()
 		
 		print('')
-		print('Copying:\n"{clean_rom}" to "{output_rom}":'.format(clean_rom=_clean_rom_path, output_rom=output_rom_path))
+		print('Copying:\n"{clean_rom}" to "{output_rom}":'.format(clean_rom=_clean_rom_path, output_rom=args.output_rom_path))
 		
-		shutil.copyfile(_clean_rom_path, output_rom_path)
+		shutil.copyfile(_clean_rom_path, args.output_rom_path)
 		
 		print('')
 
@@ -158,7 +167,7 @@ class FlipsPatch(Action):
 	"""Defines a patch to apply with Flips."""
 	path: str
 	
-	def run(self, patch_config: PatchConfig, options: argparse.Namespace, output_rom_path: str) -> ActionOutput:
+	def run(self, args: ActionArgs,) -> ActionOutput:
 		output = ActionOutput()
 		
 		command_line: List[str] = [_flips_path]
@@ -167,7 +176,7 @@ class FlipsPatch(Action):
 			
 		command_line.append(self.path)
 			
-		command_line.append(output_rom_path)
+		command_line.append(args.output_rom_path)
 		
 		print('')
 		print('Patching (Flips): \n{command_line}'.format(command_line=format_command_line(command_line)))
@@ -191,14 +200,14 @@ class InsertLevel(Action):
 	path: str
 	level_number: int
 	
-	def run(self, patch_config: PatchConfig, options: argparse.Namespace, output_rom_path: str) -> ActionOutput:
+	def run(self, args: ActionArgs,) -> ActionOutput:
 		output = ActionOutput()
 		
 		command_line: List[str] = [_lm_path]
 			
 		command_line.append('-ImportLevel')
 			
-		command_line.append(output_rom_path)
+		command_line.append(args.output_rom_path)
 			
 		command_line.append(self.path)
 			
@@ -229,8 +238,8 @@ class _ExpandRom(Action):
 	def __post_init__(self, new_size_in_bytes: int) -> None:
 		self.patch.defines.append('cmdl_arg_rom_size={size_in_bytes}'.format(size_in_bytes=new_size_in_bytes))
 
-	def run(self, patch_config: PatchConfig, options: argparse.Namespace, output_rom_path: str) -> ActionOutput:
-		return self.patch.run(patch_config, options, output_rom_path)
+	def run(self, args: ActionArgs,) -> ActionOutput:
+		return self.patch.run(args)
 
 	
 class PatchingUtility:
@@ -294,14 +303,20 @@ class PatchingUtility:
 		return self.construct_output_file_name(patch_config, options, rom_extension)
 		
 	def create_rom(self, patch_config: PatchConfig, options: argparse.Namespace) -> None:
-		"""Uses patch config and parsed options to create the final output ROM."""
-		pathlib.Path(patch_config.output_dir).mkdir(parents = True, exist_ok = True)
-	
+		"""Uses patch config and parsed options to create the final output ROM."""	
 		rom_name: str = self.construct_output_file_name(patch_config, options)
 		
+		output_temp_path: str = os.path.join(patch_config.output_dir, rom_name + '.temp')
+		output_temp_rom_path: str = os.path.join(output_temp_path, rom_name + rom_extension)
 		output_rom_path: str = os.path.join(patch_config.output_dir, rom_name + rom_extension)
 		output_symbols_path: str = os.path.join(patch_config.output_dir, rom_name + '.cpu.sym')
 		output_sa1_symbols_path: str = os.path.join(patch_config.output_dir, rom_name + '.sa1.sym')
+		
+		if os.path.exists(output_temp_path):
+			shutil.rmtree(output_temp_path)
+		
+		pathlib.Path(patch_config.output_dir).mkdir(parents = True, exist_ok = True)
+		pathlib.Path(output_temp_path).mkdir(parents = True, exist_ok = True)
 		
 		symbols_output: Dict[str, List[str]] = {}				
 		source_file_base_id: int = 0
@@ -332,9 +347,11 @@ class PatchingUtility:
 		action_list.append(InsertLevel(_level_105_path, 105))
 		
 		action_list.extend(patch_config.actions)
+		
+		action_args = ActionArgs(patch_config, options, output_temp_rom_path, output_temp_path)
 	
 		for action in action_list:
-			output = action.run(patch_config, options, output_rom_path)
+			output = action.run(action_args)
 			
 			# Do some processing on symbol files, so that we can merge outputs of symbol files further below
 			# and also so that we can get rid of stuff we don't really want.
@@ -395,8 +412,6 @@ class PatchingUtility:
 								symbols_output.setdefault(current_group, []).append(line.strip())
 							
 					source_file_base_id += num_source_files_in_symbols_file
-					
-				os.remove(output.output_symbols_path)
 		
 		# Output new merged symbols file.
 		with open(output_symbols_path, 'w') as symbols_file:
@@ -415,6 +430,10 @@ class PatchingUtility:
 			
 		if options.rom_type == 'sa-1':
 			shutil.copyfile(output_symbols_path, output_sa1_symbols_path)
+			
+		shutil.copyfile(output_temp_rom_path, output_rom_path)
+					
+		shutil.rmtree(output_temp_path)
 				
 		print("All patches applied successfully!")
 		

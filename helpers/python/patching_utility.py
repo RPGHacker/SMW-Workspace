@@ -19,6 +19,8 @@ _lm_path: str = os.path.join(os.path.dirname(__file__), '../../tools/lm331/Lunar
 
 _flips_path: str = os.path.join(os.path.dirname(__file__), '../../tools/floating/flips.exe')
 
+_gps_path: str = os.path.join(os.path.dirname(__file__), '../../tools/GPS (V1.4.21)/gps.exe')
+
 
 _clean_rom_path: str = os.path.join(os.path.dirname(__file__), '../../baserom/smw.smc')
 
@@ -76,8 +78,22 @@ class ActionArgs:
 @dataclass
 class Action:
 	"""The base class for actions the patcher can perform."""
-	def run(self, args: ActionArgs,) -> ActionOutput:
+	def run(self, args: ActionArgs) -> ActionOutput:
 		raise NotImplementedError()
+		
+	def _run_command_line(self, command_line: List[str], process_string: str, error_string: str, working_directory: Optional[str] = None) -> None:		
+		print('')
+		print('{process_string}:\n{command_line}'.format(process_string=process_string, command_line=format_command_line(command_line)))
+				
+		print('')
+		print('Output:')
+		
+		ret_val = subprocess.run(command_line, cwd=working_directory)
+		
+		print('')
+		
+		if ret_val.returncode != 0:
+			raise RuntimeError(error_string)
 	
 	
 @dataclass
@@ -107,7 +123,7 @@ class Patch(Action):
 	include_paths: List[str] = dataclasses.field(default_factory=lambda: [])
 	defines: List[str] = dataclasses.field(default_factory=lambda: [])
 	
-	def run(self, args: ActionArgs,) -> ActionOutput:
+	def run(self, args: ActionArgs) -> ActionOutput:
 		output = ActionOutput()
 		
 		patch_symbols_path: str = os.path.join(args.output_temp_path, os.path.basename(self.path) + '.cpu.sym')
@@ -127,19 +143,8 @@ class Patch(Action):
 		command_line.append(os.path.normpath(self.path))
 		
 		command_line.append(os.path.normpath(args.output_rom_path))
-		
-		print('')
-		print('Patching (Asar): \n{command_line}'.format(command_line=format_command_line(command_line)))
-				
-		print('')
-		print('Output:')
-		
-		ret_val = subprocess.run(command_line)
-		
-		print('')
-		
-		if ret_val.returncode != 0:
-			raise RuntimeError("Patching failed! Please check Asar's error output above.")
+			
+		self._run_command_line(command_line, "Patching (Asar)", "Patching failed! Please check Asar's error output above.")
 			
 		output.output_symbols_path = patch_symbols_path
 		
@@ -149,7 +154,7 @@ class Patch(Action):
 # There's probably no good reason to make this class public in its current form.
 @dataclass
 class _CopyCleanRom(Action):	
-	def run(self, args: ActionArgs,) -> ActionOutput:
+	def run(self, args: ActionArgs) -> ActionOutput:
 		output = ActionOutput()
 		
 		print('')
@@ -167,7 +172,7 @@ class FlipsPatch(Action):
 	"""Defines a patch to apply with Flips."""
 	path: str
 	
-	def run(self, args: ActionArgs,) -> ActionOutput:
+	def run(self, args: ActionArgs) -> ActionOutput:
 		output = ActionOutput()
 		
 		command_line: List[str] = [_flips_path]
@@ -177,19 +182,8 @@ class FlipsPatch(Action):
 		command_line.append(self.path)
 			
 		command_line.append(args.output_rom_path)
-		
-		print('')
-		print('Patching (Flips): \n{command_line}'.format(command_line=format_command_line(command_line)))
-				
-		print('')
-		print('Output:')
-		
-		ret_val = subprocess.run(command_line)
-		
-		print('')
-		
-		if ret_val.returncode != 0:
-			raise RuntimeError("Patching failed! Please check Flips' error output above.")
+			
+		self._run_command_line(command_line, "Patching (Flips)", "Patching failed! Please check Flips' error output above.")
 		
 		return output
 		
@@ -200,7 +194,7 @@ class InsertLevel(Action):
 	path: str
 	level_number: int
 	
-	def run(self, args: ActionArgs,) -> ActionOutput:
+	def run(self, args: ActionArgs) -> ActionOutput:
 		output = ActionOutput()
 		
 		command_line: List[str] = [_lm_path]
@@ -212,19 +206,103 @@ class InsertLevel(Action):
 		command_line.append(self.path)
 			
 		command_line.append(str(self.level_number))
+			
+		self._run_command_line(command_line, "Inserting level (Lunar Magic)", "Running Lunar Magic failed! Please check Lunar Magic's message boxes and any error output above.")
 		
-		print('')
-		print('Inserting level (Lunar Magic): \n{command_line}'.format(command_line=format_command_line(command_line)))
-				
-		print('')
-		print('Output:')
+		return output
+	
+
+@dataclass
+class BlockData:
+	"""Defines the details of a block to insert with GPS."""
+	asm_path: str
+	block_id: int
+	acts_like: Optional[int] = None
+	
 		
-		ret_val = subprocess.run(command_line)
+@dataclass
+class InsertBlocks(Action):
+	"""Defines blocks to insert with GPS."""
+	blocks: List[BlockData]
+	routine_files: List[str] = dataclasses.field(default_factory=lambda: [])
+	include_files: List[str] = dataclasses.field(default_factory=lambda: [])
+	
+	def run(self, args: ActionArgs) -> ActionOutput:
+		output = ActionOutput()
 		
-		print('')
+		list_file_path: str = os.path.join(args.output_temp_path, 'gps/gps_list.txt')
+		# NOTE: GPS doesn't add the final path separator automatically. So we have to do that here.
+		blocks_path: str = os.path.join(args.output_temp_path, 'gps/blocks/')
+		routines_path: str = os.path.join(args.output_temp_path, 'gps/routines/')
 		
-		if ret_val.returncode != 0:
-			raise RuntimeError("Running Lunar Magic failed! Please check Flips' error output above.")
+		pathlib.Path(blocks_path).mkdir(parents = True, exist_ok = True)
+		pathlib.Path(routines_path).mkdir(parents = True, exist_ok = True)
+		
+		for file_path in self.routine_files:			
+			out_path: str = os.path.join(routines_path, os.path.basename(file_path))
+			shutil.copyfile(file_path, out_path)
+		
+		for file_path in self.include_files:
+			out_path: str = os.path.join(blocks_path, os.path.basename(file_path))
+			shutil.copyfile(file_path, out_path)
+		
+		with open(list_file_path, "w") as list_file:
+			for block in self.blocks:
+				basename: str = os.path.basename(block.asm_path)
+				out_path: str = os.path.join(blocks_path, basename)
+				shutil.copyfile(block.asm_path, out_path)
+				if block.acts_like != None:
+					list_file.write("{block_id:X}:{acts_like:X} {asm_path}".format(block_id=block.block_id, acts_like=cast(int, block.acts_like), asm_path=basename))
+				else:
+					list_file.write("{block_id:X} {asm_path}".format(block_id=block.block_id, asm_path=block.asm_path))
+		
+		command_line: List[str] = [_gps_path]
+		
+		command_line.append("-l")
+		command_line.append(list_file_path)
+		
+		command_line.append("-b")
+		command_line.append(blocks_path)
+		
+		command_line.append("-s")
+		command_line.append(routines_path)
+		
+		command_line.append("-d")
+		
+		# Comment in to keep debug files around.
+		#command_line.append("-k")
+		
+		command_line.append(args.output_rom_path)
+			
+		# GPS is currently broken and expects working directory to be its own directory.
+		self._run_command_line(command_line, "Inserting blocks (GPS)", "Running GPS failed! Please check GPS' error output above.", working_directory=os.path.dirname(_gps_path))
+		
+		# As far as I'm aware, GPS currently has no way of exporting symbols via Asar.
+		# If it had, we could return the path here.
+		
+		return output
+		
+		
+@dataclass
+class InsertMap16(Action):
+	"""Defines a map16 file to insert with Lunar Magic."""
+	path: str
+	level_number: int
+	
+	def run(self, args: ActionArgs) -> ActionOutput:
+		output = ActionOutput()
+		
+		command_line: List[str] = [_lm_path]
+			
+		command_line.append('-ImportMap16')
+			
+		command_line.append(args.output_rom_path)
+			
+		command_line.append(self.path)
+			
+		command_line.append(str(self.level_number))
+			
+		self._run_command_line(command_line, "Inserting Map16 data (Lunar Magic)", "Running Lunar Magic failed! Please check Lunar Magic's message boxes and any error output above.")
 		
 		return output
 		
@@ -238,7 +316,7 @@ class _ExpandRom(Action):
 	def __post_init__(self, new_size_in_bytes: int) -> None:
 		self.patch.defines.append('cmdl_arg_rom_size={size_in_bytes}'.format(size_in_bytes=new_size_in_bytes))
 
-	def run(self, args: ActionArgs,) -> ActionOutput:
+	def run(self, args: ActionArgs) -> ActionOutput:
 		return self.patch.run(args)
 
 	

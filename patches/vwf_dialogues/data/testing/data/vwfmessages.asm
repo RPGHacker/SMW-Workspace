@@ -1567,7 +1567,10 @@ Message0040_ChangeTextPtr:
 
 %vwf_message_start(0051)	; Message 104-2
 
-	; Message header & text go here
+	%vwf_header()
+	
+	%vwf_text("This block uses touch_mXX.asm and vwfsharedroutines.asm to display a message once.") : %vwf_wait_for_a() : %vwf_clear()
+	%vwf_text("Depending on the \\\!free_ram used, re-entering the level might display this message again.") : %vwf_wait_for_a() : %vwf_clear()
 
 %vwf_message_end()
 

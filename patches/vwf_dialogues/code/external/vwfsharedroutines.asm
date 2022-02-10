@@ -1,4 +1,4 @@
-@asar 1.81
+@asar 1.90
 
 ; RPG Hacker: Note: We can't use includeonce here, because this file is meant to be copied alongside multiple resources
 ; and could be included multiple times from different locations.

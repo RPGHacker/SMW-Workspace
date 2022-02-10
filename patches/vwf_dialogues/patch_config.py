@@ -30,6 +30,17 @@ patch_config = patching_utility.PatchConfig( os.path.dirname(__file__),
 			],
 			defines = [],
 		),
+		patching_utility.InsertBlocks(
+			blocks = [
+				patching_utility.BlockData(os.path.join(os.path.dirname(__file__), 'code/blocks/display_once_on_touch/touch_mXX.asm'), 0x200, acts_like=0x2B),
+			],
+			routine_files = [],
+			include_files = [
+				os.path.join(os.path.dirname(__file__), 'code/external/vwfsharedroutines.asm'),
+			],
+		),
+		patching_utility.InsertMap16(os.path.join(os.path.dirname(__file__), 'testing/display_once_block.map16'), 104),
+		patching_utility.InsertLevel(os.path.join(os.path.dirname(__file__), 'testing/level_104.mwl'), 104),
 	]
 	
 )

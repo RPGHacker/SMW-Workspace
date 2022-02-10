@@ -153,7 +153,7 @@ endmacro
 %vwf_claim_varram(l3_transparency_flag, 1)      ; Backup of the layer 3 color math settings from RAM address $40 (mirror of $2131) 
 %vwf_claim_varram(l3_main_screen_flag, 1)       ; Backup of the layer 3 main screen bit from RAM address $0D9D (mirror of $212C)
 %vwf_claim_varram(l3_sub_screen_flag, 1)        ; Backup of the layer 3 sub screen bit from RAM address $0D9E (mirror of $212D)
-%vwf_claim_varram(is_not_at_start_of_text, 1)   ; Flag indicating that the text box has just been cleared. Intended to provide an easy way to sync up MessageASM code with the start of a new textbox.
+%vwf_claim_varram(at_start_of_text, 1)   		; Flag indicating that the text box has not been cleared yet. Intended to provide an easy way to sync up MessageASM code with the start of a new textbox.
 %vwf_claim_varram(message_was_skipped, 1)       ; Flag indicating whether the message was skipped by the player pressing Start
 %vwf_claim_varram(buffer_dest, 3)               ; 24-bit pointer to the location in the tile buffer to read from when uploading text graphics.
 %vwf_claim_varram(buffer_index, 1)              ; Index to the text graphics buffer determining where in the buffer to store tiles.
@@ -938,10 +938,10 @@ LoadHeader:
 	and.b #%00000001
 	beq .NoMessageASM
 	lda #$5C
-	bra .Storevwf_message_asm_opcode
+	bra .StoreMessageASMOpcode
 .NoMessageASM
 	lda #$6B
-.Storevwf_message_asm_opcode
+.StoreMessageASMOpcode
 	sta !vwf_message_asm_opcode
 	iny
 
@@ -1981,8 +1981,9 @@ if !use_sa1_mapping
 	beq -
 	stz $018A
 
-	jsr vwf_clear_box
+	jsr ClearBox
 .End
+	
 	jmp Buffer_End
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2005,22 +2006,25 @@ endif
 	lda.b #!vwf_palette_backup_ram>>16
 	sta $02
 
-.vwf_box_colorLoop
+.BoxColorLoop
 	lda !vwf_box_color+2,x
 	sta [$00],y
 	inx
 	iny
 	cpx #$04
-	bne .vwf_box_colorLoop
+	bne .BoxColorLoop
 
 	ply
 	lda #$01
 	sta !vwf_palette_upload
 
+	; RPG Hacker: Without this, the very first beginning of a text box would not get detected correctly.
+	sta !vwf_at_start_of_text
+
 if !use_sa1_mapping
 	rtl
 else
-	jsr vwf_clear_box
+	jsr ClearBox
 
 .End
 	jmp Buffer_End
@@ -2140,25 +2144,25 @@ InitLine:
 	inc #2
 	sta !vwf_current_y
 	cmp !vwf_max_height
-	bcc .Novwf_clear_box
+	bcc .NoClearBox
 	lda !vwf_choices
 	beq .NoChoicesClear
 	lda #$01
 	sta !vwf_cursor_move
-	bra .Novwf_clear_box
+	bra .NoClearBox
 
 .NoChoicesClear
 	lda #$01
 	sta !vwf_clear_box
 
 	lda !vwf_auto_wait
-	beq .Novwf_clear_box
+	beq .NoClearBox
 	cmp #$01
 	beq .ButtonWait
 	lda !vwf_auto_wait
 	dec
 	sta !vwf_wait
-	bra .Novwf_clear_box
+	bra .NoClearBox
 
 .ButtonWait
 	jsr EndBeep
@@ -2168,7 +2172,7 @@ InitLine:
 	sta !vwf_char
 	!vwf_16bit_mode_only sep #$20
 
-.Novwf_clear_box
+.NoClearBox
 	rep #$20
 	lda !vwf_tile	; Increment tile counter
 	inc #2
@@ -2226,7 +2230,7 @@ endif
 	rts
 
 
-vwf_clear_box:
+ClearBox:
 	jsr ClearScreen
 	lda !vwf_box_create
 	beq .Init
@@ -2382,7 +2386,7 @@ TextCreation:
 .NotZeroCursor
 	lda $16
 	and #$0C
-	bne .vwf_cursor_move
+	bne .CursorMove
 	lda $18
 	and #$80
 	cmp #$80
@@ -2391,9 +2395,9 @@ TextCreation:
 
 .ChoicePressed
 	jsr ButtonBeep
-	jmp .vwf_cursor_end
+	jmp .CursorEnd
 
-.vwf_cursor_move
+.CursorMove
 	lda #$01
 	sta $0F
 	jsr BackupTilemap
@@ -2511,7 +2515,7 @@ TextCreation:
 .NoChoiceCombine
 	jmp .End
 
-.vwf_cursor_end
+.CursorEnd
 	lda #$01
 	sta !vwf_cursor_end
 	jmp .End
@@ -2528,11 +2532,11 @@ TextCreation:
 
 .NoButton
 	lda !vwf_clear_box
-	beq .Novwf_clear_box
-	jsr vwf_clear_box
+	beq .NoClearBox
+	jsr ClearBox
 	jmp .End
 
-.Novwf_clear_box	
+.NoClearBox	
 	; RPG Hacker: This was previously called from the SNES CPU, which isn't supported, because
 	; GetTilemapPos uses SA-1 multiplication in SA-1 builds. Therefore, I'm preprocessing the address
 	; and storing it in a variable for later use.
@@ -2555,8 +2559,8 @@ TextCreation:
 	sta !vwf_arrow_vram
 	sep #$20
 
-	lda #$01
-	sta !vwf_is_not_at_start_of_text
+	lda #$00
+	sta !vwf_at_start_of_text
 	jsr ReadPointer
 	!vwf_16bit_mode_only rep #$20
 	lda [$00]
@@ -2585,7 +2589,7 @@ TextCreation:
 	dw .FF_End	; Reserved
 	dw .EB_LockTextBox
 	dw .EC_PlayBGM
-	dw .ED_vwf_clear_box
+	dw .ED_ClearBox
 	dw .EE_ChangeColor
 	dw .EF_Teleport
 	dw .F0_Choices
@@ -2733,7 +2737,7 @@ TextCreation:
 	jsr IncPointer
 	jmp .NoButton
 
-.ED_vwf_clear_box
+.ED_ClearBox
 	lda !vwf_choices
 	beq .EDNoChoices
 	jmp .FD_LineBreak
@@ -2996,13 +3000,13 @@ endif
 
 .F0ClearOptions
 	lda !vwf_auto_wait
-	beq .F0Novwf_auto_wait
+	beq .F0NoAutoWait
 	cmp #$01
 	beq .F0ButtonWait
 	lda !vwf_auto_wait
 	dec
 	sta !vwf_wait
-	bra .F0Novwf_auto_wait
+	bra .F0NoAutoWait
 
 .F0ButtonWait
 	jsr EndBeep
@@ -3012,7 +3016,7 @@ endif
 	sta !vwf_char
 	!vwf_16bit_mode_only sep #$20
 
-.F0Novwf_auto_wait
+.F0NoAutoWait
 	jmp TextCreation
 
 .F0Return
@@ -3326,10 +3330,10 @@ endif
 	jsr InitLine
 	lda !vwf_clear_box
 	ora !vwf_cursor_move
-	bne .Spacevwf_clear_box
+	bne .SpaceClearBox
 	jmp .FEReturn
 
-.Spacevwf_clear_box
+.SpaceClearBox
 	jmp TextCreation
 
 .PutSpace
@@ -3994,7 +3998,7 @@ WordWidth:
 	dw .FF_End	; Reserved
 	dw .EB_LockTextBox
 	dw .EC_PlayBGM
-	dw .ED_vwf_clear_box
+	dw .ED_ClearBox
 	dw .EE_ChangeColor
 	dw .EF_Teleport
 	dw .F0_Choices
@@ -4289,7 +4293,7 @@ WordWidth:
 	jmp .Begin
 
 .EB_LockTextBox
-.ED_vwf_clear_box
+.ED_ClearBox
 .F0_Choices
 .FC_LoadMessage
 .FD_LineBreak
@@ -4471,7 +4475,7 @@ PrepareBackup:
 
 	lda !vwf_mode
 	cmp #$02
-	bne .dontpreserveL3
+	bne .DontPreserveL3
 	lda $3E
 	sta !vwf_l3_priority_flag
 	lda remap_ram($0D9E)
@@ -4481,7 +4485,7 @@ PrepareBackup:
 	lda remap_ram($0D9D)
 	sta !vwf_l3_main_screen_flag
 
-.dontpreserveL3
+.DontPreserveL3
 
 	lda #$04	; Hide layer 3
 	trb remap_ram($0D9D)
@@ -4554,7 +4558,7 @@ Backup:
 BackupEnd:
 	lda !vwf_mode
 	cmp #$06
-	bne .layer3Subscreen
+	bne .Layer3Subscreen
 	lda #$08
 	tsb $3E
 	lda remap_ram($0D9D)
@@ -4568,7 +4572,7 @@ BackupEnd:
 	sta !vwf_mode
 	jmp VBlank_End
 
-.layer3Subscreen
+.Layer3Subscreen
 	lda !vwf_l3_sub_screen_flag
 	and #$04
 	ora remap_ram($0D9E)
@@ -4605,7 +4609,7 @@ SetupColor:
 	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.ReadTwice, $213B, !vwf_palette_backup_ram, #$0040)
 	%vwf_mvn_transfer($0040, !vwf_palette_backup_ram, !vwf_palette_backup, !vwf_cpu_snes)
 	
-	jsr Initvwf_box_colors
+	jsr InitBoxColors
 
 .End
 	lda !vwf_mode
@@ -4614,7 +4618,7 @@ SetupColor:
 	jmp VBlank_End
 	
 	
-Initvwf_box_colors:
+InitBoxColors:
 	lda !vwf_box_palette	; Set BG and letter color
 	asl #2
 	inc
@@ -4631,13 +4635,13 @@ Initvwf_box_colors:
 	lda.b #!vwf_palette_backup_ram>>16
 	sta $02
 
-.vwf_box_colorLoop
+.BoxColorLoop
 	lda !vwf_box_color,x
 	sta [$00],y
 	iny
 	inx
 	cpx #$06
-	bne .vwf_box_colorLoop
+	bne .BoxColorLoop
 
 	ply
 	lda #!vwf_frame_palette	; Set frame color
@@ -4749,7 +4753,7 @@ TextUpload:
 .Cursor
 	lda !vwf_cursor_upload
 	bne .UploadCursor
-	jmp .Novwf_cursor_upload
+	jmp .NoCursorUpload
 
 .UploadCursor
 	lda #$00
@@ -4773,12 +4777,12 @@ TextUpload:
 
 	jmp .Return
 
-.Novwf_cursor_upload
+.NoCursorUpload
 	lda !vwf_cursor_end
-	bne .vwf_cursor_end
+	bne .CursorEnd
 	jmp .Return
 
-.vwf_cursor_end
+.CursorEnd
 	lda #$00
 	sta !vwf_cursor_end
 	lda !vwf_current_choice
@@ -4894,7 +4898,8 @@ TextUpload:
 	beq .Begin
 	lda #$00
 	sta !vwf_clear_box
-	sta !vwf_is_not_at_start_of_text
+	lda #$01
+	sta !vwf_at_start_of_text
 	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, #$5C80)
 	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, !vwf_buffer_text_box_tilemap, #$0700)
 	jmp .Return
@@ -4988,7 +4993,7 @@ StartNextMessage:
 	lda #$06
 	sta !vwf_mode
 	
-	jsr Initvwf_box_colors
+	jsr InitBoxColors
 	
 	bra .Return
 	

@@ -1405,8 +1405,7 @@ Message0040_ChangeTextPtr:
 	%vwf_set_option_location(ReturnToOW, 1)
 
 .TheEnd
-	%vwf_text("Routines test complete!") : %vwf_wait_for_a()
-	%vwf_display_message(0050)
+	%vwf_display_message(0044)
 
 %vwf_message_end()
 
@@ -1471,9 +1470,24 @@ Message0040_ChangeTextPtr:
 
 %vwf_message_start(0044)	; Message 022-1
 
-	; Message header & text go here
+	%vwf_header(vwf_enable_message_asm(true))
+	
+	%vwf_text("This uses \\\!vwf_at_start_of_text to play a 1-UP sound at every clear.") : %vwf_wait_for_a() : %vwf_clear()
+
+	%vwf_text("Routines test complete!") : %vwf_wait_for_a()
+	%vwf_display_message(0050)
 
 %vwf_message_end()
+
+MessageASM0044:
+	lda !vwf_at_start_of_text
+	beq .NotAtStart
+	
+	lda #$05
+	sta remap_ram($1DFC)
+	
+.NotAtStart
+	rtl
 
 ;-------------------------------------------------------
 

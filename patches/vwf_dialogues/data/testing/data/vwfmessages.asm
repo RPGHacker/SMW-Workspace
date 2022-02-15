@@ -101,7 +101,7 @@ endif
 		%vwf_text("Mario's X pos: ") : %vwf_decimal(remap_ram($7E00D1), VWF_AddressSize.16Bit) : %vwf_line_break()
 		%vwf_text("Current X speed (unsigned dec): ") : %vwf_decimal(remap_ram($7E007B)) : %vwf_line_break()
 		%vwf_text("Current X speed (hex): $") : %vwf_hex(remap_ram($7E007B)) : %vwf_line_break()
-		%vwf_text("Current text box color : $") : %vwf_hex(!vwf_box_color+1) : %vwf_hex(!vwf_box_color) : %vwf_line_break()
+		%vwf_text("Current text box color: $") : %vwf_hex(!vwf_box_color+1) : %vwf_hex(!vwf_box_color) : %vwf_line_break()
 		%vwf_text("Current timer: ") : %vwf_char_at_address(remap_ram($7E0F31)) : %vwf_char_at_address(remap_ram($7E0F32)) : %vwf_char_at_address(remap_ram($7E0F33)) : %vwf_line_break()
 		%vwf_wait_for_a() : %vwf_clear()
 		
@@ -128,7 +128,24 @@ endif
 		%vwf_play_bgm($05)
 		%vwf_wait_for_a()
 		%vwf_play_bgm($02)
-		%vwf_clear()
+		%vwf_clear()		
+
+if !assembler_ver >= 20000
+		pushtable
+		table "../../vwftable_jp.txt"
+		
+		%vwf_set_font($02)
+		%vwf_text("Ｈｏｗ　ａｂｏｕｔ　ｓｏｍｅ　Ｊａｐａｎｅｓｅ　ｔｅｘｔ？") : %vwf_wait_for_a() : %vwf_clear()
+		%vwf_set_font($03)
+		%vwf_text("こんにちは、RPGハッカーです！") : %vwf_line_break() 
+		%vwf_text("私は日本語が話せないので、ここにランダムな漢字を挿入します。 ") : %vwf_line_break() 
+		%vwf_set_font($04)
+		%vwf_text("兄係軽血決県研言庫湖公向幸港号根") : %vwf_wait_for_a() : %vwf_clear()
+
+		%vwf_set_font($00)
+		
+		pulltable
+endif
 		
 		%vwf_text("Commands test complete!") : %vwf_line_break()
 		%vwf_wait_for_a()

@@ -63,7 +63,7 @@ macro vwf_next_bank()
 	!vwf_prev_freespace:
 endmacro
 
-macro vwf_add_font(gfx_file, width_table_file)
+macro vwf_add_font(gfx_file, width_table_file, character_table_file)
 	%vwf_next_bank()
 
 	Font!vwf_num_fonts:
@@ -73,6 +73,7 @@ macro vwf_add_font(gfx_file, width_table_file)
 
 	; RPG Hacker: Hack: If we define another font, increase the maximum for our setter.
 	!vwf_header_argument_0_maximum #= !vwf_num_fonts
+	!{vwf_font_!{vwf_num_fonts}_table_file} := <character_table_file>
 	
 	!vwf_num_fonts #= !vwf_num_fonts+1
 endmacro
@@ -86,13 +87,27 @@ macro vwf_add_messages(messages_file, table_file)
 endmacro
 
 macro vwf_generate_pointers()
-Fonttable:
+FontTable:
 	!temp_i #= 0
-	while !temp_i < !vwf_num_fonts		
+	while !temp_i < !vwf_num_fonts
 		dl Font!{temp_i},Font!{temp_i}_Width
 		!temp_i #= !temp_i+1
 	endwhile
 	undef "temp_i"
+	
+FontDigitsTable:
+	pushtable
+
+	!temp_i #= 0
+	while !temp_i < !vwf_num_fonts
+		table "!{vwf_font_!{temp_i}_table_file}"
+		!vwf_8bit_mode_only db "0123456789ABCDEF"
+		!vwf_16bit_mode_only dw "0123456789ABCDEF"
+		!temp_i #= !temp_i+1
+	endwhile
+	undef "temp_i"
+	
+	pulltable
 
 Pointers:
 	!temp_i #= 0

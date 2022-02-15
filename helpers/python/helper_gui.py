@@ -207,7 +207,7 @@ class MainWindow(tkinter.Tk):
 		self._emulator_names: List[str] = []
 		
 		for executable in executables:
-			if any([substring in os.path.basename(executable).lower() for substring in ['bsnes', 'higan', 'snes9x', 'zsnes', 'lucia', 'ares']]):
+			if any([substring in os.path.basename(executable).lower() for substring in ['bsnes', 'higan', 'snes9x', 'zsnes', 'lucia', 'ares', 'mesen']]):
 				emulator_name: str = os.path.relpath(executable, tools_path)
 				self._emulator_paths[emulator_name] = executable
 				self._emulator_names.append(emulator_name)

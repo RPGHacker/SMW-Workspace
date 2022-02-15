@@ -3156,6 +3156,21 @@ endif
 	sta !vwf_text_source+1
 	lda.b #!vwf_routine>>16
 	sta !vwf_text_source+2
+	
+	!vwf_8bit_mode_only lda.b #2
+	!vwf_16bit_mode_only lda.b #4
+	sta $03
+	lda !vwf_text_source
+	sta $00
+	lda !vwf_text_source+1
+	sta $01
+	lda !vwf_text_source+2
+	sta $02
+	!vwf_8bit_mode_only lda !vwf_font
+	!vwf_16bit_mode_only lda.b #$00
+	sta $04
+	jsr MapDigitsToFont
+	
 	jmp .NoButton
 
 .F7_DecValue
@@ -3217,6 +3232,22 @@ endif
 	sep #$20
 	lda.b #!vwf_routine>>16
 	sta !vwf_text_source+2
+	
+	!vwf_8bit_mode_only lda.b #5
+	!vwf_16bit_mode_only lda.b #10
+	sec
+	sbc $00
+	sta $03
+	lda !vwf_text_source
+	sta $00
+	lda !vwf_text_source+1
+	sta $01
+	lda !vwf_text_source+2
+	sta $02
+	!vwf_8bit_mode_only lda !vwf_font
+	!vwf_16bit_mode_only  lda.b #$00
+	sta $04
+	jsr MapDigitsToFont
 
 	jmp .NoButton
 
@@ -3570,16 +3601,16 @@ if !use_sa1_mapping
 endif
 	rep #$21
 	lda.w select(!use_sa1_mapping,$2306,$2134)
-	adc.w #Fonttable	; Add starting address
+	adc.w #FontTable	; Add starting address
 	sta $00
 	sep #$20
-	lda.b #Fonttable>>16
+	lda.b #FontTable>>16
 	sta $02
 	ldy #$00
 
 .Loop
 	lda [$00],y	; Load addresses from table
-	sta remap_ram($0003),y
+	sta remap_ram($03),y
 	iny
 	cpy #$06
 	bne .Loop
@@ -3931,6 +3962,46 @@ GetZeros:
 
 .End
 	rts
+	
+	
+
+; $00: The address of the number sequence to map (24-bit)
+; $03: The length of the sequence to map in bytes
+; $04: The font number
+MapDigitsToFont:
+	lda #$00
+	xba
+	lda $04
+	rep #$20
+	!vwf_8bit_mode_only asl #4
+	!vwf_16bit_mode_only asl #5
+	clc
+	adc.w #FontDigitsTable
+	sta $0A
+	sep #$20
+	lda.b #bank(FontDigitsTable)
+	sta $0C
+	
+	; Highly inefficient loop below. Wish there was an "lda [$00],x"...
+	ldy.b #$00
+	
+.Loop
+	!vwf_16bit_mode_only rep #$20
+	lda [$00],y
+	tyx
+	!vwf_16bit_mode_only asl
+	tay
+	lda [$0A],y
+	txy
+	sta [$00],y
+	!vwf_16bit_mode_only sep #$20
+	
+	iny
+	!vwf_16bit_mode_only iny
+	cpy $03
+	bcc .Loop
+	
+	rts
 
 
 
@@ -4209,6 +4280,21 @@ WordWidth:
 	sta !vwf_text_source+1
 	lda.b #!vwf_routine>>16
 	sta !vwf_text_source+2
+	
+	!vwf_8bit_mode_only lda.b #2
+	!vwf_16bit_mode_only lda.b #4
+	sta $03
+	lda !vwf_text_source
+	sta $00
+	lda !vwf_text_source+1
+	sta $01
+	lda !vwf_text_source+2
+	sta $02
+	!vwf_8bit_mode_only lda !vwf_font
+	!vwf_16bit_mode_only lda.b #$00
+	sta $04
+	jsr MapDigitsToFont
+	
 	jmp .Begin
 
 .F7_DecValue
@@ -4269,6 +4355,22 @@ WordWidth:
 	sep #$20
 	lda.b #!vwf_routine>>16
 	sta !vwf_text_source+2
+	
+	!vwf_8bit_mode_only lda.b #5
+	!vwf_16bit_mode_only lda.b #10
+	sec
+	sbc $00
+	sta $03
+	lda !vwf_text_source
+	sta $00
+	lda !vwf_text_source+1
+	sta $01
+	lda !vwf_text_source+2
+	sta $02
+	!vwf_8bit_mode_only lda !vwf_font
+	!vwf_16bit_mode_only lda.b #$00
+	sta $04
+	jsr MapDigitsToFont
 
 	jmp .GetFont
 

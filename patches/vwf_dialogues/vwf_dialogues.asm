@@ -3615,6 +3615,12 @@ endif
 	cpy #$06
 	bne .Loop
 	rts
+	
+; RPG Hacker: This might make 16-bit builds notably slower.
+; Though maybe not, since VWF_GenerateVWF isn't usually called for more than one character.
+GetFontLong:
+	jsr GetFont
+	rtl
 
 
 GetDestination:

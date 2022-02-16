@@ -79,7 +79,7 @@ endmacro
 	!vwf_16bit_mode_only sep #$20
 	!vwf_16bit_mode_only lda !vwf_char+1
 	!vwf_16bit_mode_only sta !vwf_font
-	!vwf_16bit_mode_only jsr GetFont
+	!vwf_16bit_mode_only jsl GetFontLong
 	!vwf_16bit_mode_only lda $05
 	!vwf_16bit_mode_only sta $0E
 	!vwf_16bit_mode_only rep #$21

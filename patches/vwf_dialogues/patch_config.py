@@ -55,7 +55,7 @@ def main() -> None:
 		vwf_dialogues_asm.include_paths[0] = os.path.join(os.path.dirname(__file__), 'data/smw')
 	
 	if options.bit_mode == '16-bit':
-		vwf_dialogues_asm.defines.append('vwf_bitmode=VWF_BitMode.16Bit')
+		vwf_dialogues_asm.defines.append('vwf_bit_mode=VWF_BitMode.16Bit')
 		
 	if options.message_box_hijack == 'disable':
 		vwf_dialogues_asm.defines.append('hijackbox=false')

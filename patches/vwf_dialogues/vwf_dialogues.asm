@@ -2068,10 +2068,6 @@ InitLine:
 	lda #$00
 	sta !vwf_char_width
 	sta !vwf_current_width
-	lda !vwf_char
-	pha
-	!vwf_16bit_mode_only lda !vwf_char+1
-	!vwf_16bit_mode_only pha
 	lda !vwf_text_source
 	pha
 	lda !vwf_text_source+1
@@ -2080,6 +2076,10 @@ InitLine:
 	pha
 	lda !vwf_font
 	pha
+	lda !vwf_char
+	pha
+	!vwf_16bit_mode_only lda !vwf_char+1
+	!vwf_16bit_mode_only pha
 
 .WidthBegin
 	lda !vwf_current_y				;\ This fixes an oddity where the next line's width is calculated when at the end of a text box.
@@ -2127,6 +2127,10 @@ InitLine:
 	adc !vwf_current_pixel
 	sta !vwf_current_pixel
 
+	!vwf_16bit_mode_only pla
+	!vwf_16bit_mode_only sta !vwf_char+1
+	pla
+	sta !vwf_char
 	pla
 	sta !vwf_font
 	pla
@@ -2135,10 +2139,6 @@ InitLine:
 	sta !vwf_text_source+1
 	pla
 	sta !vwf_text_source
-	!vwf_16bit_mode_only pla
-	!vwf_16bit_mode_only sta !vwf_char+1
-	pla
-	sta !vwf_char
 
 .TextAlignmentLeft
 	lda #$00
@@ -2589,7 +2589,7 @@ TextCreation:
 	dw .E7_EndTextMacro
 	dw .E8_TextMacro
 	dw .E9_TextMacroGroup
-	dw .FF_End	; Reserved
+	dw .EA_CharOffset
 	dw .EB_LockTextBox
 	dw .EC_PlayBGM
 	dw .ED_ClearBox
@@ -2723,6 +2723,9 @@ TextCreation:
 	adc.w #!vwf_num_reserved_text_macros
 	
 	jmp .TextMacroShared
+	
+.EA_CharOffset
+	jmp .NoButton
 
 .EB_LockTextBox
 	lda #$01
@@ -4075,7 +4078,7 @@ WordWidth:
 	dw .E7_EndTextMacro
 	dw .E8_TextMacro
 	dw .E9_TextMacroGroup
-	dw .FF_End	; Reserved
+	dw .EA_CharOffset
 	dw .EB_LockTextBox
 	dw .EC_PlayBGM
 	dw .ED_ClearBox
@@ -4207,6 +4210,9 @@ WordWidth:
 	adc.w #!vwf_num_reserved_text_macros
 
 	jmp .TextMacroShared
+	
+.EA_CharOffset
+	jmp .Begin
 
 .EE_ChangeColor
 .EF_Teleport

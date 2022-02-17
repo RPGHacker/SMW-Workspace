@@ -89,7 +89,7 @@ endif
 	;%vwf_change_colors($1A, $10000)
 	;%vwf_change_colors($1A, -1)
 	
-	%vwf_set_option_location(TestSelection, 0)	
+	%vwf_set_option_location(TestSelection, 0)
 		%vwf_text("This is a line.") : %vwf_line_break()
 		%vwf_text("This is a new line.") : %vwf_line_break()
 		%vwf_text("Now some text...") : %vwf_wait_frames(60) : %vwf_text(" with a long pause.") : %vwf_wait_frames(30) : %vwf_line_break()

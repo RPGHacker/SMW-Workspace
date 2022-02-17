@@ -2068,6 +2068,10 @@ InitLine:
 	lda #$00
 	sta !vwf_char_width
 	sta !vwf_current_width
+	lda !vwf_char
+	pha
+	!vwf_16bit_mode_only lda !vwf_char+1
+	!vwf_16bit_mode_only pha
 	lda !vwf_text_source
 	pha
 	lda !vwf_text_source+1
@@ -2131,11 +2135,10 @@ InitLine:
 	sta !vwf_text_source+1
 	pla
 	sta !vwf_text_source
-	!vwf_16bit_mode_only rep #$20
-	!vwf_16bit_mode_only lda #$0000
-	!vwf_8bit_mode_only lda #$00
+	!vwf_16bit_mode_only pla
+	!vwf_16bit_mode_only sta !vwf_char+1
+	pla
 	sta !vwf_char
-	!vwf_16bit_mode_only sep #$20
 
 .TextAlignmentLeft
 	lda #$00
@@ -3470,7 +3473,7 @@ endif
 	jsr IncPointer
 	jmp .End
 
-.WriteLetter
+.WriteLetter	
 	!vwf_16bit_mode_only lda !vwf_char+1
 	!vwf_16bit_mode_only sta !vwf_font
 	jsr GetFont
@@ -3478,10 +3481,10 @@ endif
 	rep #$20
 	lda #$0001
 	sta $0C
-	lda !vwf_text_source
+	lda.w #!vwf_char
 	sta $00
 	sep #$20
-	lda !vwf_text_source+2
+	lda.b #bank(!vwf_char)
 	sta $02
 
 	lda [$00]	; Check if enough width available
@@ -3494,10 +3497,10 @@ endif
 	rep #$20
 	lda #$0001
 	sta $0C
-	lda !vwf_text_source
+	lda.w #!vwf_char
 	sta $00
 	sep #$20
-	lda !vwf_text_source+2
+	lda.b #bank(!vwf_char)
 	sta $02
 
 	lda !vwf_clear_box

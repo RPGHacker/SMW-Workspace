@@ -116,7 +116,7 @@ endif
 		
 		pushtable
 		cleartable
-		table "vwftable_font2.txt"
+		incsrc "vwftable_font2.txt"
 		%vwf_text("Here's some text in a different font.") : %vwf_line_break()
 		pulltable
 		
@@ -130,10 +130,7 @@ endif
 		%vwf_play_bgm($02)
 		%vwf_clear()		
 
-if !assembler_ver >= 20000
-		pushtable
-		table "../../vwftable_jp.txt"
-		
+if !assembler_ver >= 20000		
 		%vwf_set_font($02)
 		%vwf_text("Ｈｏｗ　ａｂｏｕｔ　ｓｏｍｅ　Ｊａｐａｎｅｓｅ　ｔｅｘｔ？") : %vwf_wait_for_a() : %vwf_clear()
 		%vwf_set_font($03)
@@ -143,8 +140,6 @@ if !assembler_ver >= 20000
 		%vwf_text("兄係軽血決県研言庫湖公向幸港号根") : %vwf_wait_for_a() : %vwf_clear()
 
 		%vwf_set_font($00)
-		
-		pulltable
 endif
 		
 		%vwf_text("Commands test complete!") : %vwf_line_break()
@@ -253,7 +248,7 @@ macro generate_message_test_messages(first_message_id, second_message_id, show_a
 	if <alternate_font> != false
 		pushtable
 		cleartable
-		table "vwftable_font2.txt"
+		incsrc "vwftable_font2.txt"
 	endif
 	
 	%vwf_message_start(<second_message_id>)
@@ -1601,7 +1596,7 @@ MessageASM0044:
 	%vwf_header()
 	
 	%vwf_text("This block uses touch_mXX.asm and vwfsharedroutines.asm to display a message once.") : %vwf_wait_for_a() : %vwf_clear()
-	%vwf_text("Depending on the \\\!free_ram used, re-entering the level might display this message again.") : %vwf_wait_for_a() : %vwf_clear()
+	%vwf_text("Depending on the \\\\\\\!free_ram used, re-entering the level might display this message again.") : %vwf_wait_for_a() : %vwf_clear()
 
 %vwf_message_end()
 

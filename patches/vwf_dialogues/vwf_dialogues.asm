@@ -1,4 +1,4 @@
-@asar 1.90
+asar 1.90
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;VWF Dialogues Patch by RPG Hacker;
@@ -14,13 +14,12 @@ print "VWF Dialogues Patch - (c) 2010-2022 RPG Hacker"
 print ""
 
 
-math round off
-
 pushtable
 cleartable
 
 
 namespace vwf_dialogues_
+
 
 
 
@@ -55,7 +54,10 @@ macro vwf_claim_varram(define, size)
 	endif
 	
 	!vwf_<define> := !vwf_var_ram+!vwf_var_rampos
-	!vwf_var_rampos #= !vwf_var_rampos+<size>
+	!vwf_var_rampos #= !vwf_var_rampos+(<size>)
+	
+	; RPG Hacker: This assignment serves no other purpose other than to force a symbol export.
+	vwf_<define> = !vwf_<define>
 endmacro
 
 
@@ -180,9 +182,6 @@ endmacro
 
 !vwf_ram_bank = select(!use_sa1_mapping,$40,$7E)
 
-!vwf_8bit_mode_only     = "if !vwf_bit_mode == VWF_BitMode.8Bit :"
-!vwf_16bit_mode_only    = "if !vwf_bit_mode == VWF_BitMode.16Bit :"
-
 !vwf_current_message_name = ""
 !vwf_current_message_asm_name = ""
 !vwf_current_message_id = $10000
@@ -213,12 +212,6 @@ endif
 
 !vwf_cpu_snes = 0
 !vwf_cpu_sa1 = 1
-
-if !assembler_ver >= 20000
-	!vwf_default_table_file = "data/vwftable_utf8.txt"
-else
-	!vwf_default_table_file = "data/vwftable_ascii.txt"
-endif
 
 ; RPG Hacker: IMPORTANT: Adjust this define when adding any new commands to the patch!
 !vwf_lowest_reserved_hex = $FFE7
@@ -862,16 +855,21 @@ LoadHeader:
 	sta $01
 	lda !vwf_text_source+2
 	sta $02
-	!vwf_8bit_mode_only lda #$0C
-	!vwf_16bit_mode_only lda #$0B
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda #$0C
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda #$0B
+endif
 	sta $03
 	stz $04
 
 	ldy #$00
 
-	!vwf_8bit_mode_only lda [$00],y	; Font
-	!vwf_8bit_mode_only sta !vwf_font
-	!vwf_8bit_mode_only iny
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda [$00],y	; Font
+	sta !vwf_font
+	iny
+endif
 
 	lda [$00],y	; X position
 	lsr #3
@@ -2068,24 +2066,23 @@ InitLine:
 	lda #$00
 	sta !vwf_char_width
 	sta !vwf_current_width
-	lda !vwf_text_source
-	pha
-	lda !vwf_text_source+1
-	pha
-	lda !vwf_text_source+2
-	pha
-	lda !vwf_font
-	pha
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda !vwf_char
-	pha
-	!vwf_16bit_mode_only lda !vwf_char+1
-	!vwf_16bit_mode_only pha
+	sta $0A
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda !vwf_char
+	sta $0A
+	sep #$20
+endif
+
+	jsr WordWidth_Backup
 
 .WidthBegin
-	lda !vwf_current_y				;\ This fixes an oddity where the next line's width is calculated when at the end of a text box.
-	inc #2					;| This would cause a text macro to break if it spanned more than one text box.
-	cmp !vwf_max_height			;|
-	bcs .AtEndOfTextBox			;/
+	lda !vwf_current_y      ;\ This fixes an oddity where the next line's width is calculated when at the end of a text box.
+	inc #2                  ;| This would cause a text macro to break if it spanned more than one text box.
+	cmp !vwf_max_height     ;|
+	bcs .AtEndOfTextBox     ;/
 	jsr WordWidth
 
 .AtEndOfTextBox
@@ -2102,11 +2099,15 @@ InitLine:
 .NoCarry
 	lda !vwf_char_width
 	sta !vwf_current_width
-	!vwf_16bit_mode_only rep #$20
-	lda !vwf_char
-	!vwf_8bit_mode_only cmp #$FE
-	!vwf_16bit_mode_only cmp #$FFFE
-	!vwf_16bit_mode_only sep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda $0A
+	cmp #$FE
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda $0A
+	cmp #$FFFE
+	sep #$20
+endif
 	bne .WidthEnd
 
 	lda !vwf_char_width
@@ -2126,19 +2127,8 @@ InitLine:
 	clc
 	adc !vwf_current_pixel
 	sta !vwf_current_pixel
-
-	!vwf_16bit_mode_only pla
-	!vwf_16bit_mode_only sta !vwf_char+1
-	pla
-	sta !vwf_char
-	pla
-	sta !vwf_font
-	pla
-	sta !vwf_text_source+2
-	pla
-	sta !vwf_text_source+1
-	pla
-	sta !vwf_text_source
+	
+	jsr WordWidth_Restore
 
 .TextAlignmentLeft
 	lda #$00
@@ -2169,11 +2159,15 @@ InitLine:
 
 .ButtonWait
 	jsr EndBeep
-	!vwf_8bit_mode_only lda #$FA
-	!vwf_16bit_mode_only rep #$20
-	!vwf_16bit_mode_only lda #$FFFA
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda #$FA
 	sta !vwf_char
-	!vwf_16bit_mode_only sep #$20
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda #$FFFA
+	sta !vwf_char
+	sep #$20
+endif
 
 .NoClearBox
 	rep #$20
@@ -2346,13 +2340,17 @@ TextCreation:
 	rep #$20
 	lda !vwf_skip_message_loc
 	sta !vwf_text_source
-	!vwf_16bit_mode_only lda #$FFEB
-	!vwf_16bit_mode_only sta !vwf_char
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	lda #$FFEB
+	sta !vwf_char
+endif
 	sep #$20
 	lda !vwf_skip_message_loc+2
 	sta !vwf_text_source+2
-	!vwf_8bit_mode_only lda #$EB
-	!vwf_8bit_mode_only sta !vwf_char
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda #$EB
+	sta !vwf_char
+endif
 	lda #$00
 	sta !vwf_wait
 	sta !vwf_cursor_move
@@ -2525,11 +2523,15 @@ TextCreation:
 
 
 .NoCursor
-	!vwf_16bit_mode_only rep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda !vwf_char
-	!vwf_8bit_mode_only cmp #$FA
-	!vwf_16bit_mode_only cmp #$FFFA
-	!vwf_16bit_mode_only sep #$20
+	cmp #$FA
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda !vwf_char
+	cmp #$FFFA
+	sep #$20
+endif
 	bne .NoButton
 	jmp .End
 
@@ -2565,24 +2567,35 @@ TextCreation:
 	lda #$00
 	sta !vwf_at_start_of_text
 	jsr ReadPointer
-	!vwf_16bit_mode_only rep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda [$00]
 	sta !vwf_char
-	!vwf_16bit_mode_only inc $00
-	!vwf_8bit_mode_only cmp.b #!vwf_lowest_reserved_hex
-	!vwf_16bit_mode_only cmp.w #!vwf_lowest_reserved_hex
+	cmp.b #!vwf_lowest_reserved_hex
 	bcs .Jump
-	!vwf_16bit_mode_only sep #$20
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda [$00]
+	sta !vwf_char
+	inc $00
+	cmp.w #!vwf_lowest_reserved_hex
+	bcs .Jump
+	sep #$20
+endif
 	jmp .WriteLetter
 
 .Jump
 	sec
-	!vwf_8bit_mode_only sbc.b #!vwf_lowest_reserved_hex
-	!vwf_16bit_mode_only sbc.w #!vwf_lowest_reserved_hex
-	!vwf_16bit_mode_only sep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	sbc.b #!vwf_lowest_reserved_hex
 	asl
 	tax
-	!vwf_16bit_mode_only jsr IncPointer
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	sbc.w #!vwf_lowest_reserved_hex
+	sep #$20
+	asl
+	tax
+	jsr IncPointer
+endif
 	jmp (.Routinetable,x)
 
 .Routinetable
@@ -2730,9 +2743,11 @@ TextCreation:
 .EB_LockTextBox
 	lda #$01
 	sta !vwf_force_sfx
+if !vwf_bit_mode == VWF_BitMode.16Bit
 	; RPG Hacker: In 16-bit mode, the $FF part of the command is automatically skipped.
 	; Need to decrement the pointer here, otherwise the text box will explode.
-	!vwf_16bit_mode_only jsr DecPointer
+	jsr DecPointer
+endif
 	jmp .End
 
 .EC_PlayBGM
@@ -2871,10 +2886,12 @@ endif
 	iny
 	lda [$00],y
 	sta !vwf_cursor
-	!vwf_16bit_mode_only iny
-	!vwf_16bit_mode_only lda [$00],y
-	!vwf_16bit_mode_only sta !vwf_cursor+1
-	!vwf_16bit_mode_only jsr IncPointer
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	iny
+	lda [$00],y
+	sta !vwf_cursor+1
+	jsr IncPointer
+endif
 	jsr IncPointer
 	jsr IncPointer
 	jsr IncPointer
@@ -2892,9 +2909,11 @@ endif
 	sta !vwf_no_choice_lb
 	lda #$01
 	sta !vwf_first_tile
-
-	!vwf_16bit_mode_only lda !vwf_cursor+1
-	!vwf_16bit_mode_only sta !vwf_font
+	
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	lda !vwf_cursor+1
+	sta !vwf_font
+endif
 
 	jsr GetFont
 
@@ -3016,11 +3035,15 @@ endif
 
 .F0ButtonWait
 	jsr EndBeep
-	!vwf_16bit_mode_only rep #$20
-	!vwf_16bit_mode_only lda #$FFFA
-	!vwf_8bit_mode_only lda #$FA
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda #$FA
 	sta !vwf_char
-	!vwf_16bit_mode_only sep #$20
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda #$FFFA
+	sta !vwf_char
+	sep #$20
+endif
 
 .F0NoAutoWait
 	jmp TextCreation
@@ -3086,10 +3109,15 @@ endif
 .F4_Character
 	jsr IncPointer
 	jsr ReadPointer
-	!vwf_16bit_mode_only rep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda [$00]
 	sta !vwf_char
-	!vwf_16bit_mode_only sep #$20
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda [$00]
+	sta !vwf_char
+	sep #$20
+endif
 	jmp .WriteLetter
 
 .F5_RAMCharacter
@@ -3102,14 +3130,21 @@ endif
 	iny
 	lda [$00],y
 	sta $0E
-	!vwf_16bit_mode_only rep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda [$0C]
 	sta !vwf_routine
-	!vwf_16bit_mode_only sep #$20
 	lda #$FB
-	sta !vwf_routine+1+!vwf_bit_mode
-	!vwf_16bit_mode_only lda #$FF
-	!vwf_16bit_mode_only sta !vwf_routine+3
+	sta !vwf_routine+1
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda [$0C]
+	sta !vwf_routine
+	sep #$20
+	lda #$FB
+	sta !vwf_routine+2
+	lda #$FF
+	sta !vwf_routine+3
+endif
 	rep #$20
 	lda $00
 	inc #4
@@ -3138,17 +3173,25 @@ endif
 	lda [$0C]
 	lsr #4
 	sta !vwf_routine
-	!vwf_16bit_mode_only lda #$00
-	!vwf_16bit_mode_only sta !vwf_routine+1
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda [$0C]
 	and #$0F
-	sta !vwf_routine+1+!vwf_bit_mode
-	!vwf_16bit_mode_only lda #$00
-	!vwf_16bit_mode_only sta !vwf_routine+3
+	sta !vwf_routine+1
 	lda #$FB
-	sta !vwf_routine+2+(!vwf_bit_mode*2)
-	!vwf_16bit_mode_only lda #$FF
-	!vwf_16bit_mode_only sta !vwf_routine+5
+	sta !vwf_routine+2
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda #$00
+	sta !vwf_routine+1
+	lda [$0C]
+	and #$0F
+	sta !vwf_routine+2
+	lda #$00
+	sta !vwf_routine+3
+	lda #$FB
+	sta !vwf_routine+4
+	lda #$FF
+	sta !vwf_routine+5
+endif
 	rep #$20
 	lda $00
 	inc #4
@@ -3163,8 +3206,11 @@ endif
 	lda.b #!vwf_routine>>16
 	sta !vwf_text_source+2
 	
-	!vwf_8bit_mode_only lda.b #2
-	!vwf_16bit_mode_only lda.b #4
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda.b #2
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda.b #4
+endif
 	sta $03
 	lda !vwf_text_source
 	sta $00
@@ -3172,28 +3218,40 @@ endif
 	sta $01
 	lda !vwf_text_source+2
 	sta $02
-	!vwf_8bit_mode_only lda !vwf_font
-	!vwf_16bit_mode_only lda.b #$00
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda !vwf_font
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda.b #$00
+endif
 	sta $04
 	jsr MapDigitsToFont
 	
 	jmp .NoButton
 
 .F7_DecValue
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda #$FB
-	!vwf_8bit_mode_only sta !vwf_routine+5
-	!vwf_16bit_mode_only sta !vwf_routine+10
-	!vwf_16bit_mode_only lda #$FF
-	!vwf_16bit_mode_only sta !vwf_routine+11
+	sta !vwf_routine+5
 	rep #$21
 	lda $00
 	adc #$0005
-	!vwf_8bit_mode_only sta !vwf_routine+6
-	!vwf_16bit_mode_only sta !vwf_routine+12
+	sta !vwf_routine+6
 	sep #$20
 	lda $02
-	!vwf_8bit_mode_only sta !vwf_routine+8
-	!vwf_16bit_mode_only sta !vwf_routine+14
+	sta !vwf_routine+8
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda #$FB
+	sta !vwf_routine+10
+	lda #$FF
+	sta !vwf_routine+11
+	rep #$21
+	lda $00
+	adc #$0005
+	sta !vwf_routine+12
+	sep #$20
+	lda $02
+	sta !vwf_routine+14
+endif
 
 	ldy #$01
 	lda [$00],y
@@ -3217,15 +3275,19 @@ endif
 	bne .SixteenBit
 	inc $00
 	inc $00
-	!vwf_16bit_mode_only inc $00
-	!vwf_16bit_mode_only inc $00
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	inc $00
+	inc $00
+endif
 
 .SixteenBit
 	pla
 	and #$0F
 	beq .NoZeros
 	lda $05
-	!vwf_16bit_mode_only asl
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	asl
+endif
 	clc
 	adc $00
 	sta $00
@@ -3239,8 +3301,11 @@ endif
 	lda.b #!vwf_routine>>16
 	sta !vwf_text_source+2
 	
-	!vwf_8bit_mode_only lda.b #5
-	!vwf_16bit_mode_only lda.b #10
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda.b #5
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda.b #10
+endif
 	sec
 	sbc $00
 	sta $03
@@ -3250,8 +3315,11 @@ endif
 	sta $01
 	lda !vwf_text_source+2
 	sta $02
-	!vwf_8bit_mode_only lda !vwf_font
-	!vwf_16bit_mode_only  lda.b #$00
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda !vwf_font
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda.b #$00
+endif
 	sta $04
 	jsr MapDigitsToFont
 
@@ -3344,11 +3412,15 @@ endif
 	
 
 .FD_LineBreak
-	!vwf_16bit_mode_only rep #$20
-	!vwf_16bit_mode_only lda #$FFFD
-	!vwf_8bit_mode_only lda #$FD
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda #$FD
 	sta !vwf_char
-	!vwf_16bit_mode_only sep #$20
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda #$FFFD
+	sta !vwf_char
+	sep #$20
+endif
 	jsr IncPointer
 	jsr InitLine
 	lda !vwf_clear_box
@@ -3417,35 +3489,12 @@ endif
 	adc !vwf_current_x
 	sta !vwf_current_x
 
-	lda #$00                ; Preserve everything and get width
-	sta !vwf_char_width     ; of next word (for word wrap)
-	lda !vwf_text_source
-	pha
-	lda !vwf_text_source+1
-	pha
-	lda !vwf_text_source+2
-	pha
-	lda !vwf_font
-	pha
-	lda !vwf_char
-	pha
-	!vwf_16bit_mode_only lda !vwf_char+1
-	!vwf_16bit_mode_only pha
+	lda #$00
+	sta !vwf_char_width
 
-	jsr WordWidth
-
-	!vwf_16bit_mode_only pla
-	!vwf_16bit_mode_only sta !vwf_char+1
-	pla
-	sta !vwf_char
-	pla
-	sta !vwf_font
-	pla
-	sta !vwf_text_source+2
-	pla
-	sta !vwf_text_source+1
-	pla
-	sta !vwf_text_source
+	jsr WordWidth_Backup
+	jsr WordWidth	
+	jsr WordWidth_Restore
 
 	lda !vwf_width_carry
 	bne .FECarrySet
@@ -3476,9 +3525,11 @@ endif
 	jsr IncPointer
 	jmp .End
 
-.WriteLetter	
-	!vwf_16bit_mode_only lda !vwf_char+1
-	!vwf_16bit_mode_only sta !vwf_font
+.WriteLetter
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	lda !vwf_char+1
+	sta !vwf_font
+endif
 	jsr GetFont
 
 	rep #$20
@@ -3513,7 +3564,9 @@ endif
 
 .Create
 	jsr IncPointer
-	!vwf_16bit_mode_only jsr IncPointer
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	jsr IncPointer
+endif
 	lda [$06],y
 	sta !vwf_char_width
 	jsr WriteTilemap
@@ -3859,12 +3912,14 @@ WipePixels:
 HextoDec:
 	jsr Convert8Bit
 	jsr GetZeros
-	!vwf_16bit_mode_only lda #$00
-	!vwf_16bit_mode_only sta !vwf_routine+1
-	!vwf_16bit_mode_only sta !vwf_routine+3
-	!vwf_16bit_mode_only sta !vwf_routine+5
-	!vwf_16bit_mode_only sta !vwf_routine+7
-	!vwf_16bit_mode_only sta !vwf_routine+9
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	lda #$00
+	sta !vwf_routine+1
+	sta !vwf_routine+3
+	sta !vwf_routine+5
+	sta !vwf_routine+7
+	sta !vwf_routine+9
+endif
 	rts
 
 Convert8Bit:
@@ -3985,8 +4040,11 @@ MapDigitsToFont:
 	xba
 	lda $04
 	rep #$20
-	!vwf_8bit_mode_only asl #4
-	!vwf_16bit_mode_only asl #5
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	asl #4
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	asl #5
+endif
 	clc
 	adc.w #FontDigitsTable
 	sta $0A
@@ -3998,18 +4056,27 @@ MapDigitsToFont:
 	ldy.b #$00
 	
 .Loop
-	!vwf_16bit_mode_only rep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda [$00],y
 	tyx
-	!vwf_16bit_mode_only asl
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda [$00],y
+	tyx
+	asl
+endif
 	tay
 	lda [$0A],y
 	txy
 	sta [$00],y
-	!vwf_16bit_mode_only sep #$20
-	
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	iny
-	!vwf_16bit_mode_only iny
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	sep #$20
+	iny
+	iny
+endif
+	
 	cpy $03
 	bcc .Loop
 	
@@ -4047,29 +4114,42 @@ WordWidth:
 .NoStackCopy
 
 .GetFont
-	!vwf_8bit_mode_only jsr GetFont
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	jsr GetFont
+endif
 
 .Begin
 	jsr ReadPointer
-	!vwf_16bit_mode_only rep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda [$00]
 	sta !vwf_char
-	!vwf_8bit_mode_only cmp.b #!vwf_lowest_reserved_hex
-	!vwf_16bit_mode_only cmp.w #!vwf_lowest_reserved_hex
+	cmp.b #!vwf_lowest_reserved_hex
 	bcs .Jump
-	!vwf_16bit_mode_only sep #$20
-	!vwf_16bit_mode_only jsr IncPointer
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda [$00]
+	sta !vwf_char
+	cmp.w #!vwf_lowest_reserved_hex
+	bcs .Jump
+	sep #$20
+	jsr IncPointer
+endif
 	jsr IncPointer
 	jmp .Add
 
 .Jump
 	sec
-	!vwf_8bit_mode_only sbc.b #!vwf_lowest_reserved_hex
-	!vwf_16bit_mode_only sbc.w #!vwf_lowest_reserved_hex
-	!vwf_16bit_mode_only sep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	sbc.b #!vwf_lowest_reserved_hex
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	sbc.w #!vwf_lowest_reserved_hex
+	sep #$20
+endif
 	asl
 	tax
-	!vwf_16bit_mode_only jsr IncPointer
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	jsr IncPointer
+endif
 	jsr IncPointer
 	jsr ReadPointer
 	jmp (.Routinetable,x)
@@ -4233,11 +4313,16 @@ WordWidth:
 	jmp .Begin
 
 .F4_Character
-	!vwf_16bit_mode_only rep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda [$00]
 	sta !vwf_char
-	!vwf_16bit_mode_only sep #$20
-	!vwf_16bit_mode_only jsr IncPointer
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda [$00]
+	sta !vwf_char
+	sep #$20
+	jsr IncPointer
+endif
 	jsr IncPointer
 	jmp .Add
 
@@ -4253,10 +4338,15 @@ WordWidth:
 	jsr IncPointer
 	jsr IncPointer
 	jsr IncPointer
-	!vwf_16bit_mode_only rep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda [$0C]
 	sta !vwf_char
-	!vwf_16bit_mode_only sep #$20
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda [$0C]
+	sta !vwf_char
+	sep #$20
+endif
 	jmp .Add
 
 .F6_HexValue
@@ -4271,17 +4361,25 @@ WordWidth:
 	lda [$0C]
 	lsr #4
 	sta !vwf_routine
-	!vwf_16bit_mode_only lda #$00
-	!vwf_16bit_mode_only sta !vwf_routine+1
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda [$0C]
 	and #$0F
-	sta !vwf_routine+1+!vwf_bit_mode
-	!vwf_16bit_mode_only lda #$00
-	!vwf_16bit_mode_only sta !vwf_routine+3
+	sta !vwf_routine+1
 	lda #$FB
-	sta !vwf_routine+2+(!vwf_bit_mode*2)
-	!vwf_16bit_mode_only lda #$FF
-	!vwf_16bit_mode_only sta !vwf_routine+5
+	sta !vwf_routine+2
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda #$00
+	sta !vwf_routine+1
+	lda [$0C]
+	and #$0F
+	sta !vwf_routine+2
+	lda #$00
+	sta !vwf_routine+3
+	lda #$FB
+	sta !vwf_routine+4
+	lda #$FF
+	sta !vwf_routine+5
+endif
 	rep #$20
 	lda $00
 	inc #3
@@ -4296,8 +4394,11 @@ WordWidth:
 	lda.b #!vwf_routine>>16
 	sta !vwf_text_source+2
 	
-	!vwf_8bit_mode_only lda.b #2
-	!vwf_16bit_mode_only lda.b #4
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda.b #2
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda.b #4
+endif
 	sta $03
 	lda !vwf_text_source
 	sta $00
@@ -4305,8 +4406,11 @@ WordWidth:
 	sta $01
 	lda !vwf_text_source+2
 	sta $02
-	!vwf_8bit_mode_only lda !vwf_font
-	!vwf_16bit_mode_only lda.b #$00
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda !vwf_font
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda.b #$00
+endif
 	sta $04
 	jsr MapDigitsToFont
 	
@@ -4314,19 +4418,27 @@ WordWidth:
 
 .F7_DecValue
 	lda #$FB
-	!vwf_8bit_mode_only sta !vwf_routine+5
-	!vwf_16bit_mode_only sta !vwf_routine+10
-	!vwf_16bit_mode_only lda #$FF
-	!vwf_16bit_mode_only sta !vwf_routine+11
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	sta !vwf_routine+5
 	rep #$21
 	lda $00
 	adc #$0004
-	!vwf_8bit_mode_only sta !vwf_routine+6
-	!vwf_16bit_mode_only sta !vwf_routine+12
+	sta !vwf_routine+6
 	sep #$20
 	lda $02
-	!vwf_8bit_mode_only sta !vwf_routine+8
-	!vwf_16bit_mode_only sta !vwf_routine+14
+	sta !vwf_routine+8
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	sta !vwf_routine+10
+	lda #$FF
+	sta !vwf_routine+11
+	rep #$21
+	lda $00
+	adc #$0004
+	sta !vwf_routine+12
+	sep #$20
+	lda $02
+	sta !vwf_routine+14
+endif
 
 	ldy #$01
 	lda [$00]
@@ -4349,15 +4461,19 @@ WordWidth:
 	bne .SixteenBit
 	inc $00
 	inc $00
-	!vwf_16bit_mode_only inc $00
-	!vwf_16bit_mode_only inc $00
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	inc $00
+	inc $00
+endif
 
 .SixteenBit
 	pla
 	and #$0F
 	beq .NoZeros
 	lda $05
-	!vwf_16bit_mode_only asl
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	asl
+endif
 	clc
 	adc $00
 	sta $00
@@ -4371,8 +4487,11 @@ WordWidth:
 	lda.b #!vwf_routine>>16
 	sta !vwf_text_source+2
 	
-	!vwf_8bit_mode_only lda.b #5
-	!vwf_16bit_mode_only lda.b #10
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda.b #5
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda.b #10
+endif
 	sec
 	sbc $00
 	sta $03
@@ -4382,8 +4501,11 @@ WordWidth:
 	sta $01
 	lda !vwf_text_source+2
 	sta $02
-	!vwf_8bit_mode_only lda !vwf_font
-	!vwf_16bit_mode_only lda.b #$00
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda !vwf_font
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda.b #$00
+endif
 	sta $04
 	jsr MapDigitsToFont
 
@@ -4419,9 +4541,11 @@ WordWidth:
 	jmp .Return
 
 .Add
-	!vwf_16bit_mode_only lda !vwf_char+1
-	!vwf_16bit_mode_only sta !vwf_font
-	!vwf_16bit_mode_only jsr GetFont
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	lda !vwf_char+1
+	sta !vwf_font
+	jsr GetFont
+endif
 	lda !vwf_char
 	tay
 	lda [$06],y
@@ -4440,7 +4564,81 @@ WordWidth:
 	lda #$01
 	sta !vwf_width_carry
 
-.Return
+.Return	
+	; RPG Hacker: This is necessary, because some outside code checks
+	; if the last character this routine read was a space.
+	; I don't even remember why. It's literally been over a decade since I initially wrote this.
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda !vwf_char
+	sta $0A
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda !vwf_char
+	sta $0A
+	sep #$20
+endif
+	
+	rts
+	
+	
+; RPG Hacker: These routines are kinda stinky.
+; Their purpose was to simplify code by removing duplication.
+; However, I feel they just made the code even more complicated.
+.Backup
+	pla
+	sta $0B
+	pla
+	sta $0C
+
+	lda !vwf_text_source
+	pha
+	lda !vwf_text_source+1
+	pha
+	lda !vwf_text_source+2
+	pha
+	lda !vwf_font
+	pha
+	lda !vwf_char
+	pha
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	lda !vwf_char+1
+	pha
+endif
+
+	lda $0C
+	pha
+	lda $0B
+	pha
+
+	rts
+
+	
+.Restore
+	pla
+	sta $0B
+	pla
+	sta $0C
+	
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	pla
+	sta !vwf_char+1
+endif
+	pla
+	sta !vwf_char
+	pla
+	sta !vwf_font
+	pla
+	sta !vwf_text_source+2
+	pla
+	sta !vwf_text_source+1
+	pla
+	sta !vwf_text_source
+
+	lda $0C
+	pha
+	lda $0B
+	pha
+	
 	rts
 
 
@@ -4928,7 +5126,9 @@ TextUpload:
 	sta !vwf_choices
 	sta !vwf_current_choice
 	sta !vwf_char
-	!vwf_16bit_mode_only sta !vwf_char+1
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	sta !vwf_char+1
+endif
 	lda #$01
 	sta !vwf_clear_box
 	jmp .Return
@@ -4939,11 +5139,15 @@ TextUpload:
 	beq .NoEnd
 	lda #$00
 	sta !vwf_end_dialog
-	!vwf_16bit_mode_only rep #$20
-	!vwf_16bit_mode_only lda #$0000
-	!vwf_8bit_mode_only lda #$00
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda #$00
 	sta !vwf_char
-	!vwf_16bit_mode_only sep #$20
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda #$0000
+	sta !vwf_char
+	sep #$20
+endif
 	
 	; RPG Hacker: Display next message now if we're coming from a "load message"
 	; command and don't have the "show close animation" flag set.
@@ -4959,12 +5163,16 @@ TextUpload:
 	jmp .End
 
 .NoEnd
-	!vwf_16bit_mode_only rep #$20
+	; Are we waiting for an A button press?
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda !vwf_char
-	!vwf_8bit_mode_only cmp #$FA	; Waiting for A button?
-	!vwf_16bit_mode_only cmp #$FFFA
-	!vwf_16bit_mode_only sep #$20
-	!vwf_16bit_mode_only sep #$20
+	cmp #$FA
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda !vwf_char
+	cmp #$FFFA
+	sep #$20
+endif
 	beq .CheckButton
 	jmp .Upload
 
@@ -4976,7 +5184,9 @@ TextUpload:
 	jsr ButtonBeep
 	lda #$00
 	sta !vwf_char
-	!vwf_16bit_mode_only sta !vwf_char+1
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	sta !vwf_char+1
+endif
 	lda #$00
 	sta !vwf_timer
 
@@ -5053,11 +5263,15 @@ TextUpload:
 
 	lda !vwf_speed_up
 	beq .Return
-	!vwf_16bit_mode_only rep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda !vwf_char
-	!vwf_8bit_mode_only cmp #$F9
-	!vwf_16bit_mode_only cmp #$FFF9
-	!vwf_16bit_mode_only sep #$20
+	cmp #$F9
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda !vwf_char
+	cmp #$FFF9
+	sep #$20
+endif
 	beq .Return
 	lda $15
 	and #$80

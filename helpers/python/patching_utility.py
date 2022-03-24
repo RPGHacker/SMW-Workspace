@@ -126,7 +126,7 @@ class Patch(Action):
 	def run(self, args: ActionArgs) -> ActionOutput:
 		output = ActionOutput()
 		
-		patch_symbols_path: str = os.path.join(args.output_temp_path, os.path.basename(self.path) + '.cpu.sym')
+		patch_symbols_path: str = os.path.join(args.output_temp_path, os.path.basename(self.path) + '.sym')
 		
 		command_line: List[str] = [os.path.normpath(_asar_paths[args.options.asar_ver])]
 		
@@ -387,7 +387,8 @@ class PatchingUtility:
 		output_temp_path: str = os.path.join(patch_config.output_dir, rom_name + '.temp')
 		output_temp_rom_path: str = os.path.join(output_temp_path, rom_name + rom_extension)
 		output_rom_path: str = os.path.join(patch_config.output_dir, rom_name + rom_extension)
-		output_symbols_path: str = os.path.join(patch_config.output_dir, rom_name + '.cpu.sym')
+		output_symbols_path: str = os.path.join(patch_config.output_dir, rom_name + '.sym')
+		output_cpu_symbols_path: str = os.path.join(patch_config.output_dir, rom_name + '.cpu.sym')
 		output_sa1_symbols_path: str = os.path.join(patch_config.output_dir, rom_name + '.sa1.sym')
 		
 		if os.path.exists(output_temp_path):
@@ -468,7 +469,8 @@ class PatchingUtility:
 									reject_line = (int(label_match.group(1), 16) == 0x00 and int(label_match.group(2), 16) < 0x8000)
 									# We also prefix label names with the patch name. Not only because multiple patches might use identical names,
 									# but also because pos/neg labels in particular would conflict between them.
-									line = '{bank}:{address} {prefix}.{label}'.format(bank=label_match.group(1), address=label_match.group(2), prefix=os.path.basename(output.output_symbols_path), label=label_match.group(3))
+									label_prefix: str = pathlib.Path(output.output_symbols_path).resolve().with_suffix('').stem
+									line = '{bank}:{address} {prefix}.{label}'.format(bank=label_match.group(1), address=label_match.group(2), prefix=label_prefix, label=label_match.group(3))
 									
 							if parsing_source_files:
 								source_file_match: Optional[Match[str]] = source_file_re.match(line)
@@ -504,7 +506,9 @@ class PatchingUtility:
 					for line in lines:
 						symbols_file.write('{line}\n'.format(line=line))
 						
-				symbols_file.write('\n')				
+				symbols_file.write('\n')
+				
+		shutil.copyfile(output_symbols_path, output_cpu_symbols_path)			
 			
 		if options.rom_type == 'sa-1':
 			shutil.copyfile(output_symbols_path, output_sa1_symbols_path)

@@ -15,6 +15,24 @@ function vwf_get_color_index_2bpp(palette, id) = (palette*4)+id
 !vwf_nbsp_char = $00FE
 
 
+macro vwf_generate_command_table(command)
+	if !vwf_bit_mode == VWF_BitMode.8Bit
+		db <command>
+	elseif !vwf_bit_mode == VWF_BitMode.16Bit
+		dw $FF00|<command>
+	endif
+endmacro
+
+
+macro vwf_generate_text_table(text)
+	if !vwf_bit_mode == VWF_BitMode.8Bit
+		db "<text>"
+	elseif !vwf_bit_mode == VWF_BitMode.16Bit
+		dw "<text>"
+	endif
+endmacro
+
+
 
 ; Enums
 
@@ -100,9 +118,8 @@ FontDigitsTable:
 
 	!temp_i #= 0
 	while !temp_i < !vwf_num_fonts
-		table "!{vwf_font_!{temp_i}_table_file}"
-		!vwf_8bit_mode_only db "0123456789ABCDEF"
-		!vwf_16bit_mode_only dw "0123456789ABCDEF"
+		incsrc "!{vwf_font_!{temp_i}_table_file}"
+		%vwf_generate_text_table("0123456789ABCDEF")
 		!temp_i #= !temp_i+1
 	endwhile
 	undef "temp_i"
@@ -181,7 +198,7 @@ macro vwf_text_start(table_file)
 	
 	pushtable
 	cleartable
-	table "<table_file>"
+	incsrc "<table_file>"
 	
 	!vwf_current_message_name = ""
 	!vwf_current_message_asm_name = ""
@@ -821,9 +838,8 @@ endmacro
 macro vwf_text(text)
 	if !vwf_message_command_error_condition
 		%vwf_print_message_command_error()
-	else		
-		!vwf_8bit_mode_only db "<text>"
-		!vwf_16bit_mode_only dw "<text>"
+	else
+		%vwf_generate_text_table("<text>")
 	endif
 endmacro
 
@@ -844,8 +860,7 @@ macro vwf_close()
 	if !vwf_message_command_error_condition
 		%vwf_print_message_command_error()
 	else
-		!vwf_8bit_mode_only db $FF
-		!vwf_16bit_mode_only dw $FFFF
+		%vwf_generate_command_table($FF)
 	endif
 endmacro
 
@@ -854,8 +869,7 @@ macro vwf_space()
 	if !vwf_message_command_error_condition
 		%vwf_print_message_command_error()
 	else
-		!vwf_8bit_mode_only db $FE
-		!vwf_16bit_mode_only dw $FFFE
+		%vwf_generate_command_table($FE)
 	endif
 endmacro
 
@@ -863,8 +877,7 @@ macro vwf_line_break()
 	if !vwf_message_command_error_condition
 		%vwf_print_message_command_error()
 	else
-		!vwf_8bit_mode_only db $FD
-		!vwf_16bit_mode_only dw $FFFD
+		%vwf_generate_command_table($FD)
 	endif
 endmacro
 
@@ -891,8 +904,7 @@ macro vwf_display_message(message_id, ...)
 			error "%vwf_display_message(): ""show_open_animation"" must be either true or false."
 		endif
 		
-		!vwf_8bit_mode_only db $FC
-		!vwf_16bit_mode_only dw $FFFC
+		%vwf_generate_command_table($FC)
 		
 		if !temp_show_open_animation == false && !temp_show_close_animation == false
 			; RPG Hacker: Legacy format. This branch should be removed once
@@ -917,8 +929,7 @@ macro vwf_set_text_pointer(pointer)
 	if !vwf_message_command_error_condition
 		%vwf_print_message_command_error()
 	else
-		!vwf_8bit_mode_only db $FB
-		!vwf_16bit_mode_only dw $FFFB
+		%vwf_generate_command_table($FB)
 		dl <pointer>
 	endif
 endmacro
@@ -927,8 +938,7 @@ macro vwf_wait_for_a()
 	if !vwf_message_command_error_condition
 		%vwf_print_message_command_error()
 	else
-		!vwf_8bit_mode_only db $FA
-		!vwf_16bit_mode_only dw $FFFA
+		%vwf_generate_command_table($FA)
 	endif
 endmacro
 
@@ -938,8 +948,7 @@ macro vwf_wait_frames(num_frames)
 	elseif <num_frames> < $00 || <num_frames> > $FF	
 		error "%vwf_wait_frames() only supports values between ",dec($00)," and ",dec($FF)" (current: ",dec(<num_frames>),")."
 	else
-		!vwf_8bit_mode_only db $F9
-		!vwf_16bit_mode_only dw $FFF9
+		%vwf_generate_command_table($F9)
 		db <num_frames>
 	endif
 endmacro
@@ -950,8 +959,7 @@ macro vwf_set_text_speed(text_speed)
 	elseif <text_speed> < $00 || <text_speed> > $FF	
 		error "%vwf_set_text_speed() only supports values between ",dec($00)," and ",dec($FF)" (current:",dec(<text_speed>)")."
 	else
-		!vwf_8bit_mode_only db $F8
-		!vwf_16bit_mode_only dw $FFF8
+		%vwf_generate_command_table($F8)
 		db <text_speed>
 	endif
 endmacro
@@ -979,8 +987,7 @@ macro vwf_decimal(address, ...)
 			error "%vwf_decimal(): ""leading_zeroes"" must be either true or false"
 		endif
 	
-		!vwf_8bit_mode_only db $F7
-		!vwf_16bit_mode_only dw $FFF7
+		%vwf_generate_command_table($F7)
 		dl <address>
 		; RPG Hacker: For some reason, I decided to reverse the "leading zeroes" bit back when I wrote the patch...
 		; What a sussy baka.
@@ -994,9 +1001,8 @@ endmacro
 macro vwf_hex(address)
 	if !vwf_message_command_error_condition
 		%vwf_print_message_command_error()
-	else	
-		!vwf_8bit_mode_only db $F6
-		!vwf_16bit_mode_only dw $FFF6
+	else
+		%vwf_generate_command_table($F6)
 		dl <address>
 	endif
 endmacro
@@ -1004,9 +1010,8 @@ endmacro
 macro vwf_char_at_address(address)
 	if !vwf_message_command_error_condition
 		%vwf_print_message_command_error()
-	else	
-		!vwf_8bit_mode_only db $F5
-		!vwf_16bit_mode_only dw $FFF5
+	else
+		%vwf_generate_command_table($F5)
 		dl <address>
 	endif
 endmacro
@@ -1017,8 +1022,7 @@ macro vwf_set_text_palette(palette)
 	elseif <palette> < 0 || <palette> > 7	
 		error "%vwf_set_text_palette() only supports values between 0 and 7 (current: <palette>)."
 	else
-		!vwf_8bit_mode_only db $F3
-		!vwf_16bit_mode_only dw $FFF3
+		%vwf_generate_command_table($F3)
 		db <palette>
 	endif
 endmacro
@@ -1031,7 +1035,7 @@ macro vwf_set_font(font)
 	else
 		; RPG Hacker: Changing fonts does nothing in 16-Bit mode.
 		if !vwf_bit_mode == VWF_BitMode.8Bit
-			db $F2
+			%vwf_generate_command_table($F2)
 			db <font>
 		endif
 	endif
@@ -1040,9 +1044,8 @@ endmacro
 macro vwf_execute_subroutine(address)
 	if !vwf_message_command_error_condition
 		%vwf_print_message_command_error()
-	else	
-		!vwf_8bit_mode_only db $F1
-		!vwf_16bit_mode_only dw $FFF1
+	else
+		%vwf_generate_command_table($F1)
 		dl <address>
 	endif
 endmacro
@@ -1068,12 +1071,14 @@ macro vwf_display_options(label_prefix, ...)
 		error "%vwf_display_options() supports only up to 13 options (current: ",dec(sizeof(...)),")."
 	elseif !vwf_default_cursor_space < 0 || !vwf_default_cursor_space > 7
 		error "\!vwf_default_cursor_space must be a value between 0 and 7 (curent: ",dec(!vwf_default_cursor_space),")."
-	else	
-		!vwf_8bit_mode_only db $F0
-		!vwf_16bit_mode_only dw $FFF0
+	else
+		%vwf_generate_command_table($F0)
 		db (sizeof(...)<<4)|!vwf_default_cursor_space
-		!vwf_8bit_mode_only db !vwf_default_cursor_char
-		!vwf_16bit_mode_only dw !vwf_default_cursor_char
+		if !vwf_bit_mode == VWF_BitMode.8Bit
+			db !vwf_default_cursor_char
+		elseif !vwf_bit_mode == VWF_BitMode.16Bit
+			dw !vwf_default_cursor_char
+		endif
 		
 		!temp_i #= 0
 		while !temp_i < sizeof(...)
@@ -1119,8 +1124,7 @@ macro vwf_setup_teleport(destination_level_or_entrance, is_secondary, midway_or_
 	elseif <midway_or_water_level> != true && <midway_or_water_level> != false
 		error "%vwf_setup_teleport(): midway_or_water_level needs to be either true or false."
 	else
-		!vwf_8bit_mode_only db $EF
-		!vwf_16bit_mode_only dw $FFEF
+		%vwf_generate_command_table($EF)
 		dw <destination_level_or_entrance>
 		db (<midway_or_water_level><<3)|(<is_secondary><<1)
 	endif
@@ -1138,8 +1142,7 @@ macro vwf_change_colors(palette_start, ...)
 	else		
 		!temp_i #= 0
 		while !temp_i < sizeof(...)
-			!vwf_8bit_mode_only db $EE
-			!vwf_16bit_mode_only dw $FFEE
+			%vwf_generate_command_table($EE)
 			
 			if <!temp_i> < $0000 || <!temp_i> > $7FFF
 				error "%vwf_change_colors(): colors must be numbers between $0000 and $7FFF. Please use the vwf_make_color_15() function. (Current at ",dec(!temp_i),": $",hex(<!temp_i>),")."
@@ -1172,8 +1175,7 @@ macro vwf_clear()
 	if !vwf_message_command_error_condition
 		%vwf_print_message_command_error()
 	else
-		!vwf_8bit_mode_only db $ED
-		!vwf_16bit_mode_only dw $FFED
+		%vwf_generate_command_table($ED)
 	endif
 endmacro
 
@@ -1183,8 +1185,7 @@ macro vwf_play_bgm(bgm_id)
 	elseif <bgm_id> < $00 || <bgm_id> > $FF
 		error "%vwf_play_bgm() only supports values between $00 and $FF (current: $",hex(<bgm_id>),")."
 	else
-		!vwf_8bit_mode_only db $EC
-		!vwf_16bit_mode_only dw $FFEC
+		%vwf_generate_command_table($EC)
 		db <bgm_id>
 	endif
 endmacro
@@ -1193,8 +1194,7 @@ macro vwf_freeze()
 	if !vwf_message_command_error_condition
 		%vwf_print_message_command_error()
 	else
-		!vwf_8bit_mode_only db $EB
-		!vwf_16bit_mode_only dw $FFEB
+		%vwf_generate_command_table($EB)
 	endif
 endmacro
 
@@ -1206,8 +1206,7 @@ macro vwf_execute_text_macro_by_indexed_group(group_name, index)
 	elseif not(defined("vwf_text_macro_group_<group_name>_defined"))
 		error "%vwf_execute_text_macro_by_group(): Couldn't find text macro group ""<group_name>""."
 	else
-		!vwf_8bit_mode_only db $E9
-		!vwf_16bit_mode_only dw $FFE9
+		%vwf_generate_command_table($E9)
 		
 		dl <index>
 		db !vwf_text_macro_group_<group_name>_id
@@ -1230,8 +1229,7 @@ macro vwf_execute_buffered_text_macro(id)
 	elseif <id> >= !vwf_num_reserved_text_macros || <id> < 0
 		error "%vwf_execute_buffered_text_macro(): ID for buffered text macros must be a value between 0 and ",dec(!vwf_num_reserved_text_macros-1),". Current: ",dec(<id>)
 	else
-		!vwf_8bit_mode_only db $E8
-		!vwf_16bit_mode_only  dw $FFE8
+		%vwf_generate_command_table($E8)
 		dw <id>
 	endif
 endmacro
@@ -1241,8 +1239,7 @@ macro vwf_text_macro_end()
 	if not(defined("vwf_inside_text_macro"))
 		error "%vwf_text_macro_end() is intended for internal purposes only and should be called automatically by %vwf_register_text_macro()."
 	else
-		!vwf_8bit_mode_only db $E7
-		!vwf_16bit_mode_only dw $FFE7
+		%vwf_generate_command_table($E7)
 	endif
 endmacro
 
@@ -1332,7 +1329,7 @@ endmacro
 
 macro textstart()
 	warn "%textstart() macro is deprecated and will disappear in a future version. Please use %vwf_add_messages() instead."
-	%vwf_text_start(!vwf_default_table_file)
+	%vwf_text_start("data/vwftable.asm")
 endmacro
 
 macro textend()

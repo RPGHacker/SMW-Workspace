@@ -73,21 +73,25 @@ endmacro
 .Read
 	lda [$00]	; Read character
 	inc $00
-	!vwf_16bit_mode_only inc $00
-	!vwf_8bit_mode_only sep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	sep #$20
 	sta !vwf_char
-	!vwf_16bit_mode_only sep #$20
-	!vwf_16bit_mode_only lda !vwf_char+1
-	!vwf_16bit_mode_only sta !vwf_font
-	!vwf_16bit_mode_only jsl GetFontLong
-	!vwf_16bit_mode_only lda $05
-	!vwf_16bit_mode_only sta $0E
-	!vwf_16bit_mode_only rep #$21
-	!vwf_16bit_mode_only lda $03
-	!vwf_16bit_mode_only adc #$0020
-	!vwf_16bit_mode_only sta $0C
-	!vwf_16bit_mode_only sep #$20
-	!vwf_16bit_mode_only lda !vwf_char
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	inc $00
+	sta !vwf_char
+	sep #$20
+	lda !vwf_char+1
+	sta !vwf_font
+	jsl GetFontLong
+	lda $05
+	sta $0E
+	rep #$21
+	lda $03
+	adc #$0020
+	sta $0C
+	sep #$20
+	lda !vwf_char
+endif
 	tay
 	lda [$06],y	; Get width
 	sta !vwf_char_width
@@ -103,7 +107,9 @@ endmacro
 	stz.w select(!use_sa1_mapping,$2250,$211C)
 	lda #$40
 	sta.w select(!use_sa1_mapping,$2253,$211C)
-	if !use_sa1_mapping : stz $2254
+	if !use_sa1_mapping
+		stz $2254
+	endif
 	rep #$10
 	ldy.w select(!use_sa1_mapping,$2306,$2134)
 	ldx #$0000

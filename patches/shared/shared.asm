@@ -1,4 +1,4 @@
-@asar 1.90
+asar 1.90
 
 includeonce
 

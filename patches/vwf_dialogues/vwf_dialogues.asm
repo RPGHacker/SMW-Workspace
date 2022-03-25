@@ -110,6 +110,7 @@ endmacro
 %vwf_claim_varram(max_width, 1)
 %vwf_claim_varram(max_height, 1)
 %vwf_claim_varram(char, 2)
+%vwf_claim_varram(char_offset, 2)
 %vwf_claim_varram(char_width, 1)
 %vwf_claim_varram(routine, 15)
 %vwf_claim_varram(tile_ram, 96)
@@ -2018,6 +2019,12 @@ endif
 
 	; RPG Hacker: Without this, the very first beginning of a text box would not get detected correctly.
 	sta !vwf_at_start_of_text
+	
+	lda #$00
+	sta !vwf_char_offset
+if !vwf_bit_mode == VWF_BitMode.16Bit	
+	sta !vwf_char_offset+1
+endif
 
 if !use_sa1_mapping
 	rtl
@@ -2738,6 +2745,17 @@ endif
 	jmp .TextMacroShared
 	
 .EA_CharOffset
+	ldy #$01
+	lda [$00],y
+	sta !vwf_char_offset
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	iny
+	lda [$00],y
+	sta !vwf_char_offset+1
+	jsr IncPointer
+endif
+	jsr IncPointer
+	jsr IncPointer
 	jmp .NoButton
 
 .EB_LockTextBox
@@ -3527,6 +3545,17 @@ endif
 
 .WriteLetter
 if !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+endif
+	lda !vwf_char
+	clc
+	adc !vwf_char_offset
+	sta !vwf_char
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	sep #$20
+endif
+
+if !vwf_bit_mode == VWF_BitMode.16Bit
 	lda !vwf_char+1
 	sta !vwf_font
 endif
@@ -4292,6 +4321,15 @@ endif
 	jmp .TextMacroShared
 	
 .EA_CharOffset
+	ldy #$01
+	lda [$00]
+	sta !vwf_char_offset
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	lda [$00],y
+	sta !vwf_char_offset+1
+	jsr IncPointer
+endif
+	jsr IncPointer
 	jmp .Begin
 
 .EE_ChangeColor
@@ -4540,7 +4578,33 @@ endif
 .FF_End
 	jmp .Return
 
-.Add
+.Add	
+;if !vwf_bit_mode == VWF_BitMode.16Bit
+;	rep #$20
+;endif
+;	lda !vwf_char
+;	clc
+;	adc !vwf_char_offset
+;if !vwf_bit_mode == VWF_BitMode.16Bit
+;	sep #$20
+;	xba
+;	sta !vwf_font
+;	xba
+;	pha
+;	jsr GetFont
+;	pla
+;endif
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+endif
+	lda !vwf_char
+	clc
+	adc !vwf_char_offset
+	sta !vwf_char
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	sep #$20
+endif
+
 if !vwf_bit_mode == VWF_BitMode.16Bit
 	lda !vwf_char+1
 	sta !vwf_font
@@ -4600,8 +4664,12 @@ endif
 	pha
 	lda !vwf_char
 	pha
+	lda !vwf_char_offset
+	pha
 if !vwf_bit_mode == VWF_BitMode.16Bit
 	lda !vwf_char+1
+	pha
+	lda !vwf_char_offset+1
 	pha
 endif
 
@@ -4621,8 +4689,12 @@ endif
 	
 if !vwf_bit_mode == VWF_BitMode.16Bit
 	pla
+	sta !vwf_char_offset+1
+	pla
 	sta !vwf_char+1
 endif
+	pla
+	sta !vwf_char_offset
 	pla
 	sta !vwf_char
 	pla

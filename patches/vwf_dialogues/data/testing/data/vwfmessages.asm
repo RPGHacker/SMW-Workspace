@@ -130,15 +130,31 @@ endif
 		%vwf_play_bgm($02)
 		%vwf_clear()		
 
-if !assembler_ver >= 20000		
-		%vwf_set_font($02)
-		%vwf_text("Ｈｏｗ　ａｂｏｕｔ　ｓｏｍｅ　Ｊａｐａｎｅｓｅ　ｔｅｘｔ？") : %vwf_wait_for_a() : %vwf_clear()
-		%vwf_set_font($03)
-		%vwf_text("こんにちは、RPGハッカーです！") : %vwf_line_break() 
-		%vwf_text("私は日本語が話せないので、ここにランダムな漢字を挿入します。 ") : %vwf_line_break() 
-		%vwf_set_font($04)
-		%vwf_text("兄係軽血決県研言庫湖公向幸港号根") : %vwf_wait_for_a() : %vwf_clear()
+if !assembler_ver >= 20000
+		; This looks really messy, because it supports both 8-bit and 16-bit mode.
+		; If we only wanted to support 16-bit mode, we wouldn't need the font calls.
+		; We'd only have to set the char offset once and then write the text as normal.
+		macro write_japanese_text(...)
+			if sizeof(...)&$01 != 0
+				error "%write_japanese_text() takes an even amount of arguments in the form: {font},{text}"
+			endif
+			
+			!temp_i = 0
+			while !temp_i < sizeof(...)
+				%vwf_set_font(<!temp_i>)
+				%vwf_text(<!temp_i+1>)
+			
+				!temp_i #= !temp_i+2
+			endwhile
+		endmacro
 
+		%vwf_char_offset($0200)
+		%write_japanese_text($02, "Ｈｏｗ　ａｂｏｕｔ　ｓｏｍｅ　Ｊａｐａｎｅｓｅ　ｔｅｘｔ？") : %vwf_line_break() : %vwf_line_break()
+		%write_japanese_text($03, "こんにちは", $02, "、RPG", $03, "ハッカーです", $02, "！") : %vwf_line_break()
+		%write_japanese_text($07, "私", $03, "は", $04, "日本語", $03, "が", $04, "話", $03, "せないので", $02, "、", $03, "ここにランダムな", $05, "漢", $04, "字", $03, "を挿", $04, "入", $03, "します。") : %vwf_line_break()
+		%write_japanese_text($05, "兄係軽血決県研言庫湖公向幸港号根") : %vwf_wait_for_a() : %vwf_clear()
+
+		%vwf_char_offset($0000)
 		%vwf_set_font($00)
 endif
 		

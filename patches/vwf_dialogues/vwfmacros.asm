@@ -183,7 +183,7 @@ TextMacroGroupPointers:
 			
 			!{vwf_text_macro_group_!{temp_name}_sequence}
 			
-			undef "temp_name"		
+			undef "temp_name"
 		!temp_i #= !temp_i+1
 	endwhile
 	undef "temp_i"
@@ -1198,7 +1198,20 @@ macro vwf_freeze()
 	endif
 endmacro
 
-; RPG Hacker: $EA is currently reserved.
+macro vwf_char_offset(offset)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	elseif <offset> < $0000 || <offset> > $FFFF
+		error "%vwf_char_offset() only supports values between $0000 and $FFFF (current: $",hex(<offset>),")."
+	else
+		%vwf_generate_command_table($EA)		
+		if !vwf_bit_mode == VWF_BitMode.8Bit
+			db <offset>
+		elseif !vwf_bit_mode == VWF_BitMode.16Bit
+			dw <offset>
+		endif
+	endif
+endmacro
 
 macro vwf_execute_text_macro_by_indexed_group(group_name, index)
 	if !vwf_message_command_error_condition
@@ -1256,6 +1269,8 @@ if !vwf_enable_short_aliases != false
 	!chr = %vwf_char
 	!ram_char = %vwf_char_at_address
 	!ram_chr = %vwf_char_at_address
+	!char_offset = %vwf_char_offset
+	!chr_offset = %vwf_char_offset
 	
 	!nbsp = %vwf_non_breaking_space()
 	

@@ -1,4 +1,4 @@
-@includefrom sa1.asm
+includefrom sa1.asm
 
 !Wiggers = $418800			; Don't touch!
 

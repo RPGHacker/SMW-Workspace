@@ -4018,6 +4018,10 @@ Convert16Bit:
 	pha
 	lda $00
 	sta !vwf_routine
+if !vwf_mode != VWF_BitMode.8Bit
+	lda $01
+	sta !vwf_routine+1+!vwf_bit_mode
+endif
 	pla
 	sep #$20
 	rts

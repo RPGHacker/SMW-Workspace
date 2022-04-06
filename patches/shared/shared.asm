@@ -547,3 +547,12 @@ macro sta_one_or_inc(address)
 		sta <address>
 	endif
 endmacro
+
+
+
+; Misc color functions
+
+
+; Creates an RGB15 16-bit value from the three different colors channels. Each channel value can be in the range of 0 to 31.
+
+function rgb_15(red, green, blue) = (red&%11111)|((green&%11111)<<5)|((blue&%11111)<<10)

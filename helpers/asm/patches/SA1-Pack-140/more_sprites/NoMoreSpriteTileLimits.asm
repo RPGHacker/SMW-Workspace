@@ -1,4 +1,4 @@
-@includefrom sa1.asm
+includefrom sa1.asm
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; No More Sprite Tile Limits v2.0.0
 ;; coded by edit1754, macro'd by MathOnNapkins,
@@ -8,7 +8,6 @@
 ;; with the consequence of slots no longer being searched but instead hardcoded.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-header
 sa1rom
 
 org $0180D2

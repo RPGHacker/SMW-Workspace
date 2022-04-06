@@ -17,12 +17,13 @@ macro remap_memory()
     ; else
     ;    print "Skipping level ",hex(!count)," with memory ",hex(!spr_mem)
     endif
-	
-	!count #= !count+1
 endmacro
 
 ; Change all sprite memory to $08 only if it's a clean ROM.
 if read1($0DA691+2) != $7E
 	!count = 0
-	rep 512 : %remap_memory()
+	while !count < 512
+		%remap_memory()	
+		!count #= !count+1
+	endwhile
 endif

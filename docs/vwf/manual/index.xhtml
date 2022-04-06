@@ -1739,7 +1739,7 @@ db "Insert any valid text/commands here",$E7</code></pre>
 
 					<h6>Changes:</h6>
 					<ul>
-						<li>Completely reworked message formats. Messages are now constructed via macros/defines instead of magic hex values.</li>
+						<li>Completely reworked message format. Messages are now constructed via macros/defines instead of magic hex values. The patch now requires Asar 1.90 or higher.</li>
 						<li>Fixed an oversight where various aspects of layer 3 (transparency, priority, main/subscreen status) were not being preserved.</li>
 						<li>Added MessageASM functionality to allow one to run custom code on a per-message basis.</li>
 						<li>Added the ability to modify the text pointer using the start button.</li>
@@ -1766,6 +1766,7 @@ db "Insert any valid text/commands here",$E7</code></pre>
 						<li>Hex and decimal number functions no longer require 0123456789ABCDEF to be the first characters in the font, but rather use character mapping table files to determine the correct characters to use.</li>
 						<li>Character mapping table now supports a bunch of special characters, as well as Japanese (both available from Asar 2.0 onwards).</li>
 						<li>Added new character offset command, which allows applying an offset value to every single character being rendered. Useful for creating fonts with a custom number of characters.</li>
+						<li>Fixed: When running in 16-bit mode and displaying a 16-bit decimal number, the thousands digit didn't work and displayed a random character instead.</li>
 					</ul>
 				</p></dd>
 

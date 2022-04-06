@@ -3,12 +3,7 @@
 
 ; General stuff
 
-function vwf_make_color_15(red, green, blue) = (red&%11111)|((green&%11111)<<5)|((blue&%11111)<<10)
-
 function vwf_get_color_index_2bpp(palette, id) = (palette*4)+id
-
-!vwf_text_color_id = 2
-!vwf_outline_color_id = 3
 
 ; RPG Hacker: This exists as a define, because regular space in all tables is defined as FFFE.
 ; If we pass that to %vwf_char() macro, we would get garbage in 16-Bit mode, rather than escaping a space.
@@ -46,6 +41,8 @@ macro vwf_define_enums(prefix)
 	; decide to add right-aligned text to version 1.4 or later if we desire.
 	%define_enum(<prefix>TextAlignment, Left, Centered)
 	%define_enum(<prefix>AutoWait, None, WaitForA)
+	
+	%define_enum_with_values(<prefix>ColorID, Text, 2, Outline, 3)
 	
 	struct WaitFrames extends <prefix>AutoWait
 		!temp_i #= 1
@@ -663,8 +660,8 @@ endmacro
 
 %vwf_define_header_setter_generic("box_animation", false, !enum_VWF_BoxAnimation_first, !enum_VWF_BoxAnimation_last)
 %vwf_define_header_setter_generic("text_palette", true, $00, $07)
-%vwf_define_header_setter_generic("text_color", true, vwf_make_color_15(0,0,0), vwf_make_color_15(31,31,31))
-%vwf_define_header_setter_generic("outline_color", true, vwf_make_color_15(0,0,0), vwf_make_color_15(31,31,31))
+%vwf_define_header_setter_generic("text_color", true, rgb_15(0,0,0), rgb_15(31,31,31))
+%vwf_define_header_setter_generic("outline_color", true, rgb_15(0,0,0), rgb_15(31,31,31))
 
 %vwf_define_header_setter_generic("space_width", false, 0, 16)
 %vwf_define_header_setter_generic("text_margin", false, 0, 7)
@@ -1145,7 +1142,7 @@ macro vwf_change_colors(palette_start, ...)
 			%vwf_generate_command_table($EE)
 			
 			if <!temp_i> < $0000 || <!temp_i> > $7FFF
-				error "%vwf_change_colors(): colors must be numbers between $0000 and $7FFF. Please use the vwf_make_color_15() function. (Current at ",dec(!temp_i),": $",hex(<!temp_i>),")."
+				error "%vwf_change_colors(): colors must be numbers between $0000 and $7FFF. Please use the rgb_15() function. (Current at ",dec(!temp_i),": $",hex(<!temp_i>),")."
 			endif
 			
 			db <palette_start>+!temp_i
@@ -1164,9 +1161,9 @@ macro vwf_set_text_color(palette_no, text_color)
 	elseif <palette_no> < $00 || <palette_no> > $07
 		error "%vwf_set_text_color(): palette_no must be a number between $00 and $07 (current: $",hex(<palette_no>),")."
 	elseif <text_color> < $0000 || <text_color> > $7FFF
-		error "%vwf_set_text_color(): text_color must be a number between $0000 and $7FFF. Please use the vwf_make_color_15() function. (current: $",hex(<text_color>),")."
+		error "%vwf_set_text_color(): text_color must be a number between $0000 and $7FFF. Please use the rgb_15() function. (current: $",hex(<text_color>),")."
 	else
-		%vwf_change_colors(vwf_get_color_index_2bpp(<palette_no>, !vwf_text_color_id), <text_color>, vwf_make_color_15(0, 0, 0))
+		%vwf_change_colors(vwf_get_color_index_2bpp(<palette_no>, VWF_ColorID.Text), <text_color>, rgb_15(0, 0, 0))
 		%vwf_set_text_palette(<palette_no>)
 	endif
 endmacro
@@ -1297,10 +1294,27 @@ if !vwf_enable_short_aliases != false
 	
 	!font = %vwf_set_font
 	!edit_pal = %vwf_change_colors
-	!set_pal = %vwf_set_text_palette	
+	!set_pal = %vwf_set_text_palette
 	!set_color = %vwf_set_text_color
 	!reset_color = %vwf_set_text_palette(!vwf_default_text_palette)
-	!rgb_15 = vwf_make_color_15
+	
+	!text_color_0 = "vwf_get_color_index_2bpp($00, VWF_ColorID.Text)"
+	!text_color_1 = "vwf_get_color_index_2bpp($01, VWF_ColorID.Text)"
+	!text_color_2 = "vwf_get_color_index_2bpp($02, VWF_ColorID.Text)"
+	!text_color_3 = "vwf_get_color_index_2bpp($03, VWF_ColorID.Text)"
+	!text_color_4 = "vwf_get_color_index_2bpp($04, VWF_ColorID.Text)"
+	!text_color_5 = "vwf_get_color_index_2bpp($05, VWF_ColorID.Text)"
+	!text_color_6 = "vwf_get_color_index_2bpp($06, VWF_ColorID.Text)"
+	!text_color_7 = "vwf_get_color_index_2bpp($07, VWF_ColorID.Text)"
+	
+	!outline_color_0 = "vwf_get_color_index_2bpp($00, VWF_ColorID.Outline)"
+	!outline_color_1 = "vwf_get_color_index_2bpp($01, VWF_ColorID.Outline)"
+	!outline_color_2 = "vwf_get_color_index_2bpp($02, VWF_ColorID.Outline)"
+	!outline_color_3 = "vwf_get_color_index_2bpp($03, VWF_ColorID.Outline)"
+	!outline_color_4 = "vwf_get_color_index_2bpp($04, VWF_ColorID.Outline)"
+	!outline_color_5 = "vwf_get_color_index_2bpp($05, VWF_ColorID.Outline)"
+	!outline_color_6 = "vwf_get_color_index_2bpp($06, VWF_ColorID.Outline)"
+	!outline_color_7 = "vwf_get_color_index_2bpp($07, VWF_ColorID.Outline)"
 	
 	!dec = %vwf_decimal
 	!hex = %vwf_hex

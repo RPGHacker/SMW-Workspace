@@ -1,4 +1,4 @@
-@includefrom sa1.asm
+includefrom sa1.asm
 pushpc
 
 ; MaxTile work memory:
@@ -174,22 +174,22 @@ pullpc
 macro oam_check_slot(slot, callback)
     <callback>
     
-	CMP.w $0201+(<slot>*4)
+	CMP.w $0201+((<slot>)*4)
 	BEQ ?skip
     	
-	LDY.w $0200+(<slot>*4)
+	LDY.w $0200+((<slot>)*4)
 	STY.b $00,x
-	LDY.w $0202+(<slot>*4)
+	LDY.w $0202+((<slot>)*4)
 	STY.b $02,x
 	
-	LDA.w $0420+<slot>
+	LDA.w $0420+(<slot>)
 	STA.b ($00)
 	
 	DEC.b $00
 	DEX #4
 	
 	LDA.b #$F0
-	STA.w $0201+(<slot>*4)
+	STA.w $0201+((<slot>)*4)
 ?skip:
 endmacro
 
@@ -200,7 +200,7 @@ macro oam_check_range(first, last, callback)
 	while !x >= <first>
 		%oam_check_slot(!x, "<callback>")
 		!x #= !x-1
-	endif
+	endwhile
 endmacro
 
 ;; first and last slot are included
@@ -371,9 +371,17 @@ oam_clear:
 	LDA.b #$F0
 .block
 	!x = 0
-	rep 36 : %oam_reset_y()
+	!temp_i = 0
+	while !temp_i < 36
+		%oam_reset_y()
+		!temp_i #= !temp_i+1
+	endwhile
 .boss
-	rep 28 : %oam_reset_y()
+	!temp_i = 0
+	while !temp_i < 28
+		%oam_reset_y()
+		!temp_i #= !temp_i+1
+	endwhile
 	PLD
 	RTS
 	

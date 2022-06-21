@@ -3,11 +3,29 @@ from tkinter import *
 from tkinter import ttk, messagebox
 import os
 import glob
+from importlib import abc
 import importlib.util
 import subprocess
+import platform
 from typing import Dict, List, cast
 from types import ModuleType
+import tempfile
+from pathlib import Path
+import stat
+import shutil
 import patching_utility
+
+
+_default_start_command = 'xdg-open'
+_default_start_is_shell_command = False
+
+if platform.system() == 'Windows':
+	_default_start_command = 'start'
+	default_start_is_shell_command = True
+
+
+_sensible_terminal_path = os.path.normpath(os.path.join(os.path.dirname(__file__), '../shell/i3-sensible-terminal'))
+
 
 class MainWindow(tkinter.Tk):
 	class BetterComboBox(ttk.Combobox):
@@ -113,20 +131,25 @@ class MainWindow(tkinter.Tk):
 		self._options_canvas.itemconfig(self._options_canvas_frame, width = event.width)
 		
 	def _browse_button_clicked(self) -> None:
-		subprocess_args = [ 'start' ]
+		subprocess_args = [ _default_start_command ]
 	
 		# Append patch path
 		subprocess_args.append(os.path.abspath(os.path.dirname(self._patch_paths[self._patch_combo_box.get()])))
 		
 		print('Opening explorer window.\nCommand line:\n{command_line}'.format(command_line=patching_utility.format_command_line(subprocess_args)))
-		subprocess.run(subprocess_args, shell=True)
+		subprocess.run(subprocess_args, shell=_default_start_is_shell_command)
 		
 	def _patch_button_clicked(self) -> None:
 		# We already have the loaded patch modules, so we could just run the patcher function directly.
 		# However, that would print any output in the GUI applications terminal window (or not at all).
 		# Or we would have to implement our own simple terminal and capture output.
 		# It's simpler to just relay the patching to another terminal application.
-		subprocess_args: List[str] = [ 'start', 'cmd', '/K', 'python.exe' ]
+		subprocess_args: List[str] = []
+
+		if platform.system() == 'Windows':
+			subprocess_args.extend([ _default_start_command, 'cmd', '/K', 'python.exe' ])
+		else:
+			subprocess_args.extend([ 'python' ])
 	
 		# Append patch path
 		subprocess_args.append(os.path.abspath(self._patch_paths[self._patch_combo_box.get()]))
@@ -139,13 +162,37 @@ class MainWindow(tkinter.Tk):
 					subprocess_args.append(widget.get())
 		
 		print('Running patcher in separate terminal.\nCommand line:\n{command_line}'.format(command_line=patching_utility.format_command_line(subprocess_args)))
-		subprocess.run(subprocess_args, shell=True)
+
+		if platform.system() == 'Windows':
+			subprocess.run(subprocess_args, shell=_default_start_is_shell_command)
+		else:
+			# On Linux, there is no simple way of creating a new instance
+			# of the default terminal. My solution here is to create a temp
+			# .sh file and pass it to i3-sensible-terminal.
+			with tempfile.NamedTemporaryFile(suffix='.sh', delete=False) as f:
+				f.write(patching_utility.format_command_line(subprocess_args).encode('utf-8'))
+				f.write(b'\nexec $SHELL')
+
+				p = Path(f.name)
+				p.chmod(p.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+
+				sh_subprocess_args: List[str] = [ _sensible_terminal_path, '-e', 'bash', f.name ]
+
+				print('Via helper process:\n{command_line}'.format(command_line=patching_utility.format_command_line(sh_subprocess_args)))
+
+				subprocess.Popen(sh_subprocess_args)
+
 		
-	def _run_button_clicked(self) -> None:	
-		subprocess_args: List[str] = [ 'start' ]
+	def _run_button_clicked(self) -> None:
+		subprocess_args: List[str] = []
+
+		if platform.system() == 'Windows':
+			subprocess_args.extend([ _default_start_command ])
+		else:
+			subprocess_args.extend([ _sensible_terminal_path, '-e' ])
 		
-		# Append emulator path
-		subprocess_args.append(self._emulator_paths[self._run_combo_box.get()])
+		# Build emulator command line
+		emulator_args = [self._emulator_paths[self._run_combo_box.get()]]
 		
 		# Get options into a hash
 		options = []
@@ -170,10 +217,13 @@ class MainWindow(tkinter.Tk):
 		rom_path: str = os.path.join(patch_config.output_dir, rom_name)
 		
 		if os.path.exists(rom_path):
-			subprocess_args.append(os.path.abspath(rom_path))
+			emulator_args.append(os.path.abspath(rom_path))
+
+			emulator_args = patching_utility.turn_into_wine_command_line_if_needed(emulator_args)
+			subprocess_args.extend(emulator_args)
 			
 			print('Starting ROM in emulator.\nCommand line:\n{command_line}'.format(command_line=patching_utility.format_command_line(subprocess_args)))
-			subprocess.run(subprocess_args, shell=True)
+			subprocess.run(subprocess_args, shell=_default_start_is_shell_command)
 		else:
 			messagebox.showerror('Error', 'ROM not found:\n\n{rom}\n\nPlease make sure to create the ROM before attempting to start it in an emulator.'.format(rom=os.path.normpath(os.path.abspath(rom_path))))
 		
@@ -203,11 +253,20 @@ class MainWindow(tkinter.Tk):
 	def _parse_tools(self, tools_path: str) -> None:
 		executables: List[str] = glob.glob(os.path.join(tools_path, '**/*.exe'), recursive = True)
 		
+		known_emulator_names: List[str] = ['bsnes', 'higan', 'snes9x', 'zsnes', 'zsnesw', 'lucia', 'ares', 'mesen', 'mesen-s', 'mesen-sx']
+
 		self._emulator_paths: Dict[str, str] = {}
 		self._emulator_names: List[str] = []
+
+		for name in known_emulator_names:
+			path: str = shutil.which(name)
+			if path != None:
+				list_name: str = 'native {name}'.format(name=name)
+				self._emulator_paths[list_name] = path
+				self._emulator_names.append(list_name)
 		
 		for executable in executables:
-			if any([substring in os.path.basename(executable).lower() for substring in ['bsnes', 'higan', 'snes9x', 'zsnes', 'lucia', 'ares', 'mesen']]):
+			if any([substring in os.path.basename(executable).lower() for substring in known_emulator_names]):
 				emulator_name: str = os.path.relpath(executable, tools_path)
 				self._emulator_paths[emulator_name] = executable
 				self._emulator_names.append(emulator_name)

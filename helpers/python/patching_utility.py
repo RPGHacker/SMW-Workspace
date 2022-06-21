@@ -5,21 +5,37 @@ import subprocess
 import re
 import pathlib
 import dataclasses
+import platform
+import shutil
 from dataclasses import dataclass
 from typing import List, Dict, Optional, cast, Match, Pattern
 
 
+def try_get_native_executable(name: str, winows_fallback: str) -> str:
+	if platform.system() != 'Windows':
+		found_path: str = shutil.which(name)
+		if found_path != None:
+			return found_path
+	return os.path.join(os.path.dirname(__file__), winows_fallback)
+
+
 _asar_paths: Dict[str, str] = {
+	'native': shutil.which('asar'),
 	'1.81': os.path.join(os.path.dirname(__file__), '../../tools/asar181/asar.exe'),
 	'1.9': os.path.join(os.path.dirname(__file__), '../../tools/asar19/asar.exe'),
 	'2.0': os.path.join(os.path.dirname(__file__), '../../tools/asar20/asar.exe'),
 }
+_asar_default_index: str = 0
 
-_lm_path: str = os.path.join(os.path.dirname(__file__), '../../tools/lm331/Lunar Magic.exe')
+if _asar_paths['native'] == None:
+	del _asar_paths['native']
+	_asar_default_index: str = 1
 
-_flips_path: str = os.path.join(os.path.dirname(__file__), '../../tools/floating/flips.exe')
+_lm_path: str = try_get_native_executable('Lunar Magic', '../../tools/lm331/Lunar Magic.exe')
 
-_gps_path: str = os.path.join(os.path.dirname(__file__), '../../tools/GPS (V1.4.21)/gps.exe')
+_flips_path: str = try_get_native_executable('flips', '../../tools/floating/flips.exe')
+
+_gps_path: str = try_get_native_executable('gps', '../../tools/GPS (V1.4.21)/gps.exe')
 
 
 _clean_rom_path: str = os.path.join(os.path.dirname(__file__), '../../baserom/smw.smc')
@@ -59,6 +75,25 @@ def format_command_line(command_line_args: List[str]) -> str:
 	return '{command_line}'.format(command_line=' '.join(f'"{arg}"' if ' ' in arg else f'{arg}' for arg in command_line_args))
 
 
+def turn_into_wine_command_line(command_line_args: List[str]) -> List[str]:
+	if command_line_args[0] != 'wine':
+		command_line_args.insert(0, 'wine')
+		# If the arg starts with a /, assume it's an
+		# absolute path and try to sanitize it for Wine.
+		# A lot of apps will fail otherwise.
+		command_line_args = ['Z:{arg}'.format(arg=arg.replace('/', '\\')) if arg.startswith('/') else arg for arg in command_line_args]
+	return command_line_args
+
+
+def turn_into_wine_command_line_if_needed(command_line_args: List[str]) -> List[str]:
+	# If this is an .exe file and we're not running on Windows,
+	# try running the file through Wine instead.
+	if platform.system() != 'Windows':
+		if os.path.splitext(command_line_args[0])[1].lower() == '.exe':
+			return turn_into_wine_command_line(command_line_args)
+	return command_line_args
+
+
 @dataclass
 class ActionOutput:
 	"""Defines all outputs of a patching_utility.Action that the patcher
@@ -81,7 +116,9 @@ class Action:
 	def run(self, args: ActionArgs) -> ActionOutput:
 		raise NotImplementedError()
 		
-	def _run_command_line(self, command_line: List[str], process_string: str, error_string: str, working_directory: Optional[str] = None) -> None:		
+	def _run_command_line(self, command_line: List[str], process_string: str, error_string: str, working_directory: Optional[str] = None) -> None:
+		command_line = turn_into_wine_command_line_if_needed(command_line)
+
 		print('')
 		print('{process_string}:\n{command_line}'.format(process_string=process_string, command_line=format_command_line(command_line)))
 				
@@ -329,7 +366,7 @@ class PatchingUtility:
 		self._option_values: Dict[str, List[str]] = {}
 		self._option_default_indices: Dict[str, int] = {}
 		
-		self.add_option('--asar_ver', values=list(_asar_paths.keys()), default_index=1)
+		self.add_option('--asar_ver', values=list(_asar_paths.keys()), default_index=_asar_default_index)
 		self.add_option('--rom_type', values=_rom_types, default_index=0)
 		self.add_option('--rom_size', values=list(_rom_size_mappings.keys()), default_index=1)
 		

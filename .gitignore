@@ -42,3 +42,6 @@ patches/*/*.zip
 __pycache__
 .mypy_cache
 builds
+
+# Exclude unzip directories
+unzipped/

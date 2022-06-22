@@ -7,6 +7,7 @@ import pathlib
 import dataclasses
 import platform
 import shutil
+import zipfile
 from dataclasses import dataclass
 from typing import List, Dict, Optional, cast, Match, Pattern
 
@@ -17,6 +18,23 @@ def try_get_native_executable(name: str, winows_fallback: str) -> str:
 		if found_path != None:
 			return found_path
 	return os.path.join(os.path.dirname(__file__), winows_fallback)
+
+
+# This function exist primarily so that we don't have to
+# to violate FuSoYa's "only ZIP distribution" license.
+def get_exe_from_zip_file(zip_path: str, relative_exe_path: str) -> str:
+	zip_path = os.path.join(os.path.dirname(__file__), zip_path)
+	extracted_dir: str = os.path.join(os.path.dirname(zip_path), 'unzipped/')
+	print(extracted_dir)
+	extracted_dir = os.path.join(extracted_dir, pathlib.Path(zip_path).stem)
+	print(extracted_dir)
+	exe_path: str = os.path.join(extracted_dir, relative_exe_path)
+
+	if not os.path.exists(exe_path):
+		with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+			zip_ref.extractall(extracted_dir)
+
+	return exe_path
 
 
 _asar_paths: Dict[str, str] = {
@@ -31,7 +49,7 @@ if _asar_paths['native'] == None:
 	del _asar_paths['native']
 	_asar_default_index: str = 1
 
-_lm_path: str = try_get_native_executable('Lunar Magic', '../../tools/lm331/Lunar Magic.exe')
+_lm_path: str = try_get_native_executable('Lunar Magic', get_exe_from_zip_file('../../tools/lm331.zip', 'Lunar Magic.exe'))
 
 _flips_path: str = try_get_native_executable('flips', '../../tools/floating/flips.exe')
 

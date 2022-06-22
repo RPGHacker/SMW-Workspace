@@ -21,7 +21,7 @@ _default_start_is_shell_command = False
 
 if platform.system() == 'Windows':
 	_default_start_command = 'start'
-	default_start_is_shell_command = True
+	_default_start_is_shell_command = True
 
 
 _sensible_terminal_path = os.path.normpath(os.path.join(os.path.dirname(__file__), '../shell/i3-sensible-terminal'))

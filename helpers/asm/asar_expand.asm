@@ -4,7 +4,7 @@
 ; The actual size in bytes to expand to is passed in as command line define: !cmdl_arg_rom_size
 
 if defined("cmdl_arg_rom_size") == 0
-	error "No desired ROM size specified. Please define a size by passing the following argument to Asar via the command line: ""-Dcmdl_arg_rom_size=<size_in_bytes>"""
+	error "No desired ROM size specified. Please define a size by passing the following argument to Asar via the command line: ""-Dcmdl_arg_rom_size={size_in_bytes}"""
 endif
 
 ; Would be great if Asar updated this size automatically, but currently, it doesn't.

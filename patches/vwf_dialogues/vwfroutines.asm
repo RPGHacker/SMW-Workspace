@@ -579,7 +579,7 @@ skip 16
 skip 16
 
 	
-; Convenience macro, for when we want to add to a hard-coded address to the buffer. 
+; Convenience macro, for when we want to add a hard-coded address to the buffer.
 macro add_to_buffered_text_macro(address)
 	lda.b #<address>
 	sta $00
@@ -593,7 +593,7 @@ endmacro
 
 ; Finishes construction of a buffered text macro that was started by calling BeginBufferedTextMacro.
 ; After calling this macro, the respective text macro can be used in messages via %vwf_execute_buffered_text_macro(id).
-; To get the ID number of a macro, count the number of calls BeginBufferedTextMacro since your call to ResetBufferedTextMacros
+; To get the ID number of a macro, count the number of calls to BeginBufferedTextMacro since your call to ResetBufferedTextMacros
 ; and subtract 1. So the first call to BeginBufferedTextMacro would be text macro 0, the second call would be text macro 1 etc.
 %vwf_register_shared_routine(VWF_EndBufferedTextMacro)
 	%add_to_buffered_text_macro(.EndMacroData)

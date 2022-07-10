@@ -25,13 +25,12 @@ def try_get_native_executable(name: str, winows_fallback: str) -> str:
 def get_exe_from_zip_file(zip_path: str, relative_exe_path: str) -> str:
 	zip_path = os.path.join(os.path.dirname(__file__), zip_path)
 	extracted_dir: str = os.path.join(os.path.dirname(zip_path), 'unzipped/')
-	print(extracted_dir)
 	extracted_dir = os.path.join(extracted_dir, pathlib.Path(zip_path).stem)
-	print(extracted_dir)
 	exe_path: str = os.path.join(extracted_dir, relative_exe_path)
 
 	if not os.path.exists(exe_path):
 		with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+			print("Unzipping:\n{zip_path}\nto\n{out_path}".format(zip_path=zip_path, out_path=extracted_dir))
 			zip_ref.extractall(extracted_dir)
 
 	return exe_path

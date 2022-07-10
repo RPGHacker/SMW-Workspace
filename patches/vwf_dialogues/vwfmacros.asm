@@ -804,7 +804,7 @@ macro vwf_print_message_command_error()
 	error "Message content macros can only be called inside a message body (i.e. after a call to %vwf_header() and before a call to %vwf_message_end()) or text macro."
 endmacro
 
-!vwf_message_command_error_condition = "not(defined(""vwf_inside_text_macro"")) && or(equal(!vwf_current_message_id, $10000), equal(!vwf_header_present, false))"
+!vwf_message_command_error_condition = "not(defined(""vwf_inside_text_macro"")) && or(equal(!vwf_current_message_id,$10000),equal(!vwf_header_present,false))"
 
 macro vwf_char(value)
 	if !vwf_message_command_error_condition

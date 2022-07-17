@@ -159,6 +159,7 @@ if !assembler_ver >= 20000
 			
 				!temp_i #= !temp_i+2
 			endwhile
+			undef "temp_i"
 		endmacro
 
 		!char_offset($0200)

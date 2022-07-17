@@ -943,7 +943,7 @@ macro vwf_wait_frames(num_frames)
 	if !vwf_message_command_error_condition
 		%vwf_print_message_command_error()
 	elseif <num_frames> < $00 || <num_frames> > $FF	
-		error "%vwf_wait_frames() only supports values between ",dec($00)," and ",dec($FF)" (current: ",dec(<num_frames>),")."
+		error "%vwf_wait_frames() only supports values between ",dec($00)," and ",dec($FF)," (current: ",dec(<num_frames>),")."
 	else
 		%vwf_generate_command_table($F9)
 		db <num_frames>
@@ -954,7 +954,7 @@ macro vwf_set_text_speed(text_speed)
 	if !vwf_message_command_error_condition
 		%vwf_print_message_command_error()
 	elseif <text_speed> < $00 || <text_speed> > $FF	
-		error "%vwf_set_text_speed() only supports values between ",dec($00)," and ",dec($FF)" (current:",dec(<text_speed>)")."
+		error "%vwf_set_text_speed() only supports values between ",dec($00)," and ",dec($FF)," (current: ",dec(<text_speed>),")."
 	else
 		%vwf_generate_command_table($F8)
 		db <text_speed>
@@ -1028,7 +1028,7 @@ macro vwf_set_font(font)
 	if !vwf_message_command_error_condition
 		%vwf_print_message_command_error()
 	elseif <font> < 0 || <font> > !vwf_num_fonts-1
-		error "%vwf_set_font() only supports values between 0 and ",dec(!vwf_num_fonts-1)" (current: ",dec(<font>)")."
+		error "%vwf_set_font() only supports values between 0 and ",dec(!vwf_num_fonts-1)," (current: ",dec(<font>),")."
 	else
 		; RPG Hacker: Changing fonts does nothing in 16-Bit mode.
 		if !vwf_bit_mode == VWF_BitMode.8Bit

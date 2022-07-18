@@ -154,8 +154,8 @@ if !assembler_ver >= 20000
 			
 			!temp_i = 0
 			while !temp_i < sizeof(...)
-				!font(<!temp_i>)
-				!str(<!temp_i+1>)
+				!font(<...[!temp_i]>)
+				!str(<...[!temp_i+1]>)
 			
 				!temp_i #= !temp_i+2
 			endwhile
@@ -274,7 +274,7 @@ macro generate_message_test_messages(first_message_id, second_message_id, show_a
 		!temp_i #= 0
 		while !temp_i < sizeof(...)
 			!nbsp : !nbsp
-			!str("<!temp_i>")
+			!str("<...[!temp_i]>")
 			if !temp_i == sizeof(...)-1
 				!press_a
 			else
@@ -308,9 +308,9 @@ macro generate_message_test_messages(first_message_id, second_message_id, show_a
 		!temp_i #= 0
 		while !temp_i < sizeof(...)
 			if !temp_i == 0
-				!temp_params += "<!temp_i>"
+				!temp_params += "<...[!temp_i]>"
 			else
-				!temp_params += ", <!temp_i>"
+				!temp_params += ", <...[!temp_i]>"
 			endif
 			
 			!temp_i #= !temp_i+1

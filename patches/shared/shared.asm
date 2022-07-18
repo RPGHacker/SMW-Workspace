@@ -51,8 +51,8 @@ true   = 1
 
 macro define_enum(name, ...)
 	if sizeof(...) > 0
-		!enum_<name>_first = <name>.<0>
-		!enum_<name>_last = <name>.<sizeof(...)-1>
+		!enum_<name>_first = <name>.<...[0]>
+		!enum_<name>_last = <name>.<...[sizeof(...)-1]>
 	
 		struct <name> $000000
 			.First:
@@ -63,7 +63,7 @@ macro define_enum(name, ...)
 					.Last:
 				endif
 				
-				.<!temp_i>: skip 1
+				.<...[!temp_i]>: skip 1
 				
 				!temp_i #= !temp_i+1
 			endwhile
@@ -83,8 +83,8 @@ endmacro
 
 macro define_enum_with_values(name, ...)
 	if sizeof(...) > 0 && sizeof(...)&$01 == 0
-		!enum_<name>_first = <name>.<0>
-		!enum_<name>_last = <name>.<sizeof(...)-2>
+		!enum_<name>_first = <name>.<...[0]>
+		!enum_<name>_last = <name>.<...[sizeof(...)-2]>
 	
 		struct <name> $000000
 			.First:
@@ -92,27 +92,27 @@ macro define_enum_with_values(name, ...)
 			!temp_i #= 0
 			!temp_prev #= 0
 			while !temp_i < sizeof(...)
-				if <!temp_i+1> < 0
+				if <...[!temp_i+1]> < 0
 					error "Enums currently don't support negative values."
 				endif
 			
 				; This code here mainly serves the purpose of avoiding negative or zero skips.
 				; Although they might not be a problem per se, but I don't want to rely on
 				; Asar always supporting them.
-				if <!temp_i+1> < !temp_prev
+				if <...[!temp_i+1]> < !temp_prev
 					error "Enum values must be ordered sequentially.".
 				endif
 				
-				if <!temp_i+1> != !temp_prev
-					skip <!temp_i+1>-!temp_prev
-					!temp_prev #= <!temp_i+1>
+				if <...[!temp_i+1]> != !temp_prev
+					skip <...[!temp_i+1]>-!temp_prev
+					!temp_prev #= <...[!temp_i+1]>
 				endif
 				
 				if !temp_i == sizeof(...)-2
 					.Last:
 				endif
 				
-				.<!temp_i>:
+				.<...[!temp_i]>:
 				
 				!temp_i #= !temp_i+2
 			endwhile
@@ -334,7 +334,7 @@ function sign(value) = value/abs(select(value, value, 1))
 		
 		!temp_i = 0
 		while !temp_i < sizeof(...)
-			<!temp_i>				
+			<...[!temp_i]>				
 			!temp_i #= !temp_i+1
 		endwhile
 		undef "temp_i"

@@ -349,7 +349,7 @@ macro vwf_register_text_macro(name, ...)
 		; RPG Hacker: Weird name, because inner commands might use !temp_i.
 		!temp_tm_i #= 0
 		while !temp_tm_i < sizeof(...)
-			<!temp_tm_i>
+			<...[!temp_tm_i]>
 			!temp_tm_i #= !temp_tm_i+1
 		endwhile
 		undef "temp_tm_i"
@@ -428,7 +428,7 @@ macro vwf_inline(...)
 			; RPG Hacker: Weird name, because inner commands might use !temp_i.
 			!temp_tm_i #= 0
 			while !temp_tm_i < sizeof(...)
-				<!temp_tm_i>
+				<...[!temp_tm_i]>
 				!temp_tm_i #= !temp_tm_i+1
 			endwhile
 			undef "temp_tm_i"
@@ -696,7 +696,7 @@ macro vwf_header(...)
 		
 		!temp_i #= 0
 		while !temp_i < sizeof(...)
-			%vwf_extract_header_agrument(<!temp_i>)
+			%vwf_extract_header_agrument(<...[!temp_i]>)
 			!temp_i #= !temp_i+1
 		endwhile
 		undef "temp_i"
@@ -886,11 +886,11 @@ macro vwf_display_message(message_id, ...)
 		!temp_show_open_animation = false
 		
 		if sizeof(...) > 0
-			!temp_show_close_animation = <0>
+			!temp_show_close_animation = <...[0]>
 		endif
 		
 		if sizeof(...) > 1
-			!temp_show_open_animation = <1>
+			!temp_show_open_animation = <...[1]>
 		endif
 		
 		if !temp_show_close_animation != true && !temp_show_close_animation != false
@@ -969,11 +969,11 @@ macro vwf_decimal(address, ...)
 		!temp_leading_zeroes = false
 		
 		if sizeof(...) > 0
-			!temp_address_size = <0>
+			!temp_address_size = <...[0]>
 		endif
 		
 		if sizeof(...) > 1
-			!temp_leading_zeroes = <1>
+			!temp_leading_zeroes = <...[1]>
 		endif
 		
 		if !temp_address_size < !enum_VWF_AddressSize_first || !temp_address_size > !enum_VWF_AddressSize_last
@@ -1052,7 +1052,7 @@ macro vwf_wrap(...)
 	; Let's just use a different name here.
 	!temp_very_secure_i #= 0
 	while !temp_very_secure_i < sizeof(...)
-		<!temp_very_secure_i>
+		<...[!temp_very_secure_i]>
 	
 		!temp_very_secure_i #= !temp_very_secure_i+1
 	endwhile
@@ -1089,7 +1089,7 @@ macro vwf_display_options(label_prefix, ...)
 		; Let's just use a different name here.
 		!temp_secure_i #= 0
 		while !temp_secure_i < sizeof(...)
-			<!temp_secure_i>
+			<...[!temp_secure_i]>
 			
 			%vwf_line_break()
 		
@@ -1141,12 +1141,12 @@ macro vwf_change_colors(palette_start, ...)
 		while !temp_i < sizeof(...)
 			%vwf_generate_command_table($EE)
 			
-			if <!temp_i> < $0000 || <!temp_i> > $7FFF
-				error "%vwf_change_colors(): colors must be numbers between $0000 and $7FFF. Please use the rgb_15() function. (Current at ",dec(!temp_i),": $",hex(<!temp_i>),")."
+			if <...[!temp_i]> < $0000 || <...[!temp_i]> > $7FFF
+				error "%vwf_change_colors(): colors must be numbers between $0000 and $7FFF. Please use the rgb_15() function. (Current at ",dec(!temp_i),": $",hex(<...[!temp_i]>),")."
 			endif
 			
 			db <palette_start>+!temp_i
-			dw <!temp_i>
+			dw <...[!temp_i]>
 		
 			!temp_i #= !temp_i+1
 		endwhile

@@ -249,7 +249,7 @@ if sizeof(...) > 0
 	lda.b #<bytes>>>8
 	sta.w select(!temp_currently_on_sa1_cpu,$2252,$211B)
 	stz.w select(!temp_currently_on_sa1_cpu,$2250,$211C)
-	lda <0>
+	lda <...[0]>
 	sta.w select(!temp_currently_on_sa1_cpu,$2253,$211C)
 	if !temp_currently_on_sa1_cpu
 		stz $2254

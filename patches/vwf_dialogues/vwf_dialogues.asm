@@ -179,7 +179,7 @@ endmacro
 !vwf_buffer_letters = !vwf_gfx_ram+$20
 !vwf_buffer_choice_backup = !vwf_gfx_ram+$0420
 !vwf_buffer_cursor = !vwf_gfx_ram+$042C
-!vwf_buffer_text_box_tilemap = !vwf_gfx_ram+$048C
+!vwf_buffer_text_box_tilemap = !vwf_gfx_ram+$048C		; 0x700 bytes
 
 !vwf_ram_bank = select(!use_sa1_mapping,$40,$7E)
 

@@ -165,24 +165,24 @@
 			</p>
 
 			<p>
-				I’ve also included a custom block that utilizes this patch. I wanted to include more blocks and also
+				I’ve also included a custom block that utilizes this patch. Originally I wanted to include more blocks and also
 				a few custom sprites, but I figured that any custom block or custom sprite from SMW Central which
-				displays a level message is compatible with this if you enable the Message Box Hijack (see
-				section 2). I might add a few customized sprites and blocks in a future version. The one block I
-				included gives a general idea on how to utilize this patch, though.
-				Additionally I’ve included a few alternative fonts if you don’t like the default one. The default font
-				has the most characters, though. If you’re using any language that is not English and has some special
-				characters you might have to draw them yourself.
+				displays a level message would already be compatible with this if you enable the Message Box Hijack (see
+				section 2). The one block I	did include gives a general idea on how to address this patch in from your own code.
+				Additionally I’ve included a few alternative fonts if you don’t like the default one. Though keep in mind that the
+				default one has the largest amount of non-Japanese characters in it. If you’re using a language that is not English
+				and features any special characters that are not yet in the default font, you will have to draw them yourself.
 			</p>
 
 			<p>
-				Be aware that this patch does some modifications to the ROM that might seem to be unrelated to the
-				patch itself and aren’t mentioned anywhere in this manual. For example: It automatically expands
-				the SRAM of your ROM to 128 KB since it needs over 18 KB of free RAM during dialogues.
+				Be aware that by default this patch applies some modifications to your ROM that seem to be unrelated to the patch itself at first
+				and might have unintended side effects. For example: It automatically expands
+				the ROM's SRAM size to 128 KB since it requires roughly around 20 KB of working RAM that normally aren't available in SMW.
+				For all of those cases, there's usually config options that can be used to disable the respective modifications if desired.
 			</p>
 
 			<p>
-				Anyways, let’s get started now with the first steps to setting up the patch now.
+				Anyways, let’s get started with the first steps of setting up the patch.
 			</p>
 			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
 		</section>
@@ -192,8 +192,8 @@
 		<section class="container">
 			<h2 id="start" class="text-center">2. Getting Started</h2>
 			<p>
-				The very first thing you’ll have to do is take the <code>vwf_dialogues</code> and <code>shared</code>
-				folders and copy them over to your hack’s <code>patches</code> folder.
+				The very first thing you’ll have to do is to take the entire <code>vwf_dialogues</code> folder
+				and copy it over to your hack’s <code>patches</code> directory.
 				Next you open up <code>vwfconfig.cfg</code> in a text editor of your choice.
 			</p>
 

@@ -192,20 +192,51 @@
 		<section class="container">
 			<h2 id="start" class="text-center">2. Getting Started</h2>
 			<p>
-				The very first thing you’ll have to do is to take the entire <code>vwf_dialogues</code> folder
-				and copy it over to your hack’s <code>patches</code> directory.
-				Next you open up <code>vwfconfig.cfg</code> in a text editor of your choice.
+				In order to make use of this patch, you'll need to have downloaded <code>Asar v1.90</code> or newer. Older versions of Asar
+				won't work, as the patch was designed specifically around newer Asar features for an improved user experience.
+				As for the patch itself, the very first thing you’ll want to do is to take the entire <code>vwf_dialogues</code> folder
+				and copy it over to your hack’s local <code>patches</code> directory so that you can make modifications to it as needed. If you only
+				want to see the patch in action, without configuring anything or adding custom text, you may go ahead and patch <code>vwf_dialogues.asm</code>
+				to your ROM right now. Otherwise, keep reading.
 			</p>
 
 			<p>
-				Here you’ll see the defines <code>!varram</code>, <code>!backupram</code>, <code>!tileram</code>,
-				<code>!varramSA1</code>, <code>!backupramSA1</code>, <code>!tileramSA1</code>. I suggest you don’t touch those
-				at all, especially if you aren’t too familiar with ASM. Those addresses are the SRAM locations
-				the patch uses (the defines with the SA1 suffix are for SA-1 enabled ROMs). Of course you can also change them to RAM addresses,
-				but to do that you will likely have to apply additional patches to free up RAM in SMW. If you decide to do so, you can set the
-				<code>!patch_sram_expansion</code> define further down in the cfg file to <code>!false</code> to prevent this patch from automatically
-				expanding your SRAM. Normally you don’t have to bother, though, as the patch’s default settings should work just fine for most hacks.
-				I tried to use addresses at the very end of the game’s SRAM area in an attempt to prevent potential conflicts with other patches.
+				The patch is structured in a way where all data that is meant to be editable by end users is stored inside the <code>data</code> subdirectory.
+				The most important file here is called <code>vwfconfig.cfg</code> and it contains all the major settings for the patch. Open it up in a text editor
+				of your choice to edit them. Pay special attention to all the comments in this file, as they explain what most of the options do. This manual
+				will only explain some of the more important ones.
+			</p>
+			
+			<p>
+				The first options you will find are <code>!vwf_var_ram</code>, <code>!vwf_backup_ram</code> and <code>!vwf_gfx_ram</code> as well as
+				<code>!vwf_var_ram_sa1</code>, <code>!vwf_backup_ram_sa1</code>, <code>!vwf_gfx_ram_sa1</code> and <code>!vwf_palette_backup_ram_sa1</code>
+				respectively. The first block of variables is used only in non-SA-1 ROMs, with the second one only being used in SA-1 ROMs.
+				These defines configure which areas of RAM VWF Dialogues will use as their working memory. As an average user, you most likely won't ever
+				have to edit any of these. The default settings should work out of the box. Advanced users, who might need more control over their RAM,
+				can make use of them, going by the comments on each define as a rough guide on what they need and how they're being used.
+			</p>
+			
+			<p>
+				The only thing worth noting is that without further modifications, a non-SA-1 SMW ROM doesn't provide the amount of free RAM VWF Dialogues need.
+				For this reason, the patch uses SRAM as working memory by default. All of the non-SA-1 address defines mentioned above have their default values
+				pointing to areas in SRAM. The patch automatically applies a SRAM expansion patch to make sure enough SRAM is available. This behavior is controlled
+				via the <code>!vwf_patch_sram_expansion</code> setting. Advanced users can set it to <code>false</code> to disable SRAM expansion, but
+				will have to use additional patches that provide alternative areas of free RAM. SA-1 ROMs are unaffected by all this, as the SA-1 chip contains
+				its own large area of RAM, which in the case of SMW is more than enough for this patch to work with.
+			</p>
+			
+			<p>
+				Now for (occasionally not so) quick explanations on some of the more important settings in the <code>Patch Settings</code> block:
+				<ul>
+					<li><code>!vwf_bit_mode</code>: Setting it to <code>VWF_BitMode.8Bit</code> will make the patch operate in 8-bit mode, whereas
+						setting it to <code>VWF_BitMode.16Bit</code> will make it operate in 16-bit mode. In 16-bit mode, every text character and
+						ever text box command use two bytes instead of one, meaning higher free space consumption in the ROM. In this mode, any
+						commands that affect the active font are ignored. Instead, the high byte of each character controls which font to use
+						for that particular character. This mode was originally intended for complex languages like Japanese, but in practice, I don't
+						know if it was ever actively used, and its increased free space requirements might not make it worth using. Therefore, you
+						should consider this option deprecated. It will only remain in the patch until someone can come up with a better solution
+						for these languages.</li>
+				</ul>
 			</p>
 
 			<p>

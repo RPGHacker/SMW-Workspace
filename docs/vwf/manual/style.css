@@ -79,3 +79,10 @@ ul > details > summary {
 	display:	list-item	flex;
 	list-style-position:	outside;
 }
+
+table, th, td {
+  border: 1px solid;
+  padding: 5px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}

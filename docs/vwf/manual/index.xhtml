@@ -236,6 +236,75 @@
 						know if it was ever actively used, and its increased free space requirements might not make it worth using. Therefore, you
 						should consider this option deprecated. It will only remain in the patch until someone can come up with a better solution
 						for these languages.</li>
+					<li><code>!vwf_hijack_message_box</code>: When set to <code>true</code>, the patch hijacks SMW's original message boxes so
+						that activating one will display a VWF Dialogue instead. Here's a few quick examples of how SMW message IDs map onto
+						VWF message IDs (more on message IDs later):
+						<table>
+							<tr>
+								<th>SMW Message ID</th>
+								<th>VWF Dialogues Message ID</th>
+							</tr>
+							<tr>
+								<td>000-1</td>
+								<td>0000</td>
+							</tr>
+							<tr>
+								<td>000-2</td>
+								<td>0001</td>
+							</tr>
+							<tr>
+								<td>001-1</td>
+								<td>0002</td>
+							</tr>
+							<tr>
+								<td>001-2</td>
+								<td>0003</td>
+							</tr>
+							<tr>
+								<td>...</td>
+								<td>...</td>
+							</tr>
+							<tr>
+								<td>007-1</td>
+								<td>000E</td>
+							</tr>
+							<tr>
+								<td>007-2</td>
+								<td>000F</td>
+							</tr>
+							<tr>
+								<td>...</td>
+								<td>...</td>
+							</tr>
+							<tr>
+								<td>00F-1</td>
+								<td>001E</td>
+							</tr>
+							<tr>
+								<td>00F-2</td>
+								<td>001F</td>
+							</tr>
+							<tr>
+								<td>...</td>
+								<td>...</td>
+							</tr>
+							<tr>
+								<td>13B-1</td>
+								<td>00BE</td>
+							</tr>
+							<tr>
+								<td>13B-2</td>
+								<td>00BF</td>
+							</tr>
+						</table>
+						When set to <code>false</code>, SMW message boxes and VWF Dialogues can coexist within the same ROM. In this case, you need VWF Dialogue compatible
+						custom sprites or custom blocks in order to use them. One example of those would be wye's NPC sprites.
+						</li>
+					<li><code>!vwf_enable_short_aliases</code>: When set to <code>true</code>, the patch defines a number of short aliases for most text commands. For example, you
+						may use <code>!str("Hello!")</code> or <code>!text("Hello!")</code> instead of <code>%vwf_text("Hello!")</code>, <code>!font($01)</code> instead of <code>%vwf_font($01)</code> or
+						<code>!press_a</code> instead of <code>%vwf_wait_for_a()</code>. These short aliases are intended for convenience and to make VWF Dialogues easier to read in code.
+						It's very unlikely that you'll ever need to set this to <code>false</code>. The only conceivable scenario would be when you include <code>vwf_dialogues.asm</code> from within another patch via an <code>incsrc</code>. In that case, disabling this feature might make sense to reduce the likelihood of naming conflicts occuring. Further details on available short aliases
+						will be provided along with the documentation of each text command.</li>
 				</ul>
 			</p>
 

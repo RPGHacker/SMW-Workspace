@@ -5651,7 +5651,7 @@ print "Abort Dialogue Processing register at address $",hex(!vwf_end_dialog),"."
 ;print "Active VWF Message Flag at address $",hex(!vwf_active_flag),"."
 
 print ""
-print "See Readme for details!"
+print "Check the manual for details!"
 
 print ""
 

@@ -29,13 +29,13 @@
 							<a class="nav-link text-nowrap" href="#start">Getting Started</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link text-nowrap" href="#main">Main Functions</a>
+							<a class="nav-link text-nowrap" href="#basic-functionality">Basic Functionality</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link text-nowrap" href="#main2">Advanced Functions</a>
+							<a class="nav-link text-nowrap" href="#advanced-functionality">Advanced Functionality</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link text-nowrap" href="#advanced">Problem Solving</a>
+							<a class="nav-link text-nowrap" href="#problem-solving">Problem Solving</a>
 						</li>
 						<li class="nav-item">
 							<a class="nav-link text-nowrap" href="#bugs">Known Bugs</a>
@@ -93,12 +93,14 @@
 				<ol>
 					<li><a href="#intro">Introduction</a></li>
 					<li><a href="#start">Getting Started</a></li>
-					<li><a href="#main">Main Functions (Basic)</a><ul>
-						<li><a href="#main-gfx">Graphics, Palettes and Fonts</a></li>
-						<li><a href="#main-dialog">Setting Up and Calling Dialogues</a></li>
-						<li><a href="#dialog-header">Dialogue Headers</a></li>
+					<li><a href="#basic-functionality">Basic Functionality</a><ul>
+						<li><a href="#resources">Resources (Graphics, Palettes, Fonts...)</a></li>
+						<li><a href="#message-format">Message Format</a></li>
 						<details>
-							<summary><a href="#dialog-body">Dialogue Texts</a></summary><ul>
+							<summary><a href="#header-settings">Header Settings</a></summary><ul>
+						</ul></details>
+						<details>
+							<summary><a href="#text-commands">Text Commands</a></summary><ul>
 							<li><a href="#text-command-ff"><code>$FF</code> - End Dialogue</a></li>
 							<li><a href="#text-command-fe"><code>$FE</code> - Space</a></li>
 							<li><a href="#text-command-fd"><code>$FD</code> - Force Line Break</a></li>
@@ -126,9 +128,10 @@
 							<li><a href="#text-command-e7"><code>$E7</code> - Return from Text Macro</a></li>
 						</ul></details>
 					</ul></li>
-					<li><a href="#main2">Main Functions (Advanced)</a></li>
+					<li><a href="#advanced-functionality">Advanced Functionality</a><ul>
+						<li><a href="#display-messages">Display Messages From Custom Code</a></li>
 						<details>
-							<summary><a href="#vwfcode-asm">vwfcode.asm routines</a></summary><ul>
+							<summary><a href="#shared-routines">Shared Routines</a></summary><ul>
 							<li><a href="#vwfcode-displayamessage">DisplayAMessage</a></li>
 							<li><a href="#vwfcode-changevwftextptr">ChangeVWFTextPtr</a></li>
 							<li><a href="#vwfcode-changemessageasmptr">ChangeMessageASMPtr</a></li>
@@ -138,7 +141,8 @@
 							<li><a href="#vwfcode-togglemessageasmptr">ToggleMessageASMPtr</a></li>
 							<li><a href="#vwfcode-closemessageandgotooverworld">CloseMessageAndGoToOverworld</a></li>
 						</ul></details>
-					<li><a href="#advanced">Problem Solving</a></li>
+					</ul></li>
+					<li><a href="#problem-solving">Problem Solving</a></li>
 					<li><a href="#bugs">Known Bugs</a></li>
 					<li><a href="#plans">Planned Features</a></li>
 					<li><a href="#bug-reports">Bug Reports</a></li>
@@ -152,30 +156,34 @@
 		<section class="container">
 			<h2 id="intro" class="text-center">1. Introduction</h2>
 			<p>
-				Welcome to the VWF Dialogues Patch! Since you got here by yourself you most likely
+				Welcome to my VWF Dialogues Patch! Since you got here by yourself, you most likely
 				already know what this patch does, but let me give you a general overview anyways.
 			</p>
 
 			<p>
 				The aim of this patch is to give a useful alternative to SMW’s native text boxes.
-				Unlike Romi’s VWF Cutscene Tool (which is great, btw.) this patch is set up for easy
+				Unlike Romi's VWF Cutscene Tool (which is great, but has very specific use cases only), this patch was designed around easy
 				event creation, easy customization and compatibility with all kinds of languages. The cost
-				of this is that it’s way harder to use. However, as long as you’re somewhat familiar with
-				custom sprites/custom blocks and Asar patches and read this manual carefully you should be fine.
+				of this is that its useage is slightly more advanced and requires more knowledge. However, as long as you read this manual carefully and are somewhat familiar with
+				custom sprites/custom blocks and Asar patches, you should be fine.
 			</p>
 
 			<p>
-				I’ve also included a custom block that utilizes this patch. Originally I wanted to include more blocks and also
-				a few custom sprites, but I figured that any custom block or custom sprite from SMW Central which
-				displays a level message would already be compatible with this if you enable the Message Box Hijack (see
-				section 2). The one block I	did include gives a general idea on how to address this patch in from your own code.
-				Additionally I’ve included a few alternative fonts if you don’t like the default one. Though keep in mind that the
-				default one has the largest amount of non-Japanese characters in it. If you’re using a language that is not English
-				and features any special characters that are not yet in the default font, you will have to draw them yourself.
+				I’ve included a single custom block that utilizes this patch. Originally, I wanted to include more blocks and also
+				a few custom sprites, but I figured that any custom block or custom sprite hosted on SMW Central that
+				displays a native SMW message box should already be compatible with the patch as long as you enable the SMW message box hijack (see
+				<a href="#start">section 2</a>). The one block I did include gives a general idea on how to address this patch within your own code.
+				It primarily serves as a sample for people who want to write custom code that interfaces with the patch.
+			</p>
+				
+			<p>
+				In addition to this, I’ve included a few alternative fonts in case you don’t like the default one. Though keep in mind that the
+				default font features the largest (non-Japanese) character set. If you’re making a hack in any language that isn't English
+				and features any special characters that are not yet in the default font, you will have to draw and add the missing glyphs yourself.
 			</p>
 
 			<p>
-				Be aware that by default this patch applies some modifications to your ROM that seem to be unrelated to the patch itself at first
+				Be aware that by default, this patch applies some modifications to your ROM that seem to be unrelated to the patch itself at first
 				and might have unintended side effects. For example: It automatically expands
 				the ROM's SRAM size to 128 KB since it requires roughly around 20 KB of working RAM that normally aren't available in SMW.
 				For all of those cases, there's usually config options that can be used to disable the respective modifications if desired.
@@ -210,7 +218,7 @@
 			<p>
 				The first options you will find are <code>!vwf_var_ram</code>, <code>!vwf_backup_ram</code> and <code>!vwf_gfx_ram</code> as well as
 				<code>!vwf_var_ram_sa1</code>, <code>!vwf_backup_ram_sa1</code>, <code>!vwf_gfx_ram_sa1</code> and <code>!vwf_palette_backup_ram_sa1</code>
-				respectively. The first block of variables is used only in non-SA-1 ROMs, with the second one only being used in SA-1 ROMs.
+				respectively. The first section of variables is used only in non-SA-1 ROMs, with the second one only being used in SA-1 ROMs.
 				These defines configure which areas of RAM VWF Dialogues will use as their working memory. As an average user, you most likely won't ever
 				have to edit any of these. The default settings should work out of the box. Advanced users, who might need more control over their RAM,
 				can make use of them, going by the comments on each define as a rough guide on what they need and how they're being used.
@@ -226,7 +234,7 @@
 			</p>
 			
 			<p>
-				Now for (occasionally not so) quick explanations on some of the more important settings in the <code>Patch Settings</code> block:
+				Now for (occasionally not so) quick explanations on some of the more important settings in the <code>Patch Settings</code> section:
 				<ul>
 					<li><code>!vwf_bit_mode</code>: Setting it to <code>VWF_BitMode.8Bit</code> will make the patch operate in 8-bit mode, whereas
 						setting it to <code>VWF_BitMode.16Bit</code> will make it operate in 16-bit mode. In 16-bit mode, every text character and
@@ -307,87 +315,26 @@
 						will be provided along with the documentation of each text command.</li>
 				</ul>
 			</p>
-
+			
 			<p>
-				Scroll further down for a group of defines that determine the default settings of your text boxes.
-				<code>!defbg</code> is the graphic from the file <code>vwfpatterns.bin</code> to use as the default text box background.
-				More details on the format of each bin-file later on. Everything you have to know for now is that this
-				number is in hex and by default you can use any number from <code>$00</code> to <code>$0D</code>.
+				Settings in the <code>Default Settings</code> sections define the default values/behaviors of various patch functions.
+				I won't explain them in detail here, because most are either self-explanatory or will become apparent once the respective
+				functions they relate to are explained.
+			</p>
+			
+			<p>
+				The <code>Data Includes</code> section becomes relevant once you want to add new assets to the patch. That is: New fonts, new message files, new text box frames etc.
+				New fonts and messages files are added within the <code>vwf_define_data()</code> macro, whereas the <code>vwf_define_frames()</code> macro lets you specify the properties
+				of your text box frames (currently just the palettes). Once again, these settings should become more apparent when their respective functionality is explained.
 			</p>
 
 			<p>
-				Next on the list is <code>!bgcolor</code>,
-				the default color of the text box background in SNES RGB format. To find out what a color is in SNES
-				RGB format simply open the palette editor in Lunar Magic and move the cursor over whatever color
-				you’re looking for. Lunar Magic will display the value of that color in various formats, including
-				the SNES RGB format.
-			</p>
-
-			<p>
-				<code>!defframe</code> is the group of graphics from the file <code>vwfframes.bin</code> to use as the default text box frame.
-				More on this later. By default <code>$00</code> to <code>$0F</code> are valid.
-			</p>
-
-			<p>
-				The define <code>!framepalette</code> sets up which palette to use for the frame of the text box.
-				This can not currently be changed ingame. Since we’re using Layer 3 for our dialogues only the first two rows of the palette
-				in Lunar Magic can be used for this. Each Layer 3 palette uses four colors. For example: <code>$00</code> uses the
-				first four colors, <code>$01</code> the next four colors etc. Since the first two rows together have 32 colors this
-				means you have the choice between 8 different palettes. In other words: <code>$00</code> to <code>$07</code> are valid inputs
-				here. One thing is very important, though: During dialogue processing the colors in that palette get
-				overwritten by new colors, so never use a palette that is used by the level background. I recommend
-				using a palette which is only used by the status bar, since the status bar is invisible during
-				dialogues. You don’t have to worry here: My patch restores all 32 original colors of the first two
-				rows of the palette after the dialogue is done, so any palette that is used only for the status bar
-				is save to use here.
-			</p>
-
-			<p>
-				Next is the define <code>!bitmode</code>. With this define you set up the bitmode of the patch.
-				Put in <code>!8</code> for 8-Bit mode and <code>!16</code> for 16-Bit mode. In 16-Bit mode, each
-				letter in your dialogues takes up double the space, with the high byte being treated as the font to use.
-				In other words: <code>$01FF</code> would be "Font <code>$01</code>, Character <code>$FF</code>".
-				I figured this might be useful for complex languages like Japanese or something.
-				Then again as long as most of the used characters are inside the same font file it is
-				recommended to continue using 8-Bit mode. For anyone not using a complex language it is anyways.
-				More details on this will be given whereever 16-Bit mode has an effect.
-			</p>
-
-			<p>
-				<b>Notice:</b> 16-Bit mode has been deprecated due to a lack of testing, some long standing bugs
-				and bad developer UX in general.
-			</p>
-
-			<p>
-				The next define is <code>!hijackbox</code> and determines whether you want to hijack SMW’s original message
-				boxes or not. Put a <code>!false</code> here if you don’t want to lose the original SMW message boxes. In this case this
-				patch can still be used with custom sprites or custom blocks. Put a <code>!true</code> here to hijack SMW’s message
-				boxes to automatically use this patch. In this case you can never use SMW’s original message boxes
-				again, though. Editing the message boxes in the Lunar Magic Overworld Editor also won’t have any
-				effect anymore since the messages will use the text from this patch instead.
-				More details on editing the text in the next section. I highly recommend installing this hijack btw.,
-				because if you do you can use <code>$7E1426</code> the same way as in original SMW. In other words: Setting it to
-				<code>$01</code> will display message 1 from the current level, setting it to <code>$02</code> will display message 2 from the
-				level and setting it to <code>$03</code> will display the Yoshi thanks message. Also you can use ANY sprite from
-				the custom sprites section and ANY block from the custom blocks section on SMW Central with a message
-				displaying related function to display the dialogues from this patch instead. This can be really useful,
-				considering I’ve barely included any custom sprites or blocks.
-			</p>
-
-			<p>
-				As mentioned further above, you can change the <code>!patch_sram_expansion</code> define in the cfg file to <code>!false</code>
-				to prevent this patch from applying its automatic SRAM expansion. Normally you don’t have to do this,
-				but there may be situations where advanced users want to use RAM as working memory instead of SRAM, in which
-				case the SRAM expansion won’t be needed and can be disabled.
-			</p>
-
-			<p>
-				After you’re done with setting up all the defines, save the file and patch it to your ROM with Asar.
-				Make sure only to patch <code>vwf_dialogues.asm</code> and nothing else. You should get a window that
-				looks somewhat like this:
-				<img class="d-block m-1 my-2" src="screenshots/console-1.png" alt="Screenshot" width="979" height="512" />
-				If that’s what you see you’ve applied the patch successfully. I’ll explain all of those lines in detail
-				later on.
+				This covers all of the patch's basic setup. More advanced functionality will be explained in detail later on.
+				Once you're done configuring <code>vwfconfig.cfg</code>, you may go ahead and use Asar to patch <code>vwf_dialogues.asm</code>
+				to your ROM. If everything was set up correctly, Asar's output should look roughly like this:
+				<img class="d-block m-1 my-2" src="screenshots/console-1.png" alt="Screenshot" width="1115" height="875" />
+				If that’s what you get, then the patch was applied successfully. Most of these outputs are just for debugging purposes.
+				You can safely ignore them, unless you're modifying the patch itself or coding some advanced feature that makes use of it.
 			</p>
 			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
 		</section>
@@ -395,35 +342,40 @@
 		<!-- Seperator Comment -->
 
 		<section class="container">
-			<h2 id="main" class="text-center">3. Main Functions (Basic)</h2>
+			<h2 id="basic-functionality" class="text-center">3. Basic Functionality</h2>
 			<p>
-				In this section I will explain how to create and display dialogues, how to edit and add new graphics
-				(including fonts) and how to use this patch’s features for your own patches.
+				In this section I'll explain all the functionality that is intended for average users of this patch. This includes setting up resources and writing actual message boxes.
 			</p>
 
-			<h3 id="main-gfx" class="text-center">Graphics, Palettes and Fonts</h3>
+			<h3 id="resources" class="text-center">Resources (Graphics, Palettes, Fonts...)</h3>
 			<p>
-				The first and easiest thing you’ll have to learn is how all the different graphic formats this patch
-				uses work. Among them are the following ones:
+				VWF Dialogues are designed to be very customizable. This not only includes the dialogue text itself, but also the design of the text box containing it. It's possible to customize all text box frames and backgrounds, as well as all fonts, to your liking, or add new ones entirely. The patch can even switch between them at run-time (though for text box frames and backgrounds, this is only technically supported - no feature is currently provided that makes use of this possibility, so if you want it in your hack, you currently need to write custom code for it). In order to make the most out of these features, you'll have to understand the different types of resources the patch uses, all contained within the <cod>data</cod> folder. Here's a short summary:
+			</p>
+			
+			<p>
 				<ul>
-					<li>Text box background graphics</li>
-					<li>Text box frame graphics
+					<li>Text boxes
 						<ul>
-							<li>Text box frame palettes</li>
+							<li>Frame graphics</li>
+							<li>Background graphics</li>
+							<li>Frame color palettes</li>
+							<li>Background color</li>
 						</ul>
 					</li>
-					<li>Font graphics
+					<li>Fonts
 						<ul>
-							<li>Font width tables</li>
-							<li>Font tables</li>
+							<li>Glyph graphics</li>
+							<li>Character width tables</li>
 						</ul>
 					</li>
 				</ul>
-				For all of the graphics you’ll need a tile editor that supports 2BPP GB graphics. Theoretically every
-				tile editor will do. If you plan to edit (or create) fonts I really recommend you get YY-CHR v0.99,
-				though. Nope, YY-CHR v0.98 won’t do in this case. YY-CHR v0.99 has a very special and useful feature
-				which YY-CHR v0.98 doesn’t have and which is needed for editing fonts. I’ll use YY-CHR v0.99 for all
-				tile editor references in this manual.
+			</p>
+			
+			<p>
+				Editing any of these graphics requires a tile editor that supports the <code>2BPP GB</code> graphics format. In theory, any such
+				tile editor will do, but if you plan to edit (or create) fonts, I highly recommend using a recent version of <code>YY-CHR</code>.
+				You'll want to be using at least <code>v0.99</code>, as older versions lack some features that make editing fonts practicable. For the
+				purpose of this manual, I will assume you're using YY-CHR and will reference it where appropriate.
 			</p>
 
 			<h4 class="text-center">Background graphics</h4>
@@ -555,7 +507,7 @@ dl Font2,Font2_Width</code></pre>
 				Adding a new font is as simple as that, thanks to Asar’s automatic freespace management.
 			</p>
 
-			<h3 id="main-dialog" class="text-center">Actual Dialogues</h3>
+			<h3 id="message-format" class="text-center">Message Format</h3>
 			<h4 class="text-center">Setting Up and Calling Dialogues</h4>
 			<p>
 				So now to actually use my patch and display some text on the screen.
@@ -646,7 +598,7 @@ sep #$20		; Set A to be 8-bit.</code></pre>
 				After we’re done with this we can finally get to actually write messages. YAY!
 			</p>
 
-			<h4 id="dialog-header" class="text-center">Dialogue Headers</h4>
+			<h4 id="header-settings" class="text-center">Header Settings</h4>
 			<p>
 				The first thing to do when setting up a dialogue is creating a header for it. This header is mandatory;
 				not having it will cause glitches in the game. It allows you to easily set up position, width, height
@@ -769,7 +721,7 @@ dl .MessageSkipLoc
 					<code>0</code> can lead to glitches in the current version if - for example - you die
 					while a dialogue is being processed. Also it is pretty slow. If you really want to use it
 					I recommend using the SA-1 patch. This actually makes the result run at full speed.
-					See the <a href="#advanced">Problem Solving</a> section for more information.
+					See the <a href="#problem-solving">Problem Solving</a> section for more information.
 				</p></dd>
 				<dt id="dialog-header-nnn"><code>nnn</code></dt>
 				<dd><p>
@@ -884,7 +836,7 @@ dl .MessageSkipLoc
 				for your dialogues.
 			</p>
 
-			<h4 id="dialog-body" class="text-center">Dialogue Texts</h4>
+			<h4 id="text-commands" class="text-center">Text Commands</h4>
 			<p>
 				So if you’re using the same labels as I suggested in this manual then what you’re going to edit now is
 				the part under the <code>.body</code> sublabel, which is the actual dialogue.
@@ -1391,7 +1343,11 @@ db "Princess Peach",$E7</code></pre>
 		<!-- Seperator Comment -->
 
 		<section class="container">
-			<h2 id="main2" class="text-center">4. Main Functions (Advanced)</h2>
+			<h2 id="advanced-functionality" class="text-center">4. Advanced Functionality</h2>
+			<p>
+				This section is intended for advanced users only. That is, people who want to write custom resources (sprites, blocks, patches etc.) that make use of the patch or who want to use the patch in some complex ways. In other words: If you aren't a coder, you can most likely just ignore this entire section.
+			</p>
+			
 			<h3 class="text-center">MessageASM</h3>
 
 			<p>
@@ -1427,7 +1383,9 @@ db "Princess Peach",$E7</code></pre>
 				<code>!isnotatstartoftext</code> = Is set to 00 when a text box is cleared, 01 when text parsing begins. Use this to initialize code related to individual text boxes.
 			</p>
 
-			<h3 id="vwfcode-asm" class="text-center">vwfcode.asm</h3>
+			<h3 id="display-messages" class="text-center">Display Messages From Custom Code</h3>
+
+			<h3 id="shared-routines" class="text-center">Shared Routines</h3>
 
 			<p>
 				This file, added in V1.3, is meant to contain custom code related to VWF messages such as MessageASM code. By
@@ -1636,10 +1594,35 @@ db "Insert any valid text/commands here",$E7</code></pre>
 		<!-- Seperator Comment -->
 
 		<section class="container">
-			<h2 id="advanced" class="text-center">5. Problem Solving</h2>
+			<h2 id="problem-solving" class="text-center">5. Problem Solving</h2>
 			<p>
 				In this section I’ll go over a few problems that may or may not be more complicated than most of the
 				other stuff here so far.
+			</p>
+			
+			<h4 class="text-center">Migration</h4>
+			<p>
+				When I originally started refactoring this patch to make use of Asar 1.90 variadic macros, backwards-compatibility
+				with older patch versions was still one of my main goals. I wanted to make it easy for all version 1.2 (or earlier) users of the patch
+				to migrate to version 1.3. Over time, as I kept adding more and more improvements to 1.3, this goal kept moving further and further out of reach.
+			</p>
+			
+			<p>
+				Technically speaking, version 1.3 is binary-compatible with messages from version 1.2, but it just includes so many changes to its general format
+				that writing a straight-forward migration guide became too complex of a task for me. Therefore, I made the decision to declare version 1.3
+				as incompatible with version 1.2.
+			</p>
+			
+			<p>
+				So what does this mean for you? Well, if you're making a new hack from scratch or working on a hack that has never used VWF Dialogues before, it doesn't really matter.
+				Just use the newest version of the patch that's available. However, if you're working on a hack that's already using an older version of VWF Dialogues, you now basically have
+				two options. Either you stick with the old patch version (and whatever bugs it might have), or you manually port over everything from the old to the new version, which basically
+				involves recreating all your message boxes and resources in the format of the new version.
+			</p>
+			
+			<p>
+				As I said, there's unfortunately no easy way of migrating to newer patch versions. However, on the positive side, version 1.3 of the patch was designed in a way that makes it a lot easier
+				to extend in the future without breaking compatibility, so once you go through the effort of migrating, you'll hopefully never have to do it again to that degree for newer versions.
 			</p>
 
 			<h4 class="text-center">Dialogues Without Freezing Sprites</h4>
@@ -1726,13 +1709,6 @@ db "Insert any valid text/commands here",$E7</code></pre>
 				use channel 0 (%00000001). If you experience problems with an HDMA effect while displaying a
 				dialogue box, just make sure not to use channel 0 for that effect. Read an HDMA tutorial for
 				further information on this subject.
-			</p>
-
-			<h4 class="text-center">Backwards compatibility</h4>
-			<p>
-				For the most part, the current version of this patch is backwards compatible with the older versions. However,
-				if you're upgrading the patch for a hack that used a previous version, you may need to adjust some of the RAM defines
-				and JSLs to VWF related code in your custom code.
 			</p>
 
 			<h4 id="advanced-compatibility" class="text-center">Compatibility With Other Patches</h4>

@@ -366,6 +366,7 @@
 						<ul>
 							<li>Glyph graphics</li>
 							<li>Character width tables</li>
+							<li>Character to glyph mapping tables</li>
 						</ul>
 					</li>
 				</ul>
@@ -378,23 +379,24 @@
 				purpose of this manual, I will assume you're using YY-CHR and will reference it where appropriate.
 			</p>
 
-			<h4 class="text-center">Background graphics</h4>
+			<h4 class="text-center">Text Box Backgrounds</h4>
 			<p>
-				Let’s start with background graphics, the easiest format. Open the file "vwfpatterns.bin" in your
-				tile editor and set it to 2BPP GB. You should get a window similiar to this:
+				For starters, let's look at background graphics, which are by far the simplest graphics format. Open <code>data/gfx/vwfbgpatterns.bin</code> in 
+				YY-CHR and set the graphics format to <code>2BPP GB</code>. After tweaking palettes a little, you should see something similiar to this:
 				<img class="d-block m-1 my-2" src="screenshots/yychr-1.png" alt="Screenshot" width="634" height="481"/>
-				As I said this format is pretty easy. You only have two rules to follow:
+				Here's what you need to know about background graphics:
 				<ul>
-					<li>One 8×8 tile = One BG pattern.</li>
-					<li>Only use color <code>$01</code> of the palette for BG patterns,
-						this is because colors <code>$02</code> and <code>$03</code> are used by the letters.</li>
+					<li>The file size of <code>vwfbgpatterns.bin</code> must be divisible by 16. That's exactly the size of one 8x8 tile in 2BPP GB graphics format in YY-CHR.</li>
+					<li>Each 8×8 tile represents one BG pattern. The tile is simply repeated horizontally and vertically to fill up the entire background of a text box.</li>
+					<li>The default background color is defined via <code>!vwf_default_text_box_bg_color</code> in <code>data/vwfconfig.cfg</code>. Currently, to switch to a different BG color at run-time, custom code is needed.</li>
+					<li>The default background pattern is defined via <code>!vwf_default_text_box_bg_pattern</code> in <code>data/vwfconfig.cfg</code>. A value of <code>$00</code> represents the first tile in <code>vwfbgpatterns.bin</code>, a value of <code>$01</code> the second tile and so forth. Currently, to switch to a different BG pattern at run-time, custom code is needed.</li>
+					<li>You should only every use color <code>$01</code> of a palette for BG patterns (that is "the second color from left" in a typical 2BPP four-color palette).
+						The reason for this is that colors <code>$02</code> and <code>$03</code> are reserved for fonts.</li>
 				</ul>
-				That’s all there is to it. If you want to add more graphics simply put them into the empty space next
-				to the last graphic. Make sure to expand the bin-file by at least 16 bytes before you do this, though.
-				You can use HxD or any other hex editor for this. Otherwise your new graphic won’t get saved.
+				That's pretty much all there is to it. To add additional BG patterns to the patch, simply expand the size of <code>vwfbgpatterns.bin</code> by 16 bytes (you can use a hex editor for this) and then draw the new pattern into the newly added empty space in YY-CHR.
 			</p>
 
-			<h4 class="text-center">Frame graphics and palettes</h4>
+			<h4 class="text-center">Text Box Frames</h4>
 			<p>
 				Next up are frame graphics. Open up <code>vwfframes.bin</code> in your tile editor and set it to 2BPP GB. You
 				should see something like this:
@@ -446,7 +448,7 @@ dw $45ED,$24E6,$0C41
 				I explained how to find a SNES RGB value using Lunar Magic there.
 			</p>
 
-			<h4 class="text-center">Font graphics and width tables</h4>
+			<h4 class="text-center">Fonts</h4>
 			<p>
 				Font graphics are the most complicated of all the graphic formats. First of all open up <code>vwffont1.bin</code> in
 				YY-CHR and set it to 2BBP GB. Now you’ll notice that the letters are all messed up and it’s nearly impossible

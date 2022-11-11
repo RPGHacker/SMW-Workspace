@@ -398,9 +398,15 @@
 
 			<h4 class="text-center">Text Box Frames</h4>
 			<p>
-				Next up are frame graphics. Open up <code>vwfframes.bin</code> in your tile editor and set it to 2BPP GB. You
-				should see something like this:
+				In order to edit text box frames, open up <code>data/gfx/vwfframes.bin</code> in YY-CHR and set the graphics format to <code>2BPP GB</code>.
+				Tweak the palettes to your liking, and you should see something like this:
 				<img class="d-block m-1 my-2" src="screenshots/yychr-2.png" alt="Screenshot" width="634" height="481"/>
+				Here's a quick rundown of anything you need to know about text box frames:
+				<ul>
+					<li>Every 9 tiles in <code>vwfframes.bin</code> make up one text box style. Here is an explanation on how the different tiles of a style are placed to compose a text box:
+						<img class="d-block m-1 my-2 ir-crisp" src="screenshots/frames-1.png" alt="Screenshot" width="588" height="355"/>
+					</li>
+				</ul>
 				Now frame graphics are a little bit more complicated in that way that each frame set consits of nine
 				8×8 tiles this time. Here is how they’re used:
 				<img class="d-block m-1 my-2 ir-crisp" src="screenshots/frames-1.png" alt="Screenshot" width="506" height="329"/>

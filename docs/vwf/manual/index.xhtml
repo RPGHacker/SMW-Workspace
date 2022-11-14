@@ -386,8 +386,8 @@
 				<img class="d-block m-1 my-2" src="screenshots/yychr-1.png" alt="Screenshot" width="634" height="481"/>
 				Here's what you need to know about background graphics:
 				<ul>
-					<li>The file size of <code>vwfbgpatterns.bin</code> must be divisible by 16. That's exactly the size of one 8x8 tile in 2BPP GB graphics format in YY-CHR.</li>
 					<li>Each 8×8 tile represents one BG pattern. The tile is simply repeated horizontally and vertically to fill up the entire background of a text box.</li>
+					<li>The file size of <code>vwfbgpatterns.bin</code> must be divisible by 16. That's exactly the size of one 8x8 tiles in 2BPP GB graphics format in YY-CHR.</li>
 					<li>The default background color is defined via <code>!vwf_default_text_box_bg_color</code> in <code>data/vwfconfig.cfg</code>. Currently, to switch to a different BG color at run-time, custom code is needed.</li>
 					<li>The default background pattern is defined via <code>!vwf_default_text_box_bg_pattern</code> in <code>data/vwfconfig.cfg</code>. A value of <code>$00</code> represents the first tile in <code>vwfbgpatterns.bin</code>, a value of <code>$01</code> the second tile and so forth. Currently, to switch to a different BG pattern at run-time, custom code is needed.</li>
 					<li>You should only every use color <code>$01</code> of a palette for BG patterns (that is "the second color from left" in a typical 2BPP four-color palette).
@@ -401,57 +401,38 @@
 				In order to edit text box frames, open up <code>data/gfx/vwfframes.bin</code> in YY-CHR and set the graphics format to <code>2BPP GB</code>.
 				Tweak the palettes to your liking, and you should see something like this:
 				<img class="d-block m-1 my-2" src="screenshots/yychr-2.png" alt="Screenshot" width="634" height="481"/>
-				Here's a quick rundown of anything you need to know about text box frames:
+				
+			</p>
+			
+			<p>
+				Here's a quick rundown of everything you need to know about text box frames:
 				<ul>
-					<li>Every 9 tiles in <code>vwfframes.bin</code> make up one text box style. Here is an explanation on how the different tiles of a style are placed to compose a text box:
+					<li>Every 9 8x8 tiles in <code>vwfframes.bin</code> make up one text box style. Here is an explanation on how the different tiles of a style are placed to compose a text box:
 						<img class="d-block m-1 my-2 ir-crisp" src="screenshots/frames-1.png" alt="Screenshot" width="588" height="355"/>
 					</li>
+					<li>The file size of <code>vwfframes.bin</code> must be divisible by 144. That's exactly the size of nine 8x8 tile in 2BPP GB graphics format in YY-CHR.</li>
+					<li>The default text box frame is defined via <code>!vwf_default_text_box_frame</code> in <code>data/vwfconfig.cfg</code>. A value of <code>$00</code> represents the first nine tiles in <code>vwfframes.bin</code>, a value of <code>$01</code> the second nine tiles and so forth. Currently, to switch to a different text box frame at run-time, custom code is needed.</li>
+					<li>The define <code>!vwf_frame_palette</code> in <code>data/vwfconfig.cfg</code> dictates which section of CGRAM text box frames use for their palette. To give you a better idea of what this means: This define controls which parts of the Lunar Magic palette get overwritten by the text box frame palette while a VWF text box is on screen. Usable values are <code>$00</code> to <code>$07</code>. This image illustrates how these values map onto the palette from Lunar Magic:					
+						<img class="d-block m-1 my-2 ir-crisp" src="screenshots/lm-palette-1.png" alt="Screenshot" width="530" height="329"/>
+					</li>
+					<li>The palettes of text box frames are controlled via the <code>vwf_define_frames()</code> macro in <code>vwfconfig.cfg</code>. Here's quick example for the format:
+					<pre><code>
+macro vwf_define_frames()
+	; Frame $00
+	db %00000000,%00000000
+	dw rgb_15(00, 00, 00), rgb_15(31, 31, 31), rgb_15(00, 00, 00)
+	
+	; Frame $01
+	db %00000000,%00000000
+	dw rgb_15(22, 18, 02), rgb_15(13, 07, 01), rgb_15(04, 02, 00)
+	
+	; ...
+endmacro
+</code></pre>
+					Here, each pair of <code>db/dw</code> represents one text box frame (the order corresponding to the order of frames in <code>vwfframes.bin</code>). The first line with the <code>db</code> is reserved for future use and currently unused. Fill it with zeros. The second line defines which colors to write into slots <code>$01</code>, <code>$02</code> and <code>$03</code> of the palette defined by <code>!vwf_frame_palette</code>. In other words: This line controls the second, third and fourth color of that palette. You can use the <code>rgb_15()</code> macro to make defining colors a bit easier. The three arguments of this macro represent the <code>R</code>, <code>G</code> and <code>B</code> values of the color, each ranging from <code>0</code> to <code>31</code>, effectively giving you a 15-bit color palette range.
+					</li>
 				</ul>
-				Now frame graphics are a little bit more complicated in that way that each frame set consits of nine
-				8×8 tiles this time. Here is how they’re used:
-				<img class="d-block m-1 my-2 ir-crisp" src="screenshots/frames-1.png" alt="Screenshot" width="506" height="329"/>
-				As you can see tiles 1 to 6 of each set form the actual frame. The tiles may be X and Y flipped to get
-				the according parts of the text box. Tiles 7 and 8 are not used by the actual text box, but rather for
-				the creation of the text box and only if you use the the creation style of Secret of Mana. More on this
-				later. Tile 9 is the blinking cursor that is displayed when the game is waiting for the player to
-				press the A button. It is X and Y flipped, so consider this when you’re drawing this. Luckily X- and
-				Y-flipping each is just one click in YY-CHR. Also for frames you can use all colors of the palette.
-				Just like with background graphics you’ll have the expand the bin-file before you can add more graphics,
-				this time by at least 144 bytes.
-			</p>
-
-			<p>
-				Another thing you have to do for frames is setting up palettes for each frame set. Specifially you
-				have to set up the second, third and fourth color of the frame palette declared in <code>vwfframes.asm</code>
-				in section 2 of this manual. The file looks somewhat like this:
-				<pre><code>; Format:
-;db %--------,%--------	; Frame header
-;dw $COL1,$COL2,$COL3	; Frame palette
-
-; Frame $00
-db %00000000,%00000000
-dw $0000,$FFFF,$0000
-
-; Frame $01
-db %00000000,%00000000
-dw $0A56,$04ED,$0044
-
-; Frame $02
-db %00000000,%00000000
-dw $45ED,$24E6,$0C41
-
-[...]</code></pre>
-				Each block here sets the palette for 9 tiles in <code>vwfframes.bin</code>.
-			</p><p>
-				First is the two-byte header, which is intended for future expansion
-				and is therefore currently all zeros, followed by the palette, which
-				starts with a <code>dw</code>, followed by a space and then the values
-				of the three colors in SNES RGB prefixed with <code>$</code>
-				(hex values are always prefixed with <code>$</code> in assembly,
-				keep that in mind) and seperated by commas.
-			</p><p>
-				If you forgot about the SNES RGB format look in section 2 again.
-				I explained how to find a SNES RGB value using Lunar Magic there.
+				To add additional text box frames to the patch, simply expand the size of <code>vwfframes.bin</code> by 144 bytes (you can use a hex editor for this) and then draw the new text box frame tiles into the newly added empty space in YY-CHR. Add the palette for this new frame to the bottom of <code>vwf_define_frames()</code>.
 			</p>
 
 			<h4 class="text-center">Fonts</h4>
@@ -513,6 +494,10 @@ db $0B,$07,$07,$07,$07,$07,$06,$07,$07,$06,$07,$07,$03,$06,$07,$03
 				<pre><code>dl Font1,Font1_Width
 dl Font2,Font2_Width</code></pre>
 				Adding a new font is as simple as that, thanks to Asar’s automatic freespace management.
+			</p>
+			
+			<h4 class="text-center">Message Files</h4>
+			<p>
 			</p>
 
 			<h3 id="message-format" class="text-center">Message Format</h3>

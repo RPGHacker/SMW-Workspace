@@ -437,6 +437,28 @@ endmacro
 
 			<h4 class="text-center">Fonts</h4>
 			<p>
+				Font are the most complex type of resource supported by the patch. It already comes pre-packaged with four of them ready to use (one with support for Japanese text).
+				If you do want to make your own fonts, there's three different types of resource files you need to know about: A .bin file containing character glyph graphics, an .asm file
+				containing the widths of each character, and a second .asm file containing character-to-glyph mappings. You can find all the pre-packaged fonts in <code>data/fonts</code>.
+				Each folder here contains a <code>vwffont.bin</code> containing the graphics and a <code>vwffont.asm</code> containing the character widths. The only exception is the terra_j font,
+				which contains multiple .bin files, because there isn't enough space in a single font to contain the entire Japanese character set. For all pre-packaged fonts, <code>data/fonts/vwftable.asm</code> can be used as the character-to-glyph mapping file. Here's a list of things to be aware of when working with fonts:
+				<ul>
+					<li>To edit the glyph graphics of a font, open the respective .bin file in YY-CHR, set the graphics format to <code>2BPP GB</code> and also set the pattern to <code>FC/NES x16</code>. After tweaking the palettes a little, you should se something like this:
+					<img class="d-block m-1 my-2" src="screenshots/yychr-3.png" alt="Screenshot" width="634" height="481"/></li>
+					<li>Each 16x16 tile here contains one character glyph.</li>
+					<li>Only colors <code>$02</code> and <code>$03</code> of a palette may be used for the glyphs (that is, the third and fourth color of each palette). Color $01, as mentioned previously, is already reserved for the background pattern. Generally, you'll want to use color $02 for the letters and color $03 for their outlines or drop shadows.</li>
+					<li>However, not the entire width of a glyph tile is actually rendered in a text box. Instead, this is where the character width table files come into a play. Open one up and you should see a format similar to this:
+					<pre><code>;Char00to0F:
+db $07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$06,$06
+;Char10to1F:
+db $07,$07,$05,$07,$08,$06,$09,$08,$07,$07,$07,$07,$06,$07,$07,$07
+
+;...
+</code></pre>
+					Each number here represents the pixel width of one glyph from the respective .bin file. The first number is for the first glyph in the .bin file, the second number for the second glyph and so forth. The patch will look up those numbers and use them to determine how many columns of each glyph tile should be rendered, thus creating its variable width text.</li>
+					<li>If you don't want to create width tables manually, a Python helper script is included at <code>code/scripts/generate_widths.py</code> which attempts to generate them for you. Just drop your .bin file onto the script and you should get the width table .asm file as an output. A valid installation of Python 2.7 or Python 3.0 is required for this. Note that you might still have to manually touch up the width table a little bit. For example, I personally find it useful to give all digits in a font a unified width, which makes it easier to create clean layouts with them.</li>
+				</ul>
+				
 				Font graphics are the most complicated of all the graphic formats. First of all open up <code>vwffont1.bin</code> in
 				YY-CHR and set it to 2BBP GB. Now you’ll notice that the letters are all messed up and it’s nearly impossible
 				to edit them that way. Well, this is where YY-CHR v0.99 comes in handy. At the bottom it has a field labeled

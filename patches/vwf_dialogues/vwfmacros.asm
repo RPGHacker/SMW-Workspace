@@ -1358,7 +1358,7 @@ endmacro
 
 macro textstart()
 	warn "%textstart() macro is deprecated and will disappear in a future version. Please use %vwf_add_messages() instead."
-	%vwf_text_start("data/vwftable.asm")
+	%vwf_text_start("data/fonts/vwftable.asm")
 endmacro
 
 macro textend()

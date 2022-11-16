@@ -94,7 +94,13 @@
 					<li><a href="#intro">Introduction</a></li>
 					<li><a href="#start">Getting Started</a></li>
 					<li><a href="#basic-functionality">Basic Functionality</a><ul>
-						<li><a href="#resources">Resources (Graphics, Palettes, Fonts...)</a></li>
+						<details><summary><a href="#resources">Resources (Graphics, Palettes, Fonts...)</a></summary>
+							<ul>
+								<li><a href="#resources-text-box-bgs">Text Box Backgrounds</a></li>
+								<li><a href="#resources-text-box-frames">Text Box Frames</a></li>
+								<li><a href="#resources-fonts">Fonts</a></li>
+								<li><a href="#resources-message-files">Message Files</a></li>
+							</ul></details>
 						<li><a href="#message-format">Message Format</a></li>
 						<details>
 							<summary><a href="#header-settings">Header Settings</a></summary><ul>
@@ -379,7 +385,7 @@
 				purpose of this manual, I will assume you're using YY-CHR and will reference it where appropriate.
 			</p>
 
-			<h4 class="text-center">Text Box Backgrounds</h4>
+			<h4 id="resources-text-box-bgs" class="text-center">Text Box Backgrounds</h4>
 			<p>
 				For starters, let's look at background graphics, which are by far the simplest graphics format. Open <code>data/gfx/vwfbgpatterns.bin</code> in 
 				YY-CHR and set the graphics format to <code>2BPP GB</code>. After tweaking palettes a little, you should see something similiar to this:
@@ -396,7 +402,7 @@
 				That's pretty much all there is to it. To add additional BG patterns to the patch, simply expand the size of <code>vwfbgpatterns.bin</code> by 16 bytes (you can use a hex editor for this) and then draw the new pattern into the newly added empty space in YY-CHR.
 			</p>
 
-			<h4 class="text-center">Text Box Frames</h4>
+			<h4 id="resources-text-box-frames" class="text-center">Text Box Frames</h4>
 			<p>
 				In order to edit text box frames, open up <code>data/gfx/vwfframes.bin</code> in YY-CHR and set the graphics format to <code>2BPP GB</code>.
 				Tweak the palettes to your liking, and you should see something like this:
@@ -435,7 +441,7 @@ endmacro
 				To add additional text box frames to the patch, simply expand the size of <code>vwfframes.bin</code> by 144 bytes (you can use a hex editor for this) and then draw the new text box frame tiles into the newly added empty space in YY-CHR. Add the palette for this new frame to the bottom of <code>vwf_define_frames()</code>.
 			</p>
 
-			<h4 class="text-center">Fonts</h4>
+			<h4 id="resources-fonts" class="text-center">Fonts</h4>
 			<p>
 				Font are the most complex type of resource supported by the patch. It already comes pre-packaged with four of them ready to use (one with support for Japanese text).
 				If you do want to make your own fonts, there's three different types of resource files you need to know about: A .bin file containing character glyph graphics, an .asm file
@@ -457,6 +463,44 @@ db $07,$07,$05,$07,$08,$06,$09,$08,$07,$07,$07,$07,$06,$07,$07,$07
 </code></pre>
 					Each number here represents the pixel width of one glyph from the respective .bin file. The first number is for the first glyph in the .bin file, the second number for the second glyph and so forth. The patch will look up those numbers and use them to determine how many columns of each glyph tile should be rendered, thus creating its variable width text.</li>
 					<li>If you don't want to create width tables manually, a Python helper script is included at <code>code/scripts/generate_widths.py</code> which attempts to generate them for you. Just drop your .bin file onto the script and you should get the width table .asm file as an output. A valid installation of Python 2.7 or Python 3.0 is required for this. Note that you might still have to manually touch up the width table a little bit. For example, I personally find it useful to give all digits in a font a unified width, which makes it easier to create clean layouts with them.</li>
+					<li>The character-to-glyph mapping file is what Asar uses to know which characters in a text command correspond to which glyph in a font .bin file. The format looks like this:
+					<pre><code>'0' = $00
+'1' = $01
+'2' = $02
+'3' = $03
+'4' = $04
+'5' = $05
+'6' = $06
+'7' = $07
+'8' = $08
+'9' = $09
+'A' = $0A
+'B' = $0B
+'C' = $0C
+'D' = $0D
+'E' = $0E
+'F' = $0F
+'G' = $10
+'H' = $11
+'I' = $12
+; ...
+</code></pre></li>
+					Given the mapping from the example above, the command <code>%vwf_text("ABC")</code> would render tiles <code>$0A</code>, <code>$0B</code> and <code>$0C</code> from the current font's .bin file to the text box. In Asar v1.90, only ASCII character mappings are supported, but starting with Asar v2.0, any single-codepoint Unicode characters can be mapped. That makes it possible to even use a mapping for Japanese text (this will likely require running in 16-bit mode). Example:
+					<pre><code>'あ' = $0100
+'い' = $0101
+'う' = $0102
+'え' = $0103
+'お' = $0104
+'か' = $0105
+'き' = $0106
+'く' = $0107
+'け' = $0108
+; ...
+</code></pre>
+The <code>vwftable.asm</code> file that is included by default already includes a conditional to automatically add mappings for Japanese characters when Asar v2.0 or newer is used. Note that at this point in time, the patch does not automatically switch mappings when you switch fonts. You need to do so automatically by using the <code>cleartable</code> and <code>incsrc</code> commands, like so:
+					<pre><code>cleartable
+incsrc "vwftable_for_my_font.asm"</code></pre>
+					Having to do this can be avoided by making all your fonts compatible with the same mapping file.
 				</ul>
 				
 				Font graphics are the most complicated of all the graphic formats. First of all open up <code>vwffont1.bin</code> in
@@ -518,7 +562,7 @@ dl Font2,Font2_Width</code></pre>
 				Adding a new font is as simple as that, thanks to Asar’s automatic freespace management.
 			</p>
 			
-			<h4 class="text-center">Message Files</h4>
+			<h4 id="resources-message-files" class="text-center">Message Files</h4>
 			<p>
 			</p>
 

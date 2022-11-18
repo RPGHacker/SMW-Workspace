@@ -453,6 +453,7 @@ endmacro
 					<img class="d-block m-1 my-2" src="screenshots/yychr-3.png" alt="Screenshot" width="634" height="481"/></li>
 					<li>Each 16x16 tile here contains one character glyph.</li>
 					<li>Only colors <code>$02</code> and <code>$03</code> of a palette may be used for the glyphs (that is, the third and fourth color of each palette). Color $01, as mentioned previously, is already reserved for the background pattern. Generally, you'll want to use color $02 for the letters and color $03 for their outlines or drop shadows.</li>
+					<li>Each glyph should touch the left edge of its tile. This is important for the VWF text generator to work properly. (At least according to past me. I don't remember why that is, and I haven't checked the code to make sure this is actually still true. Whoopsies!)</li>
 					<li>However, not the entire width of a glyph tile is actually rendered in a text box. Instead, this is where the character width table files come into a play. Open one up and you should see a format similar to this:
 					<pre><code>;Char00to0F:
 db $07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$06,$06
@@ -462,7 +463,7 @@ db $07,$07,$05,$07,$08,$06,$09,$08,$07,$07,$07,$07,$06,$07,$07,$07
 ;...
 </code></pre>
 					Each number here represents the pixel width of one glyph from the respective .bin file. The first number is for the first glyph in the .bin file, the second number for the second glyph and so forth. The patch will look up those numbers and use them to determine how many columns of each glyph tile should be rendered, thus creating its variable width text.</li>
-					<li>If you don't want to create width tables manually, a Python helper script is included at <code>code/scripts/generate_widths.py</code> which attempts to generate them for you. Just drop your .bin file onto the script and you should get the width table .asm file as an output. A valid installation of Python 2.7 or Python 3.0 is required for this. Note that you might still have to manually touch up the width table a little bit. For example, I personally find it useful to give all digits in a font a unified width, which makes it easier to create clean layouts with them.</li>
+					<li>If you don't want to create width tables manually, a Python helper script is included at <code>code/scripts/generate_widths.py</code> which attempts to generate them for you. Just drop your .bin file onto the script and you should get the width table .asm file as an output. A valid installation of Python 2.7 or Python 3.0 is required for this. Note that you might still have to manually touch up the width table a little bit. For example, I personally find it useful to give all digits in a font a unified width, which makes it easier to create clean layouts with them. You can also use the script to generate a fixed-width table by running it from the command line and passing <code>-f</code> as an argument. That will use the widest glyph from the font as the width of all characters.</li>
 					<li>The character-to-glyph mapping file is what Asar uses to know which characters in a text command correspond to which glyph in a font .bin file. The format looks like this:
 					<pre><code>'0' = $00
 '1' = $01
@@ -484,7 +485,7 @@ db $07,$07,$05,$07,$08,$06,$09,$08,$07,$07,$07,$07,$06,$07,$07,$07
 'H' = $11
 'I' = $12
 ; ...
-</code></pre></li>
+</code></pre>
 					Given the mapping from the example above, the command <code>%vwf_text("ABC")</code> would render tiles <code>$0A</code>, <code>$0B</code> and <code>$0C</code> from the current font's .bin file to the text box. In Asar v1.90, only ASCII character mappings are supported, but starting with Asar v2.0, any single-codepoint Unicode characters can be mapped. That makes it possible to even use a mapping for Japanese text (this will likely require running in 16-bit mode). Example:
 					<pre><code>'あ' = $0100
 'い' = $0101
@@ -500,66 +501,13 @@ db $07,$07,$05,$07,$08,$06,$09,$08,$07,$07,$07,$07,$06,$07,$07,$07
 The <code>vwftable.asm</code> file that is included by default already includes a conditional to automatically add mappings for Japanese characters when Asar v2.0 or newer is used. Note that at this point in time, the patch does not automatically switch mappings when you switch fonts. You need to do so automatically by using the <code>cleartable</code> and <code>incsrc</code> commands, like so:
 					<pre><code>cleartable
 incsrc "vwftable_for_my_font.asm"</code></pre>
-					Having to do this can be avoided by making all your fonts compatible with the same mapping file.
+					Having to do this can be avoided by making all your fonts compatible with the same mapping file.</li>
+					<li>Each font can contain up to 256 glyphs (that's equal to four pages in YY-CHR with the settings mentioned above).</li>
+					<li>Fonts with more than 256 glyphs can be simulated by just creating separate fonts containing 256 glyphs each. In that case, you might want to use 16-bit mode to access them more easily. This can be useful for languages with a large character set, like Japanese.</li>
+					<li>To add a new font to the patch, create a new .bin file with the glyph graphics, a new .asm file with the width table and (if needed) a new .asm file with the character-to-glyph mapping. Then add the following line to the <code>vwf_define_data()</code> macro in <code>vwfconfig.cfg</code>:
+					<pre><code>%vwf_add_font("data/fonts/som/vwffont.bin", "data/fonts/som/vwffont.asm", "data/fonts/vwftable.asm")</code></pre>
+					Where the first argument is the graphics .bin file, the second argument is the width table .asm file, and the third argument is the character-to-glyph mapping .asm file. The order of <code>%vwf_add_font()</code> calls inside the <code>vwf_define_data()</code> macro determines the ID of each font. The first %vwf_add_font() will be font <code>$00</code>, the second %vwf_add_font() will be <code>$01</code> and so forth. It is crucial that the character-to-glyph mapping file contains at least valid mappings for the characters <code>0 1 2 3 4 5 6 7 8 9 A B C D E F</code> for that respective font, because the functionality of all number-related text functions depends on it.</li>
 				</ul>
-				
-				Font graphics are the most complicated of all the graphic formats. First of all open up <code>vwffont1.bin</code> in
-				YY-CHR and set it to 2BBP GB. Now you’ll notice that the letters are all messed up and it’s nearly impossible
-				to edit them that way. Well, this is where YY-CHR v0.99 comes in handy. At the bottom it has a field labeled
-				"Pattern:". Simply select "FC/NES x16" here and the letters will be in the correct format. This is what
-				it looks like:
-				<img class="d-block m-1 my-2" src="screenshots/yychr-3.png" alt="Screenshot" width="634" height="481"/>
-				Each 16×16 tile is one character. Each font can have up to 256 characters. That’s four pages in YY-CHR.
-				Just like BG patterns, fonts have their special rules.
-				<ul>
-					<li>Only use the third and fourth color of the palette for fonts.</li>
-					<li>Make each letter touch the left border of it’s 16×16 tile. This is important for the VWF system.</li>
-				</ul>
-				Everything else here is pretty simple. Just draw the hell out of yourself. I recommend using the third
-				color for the letters and the fourth color for their shading (if using any that is).
-			</p>
-
-			<p>
-				Next thing is the width table. Open <code>vwffont1.asm</code>. As you can see the width table file and the actual
-				font file share the same file name. This is not required, but recommended. You’ll see something like this now:
-				<pre><code>; Characters 00 to 0F
-db $07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$06,$06
-; Characters 10 to 1F
-db $07,$07,$05,$07,$08,$06,$09,$08,$07,$07,$07,$07,$06,$07,$07,$07
-; Characters 20 to 2F
-db $0B,$07,$07,$07,$07,$07,$06,$07,$07,$06,$07,$07,$03,$06,$07,$03
-[...]</code></pre>
-				This table contains the width of each character in the font file in pixel. This should be quite self
-				explanatory. Just use YY-CHR to count the pixels. If that feels too annoying, you can also use the
-				included python script (<code>scripts/generate_widths.py</code>) to do that automatically. You'll need Python 2.7 or Python 3. If you have that,
-				you can just drag and drop your font file onto the script and it will automatically create a widths
-				table right next to the font file. The generated table might need some manual tweaking though. If you
-				want, you can also have the script generate a fixed width table, by passing <code>-f</code> when
-				running the script on the command line. That will use the widest character in the font as the fixed
-				width.
-			</p>
-
-			<p>
-				To create a new font file, simply copy <code>vwffont1.bin</code> and <code>vwffont1.asm</code>, rename them accordingly and
-				edit them. To insert this new font into your game, press CTRL + F inside <code>vwf_dialogues.asm</code>,
-				search for "INSERT DATA HERE!" and paste the following code just below it
-				<pre><code>%nextbank(freedata)
-%binary(Font2, "vwffont2.bin")
-%source(Font2_Width, "vwffont2.asm")</code></pre>
-				where <code>Font2</code> and <code>Font2_Width</code> are unique names which you will use to identify your new font and width table
-				(only use alpha-numeric characters and underscores here, no spaces or special characters)
-				and where <code>vwffont2.bin</code> and <code>vwffont2.asm</code> are the names of the files you want to insert.
-				What you have to do next is opening and editing <code>vwffontpointers.asm</code>.
-				By default, there is only one font in here and it looks like this:
-				<pre><code>dl Font1,Font1_Width</code></pre>
-				Each line in here is for a single font. Start each line with a <code>dl</code>, followed by a comma, then the address of
-				the font graphics and the address of the width table, seperated by a comma. If you have followed the steps above
-				to insert the new font into your game, then adding it to this table becomes very simple.
-				Remember the unique names you passed to <code>%binary()</code> and <code>%source()</code> to identify your font?
-				Those are the names you have to enter into this table. So in our example, you would end up with
-				<pre><code>dl Font1,Font1_Width
-dl Font2,Font2_Width</code></pre>
-				Adding a new font is as simple as that, thanks to Asar’s automatic freespace management.
 			</p>
 			
 			<h4 id="resources-message-files" class="text-center">Message Files</h4>

@@ -133,6 +133,7 @@
 							<li><a href="#text-command-e8"><code>$E8</code> - Use Text Macro</a></li>
 							<li><a href="#text-command-e7"><code>$E7</code> - Return from Text Macro</a></li>
 						</ul></details>
+						<li><a href="#text-macros">Text Macros</a></li>
 					</ul></li>
 					<li><a href="#advanced-functionality">Advanced Functionality</a><ul>
 						<li><a href="#display-messages">Display Messages From Custom Code</a></li>
@@ -512,97 +513,23 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 			
 			<h4 id="resources-message-files" class="text-center">Message Files</h4>
 			<p>
+				Message files are probably this patch's most important resource, as they contain its actual guts: the messages themselves. The patch comes pre-packaged with a single message file at <code>data/vwfmessages.asm</code>. It's unlikely you'll ever have to create a new one. For 99% of use cases, just editing the existing file will be sufficient. There's only a few potential scenarios that I can think of where creating additional message files might be useful or even required:
+				<ul>
+					<li>If your hack contains such a massive amount of text that it no longer fits into a single bank, you'll have to create additional message files and split your text between them.</li>
+					<li>If you're working on a hack with multi-language support, it might make sense to put each language into its own message file so that translators can work on them simultaneously.</li>
+				</ul>
+				Anyways, for the few people who have legitimate reasons to create new message files, here's a brief explanation on them. Note that it only covers the format of message files themselves, not on the messages within them. See section <a href="#message-format">Message Format</a> for details on that.
+				<ul>
+					<li>To add a new message file to the patch, first create it, then add the following line to the <code>vwf_define_data()</code> macro in <code>vwfconfig.cfg</code>:
+					<pre><code>%vwf_add_messages("data/vwfmessages.asm", "data/fonts/vwftable.asm")</code></pre>
+					Where the first argument is the path to the message file itself and the second argument is the path to the default character-to-glyph mapping file to use for it (see section <a href="#resources-fonts">Fonts</a> for details).</li>
+				</ul>
+				That's really all there is to it.
 			</p>
 
 			<h3 id="message-format" class="text-center">Message Format</h3>
-			<h4 class="text-center">Setting Up and Calling Dialogues</h4>
 			<p>
-				So now to actually use my patch and display some text on the screen.
-				Remember this window from applying the patch to your ROM?
-				<img class="d-block m-1 my-2" src="screenshots/console-1.png" alt="Screenshot" width="979" height="512" />
-				This is the first time it actually plays a role. Now if you’re not familiar with ASM at all or don’t
-				plan on using this patch in your own patches, custom sprites or custom blocks then this won’t be
-				very interesting for you. For everyone else here is the general procedure of how to start a dialogue
-				ingame using this patch:
-				<ol>
-					<li>
-						Write the number of the message to display to the Message register. This is a 2-Byte address.
-						So let’s say you’d want to display message <code>$002D</code>.
-						Using the example from the screenshot this would go somewhat like this:
-						<pre><code>rep #$20		; Set A to be 16-bit.
-lda.w #$002D		;\ Message number to load.
-sta.l $702001		;/
-sep #$20		; Set A to be 8-bit.</code></pre>
-					</li>
-					<li>
-						Write <code>$01</code> to the VWF State register. One thing is very important here: Before you do this
-						you’ll have to check if a dialogue is already being processed. Why? Well, if you don’t this might
-						lead to unexpected results, like Layer 3 glitiching up for example. If the VWF State register equals
-						<code>$00</code> then no dialogue is being processed. This leads to the following code:
-						<pre><code>lda.l $702000		;\ Is a VWF Message being displayed?
-bne .SkipDialogue	;/ If so, branch.
-lda #$01		;\ Otherwise, initialize the new VWF Message.
-sta.l $702000		;/
-.SkipDialogue</code></pre>
-					</li>
-				</ol>
-				<ul>
-					<li>
-						Alternatively, the patch contains a routine that will do most of the above for you in addition to forcing
-						the previous message to close. All you need to do is load the message number. To call this routine, do the
-						following, using the above screenshot and previous example as an example.
-						<pre><code>rep #$20		; Set A to be 16-bit.
-lda.w #$002D		; Message number to load.
-jsl.l $90F079		; Address of the "DisplayAMessage" routine.
-sep #$20		; Set A to be 8-bit.</code></pre>
-					</li>
-				</ul>
-			</p>
-
-			<p>
-				Whenever a dialogue is currently active, the Status Bar and the level’s Layer 3 are hidden. They’ll
-				return at the end of the dialogue. I still recommend not using dialogues in Layer 3 levels.
-				Alright. Let’s move on. By now you’re probably wondering what that number we have written to the
-				Message register corresponds to. Well, open the file <code>vwfmessagepointers.asm</code> and find out.
-				You’ll see something like this:
-				<pre><code><table class="border-0" style="line-height:19px;"><tbody><tr><td>dl Message0000,	</td><td>Message0001,	</td><td>Message0002,	</td><td>Message0003</td></tr>
-<tr><td>dl Message0004,	</td><td>Message0005,	</td><td>Message0006,	</td><td>Message0007</td></tr>
-<tr><td>dl Message0008,	</td><td>Message0009,	</td><td>Message000A,	</td><td>Message000B</td></tr>
-<tr><td>dl Message000C,	</td><td>Message000D,	</td><td>Message000E,	</td><td>Message000F</td></tr>
-<tr><td>dl Message0010,	</td><td>Message0011,	</td><td>Message0012,	</td><td>Message0013</td></tr>
-</tbody></table>[...]</code></pre>
-				This is the table that points to the text for each dialogue. By now you should know how tables work:
-				A "dl" at the beginning, a space after that and a bunch of labels seperated by commas. In this case the
-				table works like this: If the Message register is $0000, use the first address in this table. If the
-				Message register is $0001, use the second address in this table. Etc.
-			</p>
-
-			<p>
-				As you can see I’ve always used the required value of the Message register as the name of the according
-				label. This is not required, but it’s recommended for orientation. Basically you can put any
-				24-Bit-Address here, even RAM addresses, which can be useful if you’re using this in your own patches. Let’s
-				have a table with a few valid examples:
-				<pre><code><table class="border-0" style="line-height:19px;"><tbody><tr><td>dl Message0000,	</td><td>$7F0000,	</td><td>Message0002,	</td><td>Message0003</td></tr>
-<tr><td>dl $05A5D9,	</td><td>Message0005,	</td><td>Message0006,	</td><td>Randomname1</td></tr>
-<tr><td>dl Message0008,	</td><td>Message0009,	</td><td>Message000A,	</td><td>Randomname2</td></tr>
-<tr><td>dl $268000,	</td><td>Message000D,	</td><td>Message000E,	</td><td>Message000F</td></tr>
-<tr><td>dl MessageABCD,	</td><td>Message0011,	</td><td>Message0012,	</td><td>Message0000</td></tr></tbody></table>[...]</code></pre>
-				By default there are labels for 256 messages in this table. In theory you can use up to 10922 different
-				messages with this patch, but since SNES ROMs are rather limited in file space it’s unlikely you’ll ever get
-				to use that many, especially since my patch doesn’t compress text in any way. It’s not very likely that you’ll
-				ever get to have that many messages in your game, anyways. If 256 messages aren’t enough for you, simply add
-				more labels at the end of this file. It’s as simple as that. By now you might be wondering "OK OK, but where
-				the hell do I put the text now?". Let’s head to the next point and clear this question.
-			</p>
-
-			<p>
-				Open <code>vwfmessages.asm</code>. As you can see labels for each label in the table are already in here.
-				Most of them are ununsed and can be used by yourself. If you chose to replace SMW’s original messages
-				by this patch in section 2 then the comments at the end of each label also tell you which original
-				message the according labels are replacing. <code>Message0009:</code> replaces SMW’s original message 004-2 for
-				example. To edit a dialogue simply put text under the according label. To add new ones simply paste
-				them at the end of the file, but ABOVE <code>%textend()</code>. This is important to prevent glitches.
-				After we’re done with this we can finally get to actually write messages. YAY!
+				Adding new messages to this patch is as simple as doing this and that. Up to 2AAA. TODO TODO TODO
 			</p>
 
 			<h4 id="header-settings" class="text-center">Header Settings</h4>
@@ -1345,6 +1272,10 @@ db "Princess Peach",$E7</code></pre>
 				And with that another section of this ridiculously long manual is done and you’re finally able to
 				write your own dialogues. WOO HOO!
 			</p>
+
+			<h4 id="text-macros" class="text-center">Text Macros</h4>
+			<p>
+			</p>
 		</section>
 
 		<!-- Seperator Comment -->
@@ -1391,6 +1322,94 @@ db "Princess Peach",$E7</code></pre>
 			</p>
 
 			<h3 id="display-messages" class="text-center">Display Messages From Custom Code</h3>
+			<p>
+				So now to actually use my patch and display some text on the screen.
+				Remember this window from applying the patch to your ROM?
+				<img class="d-block m-1 my-2" src="screenshots/console-1.png" alt="Screenshot" width="979" height="512" />
+				This is the first time it actually plays a role. Now if you’re not familiar with ASM at all or don’t
+				plan on using this patch in your own patches, custom sprites or custom blocks then this won’t be
+				very interesting for you. For everyone else here is the general procedure of how to start a dialogue
+				ingame using this patch:
+				<ol>
+					<li>
+						Write the number of the message to display to the Message register. This is a 2-Byte address.
+						So let’s say you’d want to display message <code>$002D</code>.
+						Using the example from the screenshot this would go somewhat like this:
+						<pre><code>rep #$20		; Set A to be 16-bit.
+lda.w #$002D		;\ Message number to load.
+sta.l $702001		;/
+sep #$20		; Set A to be 8-bit.</code></pre>
+					</li>
+					<li>
+						Write <code>$01</code> to the VWF State register. One thing is very important here: Before you do this
+						you’ll have to check if a dialogue is already being processed. Why? Well, if you don’t this might
+						lead to unexpected results, like Layer 3 glitiching up for example. If the VWF State register equals
+						<code>$00</code> then no dialogue is being processed. This leads to the following code:
+						<pre><code>lda.l $702000		;\ Is a VWF Message being displayed?
+bne .SkipDialogue	;/ If so, branch.
+lda #$01		;\ Otherwise, initialize the new VWF Message.
+sta.l $702000		;/
+.SkipDialogue</code></pre>
+					</li>
+				</ol>
+				<ul>
+					<li>
+						Alternatively, the patch contains a routine that will do most of the above for you in addition to forcing
+						the previous message to close. All you need to do is load the message number. To call this routine, do the
+						following, using the above screenshot and previous example as an example.
+						<pre><code>rep #$20		; Set A to be 16-bit.
+lda.w #$002D		; Message number to load.
+jsl.l $90F079		; Address of the "DisplayAMessage" routine.
+sep #$20		; Set A to be 8-bit.</code></pre>
+					</li>
+				</ul>
+			</p>
+
+			<p>
+				Whenever a dialogue is currently active, the Status Bar and the level’s Layer 3 are hidden. They’ll
+				return at the end of the dialogue. I still recommend not using dialogues in Layer 3 levels.
+				Alright. Let’s move on. By now you’re probably wondering what that number we have written to the
+				Message register corresponds to. Well, open the file <code>vwfmessagepointers.asm</code> and find out.
+				You’ll see something like this:
+				<pre><code><table class="border-0" style="line-height:19px;"><tbody><tr><td>dl Message0000,	</td><td>Message0001,	</td><td>Message0002,	</td><td>Message0003</td></tr>
+<tr><td>dl Message0004,	</td><td>Message0005,	</td><td>Message0006,	</td><td>Message0007</td></tr>
+<tr><td>dl Message0008,	</td><td>Message0009,	</td><td>Message000A,	</td><td>Message000B</td></tr>
+<tr><td>dl Message000C,	</td><td>Message000D,	</td><td>Message000E,	</td><td>Message000F</td></tr>
+<tr><td>dl Message0010,	</td><td>Message0011,	</td><td>Message0012,	</td><td>Message0013</td></tr>
+</tbody></table>[...]</code></pre>
+				This is the table that points to the text for each dialogue. By now you should know how tables work:
+				A "dl" at the beginning, a space after that and a bunch of labels seperated by commas. In this case the
+				table works like this: If the Message register is $0000, use the first address in this table. If the
+				Message register is $0001, use the second address in this table. Etc.
+			</p>
+
+			<p>
+				As you can see I’ve always used the required value of the Message register as the name of the according
+				label. This is not required, but it’s recommended for orientation. Basically you can put any
+				24-Bit-Address here, even RAM addresses, which can be useful if you’re using this in your own patches. Let’s
+				have a table with a few valid examples:
+				<pre><code><table class="border-0" style="line-height:19px;"><tbody><tr><td>dl Message0000,	</td><td>$7F0000,	</td><td>Message0002,	</td><td>Message0003</td></tr>
+<tr><td>dl $05A5D9,	</td><td>Message0005,	</td><td>Message0006,	</td><td>Randomname1</td></tr>
+<tr><td>dl Message0008,	</td><td>Message0009,	</td><td>Message000A,	</td><td>Randomname2</td></tr>
+<tr><td>dl $268000,	</td><td>Message000D,	</td><td>Message000E,	</td><td>Message000F</td></tr>
+<tr><td>dl MessageABCD,	</td><td>Message0011,	</td><td>Message0012,	</td><td>Message0000</td></tr></tbody></table>[...]</code></pre>
+				By default there are labels for 256 messages in this table. In theory you can use up to 10922 different
+				messages with this patch, but since SNES ROMs are rather limited in file space it’s unlikely you’ll ever get
+				to use that many, especially since my patch doesn’t compress text in any way. It’s not very likely that you’ll
+				ever get to have that many messages in your game, anyways. If 256 messages aren’t enough for you, simply add
+				more labels at the end of this file. It’s as simple as that. By now you might be wondering "OK OK, but where
+				the hell do I put the text now?". Let’s head to the next point and clear this question.
+			</p>
+
+			<p>
+				Open <code>vwfmessages.asm</code>. As you can see labels for each label in the table are already in here.
+				Most of them are ununsed and can be used by yourself. If you chose to replace SMW’s original messages
+				by this patch in section 2 then the comments at the end of each label also tell you which original
+				message the according labels are replacing. <code>Message0009:</code> replaces SMW’s original message 004-2 for
+				example. To edit a dialogue simply put text under the according label. To add new ones simply paste
+				them at the end of the file, but ABOVE <code>%textend()</code>. This is important to prevent glitches.
+				After we’re done with this we can finally get to actually write messages. YAY!
+			</p>
 
 			<h3 id="shared-routines" class="text-center">Shared Routines</h3>
 

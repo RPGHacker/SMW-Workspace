@@ -529,7 +529,25 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 
 			<h3 id="message-format" class="text-center">Message Format</h3>
 			<p>
-				Adding new messages to this patch is as simple as doing this and that. Up to 2AAA. TODO TODO TODO
+				Adding new messages to this patch is as simple as adding the following lines to one of your message files (usually <code>data/vwfmessages.asm</code>):
+				
+				<pre><code>%vwf_message_start(0000)
+
+	%vwf_header()
+	
+	; Message contents go here.
+
+%vwf_message_end()</code></pre>
+				
+				The number passed to <code>%vwf_message_start()</code> is the ID of your message. This is what other patches/sprites/blocks use to tell this patch which message to display. It's a four-digit hexadecimal number and must be unique for every message. The easiest way to assure this is to just start from <code>0000</code> and increment the ID by 1 for every message you add. In theory, the ID can be any value from <code>0000</code> to <code>FFFF</code>, but in practice, because the patch uses 24-bit pointers for messages and they all need to fit into a single bank, the actual maximum is somewhere around <code>2AAA</code>. This shouldn't be an issue for average users, as this still means the patch supports up to 10922 individual messages.
+			</p>
+			
+			<p>
+				One thing to be aware of when assigning message IDs is that the patch will automatically generate pointers for every single message. Since the pointers are stored as a simple table that is looked up via the message ID, whenever there's a gap in message IDs the patch needs to fill in that gap via dummy pointers. So if you have a message file that only contains two messages with IDs <code>0000</code> and <code>0100</code>, then the patch will generate dummy pointers for all IDs from <code>0001</code> to <code>00FF</code>. Since this wastes free space, it is advised to avoid gaps in message IDs altogether. The patch will print a warning once it detects a certain number of gaps.
+			</p>
+			
+			<p>
+				The <code>%vwf_header()</code> always needs to be the first line right after the <code>%vwf_message_start()</code>. This line allows you to override text box settings by passing different arguments to the <code>%vwf_header()</code> macro. More details on that in section <a href="#header-settings">Header Settings</a>.
 			</p>
 
 			<h4 id="header-settings" class="text-center">Header Settings</h4>
@@ -1276,6 +1294,7 @@ db "Princess Peach",$E7</code></pre>
 			<h4 id="text-macros" class="text-center">Text Macros</h4>
 			<p>
 			</p>
+			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
 		</section>
 
 		<!-- Seperator Comment -->

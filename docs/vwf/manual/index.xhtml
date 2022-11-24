@@ -133,6 +133,7 @@
 							<li><a href="#text-command-e8"><code>$E8</code> - Use Text Macro</a></li>
 							<li><a href="#text-command-e7"><code>$E7</code> - Return from Text Macro</a></li>
 						</ul></details>
+						<li><a href="#helper-functions">Helper Functions</a></li>
 						<li><a href="#text-macros">Text Macros</a></li>
 					</ul></li>
 					<li><a href="#advanced-functionality">Advanced Functionality</a><ul>
@@ -552,6 +553,52 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 
 			<h4 id="header-settings" class="text-center">Header Settings</h4>
 			<p>
+				When defining your own text boxes, the very first thing you'll want to look at are the header settings. These settings define a number of general properties of your text box, like position, size, sound effects and more. The way this works is by passing optional arguments as function calls to the <code>%vwf_header()</code> macro in your message. Here's an example:
+				
+				<pre><code>%vwf_header(vwf_x_pos(0), vwf_y_pos(0), vwf_width(15), vwf_height(13))</code></pre>
+				
+				When any argument is omitted, its value will be pulled from the default values defined in <code>vwfconfig.cfg</code>. For example, when you omit the <code>vwf_x_pos</code> argument, the patch will use the <code>!vwf_default_x_pos</code> define in its place.
+			</p>
+			
+			<p>
+				Header arguments, like text commands, support short aliases via the <code>!vwf_enable_short_aliases</code> setting. When enabled, the <code>vwf_</code> prefix on all arguments can be omitted. Example:
+				
+				<pre><code>%vwf_header(x_pos(0), y_pos(0), width(15), height(13))</code></pre>
+				
+				What follows is a list of all header arguments along with a brief explanation.
+			</p>
+			
+			<p>
+vwf_font ?= 0
+
+vwf_x_pos ?= 1
+vwf_y_pos ?= 1
+vwf_width ?= 14
+vwf_height ?= 3
+
+vwf_box_animation ?= VWF_BoxAnimation.SoM
+vwf_text_palette ?= $07
+vwf_text_color ?= rgb_15(31, 31, 31)
+vwf_outline_color ?= rgb_15(0, 0, 0)
+
+vwf_space_width ?= 7
+vwf_text_margin ?= 4
+vwf_text_alignment ?= VWF_TextAlignment.Left
+
+vwf_freeze_game ?= true
+vwf_text_speed ?= 0
+vwf_auto_wait ?= VWF_AutoWait.WaitForA
+vwf_button_speedup ?= true
+vwf_enable_skipping ?= true
+
+vwf_enable_sfx ?= true
+vwf_letter_sound ?= $13
+vwf_wait_sound ?= $13
+vwf_cursor_sound ?= $23
+vwf_continue_sound ?= $29
+
+vwf_enable_message_asm ?= false
+			
 				The first thing to do when setting up a dialogue is creating a header for it. This header is mandatory;
 				not having it will cause glitches in the game. It allows you to easily set up position, width, height
 				and other settings of the text box during that one specific dialogue. Let’s say we wanted to edit
@@ -1291,9 +1338,15 @@ db "Princess Peach",$E7</code></pre>
 				write your own dialogues. WOO HOO!
 			</p>
 
+			<h4 id="helper-functions" class="text-center">Helper Functions</h4>
+			<p>
+				rgb_15() etc.
+			</p>
+
 			<h4 id="text-macros" class="text-center">Text Macros</h4>
 			<p>
 			</p>
+			
 			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
 		</section>
 

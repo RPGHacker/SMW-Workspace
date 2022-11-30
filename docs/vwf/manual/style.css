@@ -12,6 +12,11 @@
 	image-rendering: crisp-edges;
 }
 
+.api-documentation {
+	border-collapse: separate;
+	border-spacing: 5px;
+}
+
 table.kv-map > tbody > tr > th::after {
 	content:	":";
 	margin-left:	2px;

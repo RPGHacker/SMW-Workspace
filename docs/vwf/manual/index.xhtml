@@ -103,7 +103,36 @@
 							</ul></details>
 						<li><a href="#message-format">Message Format</a></li>
 						<details>
-							<summary><a href="#header-settings">Header Settings</a></summary><ul>
+							<summary><a href="#header-settings">Header Settings</a></summary><ul>							
+								<li><a href="#header-settings-vwf_font">vwf_font</a></li>
+								
+								<li><a href="#header-settings-vwf_x_pos">vwf_x_pos</a></li>
+								<li><a href="#header-settings-vwf_y_pos">vwf_y_pos</a></li>
+								<li><a href="#header-settings-vwf_width">vwf_width</a></li>
+								<li><a href="#header-settings-vwf_height">vwf_height</a></li>
+								
+								<li><a href="#header-settings-vwf_box_animation">vwf_box_animation</a></li>
+								<li><a href="#header-settings-vwf_text_palette">vwf_text_palette</a></li>
+								<li><a href="#header-settings-vwf_text_color">vwf_text_color</a></li>
+								<li><a href="#header-settings-vwf_outline_color">vwf_outline_color</a></li>
+								
+								<li><a href="#header-settings-vwf_space_width">vwf_space_width</a></li>
+								<li><a href="#header-settings-vwf_text_margin">vwf_text_margin</a></li>
+								<li><a href="#header-settings-vwf_text_alignment">vwf_text_alignment</a></li>
+								
+								<li><a href="#header-settings-vwf_freeze_game">vwf_freeze_game</a></li>
+								<li><a href="#header-settings-vwf_text_speed">vwf_text_speed</a></li>
+								<li><a href="#header-settings-vwf_auto_wait">vwf_auto_wait</a></li>
+								<li><a href="#header-settings-vwf_button_speedup">vwf_button_speedup</a></li>
+								<li><a href="#header-settings-vwf_enable_skipping">vwf_enable_skipping</a></li>
+								
+								<li><a href="#header-settings-vwf_enable_sfx">vwf_enable_sfx</a></li>
+								<li><a href="#header-settings-vwf_letter_sound">vwf_letter_sound</a></li>
+								<li><a href="#header-settings-vwf_wait_sound">vwf_wait_sound</a></li>
+								<li><a href="#header-settings-vwf_cursor_sound">vwf_cursor_sound</a></li>
+								<li><a href="#header-settings-vwf_continue_sound">vwf_continue_sound</a></li>
+								
+								<li><a href="#header-settings-vwf_enable_message_asm">vwf_enable_message_asm</a></li>
 						</ul></details>
 						<details>
 							<summary><a href="#text-commands">Text Commands</a></summary><ul>
@@ -568,8 +597,25 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 				What follows is a list of all header arguments along with a brief explanation.
 			</p>
 			
-			<p>
-vwf_font ?= 0
+			<dl>
+				<dt id="header-settings-vwf_font"><code>vwf_font</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>vwf_font(font_id: number)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>font(font_id) = vwf_font(font_id)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Description</th>
+							<td>Test</td>
+						</tr>
+					</table>
+					Test
+				</p></dd>
 
 vwf_x_pos ?= 1
 vwf_y_pos ?= 1
@@ -598,7 +644,9 @@ vwf_cursor_sound ?= $23
 vwf_continue_sound ?= $29
 
 vwf_enable_message_asm ?= false
+			</dl>
 			
+			<p>
 				The first thing to do when setting up a dialogue is creating a header for it. This header is mandatory;
 				not having it will cause glitches in the game. It allows you to easily set up position, width, height
 				and other settings of the text box during that one specific dialogue. Let’s say we wanted to edit

@@ -12,9 +12,16 @@
 	image-rendering: crisp-edges;
 }
 
-.api-documentation {
+table.api-documentation {
 	border-collapse: separate;
-	border-spacing: 5px;
+	border-spacing: 0em 1em;
+	border-style: hidden;
+	padding: 5px;
+}
+
+table.api-documentation th {
+	text-align: center;
+	padding: 0px 15px;
 }
 
 table.kv-map > tbody > tr > th::after {

@@ -602,7 +602,7 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 
 	%vwf_header(x_pos(10), y_pos(10), width(5), height(1), text_alignment(TextAlignment.Centered))
 	
-	%vwf_text("What's up, Mario? Hope you have a nice day!")
+	!text("What's up, Mario? Hope you have a nice day!")
 
 %vwf_message_end()</code></pre>
 			</p>
@@ -622,10 +622,7 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 				<pre><code>%vwf_header(x_pos(0), y_pos(0), width(15), height(13))</code></pre>
 				
 				What follows is a list of all header arguments along with a brief explanation.
-			</p>
-			
-			<h3 id="header-settings" class="text-center">Header Settings</h3>
-			
+			</p>			
 			
 			<h4 id="header-settings-text-box-properties" class="text-center">Text Box Properties</h4>
 			<dl>				
@@ -634,14 +631,18 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_x_pos(x_pos: number)</code></pre></td>
+							<td><pre><code>vwf_x_pos(x_pos)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
 							<td><pre><code>x_pos(x_pos) = vwf_x_pos(x_pos)</code></pre></td>
 						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><p><code>x_pos: number:</code> The X position to use. (min: <code>0</code>, max: <code>28</code>)</p></td>
+						</tr>
 					</table>
-					TODO
+					Sets the X position of the text box on the screen. An <code>x_pos</code> of 1 moves the text box one 8x8 tile (=8 pixels) the right, an x_pos of 2 two 8x8 tiles etc.
 				</p></dd>
 				
 				<dt id="header-settings-vwf_y_pos"><code>vwf_y_pos</code></dt>
@@ -2083,6 +2084,11 @@ db "Insert any valid text/commands here",$E7</code></pre>
 
 		<section class="container">
 			<h2 id="problem-solving" class="text-center">5. Problem Solving</h2>
+			
+			<p>
+				TODO: Note on Asar full stack option.
+			</p>
+			
 			<p>
 				In this section I’ll go over a few problems that may or may not be more complicated than most of the
 				other stuff here so far.

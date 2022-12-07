@@ -24,6 +24,18 @@ table.api-documentation th {
 	padding: 0px 15px;
 }
 
+table.api-documentation td > p {
+	margin-top:	1rem;
+	margin-bottom:	1rem;
+	margin-block-start:	1rem;
+	margin-block-end:	1rem;
+
+	padding-left:	1rem;
+	padding-right:	1rem;
+	padding-inline-start:	1rem;
+	padding-inline-end:	1rem;
+}
+
 table.kv-map > tbody > tr > th::after {
 	content:	":";
 	margin-left:	2px;

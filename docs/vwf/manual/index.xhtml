@@ -639,10 +639,12 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 						</tr>
 						<tr>
 							<th>Parameters</th>
-							<td><p><code>x_pos: number:</code> The X position to use. (min: <code>0</code>, max: <code>28</code>)</p></td>
+							<td><ul class="parameter-list">
+								<li><code>x_pos: number:</code> The X position to use. (min: <code>0</code>, max: <code>28</code>)</li>
+							</ul></td>
 						</tr>
 					</table>
-					Sets the X position of the text box on the screen. An <code>x_pos</code> of 1 moves the text box one 8x8 tile (=8 pixels) the right, an x_pos of 2 two 8x8 tiles etc.
+					Sets the X position of the text box on the screen. An <code>x_pos</code> of 1 moves the text box one 8x8 tile (=8 pixels) the right, an x_pos of 2 two 8x8 tiles etc. Depending on the size of the text box, the patch might automatically clamp this value down to prevent it from going beyond the screen border.
 				</p></dd>
 				
 				<dt id="header-settings-vwf_y_pos"><code>vwf_y_pos</code></dt>
@@ -650,14 +652,20 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_y_pos(y_pos: number)</code></pre></td>
+							<td><pre><code>vwf_y_pos(y_pos)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
 							<td><pre><code>y_pos(y_pos) = vwf_y_pos(y_pos)</code></pre></td>
 						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>y_pos: number:</code> The Y position to use. (min: <code>0</code>, max: <code>24</code>)</li>
+							</ul></td>
+						</tr>
 					</table>
-					TODO
+					Sets the Y position of the text box on the screen. A <code>y_pos</code> of 1 moves the text box one 8x8 tile (=8 pixels) down, an x_pos of 2 two 8x8 tiles etc. Depending on the size of the text box, the patch might automatically clamp this value down to prevent it from going beyond the screen border.
 				</p></dd>
 				
 				<dt id="header-settings-vwf_width"><code>vwf_width</code></dt>

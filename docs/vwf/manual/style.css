@@ -48,6 +48,10 @@ table.kv-map > tbody > tr > th::after {
 	margin-right:	8px;
 }
 
+table.parameter-list > tr > td:first-child {
+	white-space: nowrap;
+}
+
 dd {
 	margin-left:	16px;
 }

@@ -644,7 +644,7 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 							</ul></td>
 						</tr>
 					</table>
-					Sets the X position of the text box on the screen. An <code>x_pos</code> of 1 moves the text box one 8x8 tile (=8 pixels) the right, an x_pos of 2 two 8x8 tiles etc. Depending on the size of the text box, the patch might automatically clamp this value down to prevent it from going beyond the screen border.
+					Specifies the X position of the text box on the screen in 8x8 tile increments. An <code>x_pos</code> of 1 moves the text box one 8x8 tile (=8 pixels) the right, an x_pos of 2 two 8x8 tiles etc. Depending on the size of the text box, the patch might automatically clamp this value down to prevent it from going beyond the screen border.
 				</p></dd>
 				
 				<dt id="header-settings-vwf_y_pos"><code>vwf_y_pos</code></dt>
@@ -665,7 +665,7 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 							</ul></td>
 						</tr>
 					</table>
-					Sets the Y position of the text box on the screen. A <code>y_pos</code> of 1 moves the text box one 8x8 tile (=8 pixels) down, an x_pos of 2 two 8x8 tiles etc. Depending on the size of the text box, the patch might automatically clamp this value down to prevent it from going beyond the screen border.
+					Specifies the Y position of the text box on the screen 8x8 tile increments. A <code>y_pos</code> of 1 moves the text box one 8x8 tile (=8 pixels) down, a y_pos of 2 two 8x8 tiles etc. Depending on the size of the text box, the patch might automatically clamp this value down to prevent it from going beyond the screen border.
 				</p></dd>
 				
 				<dt id="header-settings-vwf_width"><code>vwf_width</code></dt>
@@ -673,14 +673,20 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_width(width: number)</code></pre></td>
+							<td><pre><code>vwf_width(width)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
 							<td><pre><code>width(width) = vwf_width(width)</code></pre></td>
 						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>width: number:</code> The width to use. (min: <code>1</code>, max: <code>15</code>)</li>
+							</ul></td>
+						</tr>
 					</table>
-					TODO
+					Specifies the width of the inside area (aka the text area) of the text box in 16x16 tile increments. A value of 1 means one 16x16 tile (=16 pixels), a value of 2 two 16x16 tiles etc. To get the total width of the entire text box, add two 8x8 tiles for the text box frame to this.
 				</p></dd>
 				
 				<dt id="header-settings-vwf_height"><code>vwf_height</code></dt>
@@ -688,14 +694,20 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_height(height: number)</code></pre></td>
+							<td><pre><code>vwf_height(height)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
 							<td><pre><code>height(height) = vwf_height(height)</code></pre></td>
 						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>height: number:</code> The height to use. (min: <code>1</code>, max: <code>13</code>)</li>
+							</ul></td>
+						</tr>
 					</table>
-					TODO
+					Specifies the height of the inside area (aka the text area) of the text box in 16x16 tile increments. A value of 1 means one 16x16 tile (=16 pixels), a value of 2 two 16x16 tiles etc. To get the total height of the entire text box, add two 8x8 tiles for the text box frame to this.
 				</p></dd>
 				
 				<dt id="header-settings-vwf_box_animation"><code>vwf_box_animation</code></dt>
@@ -703,15 +715,31 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_box_animation(animation: VWF_BoxAnimation)</code></pre></td>
+							<td><pre><code>vwf_box_animation(animation)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
 							<td><pre><code>box_animation(animation) = vwf_box_animation(animation)
 BoxAnimation = VWF_BoxAnimation</code></pre></td>
 						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>animation: VWF_BoxAnimation:</code> The animation to use. Valid values:
+								<table class="parameter-list">
+									<tr><th>Value</th><th>Description</th></tr>
+									<tr><td><code>VWF_BoxAnimation.None</code></td><td>Don't display any text box at all (only text will be visible).</td></tr>
+									<tr><td><code>VWF_BoxAnimation.SoE</code></td><td>Animate the text box like in Secret of Evermore (the text box expands top to bottom).</td></tr>
+									<tr><td><code>VWF_BoxAnimation.SoM</code></td><td>Animate the text box like in Secret of Mana (the text box expands from the center to the outside).</td></tr>
+									<tr><td><code>VWF_BoxAnimation.MMZ</code></td><td>Animate the text box like in Mega Man Zero (the text box expands from left to right).</td></tr>
+									<tr><td><code>VWF_BoxAnimation.Instant</code></td><td>Display the entire text box at once, without any animation.</td></tr>
+								</table>
+								
+								</li>
+							</ul></td>
+						</tr>
 					</table>
-					BoxAnimation, None, SoE, SoM, MMZ, Instant
+					Specifies the animation to play when opening a text box (or hides the text box entirely).
 				</p></dd>
 			</dl>
 
@@ -816,7 +844,8 @@ BoxAnimation = VWF_BoxAnimation</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>text_alignment(alignment) = vwf_text_alignment(alignment)</code></pre></td>
+							<td><pre><code>text_alignment(alignment) = vwf_text_alignment(alignment)
+TextAlignment = VWF_TextAlignment</code></pre></td>
 						</tr>
 					</table>
 					Left, Centered
@@ -864,7 +893,8 @@ BoxAnimation = VWF_BoxAnimation</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>auto_wait(mode) = vwf_auto_wait(mode)</code></pre></td>
+							<td><pre><code>auto_wait(mode) = vwf_auto_wait(mode)
+AutoWait = VWF_AutoWait</code></pre></td>
 						</tr>
 					</table>
 					None, WaitForA, WaitFrames.0, WaitFrames.254

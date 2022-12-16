@@ -739,7 +739,7 @@ BoxAnimation = VWF_BoxAnimation</code></pre></td>
 							</ul></td>
 						</tr>
 					</table>
-					Specifies the animation to play when opening a text box (or hides the text box entirely).
+					Specifies the animation to play when opening the text box (or hides the text box entirely).
 				</p></dd>
 			</dl>
 
@@ -750,14 +750,20 @@ BoxAnimation = VWF_BoxAnimation</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_font(font_id: number)</code></pre></td>
+							<td><pre><code>vwf_font(font_id)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
 							<td><pre><code>font(font_id) = vwf_font(font_id)</code></pre></td>
 						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>font_id:</code> The ID of the font to use. (min: <code>0</code>, max: <code>[number of total fonts] - 1</code>)</li>
+							</ul></td>
+						</tr>
 					</table>
-					TODO
+					Specifies the font to use for the text box (when not overridden by a text command). Font IDs are based on the order of <code>%vwf_add_font()</code> calls in your <code>vwfconfig.cfg</code>, starting at <code>0</code>. This setting is ignored when running in 16-bit mode.
 				</p></dd>
 				
 				<dt id="header-settings-vwf_text_palette"><code>vwf_text_palette</code></dt>
@@ -765,14 +771,20 @@ BoxAnimation = VWF_BoxAnimation</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_text_palette(palette_id: number)</code></pre></td>
+							<td><pre><code>vwf_text_palette(palette_id)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
 							<td><pre><code>text_palette(palette_id) = vwf_text_palette(palette_id)</code></pre></td>
 						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>palette_id:</code> The ID of the palette to use. (min: <code>0</code>, max: <code>7</code>)</li>
+							</ul></td>
+						</tr>
 					</table>
-					TODO
+					Specifies what palette number to use for text, outlines and background of the text box (when not overridden by a text command). This is based on a 2BPP (4-color) palette, meaning each increment moves the palette four colors ahead. Only the first two rows of Lunar Magic's palette are usable, giving you a choice between eight palettes in total. While the text box is open, the patch will overwrite the colors in this palette with whatever colors were specified for the text, outline and background colors. This means you should avoid selecting any palette that is being used for the level graphics and might be visible on the screen when you open the text box. Additionally, you should avoid using the same palette as set for <code>!vwf_frame_palette</code> in <code>vwfconfig.cfg</code>. Doing so would lead to undefined behavior.
 				</p></dd>
 				
 				<dt id="header-settings-vwf_text_color"><code>vwf_text_color</code></dt>

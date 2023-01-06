@@ -762,7 +762,7 @@ BoxAnimation = VWF_BoxAnimation</code></pre></td>
 						<tr>
 							<th>Parameters</th>
 							<td><ul class="parameter-list">
-								<li><code>font_id:</code> The ID of the font to use. (min: <code>0</code>, max: <code>[number of total fonts] - 1</code>)</li>
+								<li><code>font_id: number:</code> The ID of the font to use. (min: <code>0</code>, max: <code>[number of total fonts] - 1</code>)</li>
 							</ul></td>
 						</tr>
 					</table>
@@ -783,7 +783,7 @@ BoxAnimation = VWF_BoxAnimation</code></pre></td>
 						<tr>
 							<th>Parameters</th>
 							<td><ul class="parameter-list">
-								<li><code>palette_id:</code> The ID of the palette to use. (min: <code>0</code>, max: <code>7</code>)</li>
+								<li><code>palette_id: number:</code> The ID of the palette to use. (min: <code>0</code>, max: <code>7</code>)</li>
 							</ul></td>
 						</tr>
 					</table>
@@ -804,7 +804,7 @@ BoxAnimation = VWF_BoxAnimation</code></pre></td>
 						<tr>
 							<th>Parameters</th>
 							<td><ul class="parameter-list">
-								<li><code>color:</code> The color to use, in RGB15 format.</li>
+								<li><code>color: rgb15-color:</code> The color to use, in RGB15 format.</li>
 							</ul></td>
 						</tr>
 					</table>
@@ -825,7 +825,7 @@ BoxAnimation = VWF_BoxAnimation</code></pre></td>
 						<tr>
 							<th>Parameters</th>
 							<td><ul class="parameter-list">
-								<li><code>color:</code> The color to use, in RGB15 format.</li>
+								<li><code>color: rgb15-color:</code> The color to use, in RGB15 format.</li>
 							</ul></td>
 						</tr>
 					</table>
@@ -837,14 +837,20 @@ BoxAnimation = VWF_BoxAnimation</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_space_width(width: number)</code></pre></td>
+							<td><pre><code>vwf_space_width(width)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
 							<td><pre><code>space_width(width) = vwf_space_width(width)</code></pre></td>
 						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>width: number:</code> The width in pixels. (min: <code>0</code>, max: <code>15</code>).</li>
+							</ul></td>
+						</tr>
 					</table>
-					TODO
+					Specifies the width of the space character within this text box. It's recommended to use at least 6 to 8 pixels for this, depending on whether the font you use has outlines on both sides (left and right), on just one side, or no outlines at all. The reason for this has to do with the way the <a href="#text-command-vwf_set_text_palette"><code>vwf_set_text_palette()</code></a> command works. It can only modify the text palette per 8x8 tile, not per character or word. Using a wide enough space here assures that if you use this command to recolor a word surrounded by spaces, the palette change will never cut into tiles of surrounding words in a visible way.
 				</p></dd>
 				
 				<dt id="header-settings-vwf_text_margin"><code>vwf_text_margin</code></dt>
@@ -852,14 +858,20 @@ BoxAnimation = VWF_BoxAnimation</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_text_margin(margin: number)</code></pre></td>
+							<td><pre><code>vwf_text_margin(margin)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
 							<td><pre><code>text_margin(margin) = vwf_text_margin(margin)</code></pre></td>
 						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>margin: number:</code> The margin in pixels. (min: <code>0</code>, max: <code>15</code>).</li>
+							</ul></td>
+						</tr>
 					</table>
-					TODO
+					Specifies the number of pixels to keep empty at the left and right edges of the text box.
 				</p></dd>
 				
 				<dt id="header-settings-vwf_text_alignment"><code>vwf_text_alignment</code></dt>
@@ -867,15 +879,28 @@ BoxAnimation = VWF_BoxAnimation</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_text_alignment(alignment: VWF_TextAlignment)</code></pre></td>
+							<td><pre><code>vwf_text_alignment(alignment)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
 							<td><pre><code>text_alignment(alignment) = vwf_text_alignment(alignment)
 TextAlignment = VWF_TextAlignment</code></pre></td>
 						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>alignment: VWF_TextAlignment:</code> The text alignment to use. Valid values:
+								<table class="parameter-list">
+									<tr><th>Value</th><th>Description</th></tr>
+									<tr><td><code>VWF_TextAlignment.Left</code></td><td>The text is left-aligned.</td></tr>
+									<tr><td><code>VWF_TextAlignment.Centered</code></td><td>The text is centered.</td></tr>
+								</table>
+								
+								</li>
+							</ul></td>
+						</tr>
 					</table>
-					Left, Centered
+					Specifies the text alignment for this text box.
 				</p></dd>				
 			</dl>
 
@@ -886,14 +911,33 @@ TextAlignment = VWF_TextAlignment</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_freeze_game(freeze: boolean)</code></pre></td>
+							<td><pre><code>vwf_freeze_game(freeze)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
 							<td><pre><code>freeze_game(freeze) = vwf_freeze_game(freeze)</code></pre></td>
 						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>freeze: boolean:</code> Whether to freeze (<code>true</code>) or not freeze (<code>false</code>) gameplay.</li>
+							</ul></td>
+						</tr>
 					</table>
-					TODO
+					<p>Specifies whether gameplay should freeze while the text box is open. For non-SA-1 ROMs, the general recommendation is to always set this to true, as the patch is too demanding for them to run gameplay at the same time, leading to slowdown. It's recommended to use an SA-1 ROM instead if you want to make use of this feature. It should be fast enough for a dialog not to slow down gameplay.
+					<a tabindex="0" role="button" data-toggle="collapse" data-target="#video-sa1" aria-expanded="false" aria-controls="video-sa1">You can see it in action in this ancient video.</a>
+					<div id="video-sa1" class="collapse mt-3">
+						<iframe class="video" style="height:640px;" src="https://www.youtube.com/embed/hGmuaMoVO9I?rel=0&amp;start=71" allow="autoplay; encrypted-media" allowfullscreen="true"></iframe>
+					</div></p>
+					<p>If you absolutely must use a non-SA-1 ROM, here's a few tips for lessening the impact of slowdown:
+					<ul>
+						<li>Make sure all FastROM options of Lunar Magic are enabled. This will notably increase game speed even in non-SA-1 ROMs.</li>
+						<li>Use slower text speeds. Slower text speeds mean there's more frames without any text processing happening between each character, thus lag frames will be more spaced out and less noticable.</li>
+						<li>Use smaller text boxes overall with long wait times at the end. This again helps spacing out lag frames to make them less noticable.</li>
+						<li>Keep the number of sprites on-screen during a text box low.</li>
+						<li>Make use of animation style <a href="#header-settings-vwf_box_animation"><code>VWF_BoxAnimation.None</code></a>, which disables the text box background entirely and makes the patch skip a good chunk of code.</li>
+					</ul></p>
+					<p>Whenever you do allow gameplay during text boxes, you should try to make sure they close by the time any level transition occurs (like from entering a pipe, touching a goal post or dying). The patch does try to automatically close text boxes to prevent glitches, but there's always a chance for oversights with this feature. You're on the safe side when you only use your text boxes in predictable environments.</p>
 				</p></dd>
 				
 				<dt id="header-settings-vwf_text_speed"><code>vwf_text_speed</code></dt>

@@ -993,14 +993,20 @@ AutoWait = VWF_AutoWait</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_button_speedup(enable: boolean)</code></pre></td>
+							<td><pre><code>vwf_button_speedup(enable)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
 							<td><pre><code>button_speedup(enable) = vwf_button_speedup(enable)</code></pre></td>
 						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>enable: boolean:</code> Whether to enable (<code>true</code>) or disable (<code>false</code>) button-speedup.</li>
+							</ul></td>
+						</tr>
 					</table>
-					TODO
+					Specifies whether the text box supports button-speedup. When enabled, text can be sped-up by holding down the A button. This only applies to text boxes with a text speed setting greater than 0, as all this does is to reduce that setting to 0 while the button is being held down.
 				</p></dd>
 				
 				<dt id="header-settings-vwf_enable_skipping"><code>vwf_enable_skipping</code></dt>
@@ -1008,14 +1014,20 @@ AutoWait = VWF_AutoWait</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_enable_skipping(enable: boolean)</code></pre></td>
+							<td><pre><code>vwf_enable_skipping(enable)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
 							<td><pre><code>enable_skipping(enable) = vwf_enable_skipping(enable)</code></pre></td>
 						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>enable: boolean:</code> Whether to enable (<code>true</code>) or disable (<code>false</code>) skipping.</li>
+							</ul></td>
+						</tr>
 					</table>
-					TODO
+					Specifies whether this text box can be skipped. When enabled, pressing the Start button will immediately move the text pointer forward to the text box's skip location. By default, this is the end of the text box (thus closing it). However, this can be overridden by using the <a href="#text-command-vwf_set_skip_location"><code>%vwf_set_skip_location()</code></a> text command within your text box, which will set the skip location to the location of the command. NOTE: This can be done only once per text box. Using the command multiple times within the same text box will generate an error.
 				</p></dd>
 			</dl>
 

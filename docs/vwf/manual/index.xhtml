@@ -181,6 +181,7 @@
 					</ul></li>
 					<li><a href="#advanced-functionality">Advanced Functionality</a><ul>
 						<li><a href="#display-messages">Display Messages From Custom Code</a></li>
+						<li><a href="#message-asm">MessageASM</a></li>
 						<details>
 							<summary><a href="#shared-routines">Shared Routines</a></summary><ul>
 							<li><a href="#vwfcode-displayamessage">DisplayAMessage</a></li>
@@ -1038,14 +1039,20 @@ AutoWait = VWF_AutoWait</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_enable_sfx(enable: boolean)</code></pre></td>
+							<td><pre><code>vwf_enable_sfx(enable)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
 							<td><pre><code>enable_sfx(enable) = vwf_enable_sfx(enable)</code></pre></td>
 						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>enable: boolean:</code> Whether to enable (<code>true</code>) or disable (<code>false</code>) sound effects.</li>
+							</ul></td>
+						</tr>
 					</table>
-					TODO
+					Specifies whether this text box should play sound effects or not. When disabled, all other sound effect settings will be ignored.
 				</p></dd>
 				
 				<dt id="header-settings-vwf_letter_sound"><code>vwf_letter_sound</code></dt>
@@ -1053,14 +1060,21 @@ AutoWait = VWF_AutoWait</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_letter_sound(sound_bank: number, sound_id: number)</code></pre></td>
+							<td><pre><code>vwf_letter_sound(sound_bank, sound_id)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
 							<td><pre><code>letter_sound(sound_bank, sound_id) = vwf_letter_sound(sound_bank, sound_id)</code></pre></td>
 						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>sound_bank: number:</code> The sound bank of the sound to play. Valid values are <code>$1DF9</code>, <code>$1DFA</code>, <code>$1DFB</code> and <code>$1DFC</code> (although using <code>$1DFB</code> is probably a bad idea).</li>
+								<li><code>sound_id: number:</code> The ID of the sound to play. Valid values depend on the selected sound bank. See the <a href="https://www.smwcentral.net/?p=memorymap&amp;game=smw&amp;u=0&amp;address=1dfb&amp;sizeOperation=%3D&amp;sizeValue=&amp;region[]=ram&amp;type=*&amp;description&#61;">SMW Central RAM Map</a> for details.</li>
+							</ul></td>
+						</tr>
 					</table>
-					TODO
+					Specifies which sound effect to play when the text box displays a character.
 				</p></dd>
 				
 				<dt id="header-settings-vwf_wait_sound"><code>vwf_wait_sound</code></dt>
@@ -1068,14 +1082,21 @@ AutoWait = VWF_AutoWait</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_wait_sound(sound_bank: number, sound_id: number)</code></pre></td>
+							<td><pre><code>vwf_wait_sound(sound_bank, sound_id)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
 							<td><pre><code>wait_sound(sound_bank, sound_id) = vwf_wait_sound(sound_bank, sound_id)</code></pre></td>
 						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>sound_bank: number:</code> The sound bank of the sound to play. Valid values are <code>$1DF9</code>, <code>$1DFA</code>, <code>$1DFB</code> and <code>$1DFC</code> (although using <code>$1DFB</code> is probably a bad idea).</li>
+								<li><code>sound_id: number:</code> The ID of the sound to play. Valid values depend on the selected sound bank. See the <a href="https://www.smwcentral.net/?p=memorymap&amp;game=smw&amp;u=0&amp;address=1dfb&amp;sizeOperation=%3D&amp;sizeValue=&amp;region[]=ram&amp;type=*&amp;description&#61;">SMW Central RAM Map</a> for details.</li>
+							</ul></td>
+						</tr>
 					</table>
-					TODO
+					Specifies which sound effect to play when the text box waits for an A press (either because of a text command or an auto-wait).
 				</p></dd>
 				
 				<dt id="header-settings-vwf_cursor_sound"><code>vwf_cursor_sound</code></dt>
@@ -1089,8 +1110,15 @@ AutoWait = VWF_AutoWait</code></pre></td>
 							<th>Short Aliases</th>
 							<td><pre><code>cursor_sound(sound_bank, sound_id) = vwf_cursor_sound(sound_bank, sound_id)</code></pre></td>
 						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>sound_bank: number:</code> The sound bank of the sound to play. Valid values are <code>$1DF9</code>, <code>$1DFA</code>, <code>$1DFB</code> and <code>$1DFC</code> (although using <code>$1DFB</code> is probably a bad idea).</li>
+								<li><code>sound_id: number:</code> The ID of the sound to play. Valid values depend on the selected sound bank. See the <a href="https://www.smwcentral.net/?p=memorymap&amp;game=smw&amp;u=0&amp;address=1dfb&amp;sizeOperation=%3D&amp;sizeValue=&amp;region[]=ram&amp;type=*&amp;description&#61;">SMW Central RAM Map</a> for details.</li>
+							</ul></td>
+						</tr>
 					</table>
-					TODO
+					Specifies which sound effect to play when the cursor of a <a href="#text-command-vwf_display_options"><code>%vwf_display_options()</code></a> command moves.
 				</p></dd>
 				
 				<dt id="header-settings-vwf_continue_sound"><code>vwf_continue_sound</code></dt>
@@ -1104,8 +1132,15 @@ AutoWait = VWF_AutoWait</code></pre></td>
 							<th>Short Aliases</th>
 							<td><pre><code>continue_sound(sound_bank, sound_id) = vwf_continue_sound(sound_bank, sound_id)</code></pre></td>
 						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>sound_bank: number:</code> The sound bank of the sound to play. Valid values are <code>$1DF9</code>, <code>$1DFA</code>, <code>$1DFB</code> and <code>$1DFC</code> (although using <code>$1DFB</code> is probably a bad idea).</li>
+								<li><code>sound_id: number:</code> The ID of the sound to play. Valid values depend on the selected sound bank. See the <a href="https://www.smwcentral.net/?p=memorymap&amp;game=smw&amp;u=0&amp;address=1dfb&amp;sizeOperation=%3D&amp;sizeValue=&amp;region[]=ram&amp;type=*&amp;description&#61;">SMW Central RAM Map</a> for details.</li>
+							</ul></td>
+						</tr>
 					</table>
-					TODO
+					Specifies which sound effect to play when the user presses the A button while the text box is waiting for an A press, or when the user selects an option from a <a href="#text-command-vwf_display_options"><code>%vwf_display_options()</code></a> command.
 				</p></dd>
 			</dl>
 
@@ -1116,255 +1151,24 @@ AutoWait = VWF_AutoWait</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_enable_message_asm(enable: boolean)</code></pre></td>
+							<td><pre><code>vwf_enable_message_asm(enable)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
 							<td><pre><code>enable_message_asm(enable) = vwf_enable_message_asm(enable)</code></pre></td>
 						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>enable: boolean:</code> Whether to enable (<code>true</code>) or disable (<code>false</code>) <code>MessageASM</code>.</li>
+							</ul></td>
+						</tr>
 					</table>
-					TODO
+					Specifies whether <code>MessageASM</code> should be enabled for this text box. See section <a href="#message-asm"><code>MessageASM</code></a> for details.
 				</p></dd>
 			</dl>
-			
-			<p>
-				The first thing to do when setting up a dialogue is creating a header for it. This header is mandatory;
-				not having it will cause glitches in the game. It allows you to easily set up position, width, height
-				and other settings of the text box during that one specific dialogue. Let’s say we wanted to edit
-				<code>Message0005</code>. The first thing I always do is adding <code>.header</code> and <code>.body</code>
-				sublables to each message. Sublables are a special kind of labels in Asar which can be reused inside the same patch,
-				as long as they’re not used under the same main label. The main label in this case would be <code>Message0005:</code>.
-				After adding sublabels we’d have:
-				<pre><code>Message0005:	; Message 002-2
-.header
-.body</code></pre>
-				Now we can put the dialogue header under the <code>.header</code> sublabel and the actual text under the
-				<code>.body</code> sublabel for easier orientation. Let’s get to the basic format of headers now.
-				<pre><code>Message0005:	; Message 002-2
-.header
-db $aa
-db %bbbbbccc,%ccddddee,%eeffffgg,%gghhhhhh,$ii,%jjjj----
-dw $kkkk,$llll
-db %mnnnop-q
-db %rrssttuu,$vv,$ww,$xx,$yy
-db %------z1
-dl MessageASMLoc
-dl .MessageSkipLoc
 
-.body</code></pre>
-				Simply copy and paste this header for the start. All numbers prefixed with <code>%</code> require binary digits,
-				while numbers prefixed with <code>$</code> require digits in hex. Simply set the Windows calculator to Programmer
-				mode for this using <code>Alt+3</code>.
-			</p>
-
-			<dl>
-				<dt id="dialog-header-aa"><code>aa</code></dt>
-				<dd><p>
-					This is the font to use for the dialogue. By default only one font will be inserted
-					in the game and you’ll have to put in <code>00</code> here. Also here we have the first difference
-					between 8-Bit and 16-Bit mode: In 16-Bit mode you MUST skip this line. Otherwise you’ll
-					get glitches. Why? Well in 16-Bit mode the high byte of each character is used as the font
-					number, so I figured this byte in the header would be redundant. On a second thought I realise
-					that this just causes additional confusion for just one single byte you save per message,
-					but I did it like this anyways, so keep it in mind if you’re ever going to use 16-Bit mode.
-				</p></dd>
-				<dt id="dialog-header-bbbbb"><code>bbbbb</code></dt>
-				<dd><p>
-					The text box <b>X</b> position. As I mentioned: In binary, since this is prefixed with <code>%</code>.
-					The maximum here is <code>%11100</code>, but don’t worry if you enter an invalid value here. For certain
-					values in the header - like the text box position and size - I programmed in validation
-					checks to prevent nasty effects. Depending on the text box size the maximum for this value
-					might change. If you were using the full width of the screen for the text box the maximum
-					here would be <code>%00000</code> for example. Limitations like this apply for a few other settings as well.
-				</p></dd>
-				<dt id="dialog-header-ccccc"><code>ccccc</code></dt>
-				<dd><p>
-					Same as <code>bbbbb</code>, but for the <b>Y</b> position. Maximum here is <code>%11000</code>.
-				</p></dd>
-				<dt id="dialog-header-dddd"><code>dddd</code></dt>
-				<dd><p>
-					The <b>width</b> of the text box. This only counts the inside of the box, not the frame. It also
-					counts 16×16 tiles, not 8×8 tiles. So <code>%0010</code> would mean "2 16×16 tiles + frame"
-					for example. The maximum input here is <code>%1111</code>.
-				</p></dd>
-				<dt id="dialog-header-eeee"><code>eeee</code></dt>
-				<dd><p>
-					Same as <code>dddd</code>, except for the <b>height</b>. The maximum input here is <code>%1101</code>.
-				</p></dd>
-				<dt id="dialog-header-ffff"><code>ffff</code></dt>
-				<dd><p>
-					How many pixels of space to leave at the left and right edge of the text box. I usually
-					use <code>4</code> pixels (<code>%0100</code>) here.
-				</p></dd>
-				<dt id="dialog-header-gggg"><code>gggg</code></dt>
-				<dd><p>
-					The pixel width of a space. I recommend to use at least 7 pixels (<code>%0111</code>) here.
-					The reason for this has to do with the "change palette" command in dialogues.
-					I’ll go more into detail there.
-				</p></dd>
-				<dt id="dialog-header-hhhhhh"><code>hhhhhh</code></dt>
-				<dd><p>
-					The text speed. This is interpreted as "frames to wait between letters". I usually use
-					<code>%000000</code> here (for the fastest text speed).
-				</p></dd>
-				<dt id="dialog-header-ii"><code>ii</code></dt>
-				<dd><p>
-					Auto wait options. In other words:"What to do if using a Line Break while at the bottom
-					of the text box".
-					<table class="kv-map"><tbody>
-						<tr><th><code>$00</code></th><td>Instantly clear the text box and continue.</td></tr>
-						<tr><th><code>$01</code></th><td>Wait for the player to press the A button.</td></tr>
-						<tr><th><code>$02</code>-<code>$FF</code></th><td>Wait that many frames.</td></tr>
-					</tbody></table>
-				</p></dd>
-				<dt id="dialog-header-jjjj"><code>jjjj</code></dt>
-				<dd><p>
-					Text box creation options.
-					<table class="kv-map"><tbody>
-						<tr><th><code>%0000</code></th><td>Don’t use a text box.</td></tr>
-						<tr><th><code>%0001</code></th><td>Secret of Evermore style. Expand box from top to bottom.</td></tr>
-						<tr><th><code>%0010</code></th><td>Secret of Mana style. Expand box from the middle.</td></tr>
-						<tr><th><code>%0011</code></th><td>Mega Man Zero style. Expand box from left to right.</td></tr>
-						<tr><th><code>%0100</code></th><td>Instantly show complete box.</td></tr>
-					</tbody></table>
-				</p></dd>
-				<dt id="dialog-header-kkkk"><code>kkkk</code></dt>
-				<dd><p>
-					Third color of the palette selected using <a href="#dialog-header-nnn"><code>nnn</code></a>
-					in SNES RGB. Usually the color of your letters.
-				</p></dd>
-				<dt id="dialog-header-llll"><code>llll</code></dt>
-				<dd><p>
-					Same as <code>kkkk</code>, but for the fourth color. Usually the color of the shading of your letters.
-				</p></dd>
-				<dt id="dialog-header-m"><code>m</code></dt>
-				<dd><p>
-					Whether to freeze sprites or not.
-					<table class="kv-map"><tbody>
-						<tr><th><code>%0</code></th><td>Don’t freeze sprites.</td></tr>
-						<tr><th><code>%1</code></th><td>Freeze sprites.</td></tr>
-					</tbody></table>
-					I recommend <code>%1</code>.
-				</p><p>
-					<code>0</code> can lead to glitches in the current version if - for example - you die
-					while a dialogue is being processed. Also it is pretty slow. If you really want to use it
-					I recommend using the SA-1 patch. This actually makes the result run at full speed.
-					See the <a href="#problem-solving">Problem Solving</a> section for more information.
-				</p></dd>
-				<dt id="dialog-header-nnn"><code>nnn</code></dt>
-				<dd><p>
-					The palette to use for the inside of the text box. Read: The text box background and the
-					letters. This has the same restrictions as <code>!framepalette</code> from section 2.
-					Never use the same palette for the frame and for the letters. Both palettes will be changed
-					during dialogue processing, so doing that would most likely cause weird color changes,
-					unless you use the exact same colors for them.
-				</p></dd>
-				<dt id="dialog-header-o"><code>o</code></dt>
-				<dd><p>
-					The text layout.
-					<table class="kv-map"><tbody>
-						<tr><th><code>%0</code></th><td>Regular layout.</td></tr>
-						<tr><th><code>%1</code></th><td>Centered layout.</td></tr>
-					</tbody></table>
-				</p></dd>
-				<dt id="dialog-header-p"><code>p</code></dt>
-				<dd><p>
-					Speedup options.
-					<table class="kv-map"><tbody>
-						<tr><th><code>%0</code></th><td>Don’t allow speedup.</td></tr>
-						<tr><th><code>%1</code></th><td>Allow speedup.</td></tr>
-					</tbody></table>
-					Speedup only applies if a dialogue uses a text speed which is slower than <code>%000000</code>. In that case,
-					if you put a <code>%1</code> here, the player can speedup dialogues by holding the A button.
-				</p></dd>
-				<dt id="dialog-header-q"><code>q</code></dt>
-				<dd><p>
-					Disable all text box sound effects.
-					<table class="kv-map"><tbody>
-						<tr><th><code>0</code></th><td>Don’t disable.</td></tr>
-						<tr><th><code>1</code></th><td>Disable.</td></tr>
-					</tbody></table>
-					Warning: If you put a <code>1</code> here, then it’s mandatory to skip the next line
-					(that means everything from <code>rr</code> to <code>yy</code>) completely,
-					otherwise this will cause glitches.
-				</p></dd>
-				<dt id="dialog-header-rr"><code>rr</code></dt>
-				<dd><p>
-					The bank to use for the letter sound effect.
-					<table class="kv-map"><tbody>
-						<tr><th><code>%00</code></th><td><code>$1DF9</code></td></tr>
-						<tr><th><code>%01</code></th><td><code>$1DFA</code></td></tr>
-						<tr><th><code>%10</code></th><td><code>$1DFB</code> (Not recommended to use)</td></tr>
-						<tr><th><code>%11</code></th><td><code>$1DFC</code></td></tr>
-					</tbody></table>
-				</p></dd>
-				<dt id="dialog-header-ss"><code>ss</code></dt>
-				<dd><p>
-					Same as <code>rr</code>, but for the "waiting for A button" sound effect.
-				</p></dd>
-				<dt id="dialog-header-tt"><code>tt</code></dt>
-				<dd><p>
-					Same as <code>rr</code>, but for the cursor sound effect.
-				</p></dd>
-				<dt id="dialog-header-uu"><code>uu</code></dt>
-				<dd><p>
-					Same as <code>rr</code> but for the "pressed A" sound effect.
-				</p></dd>
-				<dt id="dialog-header-vv"><code>vv</code></dt>
-				<dd><p>
-					The actual sound effect to use for letters.
-				</p></dd>
-				<dt id="dialog-header-ww"><code>ww</code></dt>
-				<dd><p>
-					Same as <code>vv</code>, but for the "waiting for A button" sound effect.
-				</p></dd>
-				<dt id="dialog-header-xx"><code>xx</code></dt>
-				<dd><p>
-					Same as <code>vv</code>, but for the cursor sound effect.
-				</p></dd>
-				<dt id="dialog-header-yy"><code>yy</code></dt>
-				<dd><p>
-					Same as <code>vv</code>, but for the "pressed A" sound effect.
-				</p></dd>
-				<dt id="dialog-header-z"><code>z</code></dt>
-				<dd><p>
-					MessageASM flag.
-					<table class="kv-map"><tbody>
-						<tr><th><code>0</code></th><td>Disable MessageASM</td></tr>
-						<tr><th><code>1</code></th><td>Enable MessageASM</td></tr>
-					</tbody></table>
-					This allows you to run custom code for this text box every frame that it's up until it closes. Think of it
-					like UberASM for text boxes. This can be used to do things like run scripts for a cutscene or create custom
-					menus.
-				</p></dd>
-				<dt id="dialog-header-1"><code>1</code></dt>
-				<dd><p>
-					Skip Message flag.
-					<table class="kv-map"><tbody>
-						<tr><th><code>0</code></th><td>Disable message skip</td></tr>
-						<tr><th><code>1</code></th><td>Enable message skip</td></tr>
-					</tbody></table>
-					This allows you to define whether the text pointer is allowed to be modified with the start button. This can
-					be used to do things like allow the player to close a textbox early, but it can have other uses if used with 
-					the $F1 command.
-				</p></dd>
-				<dt id="dialog-header-MessageASMLoc"><code>MessageASMLoc</code></dt>
-				<dd><p>
-					24-bit pointer to the textbox's MessageASM routine. This must point to ASM code to work correctly. If MessageASM
-					is disabled, comment out this pointer by putting a ; in front of it, otherwise your text box will glitch.
-				</p></dd>
-				<dt id="dialog-header-MessageSkipLoc"><code>.MessageSkipLoc</code></dt>
-				<dd><p>
-					Same as <code>MessageASMLoc</code>, except for the skip function and it must point to text data rather than ASM
-					code.
-				</p></dd>
-			</dl>
-			<p>
-				WHEW! After being done with the header you’ll now finally get to really, really, really write some text
-				for your dialogues.
-			</p>
-
-			<h4 id="text-commands" class="text-center">Text Commands</h4>
+			<h3 id="text-commands" class="text-center">Text Commands</h3>
 			<p>
 				So if you’re using the same labels as I suggested in this manual then what you’re going to edit now is
 				the part under the <code>.body</code> sublabel, which is the actual dialogue.
@@ -1893,41 +1697,6 @@ db "Princess Peach",$E7</code></pre>
 			<p>
 				This section is intended for advanced users only. That is, people who want to write custom resources (sprites, blocks, patches etc.) that make use of the patch or who want to use the patch in some complex ways. In other words: If you aren't a coder, you can most likely just ignore this entire section.
 			</p>
-			
-			<h3 class="text-center">MessageASM</h3>
-
-			<p>
-				Starting with V1.3, this patch enables you to run custom code on a per message basis, like how UberASM allows you to have
-				custom code run on a per level/submap/gamemode/etc. basis. MessageASM code is run every frame once the current VWF mode is
-				02 or more and can be used to do things that the <code>$F1</code> command cannot do. It also allows you to tie message
-				specific code to this patch instead of through UberASM code or some other outside resource. MessageASM can be used to do things
-				like create custom menus, display character portraits, auto-display the name of whoever is speaking at the start of each text box,
-				run scripts that move/animate sprites, etc.
-
-			</p><p>
-				<h6>Some useful VWF RAM addresses to use with your MessageASM code:</h6>
-
-				</p><p>
-				<code>!skipmessageflag</code> = Is set to 00 when a message has been skipped with the Start button. Is a non-zero value otherwise.
-
-				</p><p>
-				<code>!initialskipmessageflag</code> = Is non-zero if the current message is allowed to be skipped.
-
-				</p><p>
-				<code>!l3priorityflag</code> = Contains a backup of the layer 3 priority bit before the text box was displayed. Modify this to affect layer 3 once the text box disappears.
-
-				</p><p>
-				<code>!l3transparencyflag</code> = Contains a backup of the layer 3 color math settings before the text box was displayed. Modify this to affect layer 3 once the text box disappears.
-
-				</p><p>
-				<code>!l3mainscreenflag</code> = Contains a backup of the layer 3 mainscreen setting before the text box was displayed. Modify this to affect layer 3 once the text box disappears.
-
-				</p><p>
-				<code>!l3subscreenflag</code> = Contains a backup of the layer 3 subscreen setting before the text box was displayed. Modify this to affect layer 3 once the text box disappears.
-
-				</p><p>
-				<code>!isnotatstartoftext</code> = Is set to 00 when a text box is cleared, 01 when text parsing begins. Use this to initialize code related to individual text boxes.
-			</p>
 
 			<h3 id="display-messages" class="text-center">Display Messages From Custom Code</h3>
 			<p>
@@ -2017,6 +1786,41 @@ sep #$20		; Set A to be 8-bit.</code></pre>
 				example. To edit a dialogue simply put text under the according label. To add new ones simply paste
 				them at the end of the file, but ABOVE <code>%textend()</code>. This is important to prevent glitches.
 				After we’re done with this we can finally get to actually write messages. YAY!
+			</p>
+			
+			<h3 id="message-asm" class="text-center">MessageASM</h3>
+
+			<p>
+				Starting with V1.3, this patch enables you to run custom code on a per message basis, like how UberASM allows you to have
+				custom code run on a per level/submap/gamemode/etc. basis. MessageASM code is run every frame once the current VWF mode is
+				02 or more and can be used to do things that the <code>$F1</code> command cannot do. It also allows you to tie message
+				specific code to this patch instead of through UberASM code or some other outside resource. MessageASM can be used to do things
+				like create custom menus, display character portraits, auto-display the name of whoever is speaking at the start of each text box,
+				run scripts that move/animate sprites, etc.
+
+			</p><p>
+				<h6>Some useful VWF RAM addresses to use with your MessageASM code:</h6>
+
+				</p><p>
+				<code>!skipmessageflag</code> = Is set to 00 when a message has been skipped with the Start button. Is a non-zero value otherwise.
+
+				</p><p>
+				<code>!initialskipmessageflag</code> = Is non-zero if the current message is allowed to be skipped.
+
+				</p><p>
+				<code>!l3priorityflag</code> = Contains a backup of the layer 3 priority bit before the text box was displayed. Modify this to affect layer 3 once the text box disappears.
+
+				</p><p>
+				<code>!l3transparencyflag</code> = Contains a backup of the layer 3 color math settings before the text box was displayed. Modify this to affect layer 3 once the text box disappears.
+
+				</p><p>
+				<code>!l3mainscreenflag</code> = Contains a backup of the layer 3 mainscreen setting before the text box was displayed. Modify this to affect layer 3 once the text box disappears.
+
+				</p><p>
+				<code>!l3subscreenflag</code> = Contains a backup of the layer 3 subscreen setting before the text box was displayed. Modify this to affect layer 3 once the text box disappears.
+
+				</p><p>
+				<code>!isnotatstartoftext</code> = Is set to 00 when a text box is cleared, 01 when text parsing begins. Use this to initialize code related to individual text boxes.
 			</p>
 
 			<h3 id="shared-routines" class="text-center">Shared Routines</h3>

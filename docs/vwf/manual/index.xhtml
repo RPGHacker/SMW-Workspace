@@ -1170,8 +1170,25 @@ AutoWait = VWF_AutoWait</code></pre></td>
 
 			<h3 id="text-commands" class="text-center">Text Commands</h3>
 			<p>
-				So if you’re using the same labels as I suggested in this manual then what you’re going to edit now is
-				the part under the <code>.body</code> sublabel, which is the actual dialogue.
+				With everything else out of the way, it's time to finally start defining the actual contents of our text boxes. This is done by inserting text commands between a message's <code>%vwf_header()</code> and <code>%vwf_message_end()</code> (see section <a href="#message-format">Message Format</a> for details). These text commands usually take the form of macro calls, but can also be defines when using short aliases. Here's a simple example of a message containing some text commands:
+				
+				<pre><code>%vwf_message_start(0000)
+
+	%vwf_header()
+	
+	; One command per line
+	%vwf_text("You can write each text command on a separate line like this.")
+	%vwf_wait_for_a()
+	%vwf_clear()
+	
+	; Multiple commands on a single line
+	%vwf_text("But you can also chain them together on one line via a colon.") : %vwf_wait_for_a() : %vwf_clear()
+	
+	; These two lines are equivalent, but one uses short aliases, the other doesn't.
+	%vwf_text("Hello?") : %vwf_wait_for_a() : %vwf_line_break()
+	!str("Hello?") : !press_a : !n
+
+%vwf_message_end()</code></pre>
 			</p>
 			<dl>
 				<dt>Regular Text</dt>

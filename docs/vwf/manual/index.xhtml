@@ -147,37 +147,71 @@
 						</ul></details>
 						<details>
 							<summary><a href="#text-commands">Text Commands</a></summary><ul>
-							<li><a href="#text-command-ff"><code>$FF</code> - End Dialogue</a></li>
-							<li><a href="#text-command-fe"><code>$FE</code> - Space</a></li>
-							<li><a href="#text-command-fd"><code>$FD</code> - Force Line Break</a></li>
-							<li><a href="#text-command-fc"><code>$FC</code> - Set Message Number</a></li>
-							<li><a href="#text-command-fb"><code>$FB</code> - Modify Text Pointer</a></li>
-							<li><a href="#text-command-fa"><code>$FA</code> - Wait for A Button</a></li>
-							<li><a href="#text-command-f9"><code>$F9</code> - Wait for <code>$XX</code> frames</a></li>
-							<li><a href="#text-command-f8"><code>$F8</code> - Change Text Speed</a></li>
-							<li><a href="#text-command-f7"><code>$F7</code> - Display Decimal Number</a></li>
-							<li><a href="#text-command-f6"><code>$F6</code> - Display Hexadecimal Number</a></li>
-							<li><a href="#text-command-f5"><code>$F5</code> - Display RAM Character</a></li>
-							<li><a href="#text-command-f4"><code>$F4</code> - Display Character</a></li>
-							<li><a href="#text-command-f3"><code>$F3</code> - Change Text Palette</a></li>
-							<li><a href="#text-command-f2"><code>$F2</code> - Change Font</a></li>
-							<li><a href="#text-command-f1"><code>$F1</code> - Execute Code</a></li>
-							<li><a href="#text-command-f0"><code>$F0</code> - Display Options</a></li>
-							<li><a href="#text-command-ef"><code>$EF</code> - Setup Teleport</a></li>
-							<li><a href="#text-command-ee"><code>$EE</code> - Edit Color</a></li>
-							<li><a href="#text-command-ed"><code>$ED</code> - Clear Text Box</a></li>
-							<li><a href="#text-command-ec"><code>$EC</code> - Play BGM</a></li>
-							<li><a href="#text-command-eb"><code>$EB</code> - Freeze Textbox</a></li>
-							<li><a href="#text-command-e9-ea"><code>$EA</code> - Unused</a></li>
-							<li><a href="#text-command-e9-ea"><code>$E9</code> - Unused</a></li>
-							<li><a href="#text-command-e8"><code>$E8</code> - Use Text Macro</a></li>
-							<li><a href="#text-command-e7"><code>$E7</code> - Return from Text Macro</a></li>
-						</ul></details>						
+							
+								<details><summary><a href="#text-commands-text-output">Text Output</a></summary><ul>
+									<li><a href="#text-commands-vwf_text"><code>%vwf_text()</code></a></li>
+									
+									<li><a href="#text-commands-vwf_char"><code>%vwf_char()</code></a></li>
+									<li><a href="#text-commands-vwf_char_at_address"><code>%vwf_char_at_address()</code></a></li>
+									
+									<li><a href="#text-commands-vwf_space"><code>%vwf_space()</code></a></li>
+									<li><a href="#text-commands-vwf_non_breaking_space"><code>%vwf_non_breaking_space()</code></a></li>
+									
+									<li><a href="#text-commands-vwf_decimal"><code>%vwf_decimal()</code></a></li>
+									<li><a href="#text-commands-vwf_hex"><code>%vwf_hex()</code></a></li>
+								</ul></details>
+							
+								<details><summary><a href="#text-commands-text-properties">Text Properties</a></summary><ul>
+									<li><a href="#text-commands-vwf_set_font"><code>%vwf_set_font()</code></a></li>
+									<li><a href="#text-commands-vwf_char_offset"><code>%vwf_char_offset()</code></a></li>
+									
+									<li><a href="#text-commands-vwf_change_colors"><code>%vwf_change_colors()</code></a></li>
+									<li><a href="#text-commands-vwf_set_text_palette"><code>%vwf_set_text_palette()</code></a></li>
+									<li><a href="#text-commands-vwf_set_text_color"><code>%vwf_set_text_color()</code></a></li>
+									<li><a href="#text-commands-vwf_set_text_palette"><code>%vwf_set_text_palette()</code></a></li>
+								</ul></details>
+							
+								<details><summary><a href="#text-commands-text-flow">Text Flow</a></summary><ul>
+									<li><a href="#text-commands-vwf_line_break"><code>%vwf_line_break()</code></a></li>
+									
+									<li><a href="#text-commands-vwf_clear"><code>%vwf_clear()</code></a></li>
+									<li><a href="#text-commands-vwf_set_skip_location"><code>%vwf_set_skip_location()</code></a></li>
+									<li><a href="#text-commands-vwf_close"><code>%vwf_close()</code></a></li>
+									
+									<li><a href="#text-commands-vwf_wait_for_a"><code>%vwf_wait_for_a()</code></a></li>
+									<li><a href="#text-commands-%vwf_wait_frames"><code>%%vwf_wait_frames()</code></a></li>
+									<li><a href="#text-commands-vwf_set_text_speed"><code>%vwf_set_text_speed()</code></a></li>
+									
+									<li><a href="#text-commands-vwf_freeze"><code>%vwf_freeze()</code></a></li>
+									
+									<li><a href="#text-commands-vwf_set_text_pointer"><code>%vwf_set_text_pointer()</code></a></li>
+									<li><a href="#text-commands-vwf_display_message"><code>%vwf_display_message()</code></a></li>
+									
+									<li><a href="#text-commands-vwf_display_options"><code>%vwf_display_options()</code></a></li>
+									<li><a href="#text-commands-vwf_set_option_location"><code>%vwf_set_option_location()</code></a></li>
+								</ul></details>
+							
+								<details><summary><a href="#text-commands-gameplay-modifiers">Gameplay Modifiers</a></summary><ul>
+									<li><a href="#text-commands-vwf_play_bgm"><code>%vwf_play_bgm()</code></a></li>
+									<li><a href="#text-commands-vwf_setup_teleport"><code>%vwf_setup_teleport()</code></a></li>
+								</ul></details>
+							
+								<details><summary><a href="#text-commands-text-macros">Text Macros</a></summary><ul>
+									<li><a href="#text-commands-vwf_execute_text_macro"><code>%vwf_execute_text_macro()</code></a></li>
+									<li><a href="#text-commands-vwf_execute_text_macro_by_indexed_group"><code>%vwf_execute_text_macro_by_indexed_group()</code></a></li>
+									<li><a href="#text-commands-vwf_execute_buffered_text_macro"><code>%vwf_execute_buffered_text_macro()</code></a></li>
+								</ul></details>
+							
+								<details><summary><a href="#text-commands-advanced">Advanced</a></summary><ul>
+									<li><a href="#text-commands-vwf_execute_subroutine"><code>%vwf_execute_subroutine()</code></a></li>
+								</ul></details>
+						</ul></details>
 						<details>
 							<summary><a href="#helper-functions">Helper Functions</a></summary><ul>
 							
 								<details><summary><a href="#helper-functions-colors">Colors</a></summary><ul>
 									<li><a href="#helper-functions-rgb_15"><code>rgb_15()</code></a></li>
+									<li><a href="#helper-functions-vwf_get_color_index_2bpp"><code>vwf_get_color_index_2bpp()</code></a></li>
 								</ul></details>
 							
 								<details><summary><a href="#helper-functions-text-commands">Text Commands</a></summary><ul>
@@ -1202,7 +1236,7 @@ AutoWait = VWF_AutoWait</code></pre></td>
 	!str("Hello?") : !press_a : !n
 
 %vwf_message_end()</code></pre>
-			</p>			
+			</p>
 			
 			
 	Text Output
@@ -1217,8 +1251,8 @@ AutoWait = VWF_AutoWait</code></pre></td>
 	
 	%vwf_non_breaking_space(), !nbsp
 	
-	!dec = %vwf_decimal
-	!hex = %vwf_hex
+	%vwf_decimal, !dec
+	%vwf_hex, !hex
 	
 	
 	Text Properties
@@ -1796,6 +1830,29 @@ db "Princess Peach",$E7</code></pre>
 				<dt id="helper-functions-rgb_15"><code>rgb_15()</code></dt>
 				<dd><p>
 					TODO
+				</p></dd>
+				
+				<dt id="helper-functions-vwf_get_color_index_2bpp"><code>vwf_get_color_index_2bpp()</code></dt>
+				<dd><p>
+					TODO
+					
+	!text_color_0 = "vwf_get_color_index_2bpp($00, VWF_ColorID.Text)"
+	!text_color_1 = "vwf_get_color_index_2bpp($01, VWF_ColorID.Text)"
+	!text_color_2 = "vwf_get_color_index_2bpp($02, VWF_ColorID.Text)"
+	!text_color_3 = "vwf_get_color_index_2bpp($03, VWF_ColorID.Text)"
+	!text_color_4 = "vwf_get_color_index_2bpp($04, VWF_ColorID.Text)"
+	!text_color_5 = "vwf_get_color_index_2bpp($05, VWF_ColorID.Text)"
+	!text_color_6 = "vwf_get_color_index_2bpp($06, VWF_ColorID.Text)"
+	!text_color_7 = "vwf_get_color_index_2bpp($07, VWF_ColorID.Text)"
+	
+	!outline_color_0 = "vwf_get_color_index_2bpp($00, VWF_ColorID.Outline)"
+	!outline_color_1 = "vwf_get_color_index_2bpp($01, VWF_ColorID.Outline)"
+	!outline_color_2 = "vwf_get_color_index_2bpp($02, VWF_ColorID.Outline)"
+	!outline_color_3 = "vwf_get_color_index_2bpp($03, VWF_ColorID.Outline)"
+	!outline_color_4 = "vwf_get_color_index_2bpp($04, VWF_ColorID.Outline)"
+	!outline_color_5 = "vwf_get_color_index_2bpp($05, VWF_ColorID.Outline)"
+	!outline_color_6 = "vwf_get_color_index_2bpp($06, VWF_ColorID.Outline)"
+	!outline_color_7 = "vwf_get_color_index_2bpp($07, VWF_ColorID.Outline)"
 				</p></dd>
 			</dl>
 				

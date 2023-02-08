@@ -1236,28 +1236,168 @@ AutoWait = VWF_AutoWait</code></pre></td>
 	!str("Hello?") : !press_a : !n
 
 %vwf_message_end()</code></pre>
+
+				Some text commands have parameters tagged as &quot;<code>(optional)</code>&quot;. This means the respective parameter can be omitted, in which case a default value will be used.
 			</p>
 			
-			
-	Text Output
 	
-	%vwf_text, !text, !str
+			<h4 id="text-commands-text-output" class="text-center">Text Output</h4>
+			<dl>
+				<dt id="text-commands-vwf_text"><code>%vwf_text()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_text(text)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!text(text) = %vwf_text(text)
+!str(text) = %vwf_text(text)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>text: string:</code> The text to output.</li>
+							</ul></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+				
+				<dt id="text-commands-vwf_char"><code>%vwf_char()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_char(char)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!char(char) = %vwf_char(char)
+!chr(char) = %vwf_char(char)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>char: character:</code> The character to output.</li>
+							</ul></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+				
+				<dt id="text-commands-vwf_char_at_address"><code>%vwf_char_at_address()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_char_at_address(address)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!ram_char(address) = %vwf_char_at_address(address)
+!ram_chr(address) = %vwf_char_at_address(address)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>address: number:</code> The RAM/ROM address to read.</li>
+							</ul></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+				
+				<dt id="text-commands-vwf_space"><code>%vwf_space()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_space()</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!sp = %vwf_space()
+!space = %vwf_space()</code></pre></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+				
+				<dt id="text-commands-vwf_non_breaking_space"><code>%vwf_non_breaking_space()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_non_breaking_space()</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!nbsp = %vwf_non_breaking_space()</code></pre></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+				
+				<dt id="text-commands-vwf_decimal"><code>%vwf_decimal()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_decimal(address, address_size, leading_zeros)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!dec(address, address_size, leading_zeros) = %vwf_decimal(address, address_size, leading_zeros)
+AddressSize = VWF_AddressSize</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>address: number:</code> The RAM/ROM address to read.</li>
+								<li><code>address_size (optional): VWF_AddressSize:</code> The size of the address to read. Default: <code>VWF_AddressSize.8Bit</code>. Valid values:
+								<table class="parameter-list">
+									<tr><th>Value</th><th>Description</th></tr>
+									<tr><td><code>VWF_AddressSize.8Bit</code></td><td>8-bit address.</td></tr>
+									<tr><td><code>VWF_AddressSize.16Bit</code></td><td>16-bit address.</td></tr>
+								</table>
+								</li>
+								<li><code>leading_zeros (optional): boolean:</code> Whether to output leading zeros (<code>true</code>) or not (<code>false</code>). Default: <code>false</code></li>
+							</ul></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+				
+				<dt id="text-commands-vwf_hex"><code>%vwf_hex()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_hex(address)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!hex(address) = %vwf_hex(address)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>address: number:</code> The RAM/ROM address to read.</li>
+							</ul></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+			</dl>
 	
-	%vwf_char, !char, !chr
-	%vwf_char_at_address, !ram_char, !ram_chr
+			<h4 id="text-commands-text-properties" class="text-center">Text Properties</h4>
+			<dl>
+			</dl>
+	
+	!font = %vwf_set_font	
 	%vwf_char_offset, !char_offset, !chr_offset
-	
-	%vwf_space(), !sp, !space
-	
-	%vwf_non_breaking_space(), !nbsp
-	
-	%vwf_decimal, !dec
-	%vwf_hex, !hex
-	
-	
-	Text Properties
-	
-	!font = %vwf_set_font
 	!edit_pal = %vwf_change_colors
 	!set_pal = %vwf_set_text_palette
 	!set_color = %vwf_set_text_color
@@ -1282,7 +1422,9 @@ AutoWait = VWF_AutoWait</code></pre></td>
 	!outline_color_7 = "vwf_get_color_index_2bpp($07, VWF_ColorID.Outline)"
 	
 	
-	Text Flow
+			<h4 id="text-commands-text-flow" class="text-center">Text Flow</h4>
+			<dl>
+			</dl>
 	
 	%vwf_line_break(), !n, !lf, !break, !new_line
 	
@@ -1303,20 +1445,31 @@ AutoWait = VWF_AutoWait</code></pre></td>
 	!opt_loc = %vwf_set_option_location
 	
 	
-	Gameplay Modifiers
+	
+			<h4 id="text-commands-gameplay-modifiers" class="text-center">Gameplay Modifiers</h4>
+			<dl>
+			</dl>
 	
 	!play_bgm = %vwf_play_bgm
 	!teleport = %vwf_setup_teleport
 	
 	
-	Text Macros
 	
+	
+			<h4 id="text-commands-text-macros" class="text-center">Text Macros</h4>
+			<dl>
+			</dl>
+			
 	!macro = %vwf_execute_text_macro
 	!macro_group = %vwf_execute_text_macro_by_indexed_group
 	!macro_buf = %vwf_execute_buffered_text_macro
 	
 	
-	Advanced
+	
+	
+			<h4 id="text-commands-advanced" class="text-center">Advanced</h4>
+			<dl>
+			</dl>
 	
 	!execute = %vwf_execute_subroutine
 	!exec = %vwf_execute_subroutine

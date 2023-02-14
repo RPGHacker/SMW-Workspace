@@ -168,7 +168,6 @@
 									<li><a href="#text-commands-vwf_change_colors"><code>%vwf_change_colors()</code></a></li>
 									<li><a href="#text-commands-vwf_set_text_palette"><code>%vwf_set_text_palette()</code></a></li>
 									<li><a href="#text-commands-vwf_set_text_color"><code>%vwf_set_text_color()</code></a></li>
-									<li><a href="#text-commands-vwf_set_text_palette"><code>%vwf_set_text_palette()</code></a></li>
 								</ul></details>
 							
 								<details><summary><a href="#text-commands-text-flow">Text Flow</a></summary><ul>
@@ -1393,15 +1392,116 @@ AddressSize = VWF_AddressSize</code></pre></td>
 			</dl>
 	
 			<h4 id="text-commands-text-properties" class="text-center">Text Properties</h4>
-			<dl>
+			<dl>				
+				<dt id="text-commands-vwf_set_font"><code>%vwf_set_font()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_set_font(font_id)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!font(font_id) = %vwf_set_font(font_id)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>font_id: number:</code> The ID of the font to set.</li>
+							</ul></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+				
+				<dt id="text-commands-vwf_char_offset"><code>%vwf_char_offset()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_char_offset(offset)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!char_offset(offset) = %vwf_char_offset(offset)
+!chr_offset(offset) = %vwf_char_offset(offset)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>offset: number:</code> The character offset to apply. (min: <code>$0000</code>, max: <code>$FFFF</code>)</li>
+							</ul></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+				
+				<dt id="text-commands-vwf_change_colors"><code>%vwf_change_colors()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_change_colors(start_color_no, color_values...)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!edit_pal(start_color_no, color_values...) = %vwf_change_colors(start_color_no, color_values...)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>start_color_no: number:</code> The number of the first color from the palette to overwrite. (min: <code>$00</code>, max: <code>$FF</code>)</li>
+								<li><code>color_values...: rgb15-color:</code> One or more color values to write to the palette (separated by comma), in RGB15 format.</li>
+							</ul></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+				
+				<dt id="text-commands-vwf_set_text_palette"><code>%vwf_set_text_palette()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_set_text_palette(palette_no)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!set_pal(palette_no) = %vwf_set_text_palette(palette_no)
+!reset_color = %vwf_set_text_palette(!vwf_default_text_palette)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>palette_no: number:</code> The palette number to set. (min: <code>$00</code>, max: <code>$07</code>)</li>
+							</ul></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+				
+				<dt id="text-commands-vwf_set_text_color"><code>%vwf_set_text_color()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_set_text_color(color_no)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!set_color(color_no) = %vwf_set_text_color(color_no)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>color_no: number:</code> The number of the color from the palette to overwrite. (min: <code>$00</code>, max: <code>$FF</code>)</li>
+								<li><code>color_values...: rgb15-color:</code> The value to write to the palette, in RGB15 format.</li>
+							</ul></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
 			</dl>
-	
-	!font = %vwf_set_font	
-	%vwf_char_offset, !char_offset, !chr_offset
-	!edit_pal = %vwf_change_colors
-	!set_pal = %vwf_set_text_palette
-	!set_color = %vwf_set_text_color
-	!reset_color = %vwf_set_text_palette(!vwf_default_text_palette)
 	
 	!text_color_0 = "vwf_get_color_index_2bpp($00, VWF_ColorID.Text)"
 	!text_color_1 = "vwf_get_color_index_2bpp($01, VWF_ColorID.Text)"

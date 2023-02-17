@@ -178,7 +178,7 @@
 									<li><a href="#text-commands-vwf_close"><code>%vwf_close()</code></a></li>
 									
 									<li><a href="#text-commands-vwf_wait_for_a"><code>%vwf_wait_for_a()</code></a></li>
-									<li><a href="#text-commands-%vwf_wait_frames"><code>%%vwf_wait_frames()</code></a></li>
+									<li><a href="#text-commands-vwf_wait_frames"><code>%vwf_wait_frames()</code></a></li>
 									<li><a href="#text-commands-vwf_set_text_speed"><code>%vwf_set_text_speed()</code></a></li>
 									
 									<li><a href="#text-commands-vwf_freeze"><code>%vwf_freeze()</code></a></li>
@@ -1455,7 +1455,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							</ul></td>
 						</tr>
 					</table>
-					TODO
+					TODO See <a href="#helper-functions-vwf_get_color_index_2bpp">%vwf_get_color_index_2bpp()</a> for how to specify <code>start_color_no</code>.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_set_text_palette"><code>%vwf_set_text_palette()</code></dt>
@@ -1485,65 +1485,272 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_set_text_color(color_no)</code></pre></td>
+							<td><pre><code>%vwf_set_text_color(color_no, color_value)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!set_color(color_no) = %vwf_set_text_color(color_no)</code></pre></td>
+							<td><pre><code>!set_color(color_no, color_value) = %vwf_set_text_color(color_no, color_value)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
 							<td><ul class="parameter-list">
 								<li><code>color_no: number:</code> The number of the color from the palette to overwrite. (min: <code>$00</code>, max: <code>$FF</code>)</li>
-								<li><code>color_values...: rgb15-color:</code> The value to write to the palette, in RGB15 format.</li>
+								<li><code>color_value: rgb15-color:</code> The value to write to the palette, in RGB15 format.</li>
+							</ul></td>
+						</tr>
+					</table>
+					TODO See <a href="#helper-functions-vwf_get_color_index_2bpp">%vwf_get_color_index_2bpp()</a> for how to specify <code>color_no</code>.
+				</p></dd>
+			</dl>
+	
+	
+			<h4 id="text-commands-text-flow" class="text-center">Text Flow</h4>
+			<dl>
+				<dt id="text-commands-vwf_line_break"><code>%vwf_line_break()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_line_break()</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!n = %vwf_line_break()
+!lf = %vwf_line_break()
+!break = %vwf_line_break()
+!new_line = %vwf_line_break()</code></pre></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+				
+				<dt id="text-commands-vwf_clear"><code>%vwf_clear()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_clear()</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!clear = %vwf_clear()</code></pre></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+				
+				<dt id="text-commands-vwf_set_skip_location"><code>%vwf_set_skip_location()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_set_skip_location()</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!skip_loc = %vwf_set_skip_location()</code></pre></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+				
+				<dt id="text-commands-vwf_close"><code>%vwf_close()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_close()</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!close = %vwf_close()</code></pre></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+				
+				<dt id="text-commands-vwf_wait_for_a"><code>%vwf_wait_for_a()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_wait_for_a()</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!press_a = %vwf_wait_for_a()</code></pre></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+				
+				<dt id="text-commands-vwf_wait_frames"><code>%vwf_wait_frames()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_wait_frames(num_frames)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!wait_frames(num_frames) = %vwf_wait_frames(num_frames)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>num_frames: number:</code> The number to frames to wait + 1. (min: <code>$00</code>, max: <code>$FF</code>)</li>
 							</ul></td>
 						</tr>
 					</table>
 					TODO
 				</p></dd>
-			</dl>
-	
-	!text_color_0 = "vwf_get_color_index_2bpp($00, VWF_ColorID.Text)"
-	!text_color_1 = "vwf_get_color_index_2bpp($01, VWF_ColorID.Text)"
-	!text_color_2 = "vwf_get_color_index_2bpp($02, VWF_ColorID.Text)"
-	!text_color_3 = "vwf_get_color_index_2bpp($03, VWF_ColorID.Text)"
-	!text_color_4 = "vwf_get_color_index_2bpp($04, VWF_ColorID.Text)"
-	!text_color_5 = "vwf_get_color_index_2bpp($05, VWF_ColorID.Text)"
-	!text_color_6 = "vwf_get_color_index_2bpp($06, VWF_ColorID.Text)"
-	!text_color_7 = "vwf_get_color_index_2bpp($07, VWF_ColorID.Text)"
-	
-	!outline_color_0 = "vwf_get_color_index_2bpp($00, VWF_ColorID.Outline)"
-	!outline_color_1 = "vwf_get_color_index_2bpp($01, VWF_ColorID.Outline)"
-	!outline_color_2 = "vwf_get_color_index_2bpp($02, VWF_ColorID.Outline)"
-	!outline_color_3 = "vwf_get_color_index_2bpp($03, VWF_ColorID.Outline)"
-	!outline_color_4 = "vwf_get_color_index_2bpp($04, VWF_ColorID.Outline)"
-	!outline_color_5 = "vwf_get_color_index_2bpp($05, VWF_ColorID.Outline)"
-	!outline_color_6 = "vwf_get_color_index_2bpp($06, VWF_ColorID.Outline)"
-	!outline_color_7 = "vwf_get_color_index_2bpp($07, VWF_ColorID.Outline)"
-	
-	
-			<h4 id="text-commands-text-flow" class="text-center">Text Flow</h4>
-			<dl>
-			</dl>
-	
-	%vwf_line_break(), !n, !lf, !break, !new_line
-	
-	%vwf_clear(), !clear
-	%vwf_set_skip_location(), !skip_loc
-	%vwf_close(), !close
-	
-	!press_a = %vwf_wait_for_a()
-	!wait_frames = %vwf_wait_frames
-	!set_speed = %vwf_set_text_speed
-	
-	!freeze = %vwf_freeze()
-	!halt = %vwf_freeze()
-	!jump = %vwf_set_text_pointer	
-	!open_message = %vwf_display_message
-	
-	!options = %vwf_display_options
-	!opt_loc = %vwf_set_option_location
-	
+				
+				<dt id="text-commands-vwf_set_text_speed"><code>%vwf_set_text_speed()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_set_text_speed(speed)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!wait_frames(speed) = %vwf_set_text_speed(speed)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>speed: number:</code> The number to frames to wait between characters + 1. (min: <code>$00</code>, max: <code>$FF</code>)</li>
+							</ul></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+				
+				<dt id="text-commands-vwf_freeze"><code>%vwf_freeze()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_freeze()</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!freeze = %vwf_freeze()
+!halt = %vwf_freeze()</code></pre></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+				
+				<dt id="text-commands-vwf_set_text_pointer"><code>%vwf_set_text_pointer()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_set_text_pointer(address)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!jump(address) = %vwf_set_text_pointer(address)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>address: number:</code> The address to set the text pointer to.</li>
+							</ul></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+				
+				<dt id="text-commands-vwf_set_text_pointer"><code>%vwf_set_text_pointer()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_set_text_pointer(address)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!jump(address) = %vwf_set_text_pointer(address)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>address: number:</code> The address to set the text pointer to.</li>
+							</ul></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+				
+				<dt id="text-commands-vwf_display_message"><code>%vwf_display_message()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_display_message(message_no, show_close_anim, show_open_anim)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!open_message(message_no, show_close_anim, show_open_anim) = %vwf_display_message(message_no, show_close_anim, show_open_anim)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>message_no: number:</code> The message to display in the new message box. (min: <code>$0000</code>, max: <code>$FFFF</code>)</li>
+								<li><code>show_close_anim: boolean:</code> Whether to play (<code>true</code>) or don't play (<code>false</code>) the close animation on the old message box. Default: <code>false</code></li>
+								<li><code>show_open_anim: boolean:</code> Whether to play (<code>true</code>) or don't play (<code>false</code>) the open animation on the new message box. Default: <code>false</code></li>
+							</ul></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+				
+				<dt id="text-commands-vwf_display_options"><code>%vwf_display_options()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_display_options(unique_label_name, option_texts...)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!options(unique_label_name, option_texts...) = %vwf_display_options(unique_label_name, option_texts...)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>unique_label_name: name:</code> A label name identifying this options block. Must be unique per message box. May only contain the following characters:<br/><code>abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ _ 0123456789</code></li>
+								<li><code>option_texts...: vwf-text:</code> One or more options to display.</li>
+							</ul></td>
+						</tr>
+					</table>
+					TODO !vwf_default_cursor_space !vwf_default_cursor_char %vwf_wrap() Actual number of options depends on available space.
+				</p></dd>
+				
+				<dt id="text-commands-vwf_set_option_location"><code>%vwf_set_option_location()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_set_option_location(options_label_name, option_id)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!opt_loc(options_label_name, option_id) = %vwf_set_option_location(options_label_name, option_id)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>options_label_name: name:</code> The unique label name of the options block to set the jump location for.</li>
+								<li><code>option_id: number:</code> The ID of the option to set the jump location for.</li>
+							</ul></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+			</dl>	
 	
 	
 			<h4 id="text-commands-gameplay-modifiers" class="text-center">Gameplay Modifiers</h4>

@@ -1755,12 +1755,50 @@ AddressSize = VWF_AddressSize</code></pre></td>
 	
 			<h4 id="text-commands-gameplay-modifiers" class="text-center">Gameplay Modifiers</h4>
 			<dl>
-			</dl>
-	
-	!play_bgm = %vwf_play_bgm
-	!teleport = %vwf_setup_teleport
-	
-	
+				<dt id="text-commands-vwf_play_bgm"><code>%vwf_play_bgm()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_play_bgm(bgm_id)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!play_bgm(bgm_id) = %vwf_play_bgm(bgm_id)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>bgm_id: number:</code> The ID of the music to play (the value that gets written to <code>$1DFB</code>).</li>
+							</ul></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+				
+				<dt id="text-commands-vwf_setup_teleport"><code>%vwf_setup_teleport()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_setup_teleport(destination, is_secondary, is_midway_or_water)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!teleport(destination, is_secondary, is_midway_or_water) = %vwf_setup_teleport(destination, is_secondary, is_midway_or_water)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>destination: number:</code> Either the level number to teleport to, or the number of the secondary enrance, depending on whether <code>is_secondary</code> is <code>false</code> or <code>true</code>. (when level: min: <code>$000</code>, max: <code>$1FF</code>, when secondary entrance: min: <code>$0000</code>, max: <code>$1FFF</code>)</li>
+								<li><code>is_secondary: boolean:</code> Whether the destination refers to a level number (<code>false</code>) or a secondary entrance number (<code>true</code>).</li>
+								<li><code>is_midway_or_water: boolean:</code> When destination is a level number: Whether to enter the level at the midway entrance (<code>true</code>) or not (<code>false</code>). When destination is a secondary entrance number: Whether the destination is a water level (<code>true</code>) or not (<code>false</code>).</li>
+							</ul></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+			</dl>	
 	
 	
 			<h4 id="text-commands-text-macros" class="text-center">Text Macros</h4>

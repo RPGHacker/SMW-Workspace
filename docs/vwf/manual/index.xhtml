@@ -223,7 +223,11 @@
 								</ul></details>
 							
 						</ul></details>
-						<li><a href="#text-macros">Text Macros</a></li>
+						<details>
+							<summary><a href="#text-macros">Text Macros</a></summary><ul>
+								<li><a href="#regular-text-macros">Regular Text Macros</a></li>
+								<li><a href="#text-macro-groups">Text Macro Groups</a></li>
+							</ul></details>
 					</ul></li>
 					<li><a href="#advanced-functionality">Advanced Functionality</a><ul>
 						<li><a href="#display-messages">Display Messages From Custom Code</a></li>
@@ -1803,21 +1807,98 @@ AddressSize = VWF_AddressSize</code></pre></td>
 	
 			<h4 id="text-commands-text-macros" class="text-center">Text Macros</h4>
 			<dl>
+				<dt id="text-commands-vwf_execute_text_macro"><code>%vwf_execute_text_macro()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_execute_text_macro(macro_name)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!macro(macro_name) = %vwf_execute_text_macro(macro_name)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>macro_name: string:</code> The name of the macro to execute. That is, the name that was passed to <a href="#regular-text-macros"><code>%vwf_register_text_macro()</code></a>.</li>
+							</ul></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+				
+				<dt id="text-commands-vwf_execute_text_macro_by_indexed_group"><code>%vwf_execute_text_macro_by_indexed_group()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_execute_text_macro_by_indexed_group(group_name, index_address)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!macro_group(group_name, index_address) = %vwf_execute_text_macro_by_indexed_group(group_name, index_address)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>group_name: string:</code> The name of the group to index. That is, the name that was passed to <a href="#text-macro-groups"><code>%vwf_start_text_macro_group()</code></a>.</li>
+								<li><code>index_address: number:</code> The address to use as an index.</li>
+							</ul></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
+				
+				<dt id="text-commands-vwf_execute_buffered_text_macro"><code>%vwf_execute_buffered_text_macro()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_execute_buffered_text_macro(macro_id)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!macro_buf(macro_id) = %vwf_execute_buffered_text_macro(macro_id)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>macro_id: number:</code> The ID of the macro to execute.  (min: <code>0</code>, max: <code>!vwf_num_reserved_text_macros-1</code>)</li>
+							</ul></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
 			</dl>
-			
-	!macro = %vwf_execute_text_macro
-	!macro_group = %vwf_execute_text_macro_by_indexed_group
-	!macro_buf = %vwf_execute_buffered_text_macro
 	
 	
 	
 	
 			<h4 id="text-commands-advanced" class="text-center">Advanced</h4>
-			<dl>
+			<dl>				
+				<dt id="text-commands-vwf_execute_subroutine"><code>%vwf_execute_subroutine()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_execute_subroutine(address)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!execute(address) = %vwf_execute_subroutine(address)
+!exec(address) = %vwf_execute_subroutine(address)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>address: number:</code> The address of the routine to execute.</li>
+							</ul></td>
+						</tr>
+					</table>
+					TODO
+				</p></dd>
 			</dl>
-	
-	!execute = %vwf_execute_subroutine
-	!exec = %vwf_execute_subroutine
 			
 			
 			<dl>
@@ -2377,7 +2458,15 @@ db "Princess Peach",$E7</code></pre>
 
 			<h3 id="text-macros" class="text-center">Text Macros</h3>
 			<p>
+			</p>
+			
+			<h4 id="regular-text-macros" class="text-center">Regular Text Macros</h4>
+			<p>
 				vwf_register_text_macro(name, ...)
+			</p>
+			
+			<h4 id="text-macro-groups" class="text-center">Text Macro Groups</h4>
+			<p>
 				vwf_start_text_macro_group(name)
 				vwf_add_text_macro_to_group(macro_name)
 				vwf_end_text_macro_group()

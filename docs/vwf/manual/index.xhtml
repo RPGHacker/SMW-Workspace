@@ -1265,7 +1265,8 @@ AutoWait = VWF_AutoWait</code></pre></td>
 							</ul></td>
 						</tr>
 					</table>
-					TODO
+					This command prints a string of regular text to the text box. Your currently active <a href="#resources-fonts">table file</a> defines how each character maps onto the currently active <a href="#resources-fonts">font</a> to display the respective character. Whenever a text string you print would overflow the available space of the text box, the <a href="#header-settings-vwf_auto_wait">vwf_auto_wait()</a> header setting defines what action should be taken.<br/><br/>
+					A word of caution: For the implementation of text commands, the patch reserves a certain number of character values. Currently, these are <code>$E7</code> to <code>$FF</code> when running in 8-bit mode, or <code>$FFE7</code> to <code>$FFFF</code> when running in 16-bit mode. Trying to print any character with this command that maps onto one of those values (except for <code>$FE</code>, which represents the <a href="#text-commands-vwf_space">vwf_space()</a> command) will likely result in bugs. Currently, these characters need to be escaped manually using the <a href="#text-commands-vwf_char">vwf_char()</a> command. A future version of the patch might automate this process if possible.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_char"><code>%vwf_char()</code></dt>

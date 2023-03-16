@@ -1288,7 +1288,7 @@ AutoWait = VWF_AutoWait</code></pre></td>
 							</ul></td>
 						</tr>
 					</table>
-					TODO
+					Prints a single character to the text box. Unlike <a href="#text-commands-vwf_text">vwf_text()</a>, this command escapes every character you output and can thus never accidentally map onto another text command, so you can use it to safely print any raw character from a font to the text box.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_char_at_address"><code>%vwf_char_at_address()</code></dt>
@@ -1310,7 +1310,7 @@ AutoWait = VWF_AutoWait</code></pre></td>
 							</ul></td>
 						</tr>
 					</table>
-					TODO
+					This command works just like <a href="#text-commands-vwf_char">vwf_char()</a>, except the value you pass in is a RAM address. The game will read out that address and interpret whatever value it currently holds as the character to print. An example use case of this could be printing the SMW timer, which has each of its digits stored in separate RAM addresses (note: this particular use case only works with fonts where all digits are the first glyphs in the font - so for example, character value $00 would map onto the 0 digit glyph, $01 on the 1 digit glyph etc.).
 				</p></dd>
 				
 				<dt id="text-commands-vwf_space"><code>%vwf_space()</code></dt>
@@ -1326,7 +1326,7 @@ AutoWait = VWF_AutoWait</code></pre></td>
 !space = %vwf_space()</code></pre></td>
 						</tr>
 					</table>
-					TODO
+					Prints a single space to the text box and causes the automatic word wrapping processor to run. If the next word no longer fits onto the current line, a line break is automatically inserted. See <a href="#text-commands-vwf_line_break"><code>%vwf_line_break()</code></a> for details. Note that there's no reason to ever use this command under normal circumstances. The default character to glyph mapping tables included with the patch already map the space character to the <code>%vwf_space()</code> command, so just using the <a href="#text-commands-vwf_text"><code>%vwf_text()</code></a> command is sufficient and will produce automatic line breaks.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_non_breaking_space"><code>%vwf_non_breaking_space()</code></dt>
@@ -1341,7 +1341,7 @@ AutoWait = VWF_AutoWait</code></pre></td>
 							<td><pre><code>!nbsp = %vwf_non_breaking_space()</code></pre></td>
 						</tr>
 					</table>
-					TODO
+					An alias for <code>%vwf_char(!vwf_nbsp_char)</code>, with <code>!vwf_nbsp_char = $00FE</code>. Basically, this prints character <code>$00FE</code> (which usually maps to a space) to the text box as a raw character. The purpose of this command is to print a space without invoking the word wrapping processor, similar to the <code>&amp;nbsp;</code> HTML entity. Useful when you want to prevent two words from being separated and ending up on two different lines. For example, if you want the name &quot;Super Mario&quot; to always appear on a single line, you can assure that by using this command in place of the space.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_decimal"><code>%vwf_decimal()</code></dt>

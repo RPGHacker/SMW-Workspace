@@ -58,7 +58,7 @@
 
 		<section class="jumbotron">
 			<div class="container">
-				<h1 class="text-center mt-1 mb-2">VWF Dialogues Patch<br/><small>© 2010-2022 RPG Hacker</small></h1>
+				<h1 class="text-center mt-1 mb-2">VWF Dialogues Patch<br/><small>© 2010-2023 RPG Hacker</small></h1>
 
 				<div class="row my-2 py-1 text-center ir-crisp">
 					<div class="py-2 col col-xl-3 offset-xl-1"><img src="screenshots/screen-5.png" alt="Screenshot"/></div>
@@ -816,7 +816,7 @@ BoxAnimation = VWF_BoxAnimation</code></pre></td>
 							</ul></td>
 						</tr>
 					</table>
-					Specifies the font to use for the text box (when not overridden by a text command). Font IDs are based on the order of <code>%vwf_add_font()</code> calls in your <code>vwfconfig.cfg</code>, starting at <code>0</code>. This setting is ignored when running in 16-bit mode.
+					Specifies the font to use for the text box (when not overridden by a text command). Font IDs are based on the order of <code>%vwf_add_font()</code> calls in your <code>vwfconfig.cfg</code>, starting at <code>0</code>. This setting is ignored when running in 16-bit mode. Note that this setting does not affect the active character mapping table, so if you require different tables for different fonts, you'll have to load them manually via an <code>incsrc</code>. See <a href="#resources-fonts">Fonts</a> for details.
 				</p></dd>
 				
 				<dt id="header-settings-vwf_text_palette"><code>vwf_text_palette()</code></dt>
@@ -1371,7 +1371,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							</ul></td>
 						</tr>
 					</table>
-					TODO
+					Reads out a RAM address and prints its value to the text box as a decimal number. Depending on the <code>address_size</code> parameter, the address is either interpreted to be an <code>8-bit</code> number (using a single byte) or a <code>16-bit</code> number (using two bytes). When the <code>leading_zeros</code> parameter is set to <code>true</code>, leading zeros will be printed. Up to three total places for 8-bit numbers and up to five for 16-bit numbers.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_hex"><code>%vwf_hex()</code></dt>
@@ -1392,7 +1392,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							</ul></td>
 						</tr>
 					</table>
-					TODO
+					Reads out a RAM address and prints its value to the text box as a hexadecimal number.
 				</p></dd>
 			</dl>
 	
@@ -1416,7 +1416,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							</ul></td>
 						</tr>
 					</table>
-					TODO
+					Sets the currently active font. The same format and restrictions as in the <a href="#header-settings-vwf_font"><code>vwf_font()</code></a> header setting apply.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_char_offset"><code>%vwf_char_offset()</code></dt>
@@ -1438,7 +1438,15 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							</ul></td>
 						</tr>
 					</table>
-					TODO
+					Sets a character offset which is added to every single character printed to the text box (default value: <code>$0000</code>). Here's a simple example:
+					<pre><code>%vwf_char_offset($0010)
+%vwf_char($01) : %vwf_char($02) : %vwf_char($03)</code></pre>
+					Normally, you would expect this to print characters <code>$01</code>, <code>$02</code> and <code>$03</code> to the text box, but due to the <code>%vwf_char_offset($0010)</code>, what actually gets printed are characters <code>$11</code>, <code>$12</code> and <code>$13</code>.<br/><br/>
+					The main purpose of this command is to enable the usage of arbitrarily sized fonts. This is especially useful in 16-bit mode, where any of the regular font settings and commands are ignored. Imagine a scenario in which you have one font occupying font slots <code>$00</code> to <code>$03</code> (each containing <code>$100</code> glyphs) and another occupying font slots <code>$04</code> to <code>$07</code>. Running the patch in 16-bit mode, you could do something like this:
+					<pre><code>%vwf_text("Hello world!")
+%vwf_char_offset($0400)
+%vwf_text("Hello world!")</code></pre>
+					The first &quot;Hello world!&quot; here would be printed with glyphs starting at font slot <code>$00</code>, whereas the second &quot;Hello world!&quot; would be printed with glyphs starting at font slot <code>$04</code>, making it possible to print each of the strings in a different font. In 8-bit mode, this usually wouldn't be necessary, since you could just use <code>%vwf_set_font($04)</code> instead.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_change_colors"><code>%vwf_change_colors()</code></dt>

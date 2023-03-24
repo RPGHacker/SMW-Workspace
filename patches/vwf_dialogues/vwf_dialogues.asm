@@ -10,7 +10,7 @@ incsrc shared/shared.asm
 
 
 print ""
-print "VWF Dialogues Patch - (c) 2010-2022 RPG Hacker"
+print "VWF Dialogues Patch - (c) 2010-2023 RPG Hacker"
 print ""
 
 

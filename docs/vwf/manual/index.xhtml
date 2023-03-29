@@ -1468,7 +1468,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							</ul></td>
 						</tr>
 					</table>
-					TODO See <a href="#helper-functions-vwf_get_color_index_2bpp">%vwf_get_color_index_2bpp()</a> for how to specify <code>start_color_no</code>.
+					This command allows you to overwrite colors in the currently active palette. You can overwrite multiple colors at once, starting at <code>start_color_no</code>, by passing in a list of color values. The main purpose of this is to follow it up with a call to <a href="#text-commands-vwf_set_text_palette"><code>%vwf_set_text_palette()</code></a> to effectively change the text color. Since this command modifies the active palette, using it carelessly will lead to unintended side effects (randomly changing colors on screen). Make sure to only ever overwrite colors that aren't currently visible anywhere on the screen. Once a text box closes, the patch will restore the original state of the palette from before opening any text box. See <a href="#helper-functions-vwf_get_color_index_2bpp">%vwf_get_color_index_2bpp()</a> for help with specifying <code>start_color_no</code>.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_set_text_palette"><code>%vwf_set_text_palette()</code></dt>
@@ -1498,21 +1498,21 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_set_text_color(color_no, color_value)</code></pre></td>
+							<td><pre><code>%vwf_set_text_color(palette_no, text_color_value)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!set_color(color_no, color_value) = %vwf_set_text_color(color_no, color_value)</code></pre></td>
+							<td><pre><code>!set_color(palette_no, text_color_value) = %vwf_set_text_color(color_no, text_color_value)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
 							<td><ul class="parameter-list">
-								<li><code>color_no: number:</code> The number of the color from the palette to overwrite. (min: <code>$00</code>, max: <code>$FF</code>)</li>
-								<li><code>color_value: rgb15-color:</code> The value to write to the palette, in RGB15 format.</li>
+								<li><code>palette_no: number:</code> The number of the 2BPP palette in which to overwrite colors. (min: <code>$00</code>, max: <code>$07</code>)</li>
+								<li><code>text_color_value: rgb15-color:</code> The text color value to write to the palette, in RGB15 format.</li>
 							</ul></td>
 						</tr>
 					</table>
-					TODO See <a href="#helper-functions-vwf_get_color_index_2bpp">%vwf_get_color_index_2bpp()</a> for how to specify <code>color_no</code>.
+					TODO
 				</p></dd>
 			</dl>
 	

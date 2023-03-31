@@ -1490,7 +1490,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							</ul></td>
 						</tr>
 					</table>
-					TODO
+					Switches the currently active text palette to another one. Assumes 2BPP color palettes, so a value of <code>$00</code> will give you the first four colors of Lunar Magic's palette, a value of <code>$01</code> the second four colors and so on. Also overwrites color <code>$01</code> of the selected palette (aka the second color) with the currently active text box background color, so the same restrictions apply as for <a href="#text-commands-vwf_change_colors"><code>%vwf_change_colors()</code></a> (in other words, make sure not to overwrite any color currently visible on screen). This command is meant to be paired with <a href="#text-commands-vwf_change_colors"><code>%vwf_change_colors()</code></a> to effectively switch the active text color.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_set_text_color"><code>%vwf_set_text_color()</code></dt>
@@ -1512,7 +1512,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							</ul></td>
 						</tr>
 					</table>
-					TODO
+					This command is a shorthand way of calling both <a href="#text-commands-vwf_change_colors"><code>%vwf_change_colors()</code></a> and <a href="#text-commands-vwf_set_text_palette"><code>%vwf_set_text_palette()</code></a> and lets you switch the active text color more easily. It sets the text color (color <code>$02</code>) of palette <code>palette_no</code> to color <code>text_color_value</code>, sets the outline color (color <code>$03</code>) to black, sets the background color (color <code>$01</code>) to the currently active one, and then automatically switches the active text palette to <code>palette_no</code>. All restrictions that apply to <a href="#text-commands-vwf_change_colors"><code>%vwf_change_colors()</code></a> and <a href="#text-commands-vwf_set_text_palette"><code>%vwf_set_text_palette()</code></a> also apply to this command.
 				</p></dd>
 			</dl>
 	

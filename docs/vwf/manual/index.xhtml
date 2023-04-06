@@ -1534,7 +1534,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 !new_line = %vwf_line_break()</code></pre></td>
 						</tr>
 					</table>
-					TODO
+					Inserts a line break into the text box. If the text has already reached the last line of the text box, the <a href="#header-settings-vwf_auto_wait"><code>vwf_auto_wait()</code></a> header setting dictates how to proceed before automatically clearing the text box.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_clear"><code>%vwf_clear()</code></dt>
@@ -1549,7 +1549,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							<td><pre><code>!clear = %vwf_clear()</code></pre></td>
 						</tr>
 					</table>
-					TODO
+					Clears the text box. Following text being printed will start back at the first line of the text box.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_set_skip_location"><code>%vwf_set_skip_location()</code></dt>
@@ -1564,7 +1564,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							<td><pre><code>!skip_loc = %vwf_set_skip_location()</code></pre></td>
 						</tr>
 					</table>
-					TODO
+					When the <a href="#header-settings-vwf_enable_skipping"><code>vwf_enable_skipping()</code></a> header setting was set to <code>true</code>, this text command can be used to mark the destination of skipping. When pressing the Start button, the text box will immediately jump to the location in the message where this command was used. Can only be used once per message.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_close"><code>%vwf_close()</code></dt>
@@ -1579,7 +1579,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							<td><pre><code>!close = %vwf_close()</code></pre></td>
 						</tr>
 					</table>
-					TODO
+					Closes the text box, restores backed up layer 3 and palette data, and resumes gameplay.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_wait_for_a"><code>%vwf_wait_for_a()</code></dt>
@@ -1594,7 +1594,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							<td><pre><code>!press_a = %vwf_wait_for_a()</code></pre></td>
 						</tr>
 					</table>
-					TODO
+					Pauses the text box until the player presses the A button.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_wait_frames"><code>%vwf_wait_frames()</code></dt>
@@ -1611,11 +1611,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 						<tr>
 							<th>Parameters</th>
 							<td><ul class="parameter-list">
-								<li><code>num_frames: number:</code> The number to frames to wait + 1. (min: <code>$00</code>, max: <code>$FF</code>)</li>
+								<li><code>num_frames: number:</code> The number to frames to wait + 1. (min: <code>0</code>, max: <code>255</code>)</li>
 							</ul></td>
 						</tr>
 					</table>
-					TODO
+					Pauses the text box for <code>num_frames + 1</code> frames.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_set_text_speed"><code>%vwf_set_text_speed()</code></dt>
@@ -1632,11 +1632,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 						<tr>
 							<th>Parameters</th>
 							<td><ul class="parameter-list">
-								<li><code>speed: number:</code> The number to frames to wait between characters + 1. (min: <code>$00</code>, max: <code>$FF</code>)</li>
+								<li><code>speed: number:</code> The number to frames to wait between characters + 1. (min: <code>0</code>, max: <code>255</code>)</li>
 							</ul></td>
 						</tr>
 					</table>
-					TODO
+					Sets the text rendering speed. The speed is defined as the number of frames to wait between each character being printed.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_freeze"><code>%vwf_freeze()</code></dt>
@@ -1652,7 +1652,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 !halt = %vwf_freeze()</code></pre></td>
 						</tr>
 					</table>
-					TODO
+					Freezes the text box entirely. The only way to unfreeze it is to modify the text pointer directly from code. You can use <a href="#message-asm">MessageASM</a> to do this. Consider this an advanced function.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_set_text_pointer"><code>%vwf_set_text_pointer()</code></dt>
@@ -1673,28 +1673,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							</ul></td>
 						</tr>
 					</table>
-					TODO
-				</p></dd>
-				
-				<dt id="text-commands-vwf_set_text_pointer"><code>%vwf_set_text_pointer()</code></dt>
-				<dd><p>
-					<table class="api-documentation">
-						<tr>
-							<th>Usage</th>
-							<td><pre><code>%vwf_set_text_pointer(address)</code></pre></td>
-						</tr>
-						<tr>
-							<th>Short Aliases</th>
-							<td><pre><code>!jump(address) = %vwf_set_text_pointer(address)</code></pre></td>
-						</tr>
-						<tr>
-							<th>Parameters</th>
-							<td><ul class="parameter-list">
-								<li><code>address: number:</code> The address to set the text pointer to.</li>
-							</ul></td>
-						</tr>
-					</table>
-					TODO
+					Modifies the text pointer (aka the location the patch is currently reading message data from). Can even be pointed to a RAM address (which could be useful for printing user-defined text, like a player name). See <a href="#helper-functions-vwf_inline"><code>vwf_inline()</code></a> for how to define message data outside the scope of a message.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_display_message"><code>%vwf_display_message()</code></dt>
@@ -1712,12 +1691,12 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							<th>Parameters</th>
 							<td><ul class="parameter-list">
 								<li><code>message_no: number:</code> The message to display in the new message box. (min: <code>$0000</code>, max: <code>$FFFF</code>)</li>
-								<li><code>show_close_anim: boolean:</code> Whether to play (<code>true</code>) or don't play (<code>false</code>) the close animation on the old message box. Default: <code>false</code></li>
-								<li><code>show_open_anim: boolean:</code> Whether to play (<code>true</code>) or don't play (<code>false</code>) the open animation on the new message box. Default: <code>false</code></li>
+								<li><code>show_close_anim: boolean:</code> Whether to play (<code>true</code>) or don't play (<code>false</code>) the close animation on the old text box. Default: <code>false</code></li>
+								<li><code>show_open_anim: boolean:</code> Whether to play (<code>true</code>) or don't play (<code>false</code>) the open animation on the new text box. Default: <code>false</code></li>
 							</ul></td>
 						</tr>
 					</table>
-					TODO
+					Closes the current text box and immediately opens a new one with another message. When <code>show_open_anim</code> is set to <code>false</code>, certain text box settings (such as selected frame, selected background or selected background color) won't be reloaded. Set it to <code>true</code> if you require them to be reloaded. You can use the <a href="#header-settings-vwf_box_animation"><code>VWF_BoxAnimation.Instant</code></a> animation style on the new text box to make it appear as though it still appears instantaneously.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_display_options"><code>%vwf_display_options()</code></dt>

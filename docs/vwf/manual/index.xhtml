@@ -1718,7 +1718,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							</ul></td>
 						</tr>
 					</table>
-					TODO !vwf_default_cursor_space !vwf_default_cursor_char %vwf_wrap() Actual number of options depends on available space.
+					Displays a list of options for the player to choose from, and jumps to different parts of the message depending on what selection they made. The label name must be a valid Asar label name and unique within that message. Supports up to 13 options in theory, but in practice, the number of options is limited by the height of your text box, with each line providing room for one option. Options passed to this command should either be <a href="#text-commands-vwf_text"><code>%vwf_text()</code></a> calls, or multiple text commands wrapped into <a href="#helper-functions-text-commands"><code>%vwf_wrap()</code></a> calls. Use the <a href="#text-commands-vwf_set_option_location"><code>%vwf_set_option_location()</code></a> command to set the target locations for each option (there must be at least one call to <code>%vwf_set_option_location()</code> per option passed to <code>%vwf_display_options()</code>). The <code>!vwf_default_cursor_space</code> setting in <code>vwfconfig.cfg</code> lets you control the margin in pixels between the cursor and the option text. The <code>!vwf_default_cursor_char</code> setting determines what character to use as the cursor. If you need to override either setting for just a single use of <code>%vwf_display_options()</code>, you can do so by overwriting the respective setting before calling the command and then restoring it to its original value afterwards.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_set_option_location"><code>%vwf_set_option_location()</code></dt>

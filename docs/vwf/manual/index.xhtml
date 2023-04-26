@@ -1740,7 +1740,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							</ul></td>
 						</tr>
 					</table>
-					TODO
+					Sets the target destination for a specific choice of a <a href="#text-commands-vwf_display_options"><code>%vwf_display_options()</code></a> command. Upon selecting that choice, the text box will continue at the location where <code>%vwf_set_option_location()</code> was called. The <code>options_label_name</code> parameter must be identical to the <code>unique_label_name</code> passed to <a href="#text-commands-vwf_display_options"><code>%vwf_display_options()</code></a>. The <code>option_id</code> parameter specifies which choice you're setting the location for, starting at <code>0</code>. So if you had the following <a href="#text-commands-vwf_display_options"><code>%vwf_display_options()</code></a> call
+					<pre><code>%vwf_display_options(MyOptions, %vwf_text("One"), %vwf_text("Two"), %vwf_text("Three"))</code></pre>
+					then calling
+					<pre><code>%vwf_set_option_location(MyOptions, 1)</code></pre>
+					would set the target location of the <code>Two</code> choice.
 				</p></dd>
 			</dl>	
 	
@@ -1765,7 +1769,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							</ul></td>
 						</tr>
 					</table>
-					TODO
+					Switches the currently active background music by writing <code>bgm_id</code> to <code>$1DFB</code>. See <a href="https://www.smwcentral.net/?p=memorymap&amp;game=smw&amp;u=0&amp;address=1dfb&amp;sizeOperation=%3D&amp;sizeValue=&amp;region[]=ram&amp;type=*&amp;description&#61;">SMW Central RAM Map</a> for details.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_setup_teleport"><code>%vwf_setup_teleport()</code></dt>

@@ -1477,17 +1477,17 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_set_text_palette(palette_no)</code></pre></td>
+							<td><pre><code>%vwf_set_text_palette(palette_index)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!set_pal(palette_no) = %vwf_set_text_palette(palette_no)
+							<td><pre><code>!set_pal(palette_index) = %vwf_set_text_palette(palette_index)
 !reset_color = %vwf_set_text_palette(!vwf_default_text_palette)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
 							<td><ul class="parameter-list">
-								<li><code>palette_no: number:</code> The palette number to set. (min: <code>$00</code>, max: <code>$07</code>)</li>
+								<li><code>palette_index: number:</code> The index of the palette to set. (min: <code>$00</code>, max: <code>$07</code>)</li>
 							</ul></td>
 						</tr>
 					</table>
@@ -1499,21 +1499,21 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_set_text_color(palette_no, text_color_value)</code></pre></td>
+							<td><pre><code>%vwf_set_text_color(palette_index, text_color_value)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!set_color(palette_no, text_color_value) = %vwf_set_text_color(color_no, text_color_value)</code></pre></td>
+							<td><pre><code>!set_color(palette_index, text_color_value) = %vwf_set_text_color(color_no, text_color_value)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
 							<td><ul class="parameter-list">
-								<li><code>palette_no: number:</code> The number of the 2BPP palette in which to overwrite colors. (min: <code>$00</code>, max: <code>$07</code>)</li>
+								<li><code>palette_index: number:</code> The index of the 2BPP palette in which to overwrite colors. (min: <code>$00</code>, max: <code>$07</code>)</li>
 								<li><code>text_color_value: rgb15-color:</code> The text color value to write to the palette, in RGB15 format.</li>
 							</ul></td>
 						</tr>
 					</table>
-					This command is a shorthand way of calling both <a href="#text-commands-vwf_change_colors"><code>%vwf_change_colors()</code></a> and <a href="#text-commands-vwf_set_text_palette"><code>%vwf_set_text_palette()</code></a> and lets you switch the active text color more easily. It sets the text color (color <code>$02</code>) of palette <code>palette_no</code> to color <code>text_color_value</code>, sets the outline color (color <code>$03</code>) to black, sets the background color (color <code>$01</code>) to the currently active one, and then automatically switches the active text palette to <code>palette_no</code>. All restrictions that apply to <a href="#text-commands-vwf_change_colors"><code>%vwf_change_colors()</code></a> and <a href="#text-commands-vwf_set_text_palette"><code>%vwf_set_text_palette()</code></a> also apply to this command.
+					This command is a shorthand way of calling both <a href="#text-commands-vwf_change_colors"><code>%vwf_change_colors()</code></a> and <a href="#text-commands-vwf_set_text_palette"><code>%vwf_set_text_palette()</code></a> and lets you switch the active text color more easily. It sets the text color (color <code>$02</code>) of palette <code>palette_index</code> to color <code>text_color_value</code>, sets the outline color (color <code>$03</code>) to black, sets the background color (color <code>$01</code>) to the currently active one, and then automatically switches the active text palette to <code>palette_index</code>. All restrictions that apply to <a href="#text-commands-vwf_change_colors"><code>%vwf_change_colors()</code></a> and <a href="#text-commands-vwf_set_text_palette"><code>%vwf_set_text_palette()</code></a> also apply to this command.
 				</p></dd>
 			</dl>
 	
@@ -1911,9 +1911,9 @@ AddressSize = VWF_AddressSize</code></pre></td>
 						<tr>
 							<th>Parameters</th>
 							<td><ul class="parameter-list">
-								<li><code>r: number:</code> The value of the <code>red</code> color channel (min: <code>0</code>, max: <code>31</code>).</li>
-								<li><code>g: number:</code> The value of the <code>green</code> color channel (min: <code>0</code>, max: <code>31</code>).</li>
-								<li><code>b: number:</code> The value of the <code>blue</code> color channel (min: <code>0</code>, max: <code>31</code>).</li>
+								<li><code>r: number:</code> The value of the <code>red</code> color channel. (min: <code>0</code>, max: <code>31</code>)</li>
+								<li><code>g: number:</code> The value of the <code>green</code> color channel. (min: <code>0</code>, max: <code>31</code>)</li>
+								<li><code>b: number:</code> The value of the <code>blue</code> color channel. (min: <code>0</code>, max: <code>31</code>)</li>
 							</ul></td>
 						</tr>
 					</table>
@@ -1922,25 +1922,46 @@ AddressSize = VWF_AddressSize</code></pre></td>
 				
 				<dt id="helper-functions-vwf_get_color_index_2bpp"><code>vwf_get_color_index_2bpp()</code></dt>
 				<dd><p>
-					TODO
-					
-	!text_color_0 = "vwf_get_color_index_2bpp($00, VWF_ColorID.Text)"
-	!text_color_1 = "vwf_get_color_index_2bpp($01, VWF_ColorID.Text)"
-	!text_color_2 = "vwf_get_color_index_2bpp($02, VWF_ColorID.Text)"
-	!text_color_3 = "vwf_get_color_index_2bpp($03, VWF_ColorID.Text)"
-	!text_color_4 = "vwf_get_color_index_2bpp($04, VWF_ColorID.Text)"
-	!text_color_5 = "vwf_get_color_index_2bpp($05, VWF_ColorID.Text)"
-	!text_color_6 = "vwf_get_color_index_2bpp($06, VWF_ColorID.Text)"
-	!text_color_7 = "vwf_get_color_index_2bpp($07, VWF_ColorID.Text)"
-	
-	!outline_color_0 = "vwf_get_color_index_2bpp($00, VWF_ColorID.Outline)"
-	!outline_color_1 = "vwf_get_color_index_2bpp($01, VWF_ColorID.Outline)"
-	!outline_color_2 = "vwf_get_color_index_2bpp($02, VWF_ColorID.Outline)"
-	!outline_color_3 = "vwf_get_color_index_2bpp($03, VWF_ColorID.Outline)"
-	!outline_color_4 = "vwf_get_color_index_2bpp($04, VWF_ColorID.Outline)"
-	!outline_color_5 = "vwf_get_color_index_2bpp($05, VWF_ColorID.Outline)"
-	!outline_color_6 = "vwf_get_color_index_2bpp($06, VWF_ColorID.Outline)"
-	!outline_color_7 = "vwf_get_color_index_2bpp($07, VWF_ColorID.Outline)"
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>vwf_get_color_index_2bpp(palette_index, type)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code>!text_color_0 = vwf_get_color_index_2bpp($00, VWF_ColorID.Text)
+!text_color_1 = vwf_get_color_index_2bpp($01, VWF_ColorID.Text)
+!text_color_2 = vwf_get_color_index_2bpp($02, VWF_ColorID.Text)
+!text_color_3 = vwf_get_color_index_2bpp($03, VWF_ColorID.Text)
+!text_color_4 = vwf_get_color_index_2bpp($04, VWF_ColorID.Text)
+!text_color_5 = vwf_get_color_index_2bpp($05, VWF_ColorID.Text)
+!text_color_6 = vwf_get_color_index_2bpp($06, VWF_ColorID.Text)
+!text_color_7 = vwf_get_color_index_2bpp($07, VWF_ColorID.Text)
+
+!outline_color_0 = vwf_get_color_index_2bpp($00, VWF_ColorID.Outline)
+!outline_color_1 = vwf_get_color_index_2bpp($01, VWF_ColorID.Outline)
+!outline_color_2 = vwf_get_color_index_2bpp($02, VWF_ColorID.Outline)
+!outline_color_3 = vwf_get_color_index_2bpp($03, VWF_ColorID.Outline)
+!outline_color_4 = vwf_get_color_index_2bpp($04, VWF_ColorID.Outline)
+!outline_color_5 = vwf_get_color_index_2bpp($05, VWF_ColorID.Outline)
+!outline_color_6 = vwf_get_color_index_2bpp($06, VWF_ColorID.Outline)
+!outline_color_7 = vwf_get_color_index_2bpp($07, VWF_ColorID.Outline)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>palette_index: number:</code> The index of the palette for which to retrieve a color index. (min: <code>$00</code>, max: <code>$07</code>)</li>								
+								<li><code>type: VWF_ColorID:</code> The type of color to retrieve the index for. Valid values:
+								<table class="parameter-list">
+									<tr><th>Value</th><th>Description</th></tr>
+									<tr><td><code>VWF_ColorID.Text</code></td><td>Text color.</td></tr>
+									<tr><td><code>VWF_ColorID.Outline</code></td><td>Outline color.</td></tr>
+								</table>								
+								</li>
+							</ul></td>
+						</tr>
+					</table>
+					Takes a desired palette index and a desired color type and returns the correct color index for them. The resulting value can be passed directly to commands like <a href="#text-commands-vwf_change_colors"><code>%vwf_change_colors()</code></a>. The <code>palette_index</code> parameters of this function matches the <code>palette_index</code> parameter of <a href="#text-commands-vwf_set_text_palette"><code>%vwf_set_text_palette()</code></a>.
 				</p></dd>
 			</dl>
 				

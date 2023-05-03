@@ -227,6 +227,7 @@
 							<summary><a href="#text-macros">Text Macros</a></summary><ul>
 								<li><a href="#regular-text-macros">Regular Text Macros</a></li>
 								<li><a href="#text-macro-groups">Text Macro Groups</a></li>
+								<li><a href="#buffered-text-macros">Buffered Text Macros</a></li>
 							</ul></details>
 					</ul></li>
 					<li><a href="#advanced-functionality">Advanced Functionality</a><ul>
@@ -1579,7 +1580,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							<td><pre><code>!close = %vwf_close()</code></pre></td>
 						</tr>
 					</table>
-					Closes the text box, restores backed up layer 3 and palette data, and resumes gameplay.
+					Closes the text box, restores backed up layer 3 and palette data, and resumes gameplay. It's normally not necessary to call this command explicitly, as each <code>%vwf_message_end()</code> already does so automatically. You only need to use it when you want to close a text box early (for example: from a specific choice of a <a href="#text-commands-vwf_display_options"><code>%vwf_display_options()</code></a>).
 				</p></dd>
 				
 				<dt id="text-commands-vwf_wait_for_a"><code>%vwf_wait_for_a()</code></dt>
@@ -1673,7 +1674,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							</ul></td>
 						</tr>
 					</table>
-					Modifies the text pointer (aka the location the patch is currently reading message data from). Can even be pointed to a RAM address (which could be useful for printing user-defined text, like a player name). See <a href="#helper-functions-vwf_inline"><code>vwf_inline()</code></a> for how to define message data outside the scope of a message.
+					Modifies the text pointer (aka the location the patch is currently reading message data from). Can even be pointed to a RAM address (which could be useful for printing user-defined text, like a player name). When doing so, you should make sure the RAM address in question is already filled with the intended text data before the text box is opened. Filling it while the text box is active could lead to the word wrapping processor and the text renderer seeing different data, which could lead to unexpected word wrapping behavior. See <a href="#helper-functions-vwf_inline"><code>vwf_inline()</code></a> for how to define message data outside the scope of a message.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_display_message"><code>%vwf_display_message()</code></dt>
@@ -1786,13 +1787,13 @@ AddressSize = VWF_AddressSize</code></pre></td>
 						<tr>
 							<th>Parameters</th>
 							<td><ul class="parameter-list">
-								<li><code>destination: number:</code> Either the level number to teleport to, or the number of the secondary enrance, depending on whether <code>is_secondary</code> is <code>false</code> or <code>true</code>. (when level: min: <code>$000</code>, max: <code>$1FF</code>, when secondary entrance: min: <code>$0000</code>, max: <code>$1FFF</code>)</li>
+								<li><code>destination: number:</code> Either the level number to teleport to, or the number of the secondary entrance, depending on whether <code>is_secondary</code> is <code>false</code> or <code>true</code>. (when level: min: <code>$000</code>, max: <code>$1FF</code>, when secondary entrance: min: <code>$0000</code>, max: <code>$1FFF</code>)</li>
 								<li><code>is_secondary: boolean:</code> Whether the destination refers to a level number (<code>false</code>) or a secondary entrance number (<code>true</code>).</li>
 								<li><code>is_midway_or_water: boolean:</code> When destination is a level number: Whether to enter the level at the midway entrance (<code>true</code>) or not (<code>false</code>). When destination is a secondary entrance number: Whether the destination is a water level (<code>true</code>) or not (<code>false</code>).</li>
 							</ul></td>
 						</tr>
 					</table>
-					TODO
+					Sets up a teleport that will activate once the text box closes. The parameters control where the player will be teleported to.
 				</p></dd>
 			</dl>	
 	
@@ -1817,7 +1818,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							</ul></td>
 						</tr>
 					</table>
-					TODO
+					Executes a previously registered text macro. See <a href="#regular-text-macros">Regular Text Macros</a> for details.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_execute_text_macro_by_indexed_group"><code>%vwf_execute_text_macro_by_indexed_group()</code></dt>
@@ -1839,7 +1840,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							</ul></td>
 						</tr>
 					</table>
-					TODO
+					Indexes a text macro group with the current value of a RAM address, and executes the resulting text macro. See <a href="#text-macro-groups">Text Macro Groups</a> for details.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_execute_buffered_text_macro"><code>%vwf_execute_buffered_text_macro()</code></dt>
@@ -1860,7 +1861,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							</ul></td>
 						</tr>
 					</table>
-					TODO
+					Executes a previously registered buffered text macro. See <a href="#buffered-text-macros">Buffered Text Macros</a> for details.
 				</p></dd>
 			</dl>
 	
@@ -1888,7 +1889,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							</ul></td>
 						</tr>
 					</table>
-					TODO
+					Executes an arbitrary code routine. The patch jumps to this routine via a <code>jsl</code>, so it needs to end in an <code>rtl</code>. NOTE: The routine is only executed once text rendering itself arrives at the location of this command, not whenever the word wrapping processor sees it. This means running any code inside the routine that will affect what text is being rendered (such as modifying the current text pointer) can lead to unexpected results (such as word wrapping in weird places), as the text being rendered might not match with what the word wrapping processor has previously seen.
 				</p></dd>
 			</dl>
 			
@@ -2462,6 +2463,11 @@ db "Princess Peach",$E7</code></pre>
 				vwf_start_text_macro_group(name)
 				vwf_add_text_macro_to_group(macro_name)
 				vwf_end_text_macro_group()
+			</p>
+			
+			<h4 id="buffered-text-macros" class="text-center">Buffered Text Macros</h4>
+			<p>
+				See <a href="#shared-routines">Shared Routines</a> for details.
 			</p>
 			
 			<p class="text-center my-4"><a href="#index">Return to Index</a></p>

@@ -1835,7 +1835,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 						<tr>
 							<th>Parameters</th>
 							<td><ul class="parameter-list">
-								<li><code>group_name: string:</code> The name of the group to index. That is, the name that was passed to <a href="#text-macro-groups"><code>%vwf_start_text_macro_group()</code></a>.</li>
+								<li><code>group_name: string:</code> The name of the group to index. That is, the name that was passed to <a href="#text-macro-group-function-vwf_start_text_macro_group"><code>%vwf_start_text_macro_group()</code></a>.</li>
 								<li><code>index_address: number:</code> The address to use as an index.</li>
 							</ul></td>
 						</tr>
@@ -1969,7 +1969,27 @@ AddressSize = VWF_AddressSize</code></pre></td>
 			<dl>
 				<dt id="helper-functions-vwf_wrap"><code>%vwf_wrap()</code></dt>
 				<dd><p>
-					TODO
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_wrap(commands...)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>commands...: text-command:</code> The list of text commands to wrap.</li>
+							</ul></td>
+						</tr>
+					</table>
+					Wraps an arbitrary number of text commands so that they can be passed to a macro as a single argument. This can be useful, for example, to pass multiple commands as a single option to <a href="#text-commands-vwf_display_options"><code>%vwf_display_options()</code></a>. Usage example:
+					<pre><code>!edit_pal(!text_color_5, rgb_15(6, 31, 6), rgb_15(0, 0, 0))
+					
+!options(SampleOptions,
+	%vwf_wrap( !set_pal($05), !char($00AC), !reset_color, !str(" Bullet Point 1") ),
+	%vwf_wrap( !set_pal($05), !char($00AC), !reset_color, !str(" Bullet Point 2") ),
+	%vwf_wrap( !set_pal($05), !char($00AC), !reset_color, !str(" Bullet Point 3") ),
+	%vwf_wrap( !set_pal($05), !char($00AC), !reset_color, !str(" Bullet Point 4") )
+)</code></pre>
 				</p></dd>
 			</dl>
 			
@@ -1977,29 +1997,191 @@ AddressSize = VWF_AddressSize</code></pre></td>
 			<dl>
 				<dt id="helper-functions-vwf_inline"><code>%vwf_inline()</code></dt>
 				<dd><p>
-					TODO
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_inline(commands...)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>commands...: text-command:</code> The list of text commands to compile.</li>
+							</ul></td>
+						</tr>
+					</table>
+					Lets you compile text commands outside of messages. Normally, all text command macros throw an error when used outside of a <code>%vwf_message_start()</code>/<code>%vwf_message_end()</code> pair. However, when writing custom code for VWF Dialogues, there can be valid reasons for why you'd need to use commands outside of messages (for example: to create <a href="#buffered-text-macros">Buffered Text Macros</a>). Wrapping commands into a <code>%vwf_inline()</code> call allows you to do so, by disabling the respective errors.
 				</p></dd>
 				
 				<dt id="helper-functions-remap_ram"><code>remap_ram()</code></dt>
 				<dd><p>
-					TODO
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>remap_ram(address)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>address: number:</code> The RAM address to remap.</li>
+							</ul></td>
+						</tr>
+					</table>
+					Automatically remaps a RAM address as needed when applying the patch to an SA-1 ROM (and in theory, also a SuperFX ROM). This can be used to create messages that work consistently in both regular ROMs and SA-1 ROMs. In regular ROMs, the function will effectively "do nothing". In SA-1 ROMs, it will automatically remap the RAM address to the correct SA-1 equivalent. Usage example:
+					<pre><code>; This will turn into $7E0DBF in a regular ROM, but into $003DBF in an SA-1 ROM.
+!str("Mario's current coins: ") : !dec(remap_ram($7E0DBF), AddressSize.8Bit, true) : !new_line</code></pre>
 				</p></dd>
 			</dl>
 
 			<h3 id="text-macros" class="text-center">Text Macros</h3>
 			<p>
+				Text macros are a system for reusing text pieces (like names or commonly used phrases) in multiple places. This has a couple of advantages:
+				<ul>
+					<li>Saving space: Each text macro call consists of only three bytes, so the longer the phrases you're reusing, the more space you save on message data.</li>
+					<li>Consistency: Reusing text pieces (rather than copy-pasting) makes it easier to keep them consistent and not introduce typos in just a single place. Especially practical for character names. If you ever need to change the name of a character, or you want to format it differently, you only need to edit a single text macro.</li>
+				</ul>
+				All text macros need to be registered once (outside of a message) and can then be called via the different <a href="#text-commands-text-macros">Text Macro text commands</a>.
 			</p>
 			
 			<h4 id="regular-text-macros" class="text-center">Regular Text Macros</h4>
 			<p>
-				vwf_register_text_macro(name, ...)
+				Regular text macros are the simplest form of text macros. They simply wrap an arbitrary number of text commands into a single call. Use the <code>%vwf_register_text_macro()</code> macro to define a regular text macro.
+				
+				<dt id="text-macro-function-vwf_register_text_macro"><code>%vwf_register_text_macro()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_register_text_macro(unique_macro_name, commands...)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>unique_macro_name: name:</code> The name that identifies this text macro. Must be globally unique. May only contain the following characters:<br/><code>abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ _ 0123456789</code></li>
+								<li><code>commands...: vwf-text:</code> One or more text commands to wrap in this macro.</li>
+							</ul></td>
+						</tr>
+					</table>
+					Registers a regular text macro. Pass the same <code>unique_macro_name</code> to <a href="#text-commands-vwf_execute_text_macro"><code>%vwf_execute_text_macro()</code></a> to execute this macro in messages.
+				</p></dd>
+				
+				Here's a simple example to demonstrate the usage of text macros:
+				<pre><code>%vwf_register_text_macro("Mario", !str("Mario") )
+%vwf_register_text_macro("Luigi", !str("Luigi") )
+
+%vwf_message_start(0050)	; Message 104-1
+
+	%vwf_header()
+	
+	!str("My name is ") : !macro("Mario") : !str(" ") : !macro("Mario")
+	!str(", and this here is my brother ") : !macro("Luigi") : !str(" ") : !macro("Mario") : !str("!")
+	!press_a
+	
+%vwf_message_end()</code></pre>
+
+				Text macros can also be nested. In other words, you can register text macros that call other, previously registered text macros, which makes them really flexible and powerful.
 			</p>
 			
 			<h4 id="text-macro-groups" class="text-center">Text Macro Groups</h4>
 			<p>
-				vwf_start_text_macro_group(name)
-				vwf_add_text_macro_to_group(macro_name)
-				vwf_end_text_macro_group()
+				Text macro groups are a mechanism for assigning previously registered text macros to groups that can then be indexed via RAM addresses. Put another way: Text macro groups provide a means of turning the value of a RAM address into a text string representing that value. There's many potential use cases for this. A very intuitive one would be some kind of inventory system. Imagine your game featured an inventory where the player could collect different items. In RAM, the items would probably be stored as some kind of table, with one byte specifying the type of each item. You could then use text macro groups to turn the value of said byte into the name of that item. To register a text macro group, use the <code>%vwf_start_text_macro_group()</code> and <code>%vwf_end_text_macro_group()</code> macros and insert one or more calls to <code>%vwf_add_text_macro_to_group()</code> inbetween them.
+				
+				<dt id="text-macro-group-function-vwf_start_text_macro_group"><code>%vwf_start_text_macro_group()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_start_text_macro_group(unique_group_name)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>unique_group_name: name:</code> The name that identifies this text macro. Must be globally unique. May only contain the following characters:<br/><code>abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ _ 0123456789</code></li>
+							</ul></td>
+						</tr>
+					</table>
+					Starts a new text macro group. Use the <a href="#text-macro-group-function-vwf_add_text_macro_to_group"><code>%vwf_add_text_macro_to_group()</code></a> macro to add text macros to this group. Pass the <code>unique_group_name</code> specified here to <a href="#text-commands-vwf_execute_text_macro_by_indexed_group"><code>%vwf_execute_text_macro_by_indexed_group()</code></a> to index this group in messages.
+				</p></dd>
+				
+				<dt id="text-macro-group-function-vwf_add_text_macro_to_group"><code>%vwf_add_text_macro_to_group()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_add_text_macro_to_group(macro_name)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>macro_name: name:</code> The name of the text macro to add to the current text macro group. Must have been previously registered via <a href="#text-macro-function-vwf_register_text_macro"><code>%vwf_register_text_macro()</code></a> and match the <code>unique_macro_name</code> parameter passed to it.</li>
+							</ul></td>
+						</tr>
+					</table>
+					Adds a new text macro to the current text macro group. Its index within the group depends on the order of <code>%vwf_add_text_macro_to_group()</code> calls. The first call will be index <code>0</code>, the second call index <code>1</code> and so on.
+				</p></dd>
+				
+				<dt id="text-macro-group-function-vwf_end_text_macro_group"><code>%vwf_end_text_macro_group()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code>%vwf_end_text_macro_group()</code></pre></td>
+						</tr>
+					</table>
+					Ends the current text macro group.
+				</p></dd>
+			
+				Here's an advanced example, combining different text macro functionality (regular text macros, text macro groups, nested text macros) in a practical way to create some super handy text macros:
+<pre><code>; Registers text macros for Mario's and Luigi's names
+%vwf_register_text_macro("MarioName", !str("Mario") )
+%vwf_register_text_macro("LuigiName", !str("Luigi") )
+
+; Registers text macros for the different power-up states of Mario and Luigi
+%vwf_register_text_macro("SmallPowerup", !str("Small") )
+%vwf_register_text_macro("SuperPowerup", !str("Super") )
+%vwf_register_text_macro("CapePowerup", !str("Cape") )
+%vwf_register_text_macro("FirePowerup", !str("Fire") )
+
+; Adds Mario's and Luigi's names to a new "PlayerName" group.
+%vwf_start_text_macro_group("PlayerName")
+	%vwf_add_text_macro_to_group("MarioName")
+	%vwf_add_text_macro_to_group("LuigiName")
+%vwf_end_text_macro_group()
+
+; Adds the different powerup states to a new "PlayerPowerup" group.
+%vwf_start_text_macro_group("PlayerPowerup")
+	%vwf_add_text_macro_to_group("SmallPowerup")
+	%vwf_add_text_macro_to_group("SuperPowerup")
+	%vwf_add_text_macro_to_group("CapePowerup")
+	%vwf_add_text_macro_to_group("FirePowerup")
+%vwf_end_text_macro_group()
+
+; Registers a convenience macro for indexing the "PlayerName" group.
+; $7E0DB3 contains the current player ID.
+; 0: Mario
+; 1: Luigi
+; See SMW Central RAM map for details.
+%vwf_register_text_macro("CurrentPlayer", !macro_group("PlayerName", remap_ram($7E0DB3)))
+
+; Registers a convenience macro for indexing both the "PlayerName" and the "PlayerPowerup" groups.
+; $7E0019 contains the power-up state of the current player.
+; 0: None
+; 1: Mushroom
+; 2: Cape
+; 3: Fire Flower
+; See SMW Central RAM map for details.
+%vwf_register_text_macro("CurrentPlayerWithPowerup", !macro_group("PlayerPowerup", remap_ram($7E0019)), !nbsp, !macro("CurrentPlayer"))
+
+
+%vwf_message_start(0050)	; Message 104-1
+
+	%vwf_header()
+	
+	; Let's assume you're currently playing as Luigi and have a Cape power-up. Then this message will read:
+	; "Hey, aren't you Luigi? Cape Luigi, to be specific."
+	!str("Hey, aren't you ") : !macro("CurrentPlayer") : !str("? ") : !macro("CurrentPlayerWithPowerup") : !str(", to be specific.")
+	!press_a
+	
+%vwf_message_end()</code></pre>
 			</p>
 			
 			<h4 id="buffered-text-macros" class="text-center">Buffered Text Macros</h4>

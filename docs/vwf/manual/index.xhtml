@@ -2186,6 +2186,14 @@ AddressSize = VWF_AddressSize</code></pre></td>
 			
 			<h4 id="buffered-text-macros" class="text-center">Buffered Text Macros</h4>
 			<p>
+				Buffered text macros function similarly to regular text macros, with the main difference being that they are constructed at runtime and not patched into the ROM. This makes it possible to have dynamic text macros in the game. A classical example for this would be a player name generated from a name entry screen. The name could be stored in a buffered text macro and then displayed via the <a href="#text-commands-vwf_execute_buffered_text_macro"><code>%vwf_execute_buffered_text_macro()</code></a> text command.
+			</p>
+			
+			<p>
+				Consider this an advanced feature, as it requires some coding knowledge to make meaningful use of. To register buffered text macros, call the shared routines <code>VWF_ResetBufferedTextMacros</code>, <code>VWF_BeginBufferedTextMacro</code>, <code>VWF_AddToBufferedTextMacro</code> and <code>VWF_EndBufferedTextMacro</code> (their usage is documented in code right next to them, so I'll skip a detailed documentation here).
+			</p>
+			
+			<p>
 				See <a href="#shared-routines">Shared Routines</a> for details.
 			</p>
 			
@@ -2202,6 +2210,20 @@ AddressSize = VWF_AddressSize</code></pre></td>
 
 			<h3 id="display-messages" class="text-center">Display Messages From Custom Code</h3>
 			<p>
+				While the VWF Dialogues Patch provides a pretty powerful text system for your hack, the only built-in method of actually opening text boxes is via the message box hijack. However, not everyone wants to override SMW's default message boxes with VWF text boxes, and some people may want to display VWF text boxes from other places, like interactive NPCs or story events. In other words: There's a number of good reasons for wanting to open VWF text boxes from your custom code, and luckily, the patch makes this very easy to do.
+			</p>
+			
+			<p>
+				If you're just an end user, you don't need to bother with any of that. I recommend searching SMW Central instead for resources that already offer support for the VWF Dialogues Patch. A popular example would be <a href="https://www.smwcentral.net/?p=section&amp;a=details&amp;id=29212">WYE's NPCs sprites</a>. This section is only relevant to you if you're making your own resources and want to open VWF text boxes from them.
+			</p>
+			
+			<p>
+				As already mentioned, doing so is thankfully very simple and only requires you to call the <code>VWF_DisplayAMessage</code> shared routine from your own code. See section <a href="#shared-routines">Shared Routines</a> on details for how to use shared routines. Usage of the routine is documented in code right next to it, but calling it is usually as simple as:
+				
+				<pre><code>lda.b #MessageNumber
+ldx.b #MessageNumber>>8
+jsl VWF_DisplayAMessage</code></pre>
+			
 				So now to actually use my patch and display some text on the screen.
 				Remember this window from applying the patch to your ROM?
 				<img class="d-block m-1 my-2" src="screenshots/console-1.png" alt="Screenshot" width="979" height="512" />

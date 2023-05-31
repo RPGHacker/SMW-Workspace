@@ -454,8 +454,8 @@ skip 16
 	
 	
 ; Begins constructing a new buffered text macro, starting at text macro ID 0 and incrementing
-; that ID for every additional call to this routine. Must be followed by calls to AddToBufferedTextMacro
-; and, eventually, a call to EndBufferedTextMacro to finish the macro.
+; that ID for every additional call to this routine. Must be followed by calls to VWF_AddToBufferedTextMacro
+; and, eventually, a call to VWF_EndBufferedTextMacro to finish the macro.
 %vwf_register_shared_routine(VWF_BeginBufferedTextMacro)
 	lda !vwf_tm_buffers_text_pointer_index
 	cmp.b #!vwf_num_reserved_text_macros*3

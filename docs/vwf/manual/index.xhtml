@@ -259,37 +259,27 @@
 		<section class="container">
 			<h2 id="intro" class="text-center">1. Introduction</h2>
 			<p>
-				Welcome to my VWF Dialogues Patch! Since you got here by yourself, you most likely
-				already know what this patch does, but let me give you a general overview anyways.
+				Welcome to my VWF Dialogues Patch! Since you got here by yourself, you most likely already know what this patch does, but let me give you a general overview anyways.
 			</p>
 
 			<p>
-				The aim of this patch is to give a useful alternative to SMW’s native text boxes.
-				Unlike Romi's VWF Cutscene Tool (which is great, but has very specific use cases only), this patch was designed around easy
-				event creation, easy customization and compatibility with all kinds of languages. The cost
-				of this is that its useage is slightly more advanced and requires more knowledge. However, as long as you read this manual carefully and are somewhat familiar with
-				custom sprites/custom blocks and Asar patches, you should be fine.
+				The aim of this patch is to give a useful alternative to SMW’s native text boxes. Unlike Romi's VWF Cutscene Tool (which is great, but has very specific use cases only), this patch was designed around easy event creation, easy customization and compatibility with all kinds of languages. The cost of this is that its useage is slightly more advanced and requires more knowledge. However, as long as you read this manual carefully and are somewhat familiar with custom sprites/custom blocks and Asar patches, you should be fine.
 			</p>
 
 			<p>
-				I’ve included a single custom block that utilizes this patch. Originally, I wanted to include more blocks and also
-				a few custom sprites, but I figured that any custom block or custom sprite hosted on SMW Central that
-				displays a native SMW message box should already be compatible with the patch as long as you enable the SMW message box hijack (see
-				<a href="#start">section 2</a>). The one block I did include gives a general idea on how to address this patch within your own code.
-				It primarily serves as a sample for people who want to write custom code that interfaces with the patch.
+				I’ve included a single custom block that utilizes this patch. Originally, I wanted to include more blocks and also a few custom sprites, but I figured that any custom block or custom sprite hosted on SMW Central that displays a native SMW message box should already be compatible with the patch as long as you enable the SMW message box hijack (see <a href="#start">section 2</a>). The one block I did include gives a general idea on how to address this patch within your own code. It primarily serves as a sample for people who want to write custom code that interfaces with the patch.
 			</p>
 				
 			<p>
-				In addition to this, I’ve included a few alternative fonts in case you don’t like the default one. Though keep in mind that the
-				default font features the largest (non-Japanese) character set. If you’re making a hack in any language that isn't English
-				and features any special characters that are not yet in the default font, you will have to draw and add the missing glyphs yourself.
+				In addition to this, I’ve included a few alternative fonts in case you don’t like the default one. Though keep in mind that the default font features the largest (non-Japanese) character set. If you’re making a hack in any language that isn't English and features any special characters that are not yet in the default font, you will have to draw and add the missing glyphs yourself.
 			</p>
 
 			<p>
-				Be aware that by default, this patch applies some modifications to your ROM that seem to be unrelated to the patch itself at first
-				and might have unintended side effects. For example: It automatically expands
-				the ROM's SRAM size to 128 KB since it requires roughly around 20 KB of working RAM that normally aren't available in SMW.
-				For all of those cases, there's usually config options that can be used to disable the respective modifications if desired.
+				Be aware that by default, this patch applies some modifications to your ROM that seem to be unrelated to the patch itself at first and might have unintended side effects. For example: It automatically expands the ROM's SRAM size to 128 KB since it requires roughly around 20 KB of working RAM that normally aren't available in SMW. For all of those cases, there's usually config options that can be used to disable the respective modifications if desired.
+			</p>
+			
+			<p>
+				During operation, this patch hides, overwrites, and later restores a large chunk of data in layer 3. It's save to use the patch in levels with layer 3 active, however, the original layer image will become invisible for the duration of the text box, so it might not always be a good idea to do so. The patch also overwrites (and later restores) certain colors from the palette in CGRAM, documented in detail throughout this manual. Because of this, some care needs to be taken on which colors to use inside levels that display text boxes.
 			</p>
 
 			<p>
@@ -303,53 +293,26 @@
 		<section class="container">
 			<h2 id="start" class="text-center">2. Getting Started</h2>
 			<p>
-				In order to make use of this patch, you'll need to have downloaded <code>Asar v1.90</code> or newer. Older versions of Asar
-				won't work, as the patch was designed specifically around newer Asar features for an improved user experience.
-				As for the patch itself, the very first thing you’ll want to do is to take the entire <code>vwf_dialogues</code> folder
-				and copy it over to your hack’s local <code>patches</code> directory so that you can make modifications to it as needed. If you only
-				want to see the patch in action, without configuring anything or adding custom text, you may go ahead and patch <code>vwf_dialogues.asm</code>
-				to your ROM right now. Otherwise, keep reading.
+				In order to make use of this patch, you'll need to have downloaded <code>Asar v1.90</code> or newer. Older versions of Asar won't work, as the patch was designed specifically around newer Asar features for an improved user experience. As for the patch itself, the very first thing you’ll want to do is to take the entire <code>vwf_dialogues</code> folder and copy it over to your hack’s local <code>patches</code> directory so that you can make modifications to it as needed. If you only want to see the patch in action, without configuring anything or adding custom text, you may go ahead and patch <code>vwf_dialogues.asm</code> to your ROM right now. Otherwise, keep reading.
 			</p>
 
 			<p>
-				The patch is structured in a way where all data that is meant to be editable by end users is stored inside the <code>data</code> subdirectory.
-				The most important file here is called <code>vwfconfig.cfg</code> and it contains all the major settings for the patch. Open it up in a text editor
-				of your choice to edit them. Pay special attention to all the comments in this file, as they explain what most of the options do. This manual
-				will only explain some of the more important ones.
+				The patch is structured in a way where all data that is meant to be editable by end users is stored inside the <code>data</code> subdirectory. The most important file here is called <code>vwfconfig.cfg</code> and it contains all the major settings for the patch. Open it up in a text editor of your choice to edit them. Pay special attention to all the comments in this file, as they explain what most of the options do. This manual will only explain some of the more important ones.
 			</p>
 			
 			<p>
-				The first options you will find are <code>!vwf_var_ram</code>, <code>!vwf_backup_ram</code> and <code>!vwf_gfx_ram</code> as well as
-				<code>!vwf_var_ram_sa1</code>, <code>!vwf_backup_ram_sa1</code>, <code>!vwf_gfx_ram_sa1</code> and <code>!vwf_palette_backup_ram_sa1</code>
-				respectively. The first section of variables is used only in non-SA-1 ROMs, with the second one only being used in SA-1 ROMs.
-				These defines configure which areas of RAM VWF Dialogues will use as their working memory. As an average user, you most likely won't ever
-				have to edit any of these. The default settings should work out of the box. Advanced users, who might need more control over their RAM,
-				can make use of them, going by the comments on each define as a rough guide on what they need and how they're being used.
+				The first options you will find are <code>!vwf_var_ram</code>, <code>!vwf_backup_ram</code> and <code>!vwf_gfx_ram</code> as well as <code>!vwf_var_ram_sa1</code>, <code>!vwf_backup_ram_sa1</code>, <code>!vwf_gfx_ram_sa1</code> and <code>!vwf_palette_backup_ram_sa1</code> respectively. The first section of variables is used only in non-SA-1 ROMs, with the second one only being used in SA-1 ROMs. These defines configure which areas of RAM VWF Dialogues will use as their working memory. As an average user, you most likely won't ever have to edit any of these. The default settings should work out of the box. Advanced users, who might need more control over their RAM, can make use of them, going by the comments on each define as a rough guide on what they need and how they're being used.
 			</p>
 			
 			<p>
-				The only thing worth noting is that without further modifications, a non-SA-1 SMW ROM doesn't provide the amount of free RAM VWF Dialogues need.
-				For this reason, the patch uses SRAM as working memory by default. All of the non-SA-1 address defines mentioned above have their default values
-				pointing to areas in SRAM. The patch automatically applies a SRAM expansion patch to make sure enough SRAM is available. This behavior is controlled
-				via the <code>!vwf_patch_sram_expansion</code> setting. Advanced users can set it to <code>false</code> to disable SRAM expansion, but
-				will have to use additional patches that provide alternative areas of free RAM. SA-1 ROMs are unaffected by all this, as the SA-1 chip contains
-				its own large area of RAM, which in the case of SMW is more than enough for this patch to work with.
+				The only thing worth noting is that without further modifications, a non-SA-1 SMW ROM doesn't provide the amount of free RAM VWF Dialogues need. For this reason, the patch uses SRAM as working memory by default. All of the non-SA-1 address defines mentioned above have their default values pointing to areas in SRAM. The patch automatically applies a SRAM expansion patch to make sure enough SRAM is available. This behavior is controlled via the <code>!vwf_patch_sram_expansion</code> setting. Advanced users can set it to <code>false</code> to disable SRAM expansion, but will have to use additional patches that provide alternative areas of free RAM. SA-1 ROMs are unaffected by all this, as the SA-1 chip contains its own large area of RAM, which in the case of SMW is more than enough for this patch to work with.
 			</p>
 			
 			<p>
 				Now for (occasionally not so) quick explanations on some of the more important settings in the <code>Patch Settings</code> section:
 				<ul>
-					<li><code>!vwf_bit_mode</code>: Setting it to <code>VWF_BitMode.8Bit</code> will make the patch operate in 8-bit mode, whereas
-						setting it to <code>VWF_BitMode.16Bit</code> will make it operate in 16-bit mode. In 16-bit mode, every text character and
-						ever text box command use two bytes instead of one, meaning higher free space consumption in the ROM. In this mode, any
-						commands that affect the active font are ignored. Instead, the high byte of each character controls which font to use
-						for that particular character. This mode was originally intended for complex languages like Japanese, but in practice, I don't
-						know if it was ever actively used, and its increased free space requirements might not make it worth using. Therefore, you
-						should consider this option deprecated. It will only remain in the patch until someone can come up with a better solution
-						for these languages.</li>
-					<li><code>!vwf_hijack_message_box</code>: When set to <code>true</code>, the patch hijacks SMW's original message boxes so
-						that activating one will display a VWF Dialogue instead. Here's a few quick examples of how SMW message IDs map onto
-						VWF message IDs (more on message IDs later):
+					<li><code>!vwf_bit_mode</code>: Setting it to <code>VWF_BitMode.8Bit</code> will make the patch operate in 8-bit mode, whereas setting it to <code>VWF_BitMode.16Bit</code> will make it operate in 16-bit mode. In 16-bit mode, every text character and ever text box command use two bytes instead of one, meaning higher free space consumption in the ROM. In this mode, any commands that affect the active font are ignored. Instead, the high byte of each character controls which font to use for that particular character. This mode was originally intended for complex languages like Japanese, but in practice, I don't know if it was ever actively used, and its increased free space requirements might not make it worth using. Therefore, you should consider this option deprecated. It will only remain in the patch until someone can come up with a better solution for these languages.</li>
+					<li><code>!vwf_hijack_message_box</code>: When set to <code>true</code>, the patch hijacks SMW's original message boxes so that activating one will display a VWF Dialogue instead. Here's a few quick examples of how SMW message IDs map onto VWF message IDs (more on message IDs later):
 						<table>
 							<tr>
 								<th>SMW Message ID</th>
@@ -408,36 +371,24 @@
 								<td>00BF</td>
 							</tr>
 						</table>
-						When set to <code>false</code>, SMW message boxes and VWF Dialogues can coexist within the same ROM. In this case, you need VWF Dialogue compatible
-						custom sprites or custom blocks in order to use them. One example of those would be wye's NPC sprites.
+						When set to <code>false</code>, SMW message boxes and VWF Dialogues can coexist within the same ROM. In this case, you need VWF Dialogue compatible custom sprites or custom blocks in order to use them. One example of those would be wye's NPC sprites.
 						</li>
-					<li><code>!vwf_enable_short_aliases</code>: When set to <code>true</code>, the patch defines a number of short aliases for most text commands. For example, you
-						may use <code>!str("Hello!")</code> or <code>!text("Hello!")</code> instead of <code>%vwf_text("Hello!")</code>, <code>!font($01)</code> instead of <code>%vwf_font($01)</code> or
-						<code>!press_a</code> instead of <code>%vwf_wait_for_a()</code>. These short aliases are intended for convenience and to make VWF Dialogues easier to read in code.
-						It's very unlikely that you'll ever need to set this to <code>false</code>. The only conceivable scenario would be when you include <code>vwf_dialogues.asm</code> from within another patch via an <code>incsrc</code>. In that case, disabling this feature might make sense to reduce the likelihood of naming conflicts occuring. Further details on available short aliases
-						will be provided along with the documentation of each text command.</li>
+					<li><code>!vwf_enable_short_aliases</code>: When set to <code>true</code>, the patch defines a number of short aliases for most text commands. For example, you may use <code>!str("Hello!")</code> or <code>!text("Hello!")</code> instead of <code>%vwf_text("Hello!")</code>, <code>!font($01)</code> instead of <code>%vwf_font($01)</code> or <code>!press_a</code> instead of <code>%vwf_wait_for_a()</code>. These short aliases are intended for convenience and to make VWF Dialogues easier to read in code. It's very unlikely that you'll ever need to set this to <code>false</code>. The only conceivable scenario would be when you include <code>vwf_dialogues.asm</code> from within another patch via an <code>incsrc</code>. In that case, disabling this feature might make sense to reduce the likelihood of naming conflicts occuring. Further details on available short aliases will be provided along with the documentation of each text command.</li>
 				</ul>
 			</p>
 			
 			<p>
-				Settings in the <code>Default Settings</code> sections define the default values/behaviors of various patch functions.
-				I won't explain them in detail here, because most are either self-explanatory or will become apparent once the respective
-				functions they relate to are explained.
+				Settings in the <code>Default Settings</code> sections define the default values/behaviors of various patch functions. I won't explain them in detail here, because most are either self-explanatory or will become apparent once the respective functions they relate to are explained.
 			</p>
 			
 			<p>
-				The <code>Data Includes</code> section becomes relevant once you want to add new assets to the patch. That is: New fonts, new message files, new text box frames etc.
-				New fonts and messages files are added within the <code>vwf_define_data()</code> macro, whereas the <code>vwf_define_frames()</code> macro lets you specify the properties
-				of your text box frames (currently just the palettes). Once again, these settings should become more apparent when their respective functionality is explained.
+				The <code>Data Includes</code> section becomes relevant once you want to add new assets to the patch. That is: New fonts, new message files, new text box frames etc. New fonts and messages files are added within the <code>vwf_define_data()</code> macro, whereas the <code>vwf_define_frames()</code> macro lets you specify the properties of your text box frames (currently just the palettes). Once again, these settings should become more apparent when their respective functionality is explained.
 			</p>
 
 			<p>
-				This covers all of the patch's basic setup. More advanced functionality will be explained in detail later on.
-				Once you're done configuring <code>vwfconfig.cfg</code>, you may go ahead and use Asar to patch <code>vwf_dialogues.asm</code>
-				to your ROM. If everything was set up correctly, Asar's output should look roughly like this:
+				This covers all of the patch's basic setup. More advanced functionality will be explained in detail later on. Once you're done configuring <code>vwfconfig.cfg</code>, you may go ahead and use Asar to patch <code>vwf_dialogues.asm</code> to your ROM. If everything was set up correctly, Asar's output should look roughly like this:
 				<img class="d-block m-1 my-2" src="screenshots/console-1.png" alt="Screenshot" width="1115" height="875" />
-				If that’s what you get, then the patch was applied successfully. Most of these outputs are just for debugging purposes.
-				You can safely ignore them, unless you're modifying the patch itself or coding some advanced feature that makes use of it.
+				If that’s what you get, then the patch was applied successfully. Most of these outputs are just for debugging purposes. You can safely ignore them, unless you're modifying the patch itself or coding some advanced feature that makes use of it.
 			</p>
 			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
 		</section>
@@ -540,11 +491,7 @@ endmacro
 
 			<h4 id="resources-fonts" class="text-center">Fonts</h4>
 			<p>
-				Font are the most complex type of resource supported by the patch. It already comes pre-packaged with four of them ready to use (one with support for Japanese text).
-				If you do want to make your own fonts, there's three different types of resource files you need to know about: A .bin file containing character glyph graphics, an .asm file
-				containing the widths of each character, and a second .asm file containing character-to-glyph mappings. You can find all the pre-packaged fonts in <code>data/fonts</code>.
-				Each folder here contains a <code>vwffont.bin</code> containing the graphics and a <code>vwffont.asm</code> containing the character widths. The only exception is the terra_j font,
-				which contains multiple .bin files, because there isn't enough space in a single font to contain the entire Japanese character set. For all pre-packaged fonts, <code>data/fonts/vwftable.asm</code> can be used as the character-to-glyph mapping file. Here's a list of things to be aware of when working with fonts:
+				Font are the most complex type of resource supported by the patch. It already comes pre-packaged with four of them ready to use (one with support for Japanese text). If you do want to make your own fonts, there's three different types of resource files you need to know about: A .bin file containing character glyph graphics, an .asm file containing the widths of each character, and a second .asm file containing character-to-glyph mappings. You can find all the pre-packaged fonts in <code>data/fonts</code>. Each folder here contains a <code>vwffont.bin</code> containing the graphics and a <code>vwffont.asm</code> containing the character widths. The only exception is the terra_j font, which contains multiple .bin files, because there isn't enough space in a single font to contain the entire Japanese character set. For all pre-packaged fonts, <code>data/fonts/vwftable.asm</code> can be used as the character-to-glyph mapping file. Here's a list of things to be aware of when working with fonts:
 				<ul>
 					<li>To edit the glyph graphics of a font, open the respective .bin file in YY-CHR, set the graphics format to <code>2BPP GB</code> and also set the pattern to <code>FC/NES x16</code>. After tweaking the palettes a little, you should se something like this:
 					<img class="d-block m-1 my-2" src="screenshots/yychr-3.png" alt="Screenshot" width="634" height="481"/></li>
@@ -657,7 +604,7 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 
 	%vwf_header(x_pos(10), y_pos(10), width(5), height(1), text_alignment(TextAlignment.Centered))
 	
-	!text("What's up, Mario? Hope you have a nice day!")
+	!str("What's up, Mario? Hope you have a nice day!")
 
 %vwf_message_end()</code></pre>
 			</p>
@@ -2223,98 +2170,23 @@ AddressSize = VWF_AddressSize</code></pre></td>
 				<pre><code>lda.b #MessageNumber
 ldx.b #MessageNumber>>8
 jsl VWF_DisplayAMessage</code></pre>
-			
-				So now to actually use my patch and display some text on the screen.
-				Remember this window from applying the patch to your ROM?
-				<img class="d-block m-1 my-2" src="screenshots/console-1.png" alt="Screenshot" width="979" height="512" />
-				This is the first time it actually plays a role. Now if you’re not familiar with ASM at all or don’t
-				plan on using this patch in your own patches, custom sprites or custom blocks then this won’t be
-				very interesting for you. For everyone else here is the general procedure of how to start a dialogue
-				ingame using this patch:
-				<ol>
-					<li>
-						Write the number of the message to display to the Message register. This is a 2-Byte address.
-						So let’s say you’d want to display message <code>$002D</code>.
-						Using the example from the screenshot this would go somewhat like this:
-						<pre><code>rep #$20		; Set A to be 16-bit.
-lda.w #$002D		;\ Message number to load.
-sta.l $702001		;/
-sep #$20		; Set A to be 8-bit.</code></pre>
-					</li>
-					<li>
-						Write <code>$01</code> to the VWF State register. One thing is very important here: Before you do this
-						you’ll have to check if a dialogue is already being processed. Why? Well, if you don’t this might
-						lead to unexpected results, like Layer 3 glitiching up for example. If the VWF State register equals
-						<code>$00</code> then no dialogue is being processed. This leads to the following code:
-						<pre><code>lda.l $702000		;\ Is a VWF Message being displayed?
-bne .SkipDialogue	;/ If so, branch.
-lda #$01		;\ Otherwise, initialize the new VWF Message.
-sta.l $702000		;/
-.SkipDialogue</code></pre>
-					</li>
-				</ol>
-				<ul>
-					<li>
-						Alternatively, the patch contains a routine that will do most of the above for you in addition to forcing
-						the previous message to close. All you need to do is load the message number. To call this routine, do the
-						following, using the above screenshot and previous example as an example.
-						<pre><code>rep #$20		; Set A to be 16-bit.
-lda.w #$002D		; Message number to load.
-jsl.l $90F079		; Address of the "DisplayAMessage" routine.
-sep #$20		; Set A to be 8-bit.</code></pre>
-					</li>
-				</ul>
-			</p>
-
-			<p>
-				Whenever a dialogue is currently active, the Status Bar and the level’s Layer 3 are hidden. They’ll
-				return at the end of the dialogue. I still recommend not using dialogues in Layer 3 levels.
-				Alright. Let’s move on. By now you’re probably wondering what that number we have written to the
-				Message register corresponds to. Well, open the file <code>vwfmessagepointers.asm</code> and find out.
-				You’ll see something like this:
-				<pre><code><table class="border-0" style="line-height:19px;"><tbody><tr><td>dl Message0000,	</td><td>Message0001,	</td><td>Message0002,	</td><td>Message0003</td></tr>
-<tr><td>dl Message0004,	</td><td>Message0005,	</td><td>Message0006,	</td><td>Message0007</td></tr>
-<tr><td>dl Message0008,	</td><td>Message0009,	</td><td>Message000A,	</td><td>Message000B</td></tr>
-<tr><td>dl Message000C,	</td><td>Message000D,	</td><td>Message000E,	</td><td>Message000F</td></tr>
-<tr><td>dl Message0010,	</td><td>Message0011,	</td><td>Message0012,	</td><td>Message0013</td></tr>
-</tbody></table>[...]</code></pre>
-				This is the table that points to the text for each dialogue. By now you should know how tables work:
-				A "dl" at the beginning, a space after that and a bunch of labels seperated by commas. In this case the
-				table works like this: If the Message register is $0000, use the first address in this table. If the
-				Message register is $0001, use the second address in this table. Etc.
-			</p>
-
-			<p>
-				As you can see I’ve always used the required value of the Message register as the name of the according
-				label. This is not required, but it’s recommended for orientation. Basically you can put any
-				24-Bit-Address here, even RAM addresses, which can be useful if you’re using this in your own patches. Let’s
-				have a table with a few valid examples:
-				<pre><code><table class="border-0" style="line-height:19px;"><tbody><tr><td>dl Message0000,	</td><td>$7F0000,	</td><td>Message0002,	</td><td>Message0003</td></tr>
-<tr><td>dl $05A5D9,	</td><td>Message0005,	</td><td>Message0006,	</td><td>Randomname1</td></tr>
-<tr><td>dl Message0008,	</td><td>Message0009,	</td><td>Message000A,	</td><td>Randomname2</td></tr>
-<tr><td>dl $268000,	</td><td>Message000D,	</td><td>Message000E,	</td><td>Message000F</td></tr>
-<tr><td>dl MessageABCD,	</td><td>Message0011,	</td><td>Message0012,	</td><td>Message0000</td></tr></tbody></table>[...]</code></pre>
-				By default there are labels for 256 messages in this table. In theory you can use up to 10922 different
-				messages with this patch, but since SNES ROMs are rather limited in file space it’s unlikely you’ll ever get
-				to use that many, especially since my patch doesn’t compress text in any way. It’s not very likely that you’ll
-				ever get to have that many messages in your game, anyways. If 256 messages aren’t enough for you, simply add
-				more labels at the end of this file. It’s as simple as that. By now you might be wondering "OK OK, but where
-				the hell do I put the text now?". Let’s head to the next point and clear this question.
-			</p>
-
-			<p>
-				Open <code>vwfmessages.asm</code>. As you can see labels for each label in the table are already in here.
-				Most of them are ununsed and can be used by yourself. If you chose to replace SMW’s original messages
-				by this patch in section 2 then the comments at the end of each label also tell you which original
-				message the according labels are replacing. <code>Message0009:</code> replaces SMW’s original message 004-2 for
-				example. To edit a dialogue simply put text under the according label. To add new ones simply paste
-				them at the end of the file, but ABOVE <code>%textend()</code>. This is important to prevent glitches.
-				After we’re done with this we can finally get to actually write messages. YAY!
 			</p>
 			
 			<h3 id="message-asm" class="text-center">MessageASM</h3>
-
 			<p>
+				MessageASM is a new powerful way of using the VWF Dialogues Patch, introduced in version 1.3. It allows you to add code routines that are called every frame as long as a specific dialog is open. Think of it as UberASM, but tied to message numbers instead of level numbers. Enabling MessageASM is as simple as setting the <a href="#header-settings-vwf_enable_message_asm"><code>vwf_enable_message_asm</code></a> setting to <code>true</code> and adding a routine called <code>MessageASMXXXX</code> to the code, where <code>XXXX</code> must be the ID of the message for which MessageASM was enabled. This routine can go into <code>vwfmessages.asm</code> if desired, but never directly inside a message body. It also must end in an <code>rtl</code>. Here's a simple example:
+				<pre><code>%vwf_message_start(0050)	; Message 104-1
+
+	%vwf_header(enable_message_asm(true), freeze_game(false))
+	
+	!str("Something is happening right now!")
+	
+%vwf_message_end()
+
+MessageASM0050:
+	inc remap_ram($19)
+	rtl</code></pre>
+			
 				Starting with V1.3, this patch enables you to run custom code on a per message basis, like how UberASM allows you to have
 				custom code run on a per level/submap/gamemode/etc. basis. MessageASM code is run every frame once the current VWF mode is
 				02 or more and can be used to do things that the <code>$F1</code> command cannot do. It also allows you to tie message
@@ -2772,7 +2644,7 @@ db "Insert any valid text/commands here",$E7</code></pre>
 			<h2 id="history" class="text-center">9. History</h2>
 
 			<dl>
-			<dt><h5>Version 1.3 - <span data-date="2022-01-07">01/07/2022</span></h5></dt>
+			<dt><h5>Version 1.3 - <span data-date="2023-07-07">07/07/2023</span></h5></dt>
 				<dd><p>
 					<h6>Contributors:</h6>
 					<ul>

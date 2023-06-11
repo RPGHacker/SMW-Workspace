@@ -1455,15 +1455,15 @@ Message0040_ChangeTextPtr:
 	!str("However, this text box is visible only to players who DID skip!") : !press_a : !clear
 
 .Continue
-	!str("Return to the overworld now? (Select ") : !char('"') : !str("No") : !char('"') : !str(" for more tests)")
+	!str("Teleport to Chocolate Island 2?") : !new_line
+	!str("(Select ") : !char('"') : !str("No") : !char('"') : !str(" for more tests)")
 
 	!options(ReturnToOW,
 		!str("Yes"),
 		!str("No"))
 	
-	!opt_loc(ReturnToOW, 0)
-		!execute(.ReturnToOW)
-		!close
+	!opt_loc(ReturnToOW, 0)		
+		!execute(.EndLevelAndTeleportToChocolateIsland2)
 	
 	!opt_loc(ReturnToOW, 1)
 
@@ -1525,8 +1525,23 @@ Message0040_ChangeTextPtr:
 ..NotSkipped
 	rtl
 	
-.ReturnToOW
-	jsl VWF_CloseMessageAndGoToOverworld
+.EndLevelAndTeleportToChocolateIsland2
+    lda #$00
+    sta remap_ram($1F11)
+    
+    rep #$20
+    lda #$0158
+    sta remap_ram($1F17)
+    lsr #4
+    sta remap_ram($1F1F)
+
+    lda #$01B8
+    sta remap_ram($1F19)
+    lsr #4
+    sta remap_ram($1F21)
+    sep #$20
+	
+	jsl VWF_CloseMessageAndGoToOverworld_StartPlusSelect
 	rtl
 
 ;-------------------------------------------------------
@@ -1583,14 +1598,76 @@ MessageASM0044:
 	; Message header & text go here
 
 %vwf_message_end()
+	rtl
 
 ;-------------------------------------------------------
 
 %vwf_message_start(0049)	; Message 024-2
 
-	; Message header & text go here
+	; Chocolate Island 2 message box
+	; We use this level because it has a normal exit & secret exit and also a text box right at the start of the level
+
+	%vwf_header(height(6))
+	
+	!str("Return to the overworld now?")
+		
+	!options(ReturnToOWExitSelect,
+		!str("Normal Exit"),
+		!str("Secret Exit"),
+		!str("Start + Select"),
+		!str("Return to Yoshi's House"),
+		!str("Cancel"))
+	
+	!opt_loc(ReturnToOWExitSelect, 0)
+		!execute(.ReturnToOW_NormalExit)
+		!close
+	
+	!opt_loc(ReturnToOWExitSelect, 1)
+		!execute(.ReturnToOW_SecretExit)
+		!close
+	
+	!opt_loc(ReturnToOWExitSelect, 2)
+		!execute(.ReturnToOW_StartPlusSelect)
+		!close
+		
+	!opt_loc(ReturnToOWExitSelect, 3)
+		!execute(.EndLevelAndTeleportToYoshisHouse)
+		!close
+		
+	!opt_loc(ReturnToOWExitSelect, 4)
 
 %vwf_message_end()
+	
+.ReturnToOW_NormalExit
+	jsl VWF_CloseMessageAndGoToOverworld_NormalExit
+	rtl
+	
+.ReturnToOW_SecretExit
+	jsl VWF_CloseMessageAndGoToOverworld_SecretExit
+	rtl
+	
+.ReturnToOW_StartPlusSelect
+	jsl VWF_CloseMessageAndGoToOverworld_StartPlusSelect
+	rtl
+	
+.EndLevelAndTeleportToYoshisHouse
+    lda #$01
+    sta remap_ram($1F11)
+    
+    rep #$20
+    lda #$0068
+    sta remap_ram($1F17)
+    lsr #4
+    sta remap_ram($1F1F)
+
+    lda #$0078
+    sta remap_ram($1F19)
+    lsr #4
+    sta remap_ram($1F21)
+    sep #$20
+	
+	jsl VWF_CloseMessageAndGoToOverworld_StartPlusSelect
+	rtl
 
 ;-------------------------------------------------------
 

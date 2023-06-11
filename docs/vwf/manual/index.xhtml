@@ -2174,7 +2174,7 @@ jsl VWF_DisplayAMessage</code></pre>
 			
 			<h3 id="message-asm" class="text-center">MessageASM</h3>
 			<p>
-				MessageASM is a new powerful way of using the VWF Dialogues Patch, introduced in version 1.3. It allows you to add code routines that are called every frame as long as a specific dialog is open. Think of it as UberASM, but tied to message numbers instead of level numbers. Enabling MessageASM is as simple as setting the <a href="#header-settings-vwf_enable_message_asm"><code>vwf_enable_message_asm</code></a> setting to <code>true</code> and adding a routine called <code>MessageASMXXXX</code> to the code, where <code>XXXX</code> must be the ID of the message for which MessageASM was enabled. This routine can go into <code>vwfmessages.asm</code> if desired, but never directly inside a message body. It also must end in an <code>rtl</code>. Here's a simple example:
+				MessageASM is an optional feature that allows you to to add code routines to messages. These routines are called every frame as long as a text box with that specific message is open. Think of it as UberASM, but tied to message numbers instead of level numbers. Enabling MessageASM is as simple as setting the <a href="#header-settings-vwf_enable_message_asm"><code>vwf_enable_message_asm</code></a> setting to <code>true</code> and adding a routine called <code>MessageASMXXXX</code> to the code, where <code>XXXX</code> must be the ID of the message for which MessageASM was enabled. This routine can go into your <code>vwfmessages.asm</code> file if desired, but never directly inside a message body. It also must end in an <code>rtl</code>. Here's a simple example:
 				<pre><code>%vwf_message_start(0050)	; Message 104-1
 
 	%vwf_header(enable_message_asm(true), freeze_game(false))
@@ -2186,40 +2186,67 @@ jsl VWF_DisplayAMessage</code></pre>
 MessageASM0050:
 	inc remap_ram($19)
 	rtl</code></pre>
-			
-				Starting with V1.3, this patch enables you to run custom code on a per message basis, like how UberASM allows you to have
-				custom code run on a per level/submap/gamemode/etc. basis. MessageASM code is run every frame once the current VWF mode is
-				02 or more and can be used to do things that the <code>$F1</code> command cannot do. It also allows you to tie message
-				specific code to this patch instead of through UberASM code or some other outside resource. MessageASM can be used to do things
-				like create custom menus, display character portraits, auto-display the name of whoever is speaking at the start of each text box,
-				run scripts that move/animate sprites, etc.
+				Since MessageASM can run any code, there's almost no limits for what can be done with it. You can even use it to mess with the patch directly, either by calling <a href="#shared-routines">shared routines</a> or by accessing a number of useful defines (some of which are detailed below). To list a few examples of what can be achieved, using MessageASM smartly allows you to create custom menus, display character portraits, automatically display a speaker's name at the start of a text box, or move/animate sprites.
 
-			</p><p>
+			</p>
+			
+			<p>
 				<h6>Some useful VWF RAM addresses to use with your MessageASM code:</h6>
 
 				</p><p>
-				<code>!skipmessageflag</code> = Is set to 00 when a message has been skipped with the Start button. Is a non-zero value otherwise.
+				<code>!vwf_message_was_skipped</code> = Is set to a non-zero value when a message has been skipped with the Start button. Otherwise it's zero.
 
 				</p><p>
-				<code>!initialskipmessageflag</code> = Is non-zero if the current message is allowed to be skipped.
+				<code>!vwf_skip_message_flag</code> = Is non-zero if the current message is allowed to be skipped.
 
 				</p><p>
-				<code>!l3priorityflag</code> = Contains a backup of the layer 3 priority bit before the text box was displayed. Modify this to affect layer 3 once the text box disappears.
+				<code>!vwf_l3_priority_flag</code> = Contains a backup of the layer 3 priority bit before the text box was displayed. Modify this to affect layer 3 once the text box disappears.
 
 				</p><p>
-				<code>!l3transparencyflag</code> = Contains a backup of the layer 3 color math settings before the text box was displayed. Modify this to affect layer 3 once the text box disappears.
+				<code>!vwf_l3_transparency_flag</code> = Contains a backup of the layer 3 color math settings before the text box was displayed. Modify this to affect layer 3 once the text box disappears.
 
 				</p><p>
-				<code>!l3mainscreenflag</code> = Contains a backup of the layer 3 mainscreen setting before the text box was displayed. Modify this to affect layer 3 once the text box disappears.
+				<code>!vwf_l3_main_screen_flag</code> = Contains a backup of the layer 3 mainscreen setting before the text box was displayed. Modify this to affect layer 3 once the text box disappears.
 
 				</p><p>
-				<code>!l3subscreenflag</code> = Contains a backup of the layer 3 subscreen setting before the text box was displayed. Modify this to affect layer 3 once the text box disappears.
+				<code>!vwf_l3_sub_screen_flag</code> = Contains a backup of the layer 3 subscreen setting before the text box was displayed. Modify this to affect layer 3 once the text box disappears.
 
 				</p><p>
-				<code>!isnotatstartoftext</code> = Is set to 00 when a text box is cleared, 01 when text parsing begins. Use this to initialize code related to individual text boxes.
+				<code>!vwf_at_start_of_text</code> = Is set to 01 when a text box is cleared, 00 when text parsing begins. Use this to initialize code related to individual text boxes.
 			</p>
 
 			<h3 id="shared-routines" class="text-center">Shared Routines</h3>
+			<p>
+				Shared routines are a mechanism for writing routines that can be used by both the VWF Dialogues Patch itself, as well as any other resources that want to work with it. The simplest example here would be a routine for displaying a text box, which the patch itself needs for its message box hijack, but which other resources (like an NPC sprite) might also want to call. Currently, the patch uses its own, somewhat ugly implementation for handling shared routines. To do this, it writes a mapping table of routine names and locations into the ROM. A shared .asm file, which reads this table back in, then needs to be included in other resources. Unfortunately, there's a few caveats with this, so the hope is that a future version of Asar can provide built-in support for shared routines directly and thus remove many of them. Anyways, here's a brief explanation on how to utilize them.
+			</p>
+			
+			<p>
+				First of all, to use shared routines in other resources, you need to copy the file <code>code/external/vwfsharedroutines.asm</code> next to them and then <code>incsrc</code> it. However, since that file reads the locations of routines from ROM, this requires the VWF Dialogues Patch to always be patched to it before the other resources. If you plan to release a resource accessing a shared routine, it's a good idea to mention this fact in your readme. As an additional safety measure, your resources can check for the existence of specific defines, which indicate that a shared routine has been found. Here is a simple example. It demonstrates how to display text boxes from custom code (probably 99% of use cases for shared routines):
+				
+				<pre><code>incsrc "vwfsharedroutines.asm"
+				
+if defined("vwf_shared_routine_VWF_DisplayAMessage_exists")
+	lda.b #MessageNumber
+	ldx.b #MessageNumber>>8
+	jsl VWF_DisplayAMessage
+else
+	; If VWF Dialogues Patch support is optional in your resource,
+	; you can leave out this error entirely and do something else here.
+	error "VWF_DisplayAMessage shared routine wasn't found - please patch VWF Dialogues Patch to this ROM first."
+endif</code></pre>
+			</p>
+			
+			<p>
+				If any shared routines were found by the other resource, it will print out some information on them automatically, thanks to the <code>vwfsharedroutines.asm</code> include. This makes it easier for end users to see when a resource has been inserted correctly.
+			</p>
+			
+			<p>
+				To write your own shared routines, or get an overview over all the available ones, open the file <code>vwfroutines.asm</code>. Each call to the <code>%vwf_register_shared_routine()</code> macro here defines one shared routine, with the argument to the macro being the name of the routine. You can <code>jsl</code> to that name either from directly within VWF Dialogues Patch or from your own resources to call the respective routine. The comments above each routine document what they do and how to use them. To add a new routine, simply define it by adding another call to the <code>%vwf_register_shared_routine()</code> macro at the end of <code>vwfroutines.asm</code>, ending in an <code>rtl</code>. However, there's a few pitfalls you need to be aware of:
+				<ul>
+					<li>To prevent shared routines from moving around whenever message data is edited (which would constantly break dependent resources), they are patched into a static freespace area. Asar prevents static freespaces from moving to another location when reapplying a patch. However, one downside of this is that static freespaces are prohibited to grow in size, which can be a problem when you're adding new routines. The patch tries to account for this by adding a bit of padding between each shared routine (note the <code>skip</code> calls in <code>vwfroutines.asm</code>). You can remove some of this padding to try to fit your own routines into the existing freespace area. However, if your routine gets too large to fit, your only option is to reapply all your resources to a clean ROM.</li>
+					<li>If you do manage to squeeze your new routine into the existing freespace area, there's a high chance that some shared routines will have moved around. Because of this, whenever you add or edit shared routines, it's advised to always reinsert all resources that depend on VWF Dialogues Patch. Otherwise you might see crashes whenever a shared routine is called.</li>
+				</ul>
+			</p>
 
 			<p>
 				This file, added in V1.3, is meant to contain custom code related to VWF messages such as MessageASM code. By

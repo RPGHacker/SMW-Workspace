@@ -413,24 +413,24 @@ skip 16
 
 
 ; These three routines let you warp to the overworld and trigger an event (if desired).
-; Call directly with the $F1 command.
+; Call directly with the %vwf_execute_subroutine() command.
 ; Note that if you're using Lunar Magic 3.00+, then you can set a secondary entrance to exit to the overworld.
-; In that case, use the $EF command and set it to the appropriate secondary entrance.
-%vwf_register_shared_routine(VWF_CloseMessageAndGoToOverworld)
-.NormalExit
+; In that case, use the %vwf_setup_teleport() command and set it to the appropriate secondary entrance.
+%vwf_register_shared_routine(VWF_CloseMessageAndGoToOverworld_NormalExit)
 	lda #$01
 	tay
-	bra +
-
-.SecretExit
+	bra VWF_CloseMessageAndGoToOverworld_End
+	
+%vwf_register_shared_routine(VWF_CloseMessageAndGoToOverworld_SecretExit)
 	lda #$02
 	ldy #$01
-	bra +
+	bra VWF_CloseMessageAndGoToOverworld_End
 
-.StartPlusSelect
+%vwf_register_shared_routine(VWF_CloseMessageAndGoToOverworld_StartPlusSelect)
 	lda #$80
 	ldy #$00
-+
+
+VWF_CloseMessageAndGoToOverworld_End:
 	sta remap_ram($0DD5)
 	sty remap_ram($13CE)
 	inc remap_ram($1DE9)

@@ -190,6 +190,11 @@ class Patch(Action):
 		for define in self.defines:
 			command_line.append('-D{define}'.format(define=define))
 			
+		asar_ver_as_number: float = float(args.options.asar_ver)
+		
+		if asar_ver_as_number >= 2.0:
+			command_line.append('--full-error-stack')
+			
 		command_line.append('--symbols=wla')
 			
 		command_line.append('--symbols-path={path}'.format(path=os.path.normpath(patch_symbols_path)))

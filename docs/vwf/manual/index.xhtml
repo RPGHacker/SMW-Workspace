@@ -233,17 +233,7 @@
 					<li><a href="#advanced-functionality">Advanced Functionality</a><ul>
 						<li><a href="#display-messages">Display Messages From Custom Code</a></li>
 						<li><a href="#message-asm">MessageASM</a></li>
-						<details>
-							<summary><a href="#shared-routines">Shared Routines</a></summary><ul>
-							<li><a href="#vwfcode-displayamessage">DisplayAMessage</a></li>
-							<li><a href="#vwfcode-changevwftextptr">ChangeVWFTextPtr</a></li>
-							<li><a href="#vwfcode-changemessageasmptr">ChangeMessageASMPtr</a></li>
-							<li><a href="#vwfcode-changemessageskipptr">ChangeMessageSkipPtr</a></li>
-							<li><a href="#vwfcode-checkifmessagewasskipped">CheckIfMessageWasSkipped</a></li>
-							<li><a href="#vwfcode-buffervwftext">BufferVWFText</a></li>
-							<li><a href="#vwfcode-togglemessageasmptr">ToggleMessageASMPtr</a></li>
-							<li><a href="#vwfcode-closemessageandgotooverworld">CloseMessageAndGoToOverworld</a></li>
-						</ul></details>
+						<li><a href="#shared-routines">Shared Routines</a></li>
 					</ul></li>
 					<li><a href="#problem-solving">Problem Solving</a></li>
 					<li><a href="#bugs">Known Bugs</a></li>
@@ -2237,7 +2227,8 @@ endif</code></pre>
 			</p>
 			
 			<p>
-				If any shared routines were found by the other resource, it will print out some information on them automatically, thanks to the <code>vwfsharedroutines.asm</code> include. This makes it easier for end users to see when a resource has been inserted correctly.
+				If any shared routines were found by the other resource, it will print out some information on them automatically, thanks to the <code>vwfsharedroutines.asm</code> include. This makes it easier for end users to see when a resource has been inserted correctly. The addresses here should match the addresses printed by the VWF Dialogues Patch itself. Here's an example of what it might look like:
+				<img class="d-block m-1 my-2" src="screenshots/console-3.png" alt="Screenshot" width="1115" height="419" />
 			</p>
 			
 			<p>
@@ -2247,208 +2238,7 @@ endif</code></pre>
 					<li>If you do manage to squeeze your new routine into the existing freespace area, there's a high chance that some shared routines will have moved around. Because of this, whenever you add or edit shared routines, it's advised to always reinsert all resources that depend on VWF Dialogues Patch. Otherwise you might see crashes whenever a shared routine is called.</li>
 				</ul>
 			</p>
-
-			<p>
-				This file, added in V1.3, is meant to contain custom code related to VWF messages such as MessageASM code. By
-				default, this file contains various routines that give your messages extra functionality. Here is what these
-				routines do:
-			</p>
-				<dt id="vwfcode-displayamessage"><code>DisplayAMessage</code></dt>
-				<p>
-					This will cause a new VWF message to display based on whatever 16-bit value was stored in A prior to calling. If
-					a VWF message is already active, then the previous message will be forced to close to prevent glitches. This routine
-					is meant to be called from within any custom code, whether that be MessageASM, the <code>$F1</code> command code,
-					UberASM code or a custom sprite/patch/block/etc.
-				</p><p>
-					<h6>Entry code:</h6>
-					<pre><code>REP #$20
-LDA.w #MessageNumber
-JSL DisplayAMessage</code></pre>
-				</p>
-				<dt id="vwfcode-changevwftextptr"><code>ChangeVWFTextPtr</code></dt>
-				<p>
-					This lets you change the VWF text pointer to change the text that will be displayed next frame. Call this routine from
-					within MessageASM or <code>$F1</code> command code.
-				</p><p>
-					<h6>Entry code:</h6>
-					<pre><code>LDA.b #TextPointer
-LDX.b #TextPointer>>8
-LDY.b #TextPointer>>16
-JML ChangeVWFTextPtr</code></pre>
-
-					... where "TextPointer" is any label above valid text data.
-				</p>
-
-				<dt id="vwfcode-changemessageasmptr"><code>ChangeMessageASMPtr</code></dt>
-				<p>
-					This lets you change the MessageASM pointer to change what code will run next frame. Call this routine from
-					within MessageASM or <code>$F1</code> command code.
-				</p><p>
-					<h6>Entry code:</h6>
-					<pre><code>LDA.b #ASMPointer
-LDX.b #ASMPointer>>8
-LDY.b #ASMPointer>>16
-JML ChangeMessageASMPtr</code></pre>
-
-					... where "ASMPointer" is any label above valid code.
-				</p>
-
-				<dt id="vwfcode-changemessageskipptr"><code>ChangeMessageSkipPtr</code></dt>
-				<p>
-					This lets you change the Message skip pointer to change where the text box should jump when start is pressed. Call this routine from
-					within MessageASM or <code>$F1</code> command code.
-				</p><p>
-					<h6>Entry code:</h6>
-					<pre><code>LDA.b #TextPointer
-LDX.b #TextPointer>>8
-LDY.b #TextPointer>>16
-JML ChangeMessageSkipPtr</code></pre>
-
-					... where "TextPointer" is any label above valid text data.
-				</p>
-
-				<dt id="vwfcode-checkifmessagewasskipped"><code>CheckIfMessageWasSkipped</code></dt>
-				<p>
-					This allows you to detect if the player has pressed start to skip a message. This can allow you to reset <code>!skipmessageflag</code>
-					to a non-zero value if you want a message to have multiple skip functions in the same message. Note that this check only works if a message
-					was initially set to allow message skipping. If you want to toggle whether this routine works or not, store 00 to <code>!initialskipmessageflag</code>
-					to disable and any non-zero value to enable. Call this routine from within MessageASM code.
-				</p><p>
-					<h6>Entry code:</h6>
-					<pre><code>JSL CheckIfMessageWasSkipped
-BCS .MessageWasSkipped
-.MessageWasNotSkipped</code></pre>
-
-					... where "TextPointer" is any label above valid text data.
-				</p>
-
-				<dt id="vwfcode-buffervwftext"><code>BufferVWFText</code></dt>
-				<p>
-					This routine allows you to buffer a string of text/commands to RAM, allowing for easier and more flexible variable text display.
-					Buffered strings must end with a <code>$E7</code> command to signify the end of a string. Buffered text can be displayed using text macros
-					0000-000F or by setting <code>$03</code> to a non-zero value before calling this routine to hijack the current text pointer. If you do
-					the latter, the buffered text will get a <code>$FB</code> command automatically added to the end of it, so that the text pointer will
-					know where to jump back to. You should only call this routine from within MessageASM code, and only when at the start of an empty text box.
-					Otherwise, you run the risk of issues with word wrapping and/or centered text. In addition, if you call this routine consecuatively, be sure
-					to call <code>BufferVWFText_Main</code> first, then call <code>BufferVWFText_Entry2</code> for each subsequent call.
-				</p><p>
-					<h6>Entry code 1:</h6>
-					<pre><code>;(Some code that sets X to a multiple of 2)
-REP #$30
-STZ $03
-LDY.w #.StringTable>>16
-LDA.l .StringTable,x
-JML BufferVWFText_Main</code>
-
-<h6>Entry code 2:</h6>
-<code>;(Some code that sets X to a multiple of 2)
-REP #$30
-SEC
-ROL $03
-LDA.w #TextPointer
-STA $04
-LDA.w #TextPointer>>8
-STA $05
-LDY.w #.StringTable>>16
-LDA.l .StringTable,x
-JML BufferVWFText_Main
-
-.StringTable
-dw .String1,.String2,.String3 ...
-
-.String1
-db "Insert any valid text/commands here",$E7</code></pre>
-
-					... where "TextPointer" is any label above valid text data.
-
-				</p><p>
-					Warning: If used in MessageASM code, be careful with when you call this routine and hijack the text pointer. If text parsing is delayed
-					in some way and you call this routine multiple times, then your message could end up in an infinite loop!
-				</p>
-
-				<dt id="vwfcode-togglemessageasmptr"><code>ToggleMessageASMPtr</code></dt>
-				<p>
-					This allows you to toggle whether the current MessageASM routine should run. Call this routine within MessageASM code,
-					<code>$F1</code> command code or directly with the <code>$F1</code> command.
-				</p><p>
-					<h6>Entry code:</h6>
-					<pre><code>JSL ToggleMessageASMPtr_XXXX</code></pre>
-
-					... where "XXXX" is either "Enable" or "Disable".
-				</p>
-
-				<dt id="vwfcode-closemessageandgotooverworld"><code>CloseMessageAndGoToOverworld</code></dt>
-				<p>
-					This allows you to make the current message close and fade out to the overworld. Call this routine within MessageASM code,
-					<code>$F1</code> command code or directly with the <code>$F1</code> command.
-				</p><p>
-					<h6>Entry code:</h6>
-					<pre><code>JSL CloseMessageAndGoToOverworld_XXXX</code></pre>
-
-					... where "XXXX" is either "NormalExit" or "SecretExit" or "StartPlusSelect" depending on what exit level behavior you want.
-				</p><p>
-					Note: If using Lunar Magic 3.00, then you can simply use the $EF command to teleport to the overworld via a secondary entrance.
-				</p>
-
-			<h3 class="text-center">Custom Patches</h3>
-
-			<p>
-				Everything left now is to explain how to use the functions of this patch in your own patches.
-				For this we need the screenshot from Asar once again.
-				<img class="d-block m-1 my-2" src="screenshots/console-1.png" alt="Screenshot" width="979" height="512" />
-			</p>
-
-			<dl>
-				<dt>VWF Creation Routine</dt>
-				<dd><p>
-					This routine creates VWF text graphics in RAM when JSLed to. You use SMW’s Scratch RAM to
-					set it up.
-					<table class="kv-map"><tbody>
-						<tr><th><code>$00</code>-<code>$02</code></th><td>Text source address.</td></tr>
-						<tr><th><code>$03</code>-<code>$05</code></th><td>Font graphics address (2BPP GB format).</td></tr>
-						<tr><th><code>$06</code>-<code>$08</code></th><td>Font width table address.</td></tr>
-						<tr><th><code>$09</code>-<code>$0B</code></th><td>Destination address.</td></tr>
-						<tr><th><code>$0C</code>-<code>$0D</code></th><td>Number of characters.</td></tr>
-						<tr><th><code>$0E</code></th><td>Pixel to start on.</td></tr>
-						<tr><th><code>$0F</code></th><td>Set to $01 if the destination address doesn’t contain VWF text graphics yet.</td></tr>
-					</tbody></table>
-					Note that the special characters explained before are not actually used by this routine.
-				</p></dd>
-				<dt>Pattern Addition Routine</dt>
-				<dd><p>
-					This routine adds a background pattern to VWF text previously created in RAM when
-					JSLed to. This assumes that the text only uses the third and fourth colors of the palette
-					and that the background pattern graphic only uses the second color. Otherwise the result
-					may not turn out as expected. You use SMW’s Scratch RAM to set it up.
-					<table class="kv-map"><tbody>
-						<tr><th><code>$00</code>-<code>$02</code></th><td>Pattern graphic source address (2BPP GB format).</td></tr>
-						<tr><th><code>$03</code>-<code>$05</code></th><td>VWF text graphics address = destination address (2BPP GB format).</td></tr>
-						<tr><th><code>$06</code></th><td>Number of tiles.</td></tr>
-					</tbody></table>
-				</p></dd>
-				<dt>BG GFX register</dt>
-				<dd><p>
-					Which graphic to use for the background pattern of the text box.
-				</p></dd>
-				<dt>BG Color register</dt>
-				<dd><p>
-					Which color to use for the background of the text box in SNES RGB. This is a 2-Byte address.
-				</p></dd>
-				<dt>Frame GFX register</dt>
-				<dd><p>
-					Which set of graphics to use for the text box frame.
-				</p></dd>
-				<dt>Abort Dialogue Processing register</dt>
-				<dd><p>
-					Flag used to force the VWF message to close.
-				</p></dd>
-				<dt>DisplayAMessage routine</dt>
-				<dd><p>
-					This routine allows you to display a new VWF Message and force the current message to close
-					if one is already displaying. Before JSLing to this routine, use <code>REP #$20</code> to set A
-					to be 16-bit, then load the 16-bit message number you want into A.
-				</p></dd>
-			</dl>
+			
 			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
 		</section>
 
@@ -2458,44 +2248,42 @@ db "Insert any valid text/commands here",$E7</code></pre>
 			<h2 id="problem-solving" class="text-center">5. Problem Solving</h2>
 			
 			<p>
-				TODO: Note on Asar full stack option.
+				This section lists some tips that can help you improve the patch's performance or deal with problems that you might run into while using it. It's a good idea to check it out whenever you're stuck with something.
 			</p>
 			
+			<h4 class="text-center">Better Error Messages</h4>
 			<p>
-				In this section I’ll go over a few problems that may or may not be more complicated than most of the
-				other stuff here so far.
+				Ever since version 1.3, the VWF Dialogues Patch is operated entirely via macros, functions and defines. The intention of this is primarily to improve usability of the patch, by giving end users readable command names instead of magic hex numbers and by having the patch validate command arguments where possible. However, this also has some drawbacks, which come mainly in the relatively unhelpful way that Asar displays error messages. Whenever Asar throws an error, it only prints the bottom-most and top-most entries of the call stack that led to it. In the case of an incorrect argument passed to a text command macro, an error will be generated inside the macro, so that's the location Asar will display. See the example below:
+				
+				<img class="d-block m-1 my-2" src="screenshots/console-4.png" alt="Screenshot" width="1115" height="172" />
+				
+				As you can imagine, this is pretty unhelpful to users of the patch. You will only know what kind of error occurred, but not where. To understand that, you'd need access to a larger part of the error call stack. Thankfully, Asar versions 2.0+ (unreleased as of the writing of this manual) provide a method to get just that. By passing the <code>--full-error-stack</code> command line option to Asar when applying the patch, it will display full call stacks whenever an error or warning occurs. Here is what that looks like in practice:
+				
+				<img class="d-block m-1 my-2" src="screenshots/console-5.png" alt="Screenshot" width="1115" height="286" />
+				
+				As you can see, with this option enabled, Asar still displays the error to you first, but then gives you a full error call stack that shows you where exactly in <code>vwfmessages.asm</code> the offending call can be found (in the case of the screenshot above, line <code>100</code>). If Asar version 2.0 or higher are available to you, it's recommended to always operate the patch with this option enabled.
 			</p>
 			
 			<h4 class="text-center">Migration</h4>
 			<p>
-				When I originally started refactoring this patch to make use of Asar 1.90 variadic macros, backwards-compatibility
-				with older patch versions was still one of my main goals. I wanted to make it easy for all version 1.2 (or earlier) users of the patch
-				to migrate to version 1.3. Over time, as I kept adding more and more improvements to 1.3, this goal kept moving further and further out of reach.
+				When I originally started refactoring this patch to make use of Asar 1.90 variadic macros, backwards-compatibility with older patch versions was still one of my main goals. I wanted to make it easy for all version 1.2 (or earlier) users of the patch to migrate to version 1.3. Over time, as I kept adding more and more improvements to 1.3, this goal kept moving further and further out of reach.
 			</p>
 			
 			<p>
-				Technically speaking, version 1.3 is binary-compatible with messages from version 1.2, but it just includes so many changes to its general format
-				that writing a straight-forward migration guide became too complex of a task for me. Therefore, I made the decision to declare version 1.3
-				as incompatible with version 1.2.
+				Technically speaking, version 1.3 is binary-compatible with messages from version 1.2, but it just includes so many changes to its general format that writing a straight-forward migration guide became too complex of a task for me. Therefore, I made the decision to declare version 1.3 as incompatible with version 1.2.
 			</p>
 			
 			<p>
-				So what does this mean for you? Well, if you're making a new hack from scratch or working on a hack that has never used VWF Dialogues before, it doesn't really matter.
-				Just use the newest version of the patch that's available. However, if you're working on a hack that's already using an older version of VWF Dialogues, you now basically have
-				two options. Either you stick with the old patch version (and whatever bugs it might have), or you manually port over everything from the old to the new version, which basically
-				involves recreating all your message boxes and resources in the format of the new version.
+				So what does this mean for you? Well, if you're making a new hack from scratch or working on a hack that has never used VWF Dialogues before, it doesn't really matter. Just use the newest version of the patch that's available. However, if you're working on a hack that's already using an older version of VWF Dialogues, you now basically have two options. Either you stick with the old patch version (and whatever bugs it might have), or you manually port over everything from the old to the new version, which basically involves recreating all your message boxes and resources in the format of the new version.
 			</p>
 			
 			<p>
-				As I said, there's unfortunately no easy way of migrating to newer patch versions. However, on the positive side, version 1.3 of the patch was designed in a way that makes it a lot easier
-				to extend in the future without breaking compatibility, so once you go through the effort of migrating, you'll hopefully never have to do it again to that degree for newer versions.
+				As I said, there's unfortunately no easy way of migrating to newer patch versions. However, on the positive side, version 1.3 of the patch was designed in a way that makes it a lot easier to extend in the future without breaking compatibility, so once you go through the effort of migrating, you'll hopefully never have to do it again to that degree for newer versions.
 			</p>
 
 			<h4 class="text-center">Dialogues Without Freezing Sprites</h4>
 			<p>
-				So you’re planning to use a dialogue in your game without freezing sprites? Dialogues like that can
-				be found in various RPGs as system messages. First of all there are certain things you have to note
-				when using this option:
+				So you’re planning to use a dialogue in your game without freezing sprites? Dialogues like that can be found in various RPGs as system messages. First of all there are certain things you have to note when using this option:
 			</p>
 			<ul>
 				<li>
@@ -2503,41 +2291,36 @@ db "Insert any valid text/commands here",$E7</code></pre>
 				</li>
 			</ul>
 			<p>
-				Well, if you plan to use this feature anyways you may notice that it can be pretty slow in certain
-				situations, so here are a few tips to help you speed it up:
+				Well, if you plan to use this feature anyways you may notice that it can be pretty slow in certain situations, so here are a few tips to help you speed it up:
 			</p>
 			<ul>
 				<li>
 					Use the SA-1 Enhancement Chip.
-					<a tabindex="0" role="button" data-toggle="collapse" data-target="#video-sa1" aria-expanded="false" aria-controls="video-sa1">Case in point.</a>
-					<div id="video-sa1" class="collapse mt-3">
-						<iframe class="video" style="height:640px;" src="https://www.youtube.com/embed/hGmuaMoVO9I?rel=0&amp;start=71" allow="autoplay; encrypted-media" allowfullscreen="true"></iframe>
+					<a tabindex="0" role="button" data-toggle="collapse" data-target="#videosa1" aria-expanded="false" aria-controls="videosa1">Case in point.</a>
+					
+					<div class="col-12 col-md-6 mt-3">
+						<div id="videosa1" class="collapse nobefore">
+							<iframe class="video" src="https://www.youtube.com/embed/hGmuaMoVO9I?rel=0&amp;start=71" allow="autoplay; encrypted-media" allowfullscreen="true"></iframe>
+						</div>
 					</div>
 				</li>
 				<li>
 					If you can’t use the SA-1 chip for whatever reason, then the following should provide a useable alternative:
 					<ul>
 						<li>
-							Use the newest version of Lunar Magic and activate the FastROM patch and FastROM addressing. This
-							speeds up the game by a whole lot. Enough to make use of this feature reasonable.
+							Use the newest version of Lunar Magic and activate the FastROM patch and FastROM addressing. This speeds up the game by a whole lot. Enough to make use of this feature reasonable.
 						</li>
 						<li>
-							Use slower text speeds. The slower the text speed, the more frames between each letter. The
-							more frames between each letter, the less the player will notice any slowdown.
+							Use slower text speeds. The slower the text speed, the more frames between each letter. The more frames between each letter, the less the player will notice any slowdown.
 						</li>
 						<li>
-							Show only small parts of text at the same time. In Secret of Mana for example system messages
-							always consisted of only one line of text. If you do it like that and put waits at the end of
-							each line, then the "lag phases" will be a lot shorter and won’t be noticed that much.
+							Show only small parts of text at the same time. In Secret of Mana for example system messages always consisted of only one line of text. If you do it like that and put waits at the end of each line, then the "lag phases" will be a lot shorter and won’t be noticed that much.
 						</li>
 						<li>
-							Avoid putting lots of sprites on the screen, especially big ones. Pretty much all of the slow downs
-							are caused by sprites. Two or three small sprites on a screen should be fine, but any
-							additional sprite will most likely slow it down.
+							Avoid putting lots of sprites on the screen, especially big ones. Pretty much all of the slow downs are caused by sprites. Two or three small sprites on a screen should be fine, but any additional sprite will most likely slow it down.
 						</li>
 						<li>
-							Use Text Box Creation Style 0 (=No Text Box). This will skip the Pattern Addition Routine and
-							therefore save a good amount of cycles.
+							Use Text Box Creation Style 0 (=No Text Box). This will skip the Pattern Addition Routine and therefore save a good amount of cycles.
 						</li>
 					</ul>
 				</li>

@@ -205,7 +205,7 @@ macro vwf_text_start(table_file)
 	
 	assert !vwf_num_fonts > 0, "Must add at least a single font before starting a text file."
 	
-	%vwf_define_invalid_message_handlers()
+	%vwf_define_invalid_message_handlers(!vwf_current_text_file_id)
 	
 	TextFile!vwf_num_text_files:
 	!vwf_num_text_files #= !vwf_num_text_files+1
@@ -227,11 +227,14 @@ macro vwf_text_end()
 	endif
 endmacro
 
-macro vwf_define_invalid_message_handlers()		
+macro vwf_define_invalid_message_handlers(text_file_id)		
 	!vwf_defining_internal_message = true
 	
+	!temp_message_id #= ((<text_file_id>+1)*10000)+1
 	
-	%vwf_message_start(10001)
+	
+	%vwf_message_start(!temp_message_id)
+	!temp_message_id #= !temp_message_id+1
 	
 	HandleUndefinedMessage!vwf_num_text_files:
 		%vwf_header(vwf_x_pos(1), vwf_y_pos(1), vwf_width(14), vwf_height(3), vwf_freeze_game(true), vwf_text_speed(0), vwf_auto_wait(VWF_AutoWait.WaitForA), vwf_enable_skipping(false), vwf_enable_message_asm(false))
@@ -242,7 +245,8 @@ macro vwf_define_invalid_message_handlers()
 	%vwf_message_end()
 	
 	
-	%vwf_message_start(10002)
+	%vwf_message_start(!temp_message_id)
+	!temp_message_id #= !temp_message_id+1
 	
 	HandleTextMacroBufferOverflow!vwf_num_text_files:
 		%vwf_header(vwf_x_pos(1), vwf_y_pos(1), vwf_width(14), vwf_height(3), vwf_freeze_game(true), vwf_text_speed(0), vwf_auto_wait(VWF_AutoWait.WaitForA), vwf_enable_skipping(false), vwf_enable_message_asm(false))
@@ -254,7 +258,8 @@ macro vwf_define_invalid_message_handlers()
 	%vwf_message_end()
 	
 	
-	%vwf_message_start(10003)
+	%vwf_message_start(!temp_message_id)
+	!temp_message_id #= !temp_message_id+1
 	
 	HandleTextMacroIdOverflow!vwf_num_text_files:
 		%vwf_header(vwf_x_pos(1), vwf_y_pos(1), vwf_width(14), vwf_height(3), vwf_freeze_game(true), vwf_text_speed(0), vwf_auto_wait(VWF_AutoWait.WaitForA), vwf_enable_skipping(false), vwf_enable_message_asm(false))
@@ -266,6 +271,7 @@ macro vwf_define_invalid_message_handlers()
 	%vwf_message_end()
 	
 	
+	undef "temp_message_id"
 	undef "vwf_defining_internal_message"	
 endmacro
 

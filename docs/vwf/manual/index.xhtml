@@ -2328,27 +2328,15 @@ endif</code></pre>
 
 			<h4 class="text-center">Bank Limits</h4>
 			<p>
-				If you make your message list long enough (around 200 messages), it is possible that you’ll get an
-				error like this:
-				<img class="d-block m-1 my-2" src="screenshots/console-2.png" alt="Screenshot" width="979" height="512" />
-				As Asar states, this is caused by crossing a bank border. More specifically, your message data has gotten too
-				long to fit inside a single bank. There is a simple solution to this problem: Just add <code>%nextbank(freedata)</code> above the last message in the file,
-				and the errors should disappear (until you add around two hundred more messages). If they don’t, keep moving the
-				<code>%nextbank(freedata)</code> up (always make sure it’s just above a message) until they do.
+				SNES ROMs are stored as banks containing <code>32768</code> bytes of memory each. For almost all practical purposes, crossing a bank border with a resource or code is a problem and leads to bugs, so Asar contains built-in checks that detect bank-crossing and throws an error whenever it happens. In the case of the VWF Dialogues Patch, the only thing that can potentially cause a bank border to be crossed are resources. Thankfully, this shouldn't be much of a problem with fonts. Since each font only supports 256 glyphs, graphics file should never go above 16384 bytes in size, and width tables will be exponentially smaller than that, so graphics file plus width table should always fit into a single bank. The <code>%vwf_add_font()</code> macro makes use of Asar's <code>freedata</code> command, which automatically puts all fonts into their own banks.
 			</p>
-
+			
 			<p>
-				Another important thing to note: It’s impossible to split the pointer table file
-				"vwfmessagepointers.asm" into multiple banks. Originally, I wanted to add bank border checking to this file,
-				but I figured that even without bank border checking, you can still get up to
-				$2AAA (that’s 10922) pointers into a single bank, and let’s be serious here: It’s rather unlikely for a single SNES game
-				to ever contain this many messages. Therefore this one limitation shouldn’t really matter.
-			</p>
-			<p>
-				Alternatively, you can attempt to optimize your text so that it takes up less space. Comment out messages you're not using
-				anymore. Rephrase your text to say the same thing in fewer characters. Convert key terms, names, frequently used phrases, etc.
-				into text macros. Optimize your MessageASM/<code>$F1</code> command code. Do whatever you can to make your text as small as possible
-				without compromising any functionality.
+				That leaves only message files. Since they grow in size with every single message or piece of text added, they have a very real chance of exceeding the bank size limit. An average hack is unlikely to ever run into this limitation, because 32768 bytes amount to a lot of text. However, if you're creating a particularly text- and story-heavy hack, you might run into this issue eventually. This is what it might look like:
+				<img class="d-block m-1 my-2" src="screenshots/console-2.png" alt="Screenshot" width="1115" height="172" />
+				Thankfully, the fix for this, too, is pretty simple. Just create a new messages file next to the existing one. Let's say <code>vwfmessages2.asm</code>. In <code>vwfconfig.cfg</code>, include this file inside the <code>vwf_define_data</code> macro, like so:
+				<pre><code>%vwf_add_messages("data/vwfmessages2.asm", "data/fonts/vwftable.asm")</code></pre>
+				And then simply start moving entire messages from your first <code>vwfmessages.asm</code> file to your second <code>vwfmessages2.asm</code> file until the error goes aways. From here on out, use <code>vwfmessages2.asm</code> whenever adding new messages. When you edit a message in <code>vwfmessages.asm</code> and the error pops up again, move that entire message over to <code>vwfmessages2.asm</code>.
 			</p>
 
 			<h4 class="text-center">Conflicts With HDMA Effects</h4>

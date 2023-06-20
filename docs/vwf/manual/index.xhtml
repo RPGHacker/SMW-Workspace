@@ -2341,11 +2341,7 @@ endif</code></pre>
 
 			<h4 class="text-center">Conflicts With HDMA Effects</h4>
 			<p>
-				This patch makes use of DMA transfers. DMA transfers share their channels with HDMA. This means
-				they will influence any HDMA effects that use the same channels. The DMA transfers in this patch all
-				use channel 0 (%00000001). If you experience problems with an HDMA effect while displaying a
-				dialogue box, just make sure not to use channel 0 for that effect. Read an HDMA tutorial for
-				further information on this subject.
+				This patch makes use of DMA transfers. DMA transfers share their channels with HDMA. This means they will influence any HDMA effects that use the same channels. In non-SA-1 ROMs, the DMA transfers use channel <code>0</code> (<code>%00000001</code>). In SA-1 ROMs, they use both channels <code>0</code> (<code>%00000001</code>) and <code>2</code> (<code>%00000100</code>). If you experience problems with an HDMA effect while displaying a dialogue box, just make sure not to use channel 0 (and in SA-1 ROMs also channel 2) for that effect. Read an HDMA tutorial for further information on this subject.
 			</p>
 
 			<h4 id="advanced-compatibility" class="text-center">Compatibility With Other Patches</h4>
@@ -2359,11 +2355,7 @@ endif</code></pre>
 				<ul>
 					<li class="font-weight-bold">Sprite Status Bar</li>
 					<dd>
-						The sprite status bar doesn’t disappear when a message box is opened,
-						but you probaably shouldn’t be using both the Sprite Status Bar and
-						the Layer 3 dialogue box in the same level anyway, since
-						the Sprite Status Bar’s purpose is to allow full usage of the Layer 3,
-						which the dialogue box completely hides while it’s shown.
+						The sprite status bar doesn’t disappear when a message box is opened, but you probaably shouldn’t be using both the Sprite Status Bar and the Layer 3 dialogue box in the same level anyway, since the Sprite Status Bar’s purpose is to allow full usage of the Layer 3, which the dialogue box completely hides while it’s shown.
 					</dd>
 				</ul>
 				The following patches are known to be incompatible:
@@ -2387,16 +2379,16 @@ endif</code></pre>
 			<h2 id="bugs" class="text-center">6. Known Bugs</h2>
 			<p>
 				<ul>
-					<li>This patch has been known to cause freespace leaks. The current cause is unknown.</li>
-					<li>Sometimes, when closing a dialogue, there’s a Flash of <code>0</code>s (FO0)
-						when using level modes where Layer 3 isn’t on the Main-Screen, or the Main-Screen
-						or Sub-Screen registers are updated in such a way that Layer 3 gets shown
-						by another patch while this patch is busy restoring Layer 3.
+					<li>This patch has been reported to cause freespace leaks in the past. The current cause is unknown and the issue couldn't be reproduced.</li>
+					<li>Sometimes, when closing a dialogue, there’s a Flash of <code>0</code>s (FO0) when using level modes where Layer 3 isn’t on the Main-Screen, or the Main-Screen or Sub-Screen registers are updated in such a way that Layer 3 gets shown by another patch while this patch is busy restoring Layer 3.
 					<br/>
-						While this may sound easy to fix by applying <a href="https://smwc.me/1468216">Blind
-						Devil’s patch</a>, it isn’t, because of the tilemap still containing the VWF Dialogues
-						transparent tile, which is <code>$00</code>, because tile <code>$FC</code> can
-						get overwritten by a characher tile in sufficiently long messages.</li>
+					While this may sound easy to fix by applying <a href="https://smwc.me/1468216">Blind Devil’s patch</a>, it isn’t, because of the tilemap still containing the VWF Dialogues transparent tile, which is <code>$00</code>, because tile <code>$FC</code> can get overwritten by a characher tile in sufficiently long messages.</li>
+					<li>The patch includes a setting <code>!vwf_sa1_use_dma_for_gfx_transfer</code>. When it's set to <code>true</code>, SA-1 ROMs use DMA transfers to copy graphics instead of MVN transfers, which might provide performance benefits. However, in newer versions of BSNES/Higan (tested in v115) this breaks and produces the following outcome:
+					<img class="d-block m-1 my-2" src="screenshots/known-bug-1.png" alt="Screenshot" width="256" height="224" /></li>
+					It's unknown whether this is a bug in BSNES/Higan, or an inaccuracy in other emulators (and thus a bug in the patch's code). The setting is set to <code>false</code> by default, so unless you change it, you shouldn't run into this bug.
+					<li>Some part of buffered text macro functionality performs MVN transfers under the hood. It was found that using it to copy data from RAM to RAM (rather than from ROM to RAM) produces unexpected results in an SA-1 ROM when running on an sd2snes, as demonstrated by the following gif:
+					<img class="d-block m-1 my-2" src="screenshots/known-bug-2.gif" alt="Screenshot" width="853" height="480" />
+					It is unknown whether this is a bug in the SA-1 emulation of sd2snes, or an inaccuracy in emulators (and thus a bug in the patch's code). In any case, the bug can be avoided entirely by never creating buffered text macros directly from data in RAM.</li>
 				</ul>
 			</p>
 			<p class="text-center my-4"><a href="#index">Return to Index</a></p>

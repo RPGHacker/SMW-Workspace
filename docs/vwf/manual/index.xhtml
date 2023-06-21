@@ -41,20 +41,16 @@
 							<a class="nav-link text-nowrap" href="#bugs">Known Bugs</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link text-nowrap" href="#plans">Planned Features</a>
+							<a class="nav-link text-nowrap" href="#contribute">Contribute, Report Bugs &amp; Request Features</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link text-nowrap" href="#bug-reports">Bug Reports</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link text-nowrap" href="#history">History</a>
+							<a class="nav-link text-nowrap" href="#history">Version History</a>
 						</li>
 					</ul>
 				</nav>
 			</div>
 		</nav>
 
-		<!-- Seperator Comment -->
 
 		<section class="jumbotron">
 			<div class="container">
@@ -235,19 +231,24 @@
 						<li><a href="#message-asm">MessageASM</a></li>
 						<li><a href="#shared-routines">Shared Routines</a></li>
 					</ul></li>
-					<li><a href="#problem-solving">Problem Solving</a></li>
+					<li><a href="#problem-solving">Problem Solving</a><ul>
+						<li><a href="#problem-solving-error-messages">Better Error Messages</a></li>
+						<li><a href="#problem-solving-migration">Migration</a></li>
+						<li><a href="#problem-solving-unfrozen-sprites">Dialogues Without Frozen Sprites</a></li>
+						<li><a href="#problem-solving-bank-limits">Bank Limits</a></li>
+						<li><a href="#problem-solving-hdma-conflicts">Conflicts With HDMA Effects</a></li>
+						<li><a href="#problem-solving-compatibility">Compatibility With Other Patches</a></li>
+					</ul></li>
 					<li><a href="#bugs">Known Bugs</a></li>
-					<li><a href="#plans">Planned Features</a></li>
-					<li><a href="#bug-reports">Bug Reports</a></li>
-					<li><a href="#history">History</a></li>
+					<li><a href="#contribute">Contribute, Report Bugs &amp; Request Features</a></li>
+					<li><a href="#history">Version History</a></li>
 				</ol>
 			</div>
 		</section>
 
-		<!-- Seperator Comment -->
 
 		<section class="container">
-			<h2 id="intro" class="text-center">1. Introduction</h2>
+			<h2 id="intro" class="text-center">Introduction</h2>
 			<p>
 				Welcome to my VWF Dialogues Patch! Since you got here by yourself, you most likely already know what this patch does, but let me give you a general overview anyways.
 			</p>
@@ -278,10 +279,9 @@
 			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
 		</section>
 
-		<!-- Seperator Comment -->
 
 		<section class="container">
-			<h2 id="start" class="text-center">2. Getting Started</h2>
+			<h2 id="start" class="text-center">Getting Started</h2>
 			<p>
 				In order to make use of this patch, you'll need to have downloaded <code>Asar v1.90</code> or newer. Older versions of Asar won't work, as the patch was designed specifically around newer Asar features for an improved user experience. As for the patch itself, the very first thing you’ll want to do is to take the entire <code>vwf_dialogues</code> folder and copy it over to your hack’s local <code>patches</code> directory so that you can make modifications to it as needed. If you only want to see the patch in action, without configuring anything or adding custom text, you may go ahead and patch <code>vwf_dialogues.asm</code> to your ROM right now. Otherwise, keep reading.
 			</p>
@@ -383,10 +383,9 @@
 			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
 		</section>
 
-		<!-- Seperator Comment -->
 
 		<section class="container">
-			<h2 id="basic-functionality" class="text-center">3. Basic Functionality</h2>
+			<h2 id="basic-functionality" class="text-center">Basic Functionality</h2>
 			<p>
 				In this section I'll explain all the functionality that is intended for average users of this patch. This includes setting up resources and writing actual message boxes.
 			</p>
@@ -2137,10 +2136,9 @@ AddressSize = VWF_AddressSize</code></pre></td>
 			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
 		</section>
 
-		<!-- Seperator Comment -->
 
 		<section class="container">
-			<h2 id="advanced-functionality" class="text-center">4. Advanced Functionality</h2>
+			<h2 id="advanced-functionality" class="text-center">Advanced Functionality</h2>
 			<p>
 				This section is intended for advanced users only. That is, people who want to write custom resources (sprites, blocks, patches etc.) that make use of the patch or who want to use the patch in some complex ways. In other words: If you aren't a coder, you can most likely just ignore this entire section.
 			</p>
@@ -2242,16 +2240,15 @@ endif</code></pre>
 			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
 		</section>
 
-		<!-- Seperator Comment -->
 
 		<section class="container">
-			<h2 id="problem-solving" class="text-center">5. Problem Solving</h2>
+			<h2 id="problem-solving" class="text-center">Problem Solving</h2>
 			
 			<p>
 				This section lists some tips that can help you improve the patch's performance or deal with problems that you might run into while using it. It's a good idea to check it out whenever you're stuck with something.
 			</p>
 			
-			<h4 class="text-center">Better Error Messages</h4>
+			<h3 id="problem-solving-error-messages" class="text-center">Better Error Messages</h3>
 			<p>
 				Ever since version 1.3, the VWF Dialogues Patch is operated entirely via macros, functions and defines. The intention of this is primarily to improve usability of the patch, by giving end users readable command names instead of magic hex numbers and by having the patch validate command arguments where possible. However, this also has some drawbacks, which come mainly in the relatively unhelpful way that Asar displays error messages. Whenever Asar throws an error, it only prints the bottom-most and top-most entries of the call stack that led to it. In the case of an incorrect argument passed to a text command macro, an error will be generated inside the macro, so that's the location Asar will display. See the example below:
 				
@@ -2264,7 +2261,7 @@ endif</code></pre>
 				As you can see, with this option enabled, Asar still displays the error to you first, but then gives you a full error call stack that shows you where exactly in <code>vwfmessages.asm</code> the offending call can be found (in the case of the screenshot above, line <code>100</code>). If Asar version 2.0 or higher are available to you, it's recommended to always operate the patch with this option enabled.
 			</p>
 			
-			<h4 class="text-center">Migration</h4>
+			<h3 id="problem-solving-migration" class="text-center">Migration</h3>
 			<p>
 				When I originally started refactoring this patch to make use of Asar 1.90 variadic macros, backwards-compatibility with older patch versions was still one of my main goals. I wanted to make it easy for all version 1.2 (or earlier) users of the patch to migrate to version 1.3. Over time, as I kept adding more and more improvements to 1.3, this goal kept moving further and further out of reach.
 			</p>
@@ -2281,9 +2278,9 @@ endif</code></pre>
 				As I said, there's unfortunately no easy way of migrating to newer patch versions. However, on the positive side, version 1.3 of the patch was designed in a way that makes it a lot easier to extend in the future without breaking compatibility, so once you go through the effort of migrating, you'll hopefully never have to do it again to that degree for newer versions.
 			</p>
 
-			<h4 class="text-center">Dialogues Without Freezing Sprites</h4>
+			<h3 id="problem-solving-unfrozen-sprites" class="text-center">Dialogues Without Frozen Sprites</h3>
 			<p>
-				So you’re planning to use a dialogue in your game without freezing sprites? Dialogues like that can be found in various RPGs as system messages. First of all there are certain things you have to note when using this option:
+				So you’re planning to use a dialogue in your game without freezing sprites? Dialogues like that can be found in various RPGs as system messages. First of all, there are certain things you have to note when using this option:
 			</p>
 			<ul>
 				<li>
@@ -2326,7 +2323,7 @@ endif</code></pre>
 				</li>
 			</ul>
 
-			<h4 class="text-center">Bank Limits</h4>
+			<h3 id="problem-solving-bank-limits" class="text-center">Bank Limits</h3>
 			<p>
 				SNES ROMs are stored as banks containing <code>32768</code> bytes of memory each. For almost all practical purposes, crossing a bank border with a resource or code is a problem and leads to bugs, so Asar contains built-in checks that detect bank-crossing and throws an error whenever it happens. In the case of the VWF Dialogues Patch, the only thing that can potentially cause a bank border to be crossed are resources. Thankfully, this shouldn't be much of a problem with fonts. Since each font only supports 256 glyphs, graphics file should never go above 16384 bytes in size, and width tables will be exponentially smaller than that, so graphics file plus width table should always fit into a single bank. The <code>%vwf_add_font()</code> macro makes use of Asar's <code>freedata</code> command, which automatically puts all fonts into their own banks.
 			</p>
@@ -2339,12 +2336,12 @@ endif</code></pre>
 				And then simply start moving entire messages from your first <code>vwfmessages.asm</code> file to your second <code>vwfmessages2.asm</code> file until the error goes aways. From here on out, use <code>vwfmessages2.asm</code> whenever adding new messages. When you edit a message in <code>vwfmessages.asm</code> and the error pops up again, move that entire message over to <code>vwfmessages2.asm</code>.
 			</p>
 
-			<h4 class="text-center">Conflicts With HDMA Effects</h4>
+			<h3 id="problem-solving-hdma-conflicts" class="text-center">Conflicts With HDMA Effects</h3>
 			<p>
 				This patch makes use of DMA transfers. DMA transfers share their channels with HDMA. This means they will influence any HDMA effects that use the same channels. In non-SA-1 ROMs, the DMA transfers use channel <code>0</code> (<code>%00000001</code>). In SA-1 ROMs, they use both channels <code>0</code> (<code>%00000001</code>) and <code>2</code> (<code>%00000100</code>). If you experience problems with an HDMA effect while displaying a dialogue box, just make sure not to use channel 0 (and in SA-1 ROMs also channel 2) for that effect. Read an HDMA tutorial for further information on this subject.
 			</p>
 
-			<h4 id="advanced-compatibility" class="text-center">Compatibility With Other Patches</h4>
+			<h3 id="problem-solving-compatibility" class="text-center">Compatibility With Other Patches</h3>
 			<p>
 				The following patches are known to be compatible:
 				<ul class="font-weight-bold">
@@ -2373,10 +2370,9 @@ endif</code></pre>
 			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
 		</section>
 
-		<!-- Seperator Comment -->
 
 		<section class="container">
-			<h2 id="bugs" class="text-center">6. Known Bugs</h2>
+			<h2 id="bugs" class="text-center">Known Bugs</h2>
 			<p>
 				<ul>
 					<li>This patch has been reported to cause freespace leaks in the past. The current cause is unknown and the issue couldn't be reproduced.</li>
@@ -2394,44 +2390,18 @@ endif</code></pre>
 			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
 		</section>
 
-		<!-- Seperator Comment -->
 
 		<section class="container">
-			<h2 id="plans" class="text-center">7. Planned Features</h2>
+			<h2 id="contribute" class="text-center">Contribute, Report Bugs &amp; Request Features</h2>
 			<p>
-				<small class="text-center my-2 d-block">
-					LOL, I wrote this patch almost a gazillion years ago and none of this is likely
-					going to happen anymore*. Sorry to disappoint you. :(<br/><br/>
-					Sincerly, RPG Hacker<br/><br/>
-					*At least by me. Luckily, the patch is now hosted on GitHub, and a bunch of people have already picked up right where I had left off. Thanks to them, the patch keeps evolving, even to this day!<br/>
-					I'm thankful to every one of you! &lt;3
-				</small>
-				<ul>
-					<li>Create a GUI application to make setting up the patch a lot easier for the user.</li>
-					<li>Add a feature to the patch that allows the player to easily customise the text box ingame.</li>
-					<li>Add a command to jump to a certain pixel inside the text box.</li>
-					<li>Allow customising which button is used for advancing the dialogue.</li>
-					<li>Implement a better alternative for the deprecated 16-Bit mode. Something that supports all kinds of languages, while keeping the text insertion size as small as possible for every one of them.</li>
-					<li>Lots of optimizations.</li>
-				</ul>
+				Did you find a bug that wasn't listed in the <a href="#bugs">Known Bugs</a> section, or do you have a suggestion or a feature request for the patch? If so, please file an <a href="https://github.com/RPGHacker/SMW-Workspace/issues">issue</a> on GitHub! (You can also contact me on SMW Central, but filing an issue will make sure your input won't get lost). If you want to contribute to the patch yourself, you can also do so via that repository by submitting a pull request.
 			</p>
 			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
 		</section>
 
-		<!-- Seperator Comment -->
 
 		<section class="container">
-			<h2 id="bug-reports" class="text-center">8. Bug Reports</h2>
-			<p>
-				Bugs or suggestions? Contact me on SMW Central, or (preferably) file an <a href="https://github.com/RPGHacker/SMW-Workspace/issues">issue</a> on GitHub!
-			</p>
-			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
-		</section>
-
-		<!-- Seperator Comment -->
-
-		<section class="container">
-			<h2 id="history" class="text-center">9. History</h2>
+			<h2 id="history" class="text-center">Version History</h2>
 
 			<dl>
 			<dt><h5>Version 1.3 - <span data-date="2023-07-07">07/07/2023</span></h5></dt>

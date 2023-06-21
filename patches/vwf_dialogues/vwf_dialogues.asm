@@ -1,20 +1,18 @@
-@asar 1.90
+asar 1.90
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;VWF Dialogues Patch by RPG Hacker;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-incsrc vwfconfig.cfg
-incsrc ../shared/shared.asm
+incsrc data/vwfconfig.cfg
+incsrc shared/shared.asm
 
 
 print ""
-print "VWF Dialogues Patch - (c) 2010-2021 RPG Hacker"
+print "VWF Dialogues Patch - (c) 2010-2023 RPG Hacker"
 print ""
 
-
-math round off
 
 pushtable
 cleartable
@@ -26,164 +24,208 @@ namespace vwf_dialogues_
 
 
 
-;;;;;;;;
-;Labels;
-;;;;;;;;
 
+;;;;;;;;;;;;;;;;;;;;
+;Labels and Defines;
+;;;;;;;;;;;;;;;;;;;;
 
 
 ; DO NOT EDIT ANYTHING HERE, UNLESS YOU KNOW EXACTLY WHAT YOU'RE DOING!
-!palettebackupram = $7E0703
+
+
+%define_enum(VWF_BitMode, 8Bit, 16Bit)
+
+
+!vwf_palette_backup_ram = $7E0703
 
 if !use_sa1_mapping
-	!varram	= !varramSA1
-	!backupram	= !backupramSA1
-	!tileram	= !tileramSA1
-	!palettebackupram	= !palettebackupramSA1
+	!vwf_var_ram	= !vwf_var_ram_sa1
+	!vwf_backup_ram	= !vwf_backup_ram_sa1
+	!vwf_gfx_ram	= !vwf_gfx_ram_sa1
+	!vwf_palette_backup_ram	= !vwf_palette_backup_ram_sa1
 endif
 
 
-!varrampos #= 0
+!vwf_var_rampos #= 0
 
-macro claim_varram(define, size)
-	!<define> := !varram+!varrampos
-	!varrampos #= !varrampos+<size>
+macro vwf_claim_varram(define, size)
+	if defined("vwf_<define>")
+		error "%vwf_claim_varram(): \!vwf_<define> already defined."
+	endif
+	
+	!vwf_<define> := !vwf_var_ram+!vwf_var_rampos
+	!vwf_var_rampos #= !vwf_var_rampos+(<size>)
+	
+	; RPG Hacker: This assignment serves no other purpose other than to force a symbol export.
+	vwf_<define> = !vwf_<define>
 endmacro
 
 
-%claim_varram(vwfmode, 1)				; Contains the current state of the text box.
-%claim_varram(message, 2)				; The 16-bit message number to display
-%claim_varram(counter, 1)
+%vwf_claim_varram(mode, 1)          ; Contains the current state of the text box.
+%vwf_claim_varram(message, 2)       ; The 16-bit message number to display
 
-%claim_varram(width, 1)
-%claim_varram(height, 1)
-%claim_varram(xpos, 1)
-%claim_varram(ypos, 1)
-%claim_varram(boxbg, 1)
-%claim_varram(boxcolor, 6)
-%claim_varram(boxframe, 1)
-%claim_varram(boxcreate, 1)
-%claim_varram(boxpalette, 1)
-%claim_varram(freezesprites, 1)				; Flag indicating that the textbox has frozen all sprites.
-%claim_varram(beep, 1)					; The sound effect ID to play for the text beep noise.
-%claim_varram(beepbank, 2)				; The RAM address stored to by the above.
-%claim_varram(beepend, 1)				; The sound effect ID to play for the "wait for A" sound effect.
-%claim_varram(beependbank, 2)				; The RAM address stored to by the above.
-%claim_varram(beepcursor, 1)				; The sound effect ID to play when moving the cursor
-%claim_varram(beepcursorbank, 2)			; The RAM address stored to by the above.
-%claim_varram(beepchoice, 1)				; The sound effect ID to play when pressing A.
-%claim_varram(beepchoicebank, 2)			; The RAM address stored to by the above.
-%claim_varram(font, 1)
-%claim_varram(edge, 1)
-%claim_varram(space, 1)
-%claim_varram(frames, 1)
-%claim_varram(layout, 1)
-%claim_varram(soundoff, 1)				; Flag that disables all the normal textbox sounds
-%claim_varram(speedup, 1)				; Flag indicating that the current textbox can be sped up when A is held.
-%claim_varram(autowait, 1)
+%vwf_claim_varram(box_bg, 1)
+%vwf_claim_varram(box_color, 6)
+%vwf_claim_varram(box_frame, 1)
 
-%claim_varram(vrampointer, 2)
-%claim_varram(currentwidth, 1)
-%claim_varram(currentheight, 1)
-%claim_varram(currentx, 1)
-%claim_varram(currenty, 1)
+; RPG Hacker: RAM addresses defined above this point won't automatically get cleared on opening message boxes.
+!vwf_ram_clear_start_pos #= !vwf_var_rampos
 
-%claim_varram(vwftextsource, 3)				; 24-bit pointer to the current text data.
-%claim_varram(vwfbytes, 2)
-%claim_varram(vwfgfxdest, 3)
-%claim_varram(vwftilemapdest, 3)			; 24-bit pointer to the location in the tile buffer to read from when uploading the textbox tilemap.
-%claim_varram(vwfpixel, 2)
-%claim_varram(vwfmaxwidth, 1)
-%claim_varram(vwfmaxheight, 1)
-%claim_varram(vwfchar, 2)
-%claim_varram(vwfwidth, 1)
-%claim_varram(vwfroutine, 15)
-%claim_varram(vwftileram, 96)
-%claim_varram(tile, 1)
-%claim_varram(property, 1)
-%claim_varram(currentpixel, 1)
-%claim_varram(firsttile, 1)
-%claim_varram(clearbox, 1)
-%claim_varram(wait, 1)
-%claim_varram(timer, 1)
-%claim_varram(teleport, 1)				; Flag indicating whether a teleport should take place.
-%claim_varram(telepdest, 1)				; Data that gets stored to the table at $19B8 when the teleport function is active.
-%claim_varram(telepprop, 1)				; Data that gets stored to the table at $19D8 when the teleport function is active.
-%claim_varram(forcesfx, 1)
-%claim_varram(widthcarry, 1)
-%claim_varram(choices, 1)
-%claim_varram(cursor, 2)
-%claim_varram(currentchoice, 1)
-%claim_varram(choicetable, 3)
-%claim_varram(choicespace, 1)
-%claim_varram(choicewidth, 1)
-%claim_varram(cursormove, 1)
-%claim_varram(nochoicelb, 1)
-%claim_varram(cursorupload, 1)
-%claim_varram(cursorend, 1)
+%vwf_claim_varram(counter, 1)
 
-%claim_varram(paletteupload, 1)				; Flag indicating that the layer 3 palettes should be updated.
-%claim_varram(palbackup, 64)				; Backup of the layer 3 palettes.
-%claim_varram(cursorfix, 1)
-%claim_varram(cursorvram, 2)
-%claim_varram(cursorsrc, 2)
-%claim_varram(arrowvram, 2)
-%claim_varram(enddialog, 1)
+%vwf_claim_varram(width, 1)
+%vwf_claim_varram(height, 1)
+%vwf_claim_varram(x_pos, 1)
+%vwf_claim_varram(y_pos, 1)
+%vwf_claim_varram(box_create, 1)
+%vwf_claim_varram(box_palette, 1)
+%vwf_claim_varram(freeze_sprites, 1)         ; Flag indicating that the textbox has frozen all sprites.
+%vwf_claim_varram(beep, 1)                   ; The sound effect ID to play for the text beep noise.
+%vwf_claim_varram(beep_bank, 2)              ; The RAM address stored to by the above.
+%vwf_claim_varram(beep_end, 1)               ; The sound effect ID to play for the "wait for A" sound effect.
+%vwf_claim_varram(beep_end_bank, 2)          ; The RAM address stored to by the above.
+%vwf_claim_varram(beep_cursor, 1)            ; The sound effect ID to play when moving the cursor
+%vwf_claim_varram(beep_cursor_bank, 2)       ; The RAM address stored to by the above.
+%vwf_claim_varram(beep_choice, 1)            ; The sound effect ID to play when pressing A.
+%vwf_claim_varram(beep_choice_bank, 2)       ; The RAM address stored to by the above.
+%vwf_claim_varram(font, 1)
+%vwf_claim_varram(edge, 1)
+%vwf_claim_varram(space, 1)
+%vwf_claim_varram(frames, 1)
+%vwf_claim_varram(text_alignment, 1)
+%vwf_claim_varram(sound_disabled, 1)         ; Flag that disables all the normal textbox sounds
+%vwf_claim_varram(speed_up, 1)               ; Flag indicating that the current textbox can be sped up when A is held.
+%vwf_claim_varram(auto_wait, 1)
 
-%claim_varram(messageasmopcode, 1)			; Determines whether MessageASM code will run. Contains either $5C (JML) or $6B (RTL)
-%claim_varram(messageasmloc, 3)				; 24-bit pointer to the current MessageASM routine.
-%claim_varram(vwfactiveflag, 1)				; Flag indicating that a VWF Message is active. Used to tell the VWF system to close the current text box before opening the new one.
-%claim_varram(skipmessageflag, 1)			; Flag indicating that the message skip function is enabled for the current textbox.
-%claim_varram(skipmessageloc, 3)			; 24-bit pointer to the text data that will be jumped to if start is pressed and message skipping is enabled.
-%claim_varram(l3priorityflag, 1)			; Backup of the layer 3 priority bit in register $2105
-%claim_varram(l3transparencyflag, 1)			; Backup of the layer 3 color math settings from RAM address $40 (mirror of $2131) 
-%claim_varram(l3mainscreenflag, 1)			; Backup of the layer 3 main screen bit from RAM address $0D9D (mirror of $212C)
-%claim_varram(l3subscreenflag, 1)			; Backup of the layer 3 sub screen bit from RAM address $0D9E (mirror of $212D)
-%claim_varram(isnotatstartoftext, 1)			; Flag indicating that the text box has just been cleared. Intended to provide an easy way to sync up MessageASM code with the start of a new textbox.
-%claim_varram(initialskipmessageflag, 1)		; Flag indicating that the current textbox originally had the message skip function enabled. Intended to allow you to revert the state of the other skip message flag if it's been disabled.
-%claim_varram(vwfbufferdest, 3)				; 24-bit pointer to the location in the tile buffer to read from when uploading text graphics.
-%claim_varram(vwfbufferindex, 1)			; Index to the text graphics buffer determining where in the buffer to store tiles.
-%claim_varram(vwfstackindex1, 1)			; Stack pointer for the first VWF stack 
-%claim_varram(vwfstackindex2, 1)			; Stack pointer for the second VWF stack 
-%claim_varram(vwfstack1, 60)				; Used by the text macro system to store/reload text pointers.
-%claim_varram(vwfstack2, 60)				; Used by the text macro system to store/reload text pointers.
-%claim_varram(vwftbufferedtextpointerindex, 1)		; Index for the which 24-bit buffered text macro pointer should be updated.
-%claim_varram(vwftbufferedtextindex, 2)			; 16-bit index into the text buffer, used for handling where to write in the table for consecuative text buffers.
-%claim_varram(vwftbufferedtextpointers, 48)		; 24-bit pointer table for the buffered text macros.
-%claim_varram(vwftextbuffer, 512)			; Buffer dedicated for uploading VWF text to in order to display variable text.
+%vwf_claim_varram(vram_pointer, 2)
+%vwf_claim_varram(current_width, 1)
+%vwf_claim_varram(current_height, 1)
+%vwf_claim_varram(current_x, 1)
+%vwf_claim_varram(current_y, 1)
 
-!vwfbuffer_emptytile = !tileram
-!vwfbuffer_bgtile = !tileram+$10
-!vwfbuffer_frame = !tileram+$20
-!vwfbuffer_letters = !tileram+$20
-!vwfbuffer_choicebackup = !tileram+$0420
-!vwfbuffer_cursor = !tileram+$042C
-!vwfbuffer_textboxtilemap = !tileram+$048C
-;!vwfbuffer_choicebackup = !tileram+$3894
-;!vwfbuffer_cursor = !tileram+$38A0
-;!vwfbuffer_textboxtilemap = !tileram+$3900
+%vwf_claim_varram(text_source, 3)            ; 24-bit pointer to the current text data.
+%vwf_claim_varram(num_bytes, 2)
+%vwf_claim_varram(gfx_dest, 3)
+%vwf_claim_varram(tilemap_dest, 3)           ; 24-bit pointer to the location in the tile buffer to read from when uploading the textbox tilemap.
+%vwf_claim_varram(max_width, 1)
+%vwf_claim_varram(max_height, 1)
+%vwf_claim_varram(char, 2)
+%vwf_claim_varram(char_offset, 2)
+%vwf_claim_varram(char_width, 1)
+%vwf_claim_varram(routine, 15)
+%vwf_claim_varram(tile_ram, 96)
+%vwf_claim_varram(tile, 1)
+%vwf_claim_varram(property, 1)
+%vwf_claim_varram(current_pixel, 1)
+%vwf_claim_varram(first_tile, 1)
+%vwf_claim_varram(clear_box, 1)
+%vwf_claim_varram(wait, 1)
+%vwf_claim_varram(timer, 1)
+%vwf_claim_varram(teleport, 1)               ; Flag indicating whether a teleport should take place.
+%vwf_claim_varram(teleport_dest, 1)          ; Data that gets stored to the table at $19B8 when the teleport function is active.
+%vwf_claim_varram(teleport_prop, 1)          ; Data that gets stored to the table at $19D8 when the teleport function is active.
+%vwf_claim_varram(force_sfx, 1)
+%vwf_claim_varram(width_carry, 1)
+%vwf_claim_varram(choices, 1)
+%vwf_claim_varram(cursor, 2)
+%vwf_claim_varram(current_choice, 1)
+%vwf_claim_varram(choice_table, 3)
+%vwf_claim_varram(choice_space, 1)
+%vwf_claim_varram(choice_width, 1)
+%vwf_claim_varram(cursor_move, 1)
+%vwf_claim_varram(no_choice_lb, 1)
+%vwf_claim_varram(cursor_upload, 1)
+%vwf_claim_varram(cursor_end, 1)
 
-!rambank	= select(!use_sa1_mapping,$40,$7E)
+%vwf_claim_varram(palette_upload, 1)         ; Flag indicating that the layer 3 palettes should be updated.
+%vwf_claim_varram(palette_backup, 64)        ; Backup of the layer 3 palettes.
+%vwf_claim_varram(cursor_fix, 1)
+%vwf_claim_varram(cursor_vram, 2)
+%vwf_claim_varram(cursor_source, 2)
+%vwf_claim_varram(arrow_vram, 2)
+%vwf_claim_varram(end_dialog, 1)
+%vwf_claim_varram(swap_message_id, 2)
+%vwf_claim_varram(swap_message_settings, 1)
 
-!8	= 0
-!16	= 1
-!false	= 0
-!true	= 1
+%vwf_claim_varram(message_asm_opcode, 1)        ; Determines whether MessageASM code will run. Contains either $5C (JML) or $6B (RTL)
+%vwf_claim_varram(message_asm_loc, 3)           ; 24-bit pointer to the current MessageASM routine.
+%vwf_claim_varram(active_flag, 1)               ; Flag indicating that a VWF Message is active. Used to tell the VWF system to close the current text box before opening the new one.
+%vwf_claim_varram(skip_message_flag, 1)         ; Flag indicating that the message skip function is enabled for the current textbox.
+%vwf_claim_varram(skip_message_loc, 3)          ; 24-bit pointer to the text data that will be jumped to if start is pressed and message skipping is enabled.
+%vwf_claim_varram(l3_priority_flag, 1)          ; Backup of the layer 3 priority bit in register $2105
+%vwf_claim_varram(l3_transparency_flag, 1)      ; Backup of the layer 3 color math settings from RAM address $40 (mirror of $2131) 
+%vwf_claim_varram(l3_main_screen_flag, 1)       ; Backup of the layer 3 main screen bit from RAM address $0D9D (mirror of $212C)
+%vwf_claim_varram(l3_sub_screen_flag, 1)        ; Backup of the layer 3 sub screen bit from RAM address $0D9E (mirror of $212D)
+%vwf_claim_varram(at_start_of_text, 1)   		; Flag indicating that the text box has not been cleared yet. Intended to provide an easy way to sync up MessageASM code with the start of a new textbox.
+%vwf_claim_varram(message_was_skipped, 1)       ; Flag indicating whether the message was skipped by the player pressing Start
+%vwf_claim_varram(buffer_dest, 3)               ; 24-bit pointer to the location in the tile buffer to read from when uploading text graphics.
+%vwf_claim_varram(buffer_index, 1)              ; Index to the text graphics buffer determining where in the buffer to store tiles.
 
-!8bit	= "if !bitmode	== !8 :"
-!16bit	= "if !bitmode	== !16 :"
+; RPG Hacker: Make sure both of these stacks have the same size. Stack 1 will be copied into stack 2 at run-time.
+!vwf_text_macro_stack_size = 60
+%vwf_claim_varram(tm_stack_index_1, 1)                       ; Defines a stack of text pointers for the text macro system (to support nested macros)
+%vwf_claim_varram(tm_stack_1, !vwf_text_macro_stack_size)    ; 
+%vwf_claim_varram(tm_stack_index_2, 1)                       ; Same as above, but for the WordWidth function.
+%vwf_claim_varram(tm_stack_2, !vwf_text_macro_stack_size)    ;
+
+%vwf_claim_varram(tm_buffers_text_pointer_index, 1)          ; Index for the which 24-bit buffered text macro pointer should be updated.
+%vwf_claim_varram(tm_buffers_text_index, 2)                  ; 16-bit index into the text buffer, used for handling where to write in the table for consecuative text buffers.
+%vwf_claim_varram(tm_buffers_text_pointers, !vwf_num_reserved_text_macros*3)    ; 24-bit pointer table for the buffered text macros.
+%vwf_claim_varram(tm_buffers_text_buffer, !vwf_buffered_text_macro_buffer_size) ; Buffer dedicated for uploading VWF text to in order to display variable text.
+
+!vwf_buffer_empty_tile = !vwf_gfx_ram
+!vwf_buffer_bg_tile = !vwf_gfx_ram+$10
+!vwf_buffer_frame = !vwf_gfx_ram+$20
+!vwf_buffer_letters = !vwf_gfx_ram+$20
+!vwf_buffer_choice_backup = !vwf_gfx_ram+$0420
+!vwf_buffer_cursor = !vwf_gfx_ram+$042C
+!vwf_buffer_text_box_tilemap = !vwf_gfx_ram+$048C		; 0x700 bytes
+
+!vwf_ram_bank = select(!use_sa1_mapping,$40,$7E)
+
+!vwf_current_message_name = ""
+!vwf_current_message_asm_name = ""
+!vwf_current_message_id = $10000
+!vwf_header_present = false
+!vwf_current_text_file_id = -1
+
+!vwf_num_messages = 0
+!vwf_highest_message_id = 0
+
+!vwf_num_text_macros = 0
+!vwf_num_text_macro_groups = 0
+
+!vwf_num_fonts = 0
+!vwf_num_text_files = 0
+
+!vwf_num_shared_routines = 0
+
+!vwf_prev_freespace = AutoFreespaceCleaner
 
 if !use_sa1_mapping
-	!dma_channel_nmi = 2
-	!dma_channel_non_nmi = 0
+	!vwf_dma_channel_nmi = 2
+	!vwf_dma_channel_non_nmi = 0
 else
 	; RPG Hacker: I don't know if this distinction is actually necessary, but I don't even want to risk breaking compatibility.
-	!dma_channel_nmi = 0
-	!dma_channel_non_nmi = 0
+	!vwf_dma_channel_nmi = 0
+	!vwf_dma_channel_non_nmi = 0
 endif
 
-!cpu_snes = 0
-!cpu_sa1 = 1
+!vwf_cpu_snes = 0
+!vwf_cpu_sa1 = 1
+
+; RPG Hacker: IMPORTANT: Adjust this define when adding any new commands to the patch!
+!vwf_lowest_reserved_hex = $FFE7
+
+
+
+incsrc vwfmacros.asm
+
+
+
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	warn "16-bit mode is deprecated and might be removed in the future."
+endif
 
 
 
@@ -193,117 +235,29 @@ endif
 ;Macros;
 ;;;;;;;;
 
-; A simple macro to prepare VRAM operations
-
-macro vramprepare(vramsettings, vramaddress, readword, readbyte)
-	lda <vramsettings>
-	sta $2115
-	rep #$20
-	lda <vramaddress>
-	sta $2116
-	<readword>	; "lda $2139" for word VRAM reads
-	sep #$20
-	<readbyte>	; "lda $2139/$213A" for byte VRAM reads
-endmacro
 
 
+; A macro for MVN transfers.
 
-; RPG Hacker: This org is currently necessary, otherwise the struct above produces incorrect addresses??
-org $008000
-
-; DMA register helper
-struct DMA_Regs $4300
-    .Control: skip 1		; $43x0
-    .Destination: skip 1	; $43x1
-    .Source_Address:		; $43x2 - $43x4
-		.Source_Address_Word:
-			.Source_Address_Low: skip 1
-			.Source_Address_High: skip 1
-		.Source_Address_Bank: skip 1
-    .Size:					; $43x5 - $43x7
-		.Size_Word:
-			.Size_Low: skip 1
-			.Size_High: skip 1
-		skip 1	; $43x7 used by HDMA only
-endstruct align $10
-
-
-
-; Helpers for defining DMA source address
-function dma_source_indirect(address) = $01000000|(address&$FFFFFF)
-function dma_source_indirect_word(address, bank) = ((bank&$FF)<<24)|(address&$FFFFFF)
-
-!dma_write_once = #$01
-!dma_write_twice = #$02
-!dma_read_once = #$81
-!dma_read_twice = #$82
-
-; A simple Macro for DMA transfers
-macro dmatransfer(channel, dmasettings, destination, source, bytes)
-	assert <channel> >= 0 && <channel> <= 7,"%dmatransfer() channel parameter must be a value between 0 and 7. Current: <channel>"
-	
-	assert <destination> >= $2100 && <destination> <= $21FF, "Invalid destination passed to %dmatransfer(): <destination>. Must be a PPU register between $2100 and $21FF."
-	
-	!source_resolved #= <source>
-	!dma_source_address_mode #= ((!source_resolved>>24)&$FF)
-	
-	!source_without_header #= !source_resolved&$FFFFFF
-	
-	if !dma_source_address_mode == 0
-		!dma_source_low = "lda.b #!source_without_header"
-		!dma_source_high = "lda.b #!source_without_header>>8"
-		!dma_source_bank = "lda.b #!source_without_header>>16"
-	elseif !dma_source_address_mode == 1
-		!dma_source_low = "lda !source_without_header"
-		!dma_source_high = "lda !source_without_header+1"
-		!dma_source_bank = "lda !source_without_header+2"
-	else
-		!dma_source_low = "lda !source_without_header"
-		!dma_source_high = "lda !source_without_header+1"
-		!dma_source_bank = "lda.b #!dma_source_address_mode"
-	endif
-
-	lda <dmasettings>
-	sta.w DMA_Regs[<channel>].Control
-	lda.b #<destination>
-	sta.w DMA_Regs[<channel>].Destination
-	!dma_source_low
-	sta.w DMA_Regs[<channel>].Source_Address_Low
-	!dma_source_high
-	sta.w DMA_Regs[<channel>].Source_Address_High
-	!dma_source_bank
-	sta.w DMA_Regs[<channel>].Source_Address_Bank
-	rep #$20
-	lda <bytes>
-	sta.w DMA_Regs[<channel>].Size_Word
-	sep #$20
-	lda.b #(1<<<channel>)
-	sta $420B
-endmacro
-
-
-
-; A macro for MVN transfers
-
-macro mvntransfer(bytes, source, destination, current_cpu, ...)
-	!currently_on_sa1_cpu = and(equal(<current_cpu>,!cpu_sa1),!use_sa1_mapping)
+macro vwf_mvn_transfer(bytes, source, destination, current_cpu, ...)
+	!temp_currently_on_sa1_cpu = and(equal(<current_cpu>,!vwf_cpu_sa1),!use_sa1_mapping)
 
 	phb
 if sizeof(...) > 0
 	lda.b #<bytes>	; Calculate starting index
-	sta select(!currently_on_sa1_cpu,$2251,$211B)
+	sta.w select(!temp_currently_on_sa1_cpu,$2251,$211B)
 	lda.b #<bytes>>>8
-	sta select(!currently_on_sa1_cpu,$2252,$211B)
-	stz select(!currently_on_sa1_cpu,$2250,$211C)
-	lda <0>
-	sta select(!currently_on_sa1_cpu,$2253,$211C)
-	if !currently_on_sa1_cpu
+	sta.w select(!temp_currently_on_sa1_cpu,$2252,$211B)
+	stz.w select(!temp_currently_on_sa1_cpu,$2250,$211C)
+	lda <...[0]>
+	sta.w select(!temp_currently_on_sa1_cpu,$2253,$211C)
+	if !temp_currently_on_sa1_cpu
 		stz $2254
 		nop
 	endif
 	
 	rep #$31
-	lda select(!currently_on_sa1_cpu,$2306,$2134)	; Add source address
+	lda.w select(!temp_currently_on_sa1_cpu,$2306,$2134)	; Add source address
 	adc.w #<source>	; to get new source address
 	tax
 else
@@ -317,20 +271,22 @@ endif
 	
 	sep #$30
 	plb
+	
+	undef "temp_currently_on_sa1_cpu"
 endmacro
 
 
 
 
-; NEW: A macro for SA-1 DMA (ROM->BWRAM) transfer
+; A macro for SA-1 DMA (ROM->BWRAM) transfer.
 
-macro bwramtransfer(bytes, start, source, destination)
-	if !use_sa1_mapping && !sa1_use_dma_for_gfx_transfer
+macro vwf_bwram_transfer(bytes, start, source, destination)
+	if !use_sa1_mapping && !vwf_sa1_use_dma_for_gfx_transfer
 		lda #$C4
 		sta $2230
 
 		stz $2250
-		lda.b #<bytes>	; Calculate starting index
+		lda.b #<bytes>    ; Calculate starting index
 		sta $2251
 		lda.b #<bytes>>>16
 		sta $2252
@@ -339,8 +295,8 @@ macro bwramtransfer(bytes, start, source, destination)
 		stz $2254
 		nop
 		rep #$21
-		lda $2306	; Add source address
-		adc.w #<source>	; to get new source address
+		lda $2306         ; Add source address
+		adc.w #<source>   ; to get final source address.
 		sta $2232
 		ldy.b #<source>>>16
 		sty $2234
@@ -355,69 +311,83 @@ macro bwramtransfer(bytes, start, source, destination)
 		stz $2230
 		stz $018C
 	else
-		%mvntransfer(<bytes>, <source>, <destination>, !cpu_sa1, <start>)
+		%vwf_mvn_transfer(<bytes>, <source>, <destination>, !vwf_cpu_sa1, <start>)
 	endif
 endmacro
 
 
 
+; A macro that defines character mappings for just the ASCII characters that are allowed in label names.
+; Note: In Asar 1.9, just calling cleartable should do the job. But I'm not sure if that'll still work in Asar 2.0,
+; so have this slightly annoying solution instead.
 
-
-; Macros for new banks
-
-!PrevFreespace	= AutoFreespaceCleaner
-
-macro nextbank(freespace)
-	<freespace> : prot !PrevFreespace
-	!PrevFreespace += a
-	!PrevFreespace:
-endmacro
-
-
-macro binary(identifier, data)
-	<identifier>:
-	incbin <data>
-endmacro
-
-
-macro source(identifier, data)
-	<identifier>:
-	incsrc <data>
-endmacro
-
-
-
-
-
-; Macros for text files
-
-macro textstart()
-	%nextbank(freedata)
-	cleartable
-	table vwftable.txt
-endmacro
-
-macro textend()
-	!8bit db $00
-	db %00001000,%01111000,%11010001,%11000000,$01,%00100000
-	dw $7FFF,$0000
-	db %11110100
-	db %00001111,$13,$13,$23,$29
-	db %00000000
-	;dl MessageASMLoc
-	;dl .MessageSkipLoc
-
-	db "Message "
-	db $F6
-	dl !message+1
-	db $F6
-	dl !message
-	db " is invalid! Please contact the hack author to report this oversight."
-	!8bit db $FA
-	!16bit dw $FFFA
-;.MessageSkipLoc
-	!8bit db $FF
-	!16bit dw $FFFF
+macro vwf_label_name_ascii_table()
+	'0' = $30
+	'1' = $31
+	'2' = $32
+	'3' = $33
+	'4' = $34
+	'5' = $35
+	'6' = $36
+	'7' = $37
+	'8' = $38
+	'9' = $39
+	
+	'A' = $41
+	'B' = $42
+	'C' = $43
+	'D' = $44
+	'E' = $45
+	'F' = $46
+	'G' = $47
+	'H' = $48
+	'I' = $49
+	'J' = $4A
+	'K' = $4B
+	'L' = $4C
+	'M' = $4D
+	'N' = $4E
+	'O' = $4F
+	'P' = $50
+	'Q' = $51
+	'R' = $52
+	'S' = $53
+	'T' = $54
+	'U' = $55
+	'V' = $56
+	'W' = $57
+	'X' = $58
+	'Y' = $59
+	'Z' = $5A
+	
+	'_' = $5F
+	
+	'a' = $61
+	'b' = $62
+	'c' = $63
+	'd' = $64
+	'e' = $65
+	'f' = $66
+	'g' = $67
+	'h' = $68
+	'i' = $69
+	'j' = $6A
+	'k' = $6B
+	'l' = $6C
+	'm' = $6D
+	'n' = $6E
+	'o' = $6F
+	'p' = $70
+	'q' = $71
+	'r' = $72
+	's' = $73
+	't' = $74
+	'u' = $75
+	'v' = $76
+	'w' = $77
+	'x' = $78
+	'y' = $79
+	'z' = $7A
 endmacro
 
 
@@ -471,10 +441,13 @@ org remap_rom($009F6F)
 ; Hijack message box to call VWF dialogue
 org remap_rom($00A1DA)
 	jml OriginalMessageBox
+	; This code should never get executed. It's literally only here because
+	; static freespace requires an autoclean. A prot won't work.
+	autoclean jml SharedRoutines
 	nop
 
 ; SRAM expansion ($07 => 2^7 kb = 128 kb)
-if !patch_sram_expansion != !false && read1(remap_rom($00FFD8)) < $07
+if !vwf_patch_sram_expansion != false && read1(remap_rom($00FFD8)) < $07
 	org remap_rom($00FFD8)
 		db $07
 endif
@@ -486,6 +459,22 @@ endif
 ;;;;;;;;;;;;;;;;;
 ;MAIN CODE START;
 ;;;;;;;;;;;;;;;;;
+
+
+
+; RPG Hacker: We use static freespace for shared routines, so that re-applying
+; the patch won't move them around all the time. This would probably get very
+; annoying for average end users.
+freespace ram,static
+
+SharedRoutines:
+	incsrc vwfroutines.asm	
+
+; A little bit of padding after the shared routines, just in case we do need
+; to grow the free space. Routines themselves also have padding between them.
+skip 128
+
+SharedRoutinesEnd:
 
 
 freecode : prot Kleenex
@@ -500,13 +489,13 @@ FreecodeStart:
 ;RAM Initialization;
 ;;;;;;;;;;;;;;;;;;;;
 
-
 ; This section handles RAM initialization. It initializes the used
 ; RAM addresses at game startup, title screen and Game Over to
-; prevent glitches and possible crahses.
+; prevent glitches and possible crashes.
 
 InitCall:
 	jsr InitRAM	; RAM init on game start
+	jsr InitDefaults
 	lda #$03
 	sta $2101
 	jml remap_rom($008069)
@@ -515,26 +504,40 @@ InitCall:
 
 InitMode:
 	jsr InitRAM	; RAM init on Title Screen
+	jsr InitDefaults
 	ldx #$07
 	lda #$FF
 	jml remap_rom($0096B8)
 
+
+
+; RPG Hacker: This routine is for initializing values that shouldn't be reset on opening a message box.
+; Things like border or color settings, that should persist between text boxes.
+InitDefaults:
+	lda #$00
+	sta !vwf_mode
+	sta !vwf_message
+	sta !vwf_message+1
+
+	lda #!vwf_default_text_box_bg_pattern	; Set default values
+	sta !vwf_box_bg
+	lda #!vwf_default_text_box_frame
+	sta !vwf_box_frame
+
+	lda.b #!vwf_default_text_box_bg_color
+	sta !vwf_box_color
+	lda.b #!vwf_default_text_box_bg_color>>8
+	sta !vwf_box_color+1
+	rts
+	
+	
+
 InitVWFRAM:
-	lda !vwfmode					;\ Preserve these RAM addresses so they don't get wiped out when initializing the VWF RAM
-	pha						;| This routine is called in VWF mode 01 when the message is already active.
-	lda !message					;|
-	pha						;|
-	lda !message+1					;|
-	pha						;/
-	jsr InitRAM					;
-	pla						;
-	sta !message+1					;
-	pla						;
-	sta !message					;
-	pla						;
-	inc						;
-	sta !vwfmode					;
-	jmp Buffer_End					;
+	jsr InitRAM
+	lda !vwf_mode
+	inc
+	sta !vwf_mode
+	jmp Buffer_End
 
 InitRAM:
 	phx
@@ -543,31 +546,21 @@ InitRAM:
 	lda #$0000
 
 .InitVarRAM
-	sta !varram,x	; Initialize RAM
+	sta !vwf_var_ram+!vwf_ram_clear_start_pos,x	; Initialize RAM
 	inx #2
-	cpx #!varrampos	; Number of bytes
+	cpx #!vwf_var_rampos-!vwf_ram_clear_start_pos	; Number of bytes
 	bcc .InitVarRAM
 	sep #$30
-
-.SetDefaults
-	lda #!defbg	; Set default values
-	sta !boxbg
-	lda #!defframe
-	sta !boxframe
-
-	lda.b #!bgcolor
-	sta !boxcolor
-	lda.b #!bgcolor>>8
-	sta !boxcolor+1
+	
 	lda #$6B
-	sta !messageasmopcode
+	sta !vwf_message_asm_opcode
 .End
 	plx
 	rts
 
-;;;;;;;;;;;;;;;;;;;;
-;Level fade out Hijack;
-;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;
+;Level Fade Out Hijack;
+;;;;;;;;;;;;;;;;;;;;;;;
 
 MosaicGamemodeHijack:
 	jsr CheckIfVWFActive
@@ -588,22 +581,38 @@ FadeGamemodeHijack:
 CheckIfVWFActive:
 	lda remap_ram($0DAF)				;\ If the level is fading in, return
 	beq .NotActive					;/
-	lda !vwfmode					;\ If no VWF message is active, return.
+	lda !vwf_mode					;\ If no VWF message is active, return.
 	beq .NotActive					;/
 .Entry2
 	cmp #$09					;\ If not in VWF mode 09 (display text), don't increment the VWF mode here
 	bne .NotTextCreation				;/
 	inc						;\ Force the text box to close if one is already open.
-	sta !vwfmode					;/
+	sta !vwf_mode					;/
 .NotTextCreation
 	inc remap_ram($0DB1)				; Delay the fade out from happpening
 	jsr Buffer					; Run the VWF buffer code.
 .NotActive
 	rts
+	
+	
+	
+	
 
 ;;;;;;;;;;;;;;;;;;;;
 ;Message Box Hijack;
 ;;;;;;;;;;;;;;;;;;;;
+
+; RPG Hacker: This needs to go right in front of OriginalMessageBox.
+; It's the pointer to the SharedRoutines table, and Asar will search
+; backwards from OriginalMessageBox to find it.
+pushtable
+
+%vwf_label_name_ascii_table()
+
+db "VWFR"
+dl SharedRoutinesTable
+
+cleartable
 
 
 ; This hijacks SMW's original message routine to work with VWF
@@ -617,10 +626,9 @@ OriginalMessageBox:
 	lda remap_ram($1426)
 	beq .NoOriginalMessageBoxRequested
 	
-if !hijackbox == !true
-	lda #$00
-	xba
-	;lda !vwfmode	; Already displaying a message?
+if !vwf_hijack_message_box == true
+	ldx #$00
+	;lda !vwf_mode	; Already displaying a message?
 	;beq .CallDialogue
 	;stz remap_ram($1426)
 	;rtl
@@ -660,15 +668,15 @@ if !hijackbox == !true
 	dec
 .SetMessage
 	stz remap_ram($1426)
-	rep #$20
-	jsl DisplayAMessage
+	jsl VWF_DisplayAMessage
 else	
-	jml remap_rom($00A1DF)	; Run original message box and skip frame simulation
+	jsl remap_rom($05B10C)	; Run original message box
+	jml remap_rom($00A1E3)	; Skip frame simulation
 endif
 	
 .NoOriginalMessageBoxRequested
 	; New code: If our own message box is open, also don't simulate frame.
-	lda !freezesprites
+	lda !vwf_freeze_sprites
 	beq .RunGameFrame
 	
 	jml remap_rom($00A1E3)	; Skip frame simulation
@@ -689,7 +697,7 @@ endif
 
 NMIHijack:
 	stz $11
-	lda !vwfmode
+	lda !vwf_mode
 	tax
 	lda.l .NMITable,x
 	bne .SpecialNMI	; If NMITable = $00 load regular NMI
@@ -777,39 +785,39 @@ endif
 	jmp .End
 
 .NoPause
-	lda !vwfactiveflag				;\ Is another message trying to display?
+	lda !vwf_active_flag				;\ Is another message trying to display?
 	beq .NotForceClose				;/ If not, skip past this code
-	lda !vwfmode					;\ Did the currently active message finish closing?
+	lda !vwf_mode					;\ Did the currently active message finish closing?
 	beq .NotActive					;/ If so, make the new message appear
 	cmp #$09					;\ Is the previous message in VWF mode 09 (display text)?
 	bne .NotTextCreation				;/ If not, don't advance the VWF mode
 	inc						;\ Increment the VWF mode to skip past the display text mode.
-	sta !vwfmode					;/
+	sta !vwf_mode					;/
 .NotTextCreation
 	bra .NotForceClose
 
 .NotActive
 	lda #$01
-	sta !vwfmode
+	sta !vwf_mode
 	lda #$00
-	sta !vwfactiveflag
+	sta !vwf_active_flag
 	lda #$6B
-	sta !messageasmopcode
+	sta !vwf_message_asm_opcode
 	bra .End
 
 .NotForceClose
-	lda !vwfmode	; Prepare jump to routine
+	lda !vwf_mode	; Prepare jump to routine
 	beq .End
 	cmp #$01					;\ If in VWF mode 01 (initialize RAM), don't run the MessageASM code
 	beq .NoMessageASM				;/
 	phb						;\ Run whatever MessageASM routine was defined in the message header.
-	lda !messageasmopcode+3				;|
+	lda !vwf_message_asm_opcode+3				;|
 	pha						;|
 	plb						;|
-	jsl !messageasmopcode				;|
+	jsl !vwf_message_asm_opcode				;|
 	plb						;/
 .NoMessageASM
-	lda !vwfmode
+	lda !vwf_mode
 	asl
 	tax
 	jmp (.Routinetable,x)
@@ -835,33 +843,38 @@ endif
 
 
 VWFSetup:
-	lda #$00	;\ Ensure that the !enddialog flag gets properly cleared
-	sta !enddialog	;/
+	lda #$00	;\ Ensure that the !vwf_end_dialog flag gets properly cleared
+	sta !vwf_end_dialog	;/
 	jsr GetMessage
 	jsr LoadHeader
 	jmp Buffer_End
 
 LoadHeader:
-	lda !vwftextsource
+	lda !vwf_text_source
 	sta $00
-	lda !vwftextsource+1
+	lda !vwf_text_source+1
 	sta $01
-	lda !vwftextsource+2
+	lda !vwf_text_source+2
 	sta $02
-	!8bit lda #$0D
-	!16bit lda #$0C
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda #$0C
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda #$0B
+endif
 	sta $03
 	stz $04
 
 	ldy #$00
 
-	!8bit lda [$00],y	; Font
-	!8bit sta !font
-	!8bit iny
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda [$00],y	; Font
+	sta !vwf_font
+	iny
+endif
 
 	lda [$00],y	; X position
 	lsr #3
-	sta !xpos
+	sta !vwf_x_pos
 
 	rep #$20	; Y position
 	lda [$00],y
@@ -869,13 +882,13 @@ LoadHeader:
 	and #$07C0
 	lsr #6
 	sep #$20
-	sta !ypos
+	sta !vwf_y_pos
 	iny
 
 	lda [$00],y	; Width
 	and #$3C
 	lsr #2
-	sta !width
+	sta !vwf_width
 
 	rep #$20	; Height
 	lda [$00],y
@@ -883,13 +896,13 @@ LoadHeader:
 	and #$03C0
 	lsr #6
 	sep #$20
-	sta !height
+	sta !vwf_height
 	iny
 
 	lda [$00],y	; Edge
 	and #$3C
 	lsr #2
-	sta !edge
+	sta !vwf_edge
 
 	rep #$20	; Space
 	lda [$00],y
@@ -897,62 +910,79 @@ LoadHeader:
 	and #$03C0
 	lsr #6
 	sep #$20
-	sta !space
+	sta !vwf_space
 	iny
 
 	lda [$00],y	; Text speed
 	and #$3F
-	sta !frames
+	sta !vwf_frames
 	iny
 
 	lda [$00],y	; Auto wait
-	sta !autowait
+	sta !vwf_auto_wait
 	iny
 
 	lda [$00],y	; Box creation style
 	lsr #4
-	sta !boxcreate
+	and #%00001111
+	sta !vwf_box_create	
+	
+	lda [$00],y		; Message skip flag
+	and.b #%00000010
+	lsr
+	sta !vwf_skip_message_flag
+	lda #$00
+	sta !vwf_message_was_skipped
+	lda [$00],y		; Message ASM Flag
+	and.b #%00000001
+	beq .NoMessageASM
+	lda #$5C
+	bra .StoreMessageASMOpcode
+.NoMessageASM
+	lda #$6B
+.StoreMessageASMOpcode
+	sta !vwf_message_asm_opcode
 	iny
 
 	lda [$00],y	; Letter color
-	sta !boxcolor+2
+	sta !vwf_box_color+2
 	iny
 	lda [$00],y
-	sta !boxcolor+3
+	sta !vwf_box_color+3
 	iny
 
 	lda [$00],y	; Shading color
-	sta !boxcolor+4
+	sta !vwf_box_color+4
 	iny
 	lda [$00],y
-	sta !boxcolor+5
+	sta !vwf_box_color+5
 	iny
 
 	lda [$00],y	; Freeze sprites?
 	lsr #7
-	sta !freezesprites
+	sta !vwf_freeze_sprites
 	
 	lda [$00],y	; Letter palette
 	and #$70
 	lsr #4
-	sta !boxpalette
+	sta !vwf_box_palette
 
-	lda [$00],y	; Layout
+	lda [$00],y	; Text alignment
 	and #$08
 	lsr #3
-	sta !layout
+	sta !vwf_text_alignment
 
 	lda [$00],y	; Speed up
 	and #$04
 	lsr #2
-	sta !speedup
+	sta !vwf_speed_up
 
 	lda [$00],y	; Disable sounds
 	and #$01
-	sta !soundoff
+	sta !vwf_sound_disabled
 	iny
 
-	lda !soundoff
+	lda !vwf_sound_disabled
 	bne .NoSounds
 	rep #$20	; SFX banks
 	lda [$00],y
@@ -960,38 +990,38 @@ LoadHeader:
 	lsr #6
 	clc
 	adc #$1DF9
-	sta !beepbank
+	sta !vwf_beep_bank
 	lda [$00],y
 	and #$0030
 	lsr #4
 	clc
 	adc #$1DF9
-	sta !beependbank
+	sta !vwf_beep_end_bank
 	lda [$00],y
 	and #$000C
 	lsr #2
 	clc
 	adc #$1DF9
-	sta !beepcursorbank
+	sta !vwf_beep_cursor_bank
 	lda [$00],y
 	and #$0003
 	clc
 	adc #$1DF9
-	sta !beepchoicebank
+	sta !vwf_beep_choice_bank
 	sep #$20
 	iny
 
 	lda [$00],y	; SFX numbers
-	sta !beep
+	sta !vwf_beep
 	iny
 	lda [$00],y
-	sta !beepend
+	sta !vwf_beep_end
 	iny
 	lda [$00],y
-	sta !beepcursor
+	sta !vwf_beep_cursor
 	iny
 	lda [$00],y
-	sta !beepchoice
+	sta !vwf_beep_choice
 	iny
 
 	lda $03
@@ -1000,129 +1030,127 @@ LoadHeader:
 	sta $03
 
 .NoSounds
-	lda [$00],y		; Message skip flag
-	and #$02
-	sta !skipmessageflag
-	sta !initialskipmessageflag
-	lda [$00],y		; Message ASM Flag
-	and #$01
-	beq .NoMessageASM
-	iny
-	lda [$00],y
-	xba
-	lda #$5C
+	lda !vwf_skip_message_flag
+	beq .NoMessageSkipPointer
 	rep #$21
-	sta !messageasmopcode
-	iny
-	lda [$00],y
-	sta !messageasmopcode+2
-	sep #$20
-	iny
-	lda $03
-	adc #$03
-	sta $03
-.NoMessageASM
-	iny
-	lda !initialskipmessageflag
-	beq .NoMessageSkip
-	rep #$21
-	lda [$00],y		; Message skip pointer
-	sta !skipmessageloc
+	lda [$00],y		; Message skip location (address)
+	sta !vwf_skip_message_loc
 	sep #$20
 	iny
 	iny
-	lda [$00],y		; Message skip pointer
-	sta !skipmessageloc+2
+	lda [$00],y		; Message skip location (bank)
+	sta !vwf_skip_message_loc+2
+	iny
 	lda $03
+	clc
 	adc #$03
 	sta $03
-.NoMessageSkip
+	
+.NoMessageSkipPointer
+	lda !vwf_message_asm_opcode
+	cmp #$5C
+	bne .NoMessageASMPointer
+	rep #$21
+	lda [$00],y		; Message ASM location (address)
+	sta !vwf_message_asm_opcode+1
+	sep #$20
+	iny
+	iny
+	lda [$00],y		; Message ASM location (bank)
+	sta !vwf_message_asm_opcode+3
+	iny
+	lda $03
+	clc
+	adc #$03
+	sta $03
+
+.NoMessageASMPointer
 	rep #$21
 	lda $00
 	adc $03
-	sta !vwftextsource
+	sta !vwf_text_source
 	sep #$20
 
 
 .ValidationChecks
-	lda !width	; Validate all inputs
+	lda !vwf_width	; Validate all inputs
 	cmp #$10
 	bcc .WidthCheck2
 	lda #$0F
-	sta !width
+	sta !vwf_width
 	bra .WidthOK
 
 .WidthCheck2
 	cmp #$00
 	bne .WidthOK
 	lda #$01
-	sta !width
+	sta !vwf_width
 
 
 .WidthOK
-	lda !height
+	lda !vwf_height
 	cmp #$0E
 	bcc .HeightCheck2
 	lda #$0D
-	sta !height
+	sta !vwf_height
 	bra .HeightOK
 
 .HeightCheck2
 	cmp #$00
 	bne .HeightOK
 	lda #$01
-	sta !height
+	sta !vwf_height
 
 
 .HeightOK
-	lda !width
+	lda !vwf_width
 	asl
 	inc #2
 	sta $0F
 	clc
-	adc !xpos
+	adc !vwf_x_pos
 	cmp #$21
 	bcc .XPosOK
 	lda #$20
 	sec
 	sbc $0F
-	sta !xpos
+	sta !vwf_x_pos
 
 
 .XPosOK
-	lda !height
+	lda !vwf_height
 	asl
 	inc #2
 	sta $0F
 	clc
-	adc !ypos
+	adc !vwf_y_pos
 	cmp #$1D
 	bcc .YPosOK
 	lda #$1C
 	sec
 	sbc $0F
-	sta !ypos
+	sta !vwf_y_pos
 
 .YPosOK
-	lda !width
+	lda !vwf_width
 	cmp #$03
 	bcs .EdgeOK
-	lda !edge
+	lda !vwf_edge
 	and #$07
-	sta !edge
-	lda !width
+	sta !vwf_edge
+	lda !vwf_width
 	cmp #$02
 	bcs .EdgeOK
 	lda #$00
-	sta !edge
+	sta !vwf_edge
 
 
 .EdgeOK
-	lda !boxcreate
+	lda !vwf_box_create
 	cmp #$05
 	bcc .StyleOK
 	lda #$04
-	sta !boxcreate
+	sta !vwf_box_create
 
 .StyleOK
 	rts
@@ -1141,7 +1169,7 @@ BufferGraphics:
 	lda #$0000
 
 .DrawEmpty
-	sta !vwfbuffer_emptytile,x	; Draw empty tile
+	sta !vwf_buffer_empty_tile,x	; Draw empty tile
 	inx #2
 	cpx #$0010
 	bne .DrawEmpty
@@ -1151,8 +1179,8 @@ BufferGraphics:
 
 	; Copy text box graphics over to RAM
 
-	%bwramtransfer($0010,!boxbg,Patterns,!vwfbuffer_bgtile)
-	%bwramtransfer($0090,!boxframe,Frames,!vwfbuffer_frame)
+	%vwf_bwram_transfer($0010, !vwf_box_bg, BgPatterns, !vwf_buffer_bg_tile)
+	%vwf_bwram_transfer($0090, !vwf_box_frame, Frames, !vwf_buffer_frame)
 
 	rts
 
@@ -1161,17 +1189,17 @@ BufferGraphics:
 
 ClearScreen:
 	lda Emptytile
-	sta !tile
-	lda !boxpalette
+	sta !vwf_tile
+	lda !vwf_box_palette
 	asl #2
 	ora Emptytile+1
-	sta !property
+	sta !vwf_property
 	rep #$30
 	ldx #$0000
-	lda !tile
+	lda !vwf_tile
 
 .InitTilemap
-	sta !vwfbuffer_textboxtilemap,x
+	sta !vwf_buffer_text_box_tilemap,x
 	inx #2
 	cpx #$0700
 	bne .InitTilemap
@@ -1183,24 +1211,24 @@ ClearScreen:
 
 
 BufferWindow:
-	lda !counter	; Buffer text box tilemap
+	lda !vwf_counter	; Buffer text box tilemap
 	bne .SkipInit
 	lda #$00	; Text box init
-	sta !currentwidth
-	sta !currentheight
-	lda !xpos
+	sta !vwf_current_width
+	sta !vwf_current_height
+	lda !vwf_x_pos
 	clc
-	adc !width
-	sta !currentx
-	lda !ypos
+	adc !vwf_width
+	sta !vwf_current_x
+	lda !vwf_y_pos
 	clc
-	adc !height
-	sta !currenty
+	adc !vwf_height
+	sta !vwf_current_y
 	lda #$01
-	sta !counter
+	sta !vwf_counter
 
 .SkipInit
-	lda !boxcreate	; Prepare jump to routine
+	lda !vwf_box_create	; Prepare jump to routine
 	asl
 	tax
 	jmp (.Routinetable,x)
@@ -1215,146 +1243,146 @@ BufferWindow:
 
 .NoBox
 	lda #$02	; No text box
-	sta !counter
+	sta !vwf_counter
 	jmp .End
 
 
 
 .SoEBox
-	lda !xpos
-	sta !currentx
-	lda !ypos
-	sta !currenty
-	lda !width
+	lda !vwf_x_pos
+	sta !vwf_current_x
+	lda !vwf_y_pos
+	sta !vwf_current_y
+	lda !vwf_width
 	asl
-	sta !currentwidth
+	sta !vwf_current_width
 	jsr DrawBox
 
-	lda !height
+	lda !vwf_height
 	asl
-	cmp !currentheight
+	cmp !vwf_current_height
 	bne .SoEEnd
 	lda #$02
-	sta !counter
+	sta !vwf_counter
 
 .SoEEnd
-	lda !currentheight
+	lda !vwf_current_height
 	inc
-	sta !currentheight
+	sta !vwf_current_height
 	jmp .End
 
 
 
 .SoMBox
-	lda !width
+	lda !vwf_width
 	asl
-	cmp !currentwidth
+	cmp !vwf_current_width
 	beq .ExpandVert
 	jsr SoMLine
-	lda !currentwidth
+	lda !vwf_current_width
 	inc #2
-	sta !currentwidth
-	lda !currentx
+	sta !vwf_current_width
+	lda !vwf_current_x
 	dec
-	sta !currentx
+	sta !vwf_current_x
 	jmp .End
 
 .ExpandVert
-	lda !height
+	lda !vwf_height
 	asl
-	cmp !currentheight
+	cmp !vwf_current_height
 	bcc .SoMEnd
 	jsr DrawBox
-	lda !currentheight
+	lda !vwf_current_height
 	inc #2
-	sta !currentheight
-	lda !currenty
+	sta !vwf_current_height
+	lda !vwf_current_y
 	dec
-	sta !currenty
+	sta !vwf_current_y
 	jmp .End
 
 .SoMEnd
 	lda #$02
-	sta !counter
+	sta !vwf_counter
 	jmp .End
 
 
 
 .MMZBox
-	lda !xpos
-	sta !currentx
-	lda !ypos
-	sta !currenty
-	lda !height
+	lda !vwf_x_pos
+	sta !vwf_current_x
+	lda !vwf_y_pos
+	sta !vwf_current_y
+	lda !vwf_height
 	asl
-	sta !currentheight
+	sta !vwf_current_height
 	jsr DrawBox
 
-	lda !width
+	lda !vwf_width
 	asl
-	cmp !currentwidth
+	cmp !vwf_current_width
 	bne .MMZEnd
 	lda #$02
-	sta !counter
+	sta !vwf_counter
 
 .MMZEnd
-	lda !currentwidth
+	lda !vwf_current_width
 	inc
-	sta !currentwidth
+	sta !vwf_current_width
 	jmp .End
 
 
 
 .InstBox
-	lda !xpos
-	sta !currentx
-	lda !ypos
-	sta !currenty
-	lda !width
+	lda !vwf_x_pos
+	sta !vwf_current_x
+	lda !vwf_y_pos
+	sta !vwf_current_y
+	lda !vwf_width
 	asl
-	sta !currentwidth
-	lda !height
+	sta !vwf_current_width
+	lda !vwf_height
 	asl
-	sta !currentheight
+	sta !vwf_current_height
 	jsr DrawBox
 
 .InstEnd
 	lda #$02
-	sta !counter
+	sta !vwf_counter
 	jmp .End
 
 
 
 SoMLine:
-	lda !currentx
+	lda !vwf_current_x
 	sta $00
-	lda !currenty
+	lda !vwf_current_y
 	sta $01
 	lda #$01
 	sta $02
 	jsr GetTilemapPos
 	rep #$21
-	lda.w #!vwfbuffer_textboxtilemap
+	lda.w #!vwf_buffer_text_box_tilemap
 	adc $03
 	sta $03
 	sep #$20
-	lda.b #!vwfbuffer_textboxtilemap>>16
+	lda.b #!vwf_buffer_text_box_tilemap>>16
 	sta $05
 
 	ldy #$00
-	lda.b #!framepalette<<2|$20
+	lda.b #!vwf_frame_palette<<2|$20
 	xba
 	jsr LineLoop
 
 	ldy #$40
-	lda.b #!framepalette<<2|$A0
+	lda.b #!vwf_frame_palette<<2|$A0
 	xba
 	jsr LineLoop
 	rts
 
 
 LineLoop:
-	lda !currentwidth
+	lda !vwf_current_width
 	lsr
 	inc
 	tax
@@ -1394,43 +1422,43 @@ LineLoop:
 	rts
 
 
-; This routine takes the variables !currentx, !currenty,
-; !currentwidth and !currentheight to create a complete text box
+; This routine takes the variables !vwf_current_x, !vwf_current_y,
+; !vwf_current_width and !vwf_current_height to create a complete text box
 ; in RAM, utilizing all of the the subroutines below.
 
 DrawBox:
-	lda !currentx	; Create background
+	lda !vwf_current_x	; Create background
 	sta $00
-	lda !currenty
+	lda !vwf_current_y
 	sta $01
-	lda.b #!vwfbuffer_textboxtilemap
+	lda.b #!vwf_buffer_text_box_tilemap
 	sta $03
-	lda.b #!vwfbuffer_textboxtilemap>>8
+	lda.b #!vwf_buffer_text_box_tilemap>>8
 	sta $04
-	lda.b #!vwfbuffer_textboxtilemap>>16
+	lda.b #!vwf_buffer_text_box_tilemap>>16
 	sta $05
-	lda !currentwidth
+	lda !vwf_current_width
 	sta $06
-	lda !currentheight
+	lda !vwf_current_height
 	sta $07
 	jsr DrawBG
 
-	lda !currentx	; Create frame
+	lda !vwf_current_x	; Create frame
 	sta $00
-	lda !currenty
+	lda !vwf_current_y
 	sta $01
-	lda.b #!vwfbuffer_textboxtilemap
+	lda.b #!vwf_buffer_text_box_tilemap
 	sta $03
-	lda.b #!vwfbuffer_textboxtilemap>>8
+	lda.b #!vwf_buffer_text_box_tilemap>>8
 	sta $04
 	; RPG Hacker: Technically unneeded, because the function above never overwrites $05,
 	; but I still prefer to have this here so that I don't wonder why it's missing every
 	; single time. This "optimization" never really saved much, anyways.
-	lda.b #!vwfbuffer_textboxtilemap>>16
+	lda.b #!vwf_buffer_text_box_tilemap>>16
 	sta $05
-	lda !currentwidth
+	lda !vwf_current_width
 	sta $06
-	lda !currentheight
+	lda !vwf_current_height
 	sta $07
 	jsr AddFrame
 	rts
@@ -1455,11 +1483,11 @@ GetTilemapPos:
 	lda #$20
 
 .Store
-	sta select(!use_sa1_mapping,$2251,$211B)	; Multiply Y coordinate by $20/$40
-	stz select(!use_sa1_mapping,$2252,$211B)
-	stz select(!use_sa1_mapping,$2250,$211C)
+	sta.w select(!use_sa1_mapping,$2251,$211B)	; Multiply Y coordinate by $20/$40
+	stz.w select(!use_sa1_mapping,$2252,$211B)
+	stz.w select(!use_sa1_mapping,$2250,$211C)
 	lda $01
-	sta select(!use_sa1_mapping,$2253,$211C)
+	sta.w select(!use_sa1_mapping,$2253,$211C)
 	if !use_sa1_mapping
 		stz $2254
 	endif
@@ -1467,7 +1495,7 @@ GetTilemapPos:
 	xba
 	lda $00
 	rep #$21
-	adc select(!use_sa1_mapping,$2306,$2134)
+	adc.w select(!use_sa1_mapping,$2306,$2134)
 	sta $03
 	sep #$20
 	lda $02
@@ -1516,7 +1544,7 @@ DrawBG:
 	asl
 	tay
 
-	lda !boxpalette
+	lda !vwf_box_palette
 	asl #2
 	ora #$20
 	xba
@@ -1668,7 +1696,7 @@ SetPos:
 ; Draw one or two tiles in a line
 
 DrawTile:
-	lda.b #!framepalette<<2|$20
+	lda.b #!vwf_frame_palette<<2|$20
 	ora $0B	; Vertical flip?
 	xba
 	lda $0A	; Tile number
@@ -1688,23 +1716,23 @@ DrawTile:
 
 
 CollapseWindow:
-	lda !counter	; Collapse text box
+	lda !vwf_counter	; Collapse text box
 	bne .SkipInit
-	lda !width
+	lda !vwf_width
 	asl
-	sta !currentwidth
-	lda !height
+	sta !vwf_current_width
+	lda !vwf_height
 	asl
-	sta !currentheight
-	lda !xpos	; Text box init
-	sta !currentx
-	lda !ypos
-	sta !currenty
+	sta !vwf_current_height
+	lda !vwf_x_pos	; Text box init
+	sta !vwf_current_x
+	lda !vwf_y_pos
+	sta !vwf_current_y
 	lda #$01
-	sta !counter
+	sta !vwf_counter
 
 .SkipInit
-	lda !boxcreate	; Prepare jump to routine
+	lda !vwf_box_create	; Prepare jump to routine
 	asl
 	tax
 	jmp (.Routinetable,x)
@@ -1712,7 +1740,21 @@ CollapseWindow:
 .Routinetable
 	dw .NoBox,.SoEBox,.SoMBox,.MMZBox,.InstBox
 
-.End
+.End	
+	lda !vwf_counter
+	cmp #$02	
+	bne .NotDone
+
+	; RPG Hacker: Check if we still have a message box stored to show after the current one.
+	lda !vwf_swap_message_settings
+	and.b #%10000010
+	cmp.b #%10000010
+	bne .NoNextMessage
+	
+	jsr PrepareNextMessage
+	
+.NoNextMessage
+.NotDone
 	jmp Buffer_End
 
 
@@ -1720,125 +1762,125 @@ CollapseWindow:
 .NoBox
 	jsr ClearScreen
 	lda #$02
-	sta !counter
+	sta !vwf_counter
 	jmp .End
 
 
 
 .SoEBox
-	lda !xpos
-	sta !currentx
-	lda !ypos
-	sta !currenty
-	lda !width
+	lda !vwf_x_pos
+	sta !vwf_current_x
+	lda !vwf_y_pos
+	sta !vwf_current_y
+	lda !vwf_width
 	asl
-	sta !currentwidth
+	sta !vwf_current_width
 	jsr DrawBox
 
-	lda !ypos
+	lda !vwf_y_pos
 	clc
-	adc !currentheight
+	adc !vwf_current_height
 	inc #2
 	sta $01
 	jsr ClearHoriz
 
-	lda !currentheight
+	lda !vwf_current_height
 	bne .SoEEnd
 	lda #$02
-	sta !counter
+	sta !vwf_counter
 
 .SoEEnd
-	lda !currentheight
+	lda !vwf_current_height
 	dec
-	sta !currentheight
+	sta !vwf_current_height
 	jmp .End
 
 
 
 .SoMBox
-	lda !currentheight
+	lda !vwf_current_height
 	beq .CollapseHorz
 
-	lda !currenty
+	lda !vwf_current_y
 	sta $01
 	jsr ClearHoriz
 
-	lda !currenty
+	lda !vwf_current_y
 	clc
-	adc !currentheight
+	adc !vwf_current_height
 	inc #1
 	sta $01
 	jsr ClearHoriz
 
-	lda !currentheight
+	lda !vwf_current_height
 	dec #2
-	sta !currentheight
-	lda !currenty
+	sta !vwf_current_height
+	lda !vwf_current_y
 	inc
-	sta !currenty
+	sta !vwf_current_y
 
-	lda !currentheight
+	lda !vwf_current_height
 	jsr DrawBox
 	jmp .End
 
 .CollapseHorz
-	lda !currentwidth
+	lda !vwf_current_width
 	beq .SoMEnd
 
-	lda !currentx
+	lda !vwf_current_x
 	sta $00
 	jsr ClearVert
 
-	lda !currentx
+	lda !vwf_current_x
 	clc
-	adc !currentwidth
+	adc !vwf_current_width
 	inc #1
 	sta $00
 	jsr ClearVert
 
-	lda !currentwidth
+	lda !vwf_current_width
 	dec #2
-	sta !currentwidth
-	lda !currentx
+	sta !vwf_current_width
+	lda !vwf_current_x
 	inc
-	sta !currentx
+	sta !vwf_current_x
 
 	jsr SoMLine
 	jmp .End
 
 .SoMEnd
 	lda #$02
-	sta !counter
+	sta !vwf_counter
 	jmp .End
 
 
 
 .MMZBox
-	lda !xpos
-	sta !currentx
-	lda !ypos
-	sta !currenty
-	lda !height
+	lda !vwf_x_pos
+	sta !vwf_current_x
+	lda !vwf_y_pos
+	sta !vwf_current_y
+	lda !vwf_height
 	asl
-	sta !currentheight
+	sta !vwf_current_height
 	jsr DrawBox
 
-	lda !xpos
+	lda !vwf_x_pos
 	clc
-	adc !currentwidth
+	adc !vwf_current_width
 	inc #2
 	sta $00
 	jsr ClearVert
 
-	lda !currentwidth
+	lda !vwf_current_width
 	bne .MMZEnd
 	lda #$02
-	sta !counter
+	sta !vwf_counter
 
 .MMZEnd
-	lda !currentwidth
+	lda !vwf_current_width
 	dec
-	sta !currentwidth
+	sta !vwf_current_width
 	jmp .End
 
 
@@ -1847,7 +1889,7 @@ CollapseWindow:
 .InstBox
 	jsr ClearScreen
 	lda #$02
-	sta !counter
+	sta !vwf_counter
 	jmp .End
 
 
@@ -1856,25 +1898,25 @@ CollapseWindow:
 
 ClearVert:
 	lda Emptytile
-	sta !tile
-	lda !boxpalette
+	sta !vwf_tile
+	lda !vwf_box_palette
 	asl #2
 	ora Emptytile+1
-	sta !property
+	sta !vwf_property
 	stz $01
 	lda #$01
 	sta $02
 	jsr GetTilemapPos
-	lda.b #!vwfbuffer_textboxtilemap>>16
+	lda.b #!vwf_buffer_text_box_tilemap>>16
 	sta $05
 	rep #$21
-	lda.w #!vwfbuffer_textboxtilemap
+	lda.w #!vwf_buffer_text_box_tilemap
 	adc $03
 	sta $03
 	ldy #$00
 
 .FillLoop
-	lda !tile
+	lda !vwf_tile
 	sta [$03]
 	lda $03
 	clc
@@ -1891,23 +1933,23 @@ ClearVert:
 
 ClearHoriz:
 	lda Emptytile
-	sta !tile
-	lda !boxpalette
+	sta !vwf_tile
+	lda !vwf_box_palette
 	asl #2
 	ora Emptytile+1
-	sta !property
+	sta !vwf_property
 	stz $00
 	lda #$01
 	sta $02
 	jsr GetTilemapPos
-	lda.b #!vwfbuffer_textboxtilemap>>16
+	lda.b #!vwf_buffer_text_box_tilemap>>16
 	sta $05
 	rep #$21
-	lda.w #!vwfbuffer_textboxtilemap
+	lda.w #!vwf_buffer_text_box_tilemap
 	adc $03
 	sta $03
 	ldy #$00
-	lda !tile
+	lda !vwf_tile
 
 .FillLoop
 	sta [$03],y
@@ -1940,12 +1982,13 @@ if !use_sa1_mapping
 
 	jsr ClearBox
 .End
+	
 	jmp Buffer_End
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 .PaletteStuff
 endif
-	lda !boxpalette	; Update letter color
+	lda !vwf_box_palette	; Update letter color
 	asl #2
 	inc
 	inc
@@ -1955,15 +1998,15 @@ endif
 	ldx #$00
 	
 	; RPG Hacker: Because an "Absolute Long Indexed, Y" mode doesn't exist...
-	lda.b #!palettebackupram
+	lda.b #!vwf_palette_backup_ram
 	sta $00
-	lda.b #!palettebackupram>>8
+	lda.b #!vwf_palette_backup_ram>>8
 	sta $01
-	lda.b #!palettebackupram>>16
+	lda.b #!vwf_palette_backup_ram>>16
 	sta $02
 
 .BoxColorLoop
-	lda !boxcolor+2,x
+	lda !vwf_box_color+2,x
 	sta [$00],y
 	inx
 	iny
@@ -1972,7 +2015,16 @@ endif
 
 	ply
 	lda #$01
-	sta !paletteupload
+	sta !vwf_palette_upload
+
+	; RPG Hacker: Without this, the very first beginning of a text box would not get detected correctly.
+	sta !vwf_at_start_of_text
+	
+	lda #$00
+	sta !vwf_char_offset
+if !vwf_bit_mode == VWF_BitMode.16Bit	
+	sta !vwf_char_offset+1
+endif
 
 if !use_sa1_mapping
 	rtl
@@ -1985,170 +2037,170 @@ endif
 
 InitLine:
 	lda #$01
-	sta !firsttile
-	lda !edge	; Reset pixel count
-	sta !currentpixel
+	sta !vwf_first_tile
+	lda !vwf_edge	; Reset pixel count
+	sta !vwf_current_pixel
 	lda #$00
-	sta !widthcarry
-	sta !vwfbufferindex
+	sta !vwf_width_carry
+	sta !vwf_buffer_index
 
-	lda !width	; Reset available width
+	lda !vwf_width	; Reset available width
 	asl #4
 	sec
-	sbc !currentpixel
+	sbc !vwf_current_pixel
 	sec
-	sbc !currentpixel
-	sta !vwfmaxwidth
+	sbc !vwf_current_pixel
+	sta !vwf_max_width
 
-	lda !currentchoice
+	lda !vwf_current_choice
 	beq .NoChoicePixels
-	lda !currentpixel
+	lda !vwf_current_pixel
 	clc
-	adc !choicewidth
-	sta !currentpixel
-	lda !vwfmaxwidth
+	adc !vwf_choice_width
+	sta !vwf_current_pixel
+	lda !vwf_max_width
 	sec
-	sbc !choicewidth
-	sta !vwfmaxwidth
-	jmp .RegularLayout
+	sbc !vwf_choice_width
+	sta !vwf_max_width
+	jmp .TextAlignmentLeft
 
 .NoChoicePixels
-	lda !layout	; Centered layout?
-	bne .Centered
-	jmp .RegularLayout
+	lda !vwf_text_alignment	; Centered alignment?
+	bne .TextAlignmentCentered
+	jmp .TextAlignmentLeft
 
-.Centered
+.TextAlignmentCentered
 	lda #$00
-	sta !vwfwidth
-	sta !currentwidth
-	lda !vwftextsource
-	pha
-	lda !vwftextsource+1
-	pha
-	lda !vwftextsource+2
-	pha
-	lda !font
-	pha
+	sta !vwf_char_width
+	sta !vwf_current_width
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda !vwf_char
+	sta $0A
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda !vwf_char
+	sta $0A
+	sep #$20
+endif
+
+	jsr WordWidth_Backup
 
 .WidthBegin
-	lda !currenty				;\ This fixes an oddity where the next line's width is calculated when at the end of a text box.
-	inc #2					;| This would cause a text macro to break if it spanned more than one text box.
-	cmp !vwfmaxheight			;|
-	bcs .AtEndOfTextBox			;/
+	lda !vwf_current_y      ;\ This fixes an oddity where the next line's width is calculated when at the end of a text box.
+	inc #2                  ;| This would cause a text macro to break if it spanned more than one text box.
+	cmp !vwf_max_height     ;|
+	bcs .AtEndOfTextBox     ;/
 	jsr WordWidth
 
 .AtEndOfTextBox
-	lda !widthcarry
+	lda !vwf_width_carry
 	beq .NoCarry
 	lda #$00
-	sta !widthcarry
-	lda !currentwidth
+	sta !vwf_width_carry
+	lda !vwf_current_width
 	bne .WidthEnd
-	lda !vwfwidth
-	sta !currentwidth
+	lda !vwf_char_width
+	sta !vwf_current_width
 	bra .WidthEnd
 
 .NoCarry
-	lda !vwfwidth
-	sta !currentwidth
-	!16bit rep #$20
-	lda !vwfchar
-	!8bit cmp #$FE
-	!16bit cmp #$FFFE
-	!16bit sep #$20
+	lda !vwf_char_width
+	sta !vwf_current_width
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda $0A
+	cmp #$FE
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda $0A
+	cmp #$FFFE
+	sep #$20
+endif
 	bne .WidthEnd
 
-	lda !vwfwidth
+	lda !vwf_char_width
 	clc
-	adc !space
+	adc !vwf_space
 	bcs .WidthEnd
-	cmp !vwfmaxwidth
+	cmp !vwf_max_width
 	bcs .WidthEnd
-	sta !vwfwidth
+	sta !vwf_char_width
 	bra .WidthBegin
 
 .WidthEnd
-	lda !vwfmaxwidth
+	lda !vwf_max_width
 	sec
-	sbc !currentwidth
+	sbc !vwf_current_width
 	lsr
 	clc
-	adc !currentpixel
-	sta !currentpixel
+	adc !vwf_current_pixel
+	sta !vwf_current_pixel
+	
+	jsr WordWidth_Restore
 
-	pla
-	sta !font
-	pla
-	sta !vwftextsource+2
-	pla
-	sta !vwftextsource+1
-	pla
-	sta !vwftextsource
-	!16bit rep #$20
-	!16bit lda #$0000
-	!8bit lda #$00
-	sta !vwfchar
-	!16bit sep #$20
-
-.RegularLayout
+.TextAlignmentLeft
 	lda #$00
-	sta !currentx
-	lda !currenty
+	sta !vwf_current_x
+	lda !vwf_current_y
 	inc #2
-	sta !currenty
-	cmp !vwfmaxheight
+	sta !vwf_current_y
+	cmp !vwf_max_height
 	bcc .NoClearBox
-	lda !choices
+	lda !vwf_choices
 	beq .NoChoicesClear
 	lda #$01
-	sta !cursormove
+	sta !vwf_cursor_move
 	bra .NoClearBox
 
 .NoChoicesClear
 	lda #$01
-	sta !clearbox
+	sta !vwf_clear_box
 
-	lda !autowait
+	lda !vwf_auto_wait
 	beq .NoClearBox
 	cmp #$01
 	beq .ButtonWait
-	lda !autowait
-	sta !wait
+	lda !vwf_auto_wait
+	dec
+	sta !vwf_wait
 	bra .NoClearBox
 
 .ButtonWait
 	jsr EndBeep
-	!8bit lda #$FA
-	!16bit rep #$20
-	!16bit lda #$FFFA
-	sta !vwfchar
-	!16bit sep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda #$FA
+	sta !vwf_char
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda #$FFFA
+	sta !vwf_char
+	sep #$20
+endif
 
 .NoClearBox
 	rep #$20
-	lda !tile	; Increment tile counter
+	lda !vwf_tile	; Increment tile counter
 	inc #2
-	sta !tile
+	sta !vwf_tile
 	and #$03FF
 	asl #4
 	clc
-	adc.w #!vwfbuffer_emptytile	; Add starting address
+	adc.w #!vwf_buffer_empty_tile	; Add starting address
 	sta $09
 	sep #$20
-	lda.b #!vwfbuffer_emptytile>>16
+	lda.b #!vwf_buffer_empty_tile>>16
 	sta $0B
 
 if !use_sa1_mapping
 	lda #$01
 	sta $2250
 endif
-	lda !currentpixel
-	sta select(!use_sa1_mapping,$2251,$4204)
+	lda !vwf_current_pixel
+	sta.w select(!use_sa1_mapping,$2251,$4204)
 
 .NoNewTile
-	stz select(!use_sa1_mapping,$2252,$4205)
+	stz.w select(!use_sa1_mapping,$2252,$4205)
 	lda #$08
-	sta select(!use_sa1_mapping,$2253,$4206)
+	sta.w select(!use_sa1_mapping,$2253,$4206)
 if !use_sa1_mapping
 	stz $2254
 	nop
@@ -2156,27 +2208,27 @@ if !use_sa1_mapping
 else
 	nop #8
 endif
-	lda select(!use_sa1_mapping,$2308,$4216)
-	sta !currentpixel
+	lda.w select(!use_sa1_mapping,$2308,$4216)
+	sta !vwf_current_pixel
 	rep #$20
-	lda select(!use_sa1_mapping,$2306,$4214)
+	lda.w select(!use_sa1_mapping,$2306,$4214)
 	asl
 	clc
-	adc !tile
-	sta !tile
+	adc !vwf_tile
+	sta !vwf_tile
 	sep #$20
-	lda select(!use_sa1_mapping,$2306,$4214)
+	lda.w select(!use_sa1_mapping,$2306,$4214)
 	clc
-	adc !currentx
-	sta !currentx
+	adc !vwf_current_x
+	sta !vwf_current_x
 
-	lda !currentchoice
+	lda !vwf_current_choice
 	beq .End
 	dec
-	sta !currentchoice
+	sta !vwf_current_choice
 	bne .End
 	lda #$01
-	sta !cursormove
+	sta !vwf_cursor_move
 
 .End
 	rts
@@ -2184,61 +2236,76 @@ endif
 
 ClearBox:
 	jsr ClearScreen
-	lda !boxcreate
+	lda !vwf_box_create
 	beq .Init
-	lda !xpos
-	sta !currentx
-	lda !ypos
-	sta !currenty
-	lda !width
+	lda !vwf_x_pos
+	sta !vwf_current_x
+	lda !vwf_y_pos
+	sta !vwf_current_y
+	lda !vwf_width
 	asl
-	sta !currentwidth
-	lda !height
+	sta !vwf_current_width
+	lda !vwf_height
 	asl
-	sta !currentheight
+	sta !vwf_current_height
 	jsr DrawBox
 	bra .Init
 
 .Init
 	lda #$FE
-	sta !currenty
+	sta !vwf_current_y
 	lda #$09
-	sta !tile
-	lda !boxpalette
+	sta !vwf_tile
+	lda !vwf_box_palette
 	asl #2
 	ora Emptytile+1
-	sta !property
-	lda !height
+	sta !vwf_property
+	lda !vwf_height
 	asl
-	sta !vwfmaxheight
+	sta !vwf_max_height
 	jsr InitLine
 	rts
 
 
 GetMessage:
-	lda !message
-	sta select(!use_sa1_mapping,$2251,$211B)
-	lda !message+1
-	sta select(!use_sa1_mapping,$2252,$211B)
-	stz select(!use_sa1_mapping,$2250,$211C)
+	rep #$20
+	lda !vwf_message
+	cmp.w #(PointersEnd-Pointers)/3
+	bcc .IdOkay
+	
+	; ID is too high. Let's load an error handling message.
+	lda.w #HandleUndefinedMessage0
+	sta !vwf_text_source
+	sep #$20
+	lda.b #HandleUndefinedMessage0>>16
+	sta !vwf_text_source+2
+	rts
+
+.IdOkay
+	sep #$20
+	lda !vwf_message
+	sta.w select(!use_sa1_mapping,$2251,$211B)
+	lda !vwf_message+1
+	sta.w select(!use_sa1_mapping,$2252,$211B)
+	stz.w select(!use_sa1_mapping,$2250,$211C)
 	lda #$03
-	sta select(!use_sa1_mapping,$2253,$211C)
+	sta.w select(!use_sa1_mapping,$2253,$211C)
 if !use_sa1_mapping
 	stz $2254
 	nop
 endif
 	rep #$21
-	lda select(!use_sa1_mapping,$2306,$2134)
+	lda.w select(!use_sa1_mapping,$2306,$2134)
 	adc.w #Pointers
 	sta $00
 	lda.w #Pointers>>16
 	sta $02
 	ldy #$02
 	lda [$00]
-	sta !vwftextsource
+	sta !vwf_text_source
 	sep #$20
 	lda [$00],y
-	sta !vwftextsource+2
+	sta !vwf_text_source+2
 	rts
 
 
@@ -2246,9 +2313,29 @@ endif
 
 
 TextCreation:
-	lda !skipmessageflag
+	lda !vwf_skip_message_flag
 	beq .DontSkip
-	lda !vwfchar
+	
+	; RPG Hacker: If skipping is enabled, check if we're about to cross the skip location.
+	; If so, disable skipping for the current message. This is so that if someone presses
+	; start after reaching the skip location, it won't loop around and display the skip
+	; text again.
+	lda !vwf_text_source
+	cmp !vwf_skip_message_loc
+	bne .SkipLocationNotReached
+	lda !vwf_text_source+1
+	cmp !vwf_skip_message_loc+1
+	bne .SkipLocationNotReached
+	lda !vwf_text_source+2
+	cmp !vwf_skip_message_loc+2
+	bne .SkipLocationNotReached
+	
+	lda #$00
+	sta !vwf_skip_message_flag
+	bra .DontSkip
+	
+.SkipLocationNotReached
+	lda !vwf_char
 	cmp #$ED
 	beq .DontSkip
 	cmp #$FF
@@ -2258,43 +2345,48 @@ TextCreation:
 	cmp #$10			; If so, allow the message to be closed early
 	bne .DontSkip			;
 	rep #$20
-	lda !skipmessageloc
-	sta !vwftextsource
-	!16bit lda #$FFEB
-	!16bit sta !vwfchar
+	lda !vwf_skip_message_loc
+	sta !vwf_text_source
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	lda #$FFEB
+	sta !vwf_char
+endif
 	sep #$20
-	lda !skipmessageloc+2
-	sta !vwftextsource+2
-	!8bit lda #$EB
-	!8bit sta !vwfchar
+	lda !vwf_skip_message_loc+2
+	sta !vwf_text_source+2
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda #$EB
+	sta !vwf_char
+endif
 	lda #$00
-	sta !wait
-	sta !cursormove
-	sta !cursorupload
-	sta !cursorend
-	sta !choices
-	sta !currentchoice
-	sta !skipmessageflag
+	sta !vwf_wait
+	sta !vwf_cursor_move
+	sta !vwf_cursor_upload
+	sta !vwf_cursor_end
+	sta !vwf_choices
+	sta !vwf_current_choice
+	sta !vwf_skip_message_flag
 	inc
-	sta !clearbox
+	sta !vwf_message_was_skipped
+	sta !vwf_clear_box
 	jmp .NoButton
 
 .DontSkip
-	lda !wait
+	lda !vwf_wait
 	beq .NoWait
 	jmp .End
 
 .NoWait
-	lda !cursormove
+	lda !vwf_cursor_move
 	bne .Cursor
 	jmp .NoCursor
 
 
 .Cursor
-	lda !currentchoice
+	lda !vwf_current_choice
 	bne .NotZeroCursor
 	lda #$01
-	sta !currentchoice
+	sta !vwf_current_choice
 	stz $0F
 	jsr BackupTilemap
 	jmp .DisplayCursor
@@ -2321,108 +2413,108 @@ TextCreation:
 	and #$0C
 	cmp #$08
 	bcs .CursorUp
-	lda !currentchoice
+	lda !vwf_current_choice
 	inc
-	sta !currentchoice
+	sta !vwf_current_choice
 	bra .CursorSFX
 
 .CursorUp
-	lda !currentchoice
+	lda !vwf_current_choice
 	dec
-	sta !currentchoice
+	sta !vwf_current_choice
 
 .CursorSFX
 	jsr CursorBeep
-	lda !currentchoice
+	lda !vwf_current_choice
 	beq .ZeroCursor
-	lda !choices
-	cmp !currentchoice
+	lda !vwf_choices
+	cmp !vwf_current_choice
 	bcs .DisplayCursor
 	lda #$01
-	sta !currentchoice
+	sta !vwf_current_choice
 	bra .DisplayCursor
 
 .ZeroCursor
-	lda !choices
-	sta !currentchoice
+	lda !vwf_choices
+	sta !vwf_current_choice
 
 .DisplayCursor
 	lda #$01
-	sta !cursorupload
+	sta !vwf_cursor_upload
 	stz $0F
 	jsr BackupTilemap
-	%mvntransfer($0060, !vwfbuffer_cursor, !vwftileram, !cpu_sa1)	
+	%vwf_mvn_transfer($0060, !vwf_buffer_cursor, !vwf_tile_ram, !vwf_cpu_sa1)	
 
-	lda !edge
+	lda !vwf_edge
 	lsr #3
-	sta !currentx
-	lda !currenty
+	sta !vwf_current_x
+	lda !vwf_current_y
 	pha
 	sec
-	sbc !choices
+	sbc !vwf_choices
 	sec
-	sbc !choices
-	sta !currenty
-	lda !currentchoice
+	sbc !vwf_choices
+	sta !vwf_current_y
+	lda !vwf_current_choice
 	dec
 	asl
 	clc
-	adc !currenty
-	sta !currenty
+	adc !vwf_current_y
+	sta !vwf_current_y
 	lda #$00
-	sta !vwfwidth
-	lda !edge
+	sta !vwf_char_width
+	lda !vwf_edge
 	and #$07
 	clc
-	adc !choicewidth
-	sta !currentpixel
+	adc !vwf_choice_width
+	sta !vwf_current_pixel
 	rep #$20
-	lda !tile
+	lda !vwf_tile
 	and #$FC00
 	ora #$038A
-	sta !tile
+	sta !vwf_tile
 	sep #$20
 	jsr WriteTilemap
 	pla
-	sta !currenty
+	sta !vwf_current_y
 	
-	lda !choicespace
+	lda !vwf_choice_space
 	cmp #$08
 	bcs .NoChoiceCombine
-	lda !choicewidth
+	lda !vwf_choice_width
 	clc
-	adc !edge
+	adc !vwf_edge
 	lsr #3
 	asl
 	tax
 	rep #$20
-	lda !vwfbuffer_choicebackup,x
+	lda !vwf_buffer_choice_backup,x
 	and #$03FF
 	asl #4
 	clc
-	adc.w #!vwfbuffer_emptytile
+	adc.w #!vwf_buffer_empty_tile
 	sta $03
 	sep #$20
-	lda.b #!vwfbuffer_emptytile>>16
+	lda.b #!vwf_buffer_empty_tile>>16
 	sta $05
 
-	lda !choicewidth
+	lda !vwf_choice_width
 	clc
-	adc !edge
+	adc !vwf_edge
 	lsr #3
 	asl #5
 	tax
 	ldy #$00
 
 .CombineLoop
-	lda !vwftileram,x
+	lda !vwf_tile_ram,x
 	inx
-	ora !vwftileram,x
+	ora !vwf_tile_ram,x
 	dex
 	eor #$FF
 	and [$03],y
-	ora !vwftileram,x
-	sta !vwftileram,x
+	ora !vwf_tile_ram,x
+	sta !vwf_tile_ram,x
 	inx
 	iny
 	cpy #$20
@@ -2433,21 +2525,25 @@ TextCreation:
 
 .CursorEnd
 	lda #$01
-	sta !cursorend
+	sta !vwf_cursor_end
 	jmp .End
 
 
 .NoCursor
-	!16bit rep #$20
-	lda !vwfchar
-	!8bit cmp #$FA
-	!16bit cmp #$FFFA
-	!16bit sep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda !vwf_char
+	cmp #$FA
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda !vwf_char
+	cmp #$FFFA
+	sep #$20
+endif
 	bne .NoButton
 	jmp .End
 
 .NoButton
-	lda !clearbox
+	lda !vwf_clear_box
 	beq .NoClearBox
 	jsr ClearBox
 	jmp .End
@@ -2456,15 +2552,15 @@ TextCreation:
 	; RPG Hacker: This was previously called from the SNES CPU, which isn't supported, because
 	; GetTilemapPos uses SA-1 multiplication in SA-1 builds. Therefore, I'm preprocessing the address
 	; and storing it in a variable for later use.
-	lda !xpos
+	lda !vwf_x_pos
 	clc
-	adc !width
+	adc !vwf_width
 	inc
 	sta $00
-	lda !height
+	lda !vwf_height
 	asl
 	clc
-	adc !ypos
+	adc !vwf_y_pos
 	inc
 	sta $01
 	stz $02
@@ -2472,38 +2568,49 @@ TextCreation:
 	rep #$21
 	lda #$5C80
 	adc $03
-	sta !arrowvram
+	sta !vwf_arrow_vram
 	sep #$20
 
-	lda #$01
-	sta !isnotatstartoftext
+	lda #$00
+	sta !vwf_at_start_of_text
 	jsr ReadPointer
-	!16bit rep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda [$00]
-	sta !vwfchar
-	!16bit inc $00
-	!8bit cmp #$E7
-	!16bit cmp #$FFE7
+	sta !vwf_char
+	cmp.b #!vwf_lowest_reserved_hex
 	bcs .Jump
-	!16bit sep #$20
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda [$00]
+	sta !vwf_char
+	inc $00
+	cmp.w #!vwf_lowest_reserved_hex
+	bcs .Jump
+	sep #$20
+endif
 	jmp .WriteLetter
 
 .Jump
 	sec
-	!8bit sbc #$E7
-	!16bit sbc #$FFE7
-	!16bit sep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	sbc.b #!vwf_lowest_reserved_hex
 	asl
 	tax
-	!16bit jsr IncPointer
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	sbc.w #!vwf_lowest_reserved_hex
+	sep #$20
+	asl
+	tax
+	jsr IncPointer
+endif
 	jmp (.Routinetable,x)
 
 .Routinetable
 	dw .E7_EndTextMacro
 	dw .E8_TextMacro
-	dw .FF_End
-	dw .FF_End
-	dw .EB_DoNothing
+	dw .E9_TextMacroGroup
+	dw .EA_CharOffset
+	dw .EB_LockTextBox
 	dw .EC_PlayBGM
 	dw .ED_ClearBox
 	dw .EE_ChangeColor
@@ -2527,54 +2634,139 @@ TextCreation:
 
 .E7_EndTextMacro
 	jsr HandleVWFStackByte1_Pull
-	sta !vwftextsource+2
+	sta !vwf_text_source+2
 	jsr HandleVWFStackByte1_Pull
-	xba
+	sta !vwf_text_source+1
 	jsr HandleVWFStackByte1_Pull
-	rep #$21
-	adc #$0003
-	sta !vwftextsource
-	sep #$20
+	sta !vwf_text_source
 	jmp TextCreation
 
 .E8_TextMacro
+	rep #$20
 	lda $00
+	clc
+	adc.w #$0003
+	sep #$20
+	
 	jsr HandleVWFStackByte1_Push
-	lda $01
+	xba
 	jsr HandleVWFStackByte1_Push
 	lda $02
 	jsr HandleVWFStackByte1_Push
+	
 	ldy #$01
 	rep #$30
 	lda.b [$00],y
-	cmp #$0010
+	
+.TextMacroShared
+	sta $0C
+	asl
+	clc
+	adc $0C
+	cmp #!vwf_num_reserved_text_macros*3
 	bcs ..NotBufferedText
+	tax
+	lda !vwf_tm_buffers_text_pointers,x
+	sta !vwf_text_source
+	sep #$30
+	lda !vwf_tm_buffers_text_pointers+2,x
+	bra +
+
+..NotBufferedText
+	sec
+	sbc #!vwf_num_reserved_text_macros*3
+	tax
+	lda TextMacroPointers,x
+	sta !vwf_text_source
+	sep #$30
+	lda TextMacroPointers+2,x
++
+	sta !vwf_text_source+2	
+	jmp TextCreation
+	
+.E9_TextMacroGroup	
+	rep #$20
+	lda $00
+	clc
+	adc.w #$0005
+	sep #$20
+	
+	jsr HandleVWFStackByte1_Push
+	xba
+	jsr HandleVWFStackByte1_Push
+	lda $02
+	jsr HandleVWFStackByte1_Push
+	
+	; Load RAM address	
+	ldy #$01
+	lda.b [$00],y
+	sta $0C
+	iny
+	lda.b [$00],y
+	sta $0D
+	iny
+	lda.b [$00],y
+	sta $0E
+	
+	lda #$00
+	pha
+	lda [$0C]
+	pha
+	
+	; Load group ID
+	iny
+	lda #$00
+	xba
+	lda.b [$00],y
+		
+	rep #$20
 	sta $0C
 	asl
 	clc
 	adc $0C
 	tax
-	lda !vwftbufferedtextpointers,x
-	sta !vwftextsource
-	sep #$30
-	lda.b #!vwftextbuffer>>16
-	bra +
-
-..NotBufferedText
+	sep #$20
+	
+	lda TextMacroGroupPointers,x
+	sta $0C
+	lda TextMacroGroupPointers+1,x
+	sta $0D
+	lda TextMacroGroupPointers+2,x
+	sta $0E
+	
+	rep #$30
+	pla
 	asl
-	tax
-	lda.l TextMacroPointers,x
-	sta !vwftextsource
-	sep #$30
-	lda.b #TextMacros>>16
-+
-	sta !vwftextsource+2
-	jmp TextCreation
+	tay
+	lda [$0C],y
+	clc
+	adc.w #!vwf_num_reserved_text_macros
+	
+	jmp .TextMacroShared
+	
+.EA_CharOffset
+	ldy #$01
+	lda [$00],y
+	sta !vwf_char_offset
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	iny
+	lda [$00],y
+	sta !vwf_char_offset+1
+	jsr IncPointer
+endif
+	jsr IncPointer
+	jsr IncPointer
+	jmp .NoButton
 
-.EB_DoNothing
+.EB_LockTextBox
 	lda #$01
-	sta !forcesfx
-	JMP .End
+	sta !vwf_force_sfx
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	; RPG Hacker: In 16-bit mode, the $FF part of the command is automatically skipped.
+	; Need to decrement the pointer here, otherwise the text box will explode.
+	jsr DecPointer
+endif
+	jmp .End
 
 .EC_PlayBGM
 	ldy #$01
@@ -2585,13 +2777,13 @@ TextCreation:
 	jmp .NoButton
 
 .ED_ClearBox
-	lda !choices
+	lda !vwf_choices
 	beq .EDNoChoices
 	jmp .FD_LineBreak
 
 .EDNoChoices
 	lda #$01
-	sta !clearbox
+	sta !vwf_clear_box
 	jsr IncPointer
 	jmp TextCreation
 
@@ -2625,13 +2817,13 @@ endif
 	tax
 	iny
 	lda [$00],y
-	sta !palettebackupram,x
+	sta !vwf_palette_backup_ram,x
 	iny
 	lda [$00],y
-	sta !palettebackupram+1,x
+	sta !vwf_palette_backup_ram+1,x
 	plx
 	lda #$01
-	sta !paletteupload
+	sta !vwf_palette_upload
 if !use_sa1_mapping
 	rtl
 else
@@ -2645,7 +2837,7 @@ endif
 .EF_Teleport
 	ldy #$01
 	lda [$00],y
-	sta !telepdest
+	sta !vwf_teleport_dest
 	iny
 	stz $03
 	lda [$00],y
@@ -2658,9 +2850,9 @@ endif
 	and #$0E
 	ora $03
 	ora $04
-	sta !telepprop
+	sta !vwf_teleport_prop
 	lda #$01
-	sta !teleport
+	sta !vwf_teleport
 	jsr IncPointer
 	jsr IncPointer
 	jsr IncPointer
@@ -2670,143 +2862,147 @@ endif
 .F0_Choices
 	jsr ReadPointer
 
-	lda !firsttile
+	lda !vwf_first_tile
 	eor #$01
-	sta !nochoicelb
+	sta !vwf_no_choice_lb
 
 	ldy #$01
 	lda [$00],y
 	lsr #4
 	pha
-	cmp !height
+	cmp !vwf_height
 	bcc .ChoiceStore
 	beq .ChoiceStore
-	lda !height
+	lda !vwf_height
 
 .ChoiceStore
-	sta !choices
+	sta !vwf_choices
 	inc
-	sta !currentchoice
-	lda !vwfmaxheight
+	sta !vwf_current_choice
+	lda !vwf_max_height
 	sec
-	sbc !currenty
+	sbc !vwf_current_y
 	beq .F0ClearForce
 	sec
-	sbc !nochoicelb
+	sbc !vwf_no_choice_lb
 	sec
-	sbc !nochoicelb
+	sbc !vwf_no_choice_lb
 	lsr
-	cmp !choices
+	cmp !vwf_choices
 	bcs .CreateCursor
 
 .F0ClearForce
 	pla
 	lda #$01
-	sta !clearbox
+	sta !vwf_clear_box
 	jmp .F0ClearOptions
 
 .CreateCursor
 	lda [$00],y
 	and #$0F
-	sta !choicespace
+	sta !vwf_choice_space
 	iny
 	lda [$00],y
-	sta !cursor
-	!16bit iny
-	!16bit lda [$00],y
-	!16bit sta !cursor+1
-	!16bit jsr IncPointer
+	sta !vwf_cursor
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	iny
+	lda [$00],y
+	sta !vwf_cursor+1
+	jsr IncPointer
+endif
 	jsr IncPointer
 	jsr IncPointer
 	jsr IncPointer
 
-	lda !vwftextsource
-	sta !choicetable
-	lda !vwftextsource+1
-	sta !choicetable+1
-	lda !vwftextsource+2
-	sta !choicetable+2
-	lda !edge
+	lda !vwf_text_source
+	sta !vwf_choice_table
+	lda !vwf_text_source+1
+	sta !vwf_choice_table+1
+	lda !vwf_text_source+2
+	sta !vwf_choice_table+2
+	lda !vwf_edge
 	and #$07
-	sta !currentpixel
-	lda !firsttile
-	sta !nochoicelb
+	sta !vwf_current_pixel
+	lda !vwf_first_tile
+	sta !vwf_no_choice_lb
 	lda #$01
-	sta !firsttile
-
-	!16bit lda !cursor+1
-	!16bit sta !font
+	sta !vwf_first_tile
+	
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	lda !vwf_cursor+1
+	sta !vwf_font
+endif
 
 	jsr GetFont
 
 	rep #$20
 	lda #$0001
 	sta $0C
-	lda.w #!cursor
+	lda.w #!vwf_cursor
 	sta $00
-	lda.w #!vwfbuffer_cursor
+	lda.w #!vwf_buffer_cursor
 	sta $09
 	sep #$20
-	lda.b #!cursor>>16
+	lda.b #!vwf_cursor>>16
 	sta $02
-	lda.b #!vwfbuffer_cursor>>16
+	lda.b #!vwf_buffer_cursor>>16
 	sta $0B
 
-	lda !currentx
+	lda !vwf_current_x
 	pha
-	lda !tile
+	lda !vwf_tile
 	pha
 	lda #$00
-	sta !currentx
+	sta !vwf_current_x
 
-	lda !currentpixel
+	lda !vwf_current_pixel
 	sta $0E
-	lda !firsttile
+	lda !vwf_first_tile
 	sta $0F
 
-	jsl GenerateVWF
+	jsl VWF_GenerateVWF
 
-	lda !vwfwidth
+	lda !vwf_char_width
 	clc
-	adc !choicespace
-	sta !choicewidth
+	adc !vwf_choice_space
+	sta !vwf_choice_width
 
-	lda !boxcreate
+	lda !vwf_box_create
 	beq .F0NoBG
 
 	rep #$20
 	lda #$0006
 	sta $06
-	lda.w #!vwfbuffer_bgtile
+	lda.w #!vwf_buffer_bg_tile
 	sta $00
-	lda.w #!vwfbuffer_cursor
+	lda.w #!vwf_buffer_cursor
 	sta $03
 	sep #$20
-	lda.b #!vwfbuffer_bgtile>>16
+	lda.b #!vwf_buffer_bg_tile>>16
 	sta $02
-	lda.b #!vwfbuffer_cursor>>16
+	lda.b #!vwf_buffer_cursor>>16
 	sta $05
 
-	jsl AddPattern
+	jsl VWF_AddPattern
 
 .F0NoBG
 	rep #$20
-	lda.w #!vwfbuffer_cursor
+	lda.w #!vwf_buffer_cursor
 	sta $09
 	sep #$20
-	lda.b #!vwfbuffer_cursor>>16
+	lda.b #!vwf_buffer_cursor>>16
 	sta $0B
 
-	lda !currentx
+	lda !vwf_current_x
 	asl #5
 	clc
 	adc $09
 	sta $09
 
-	lda !currentpixel
+	lda !vwf_current_pixel
 	clc
-	adc !choicespace
-	sta !choicespace
+	adc !vwf_choice_space
+	sta !vwf_choice_space
 	cmp #$08
 	bcs .NoChoiceWipe
 
@@ -2814,9 +3010,9 @@ endif
 
 .NoChoiceWipe
 	pla
-	sta !tile
+	sta !vwf_tile
 	pla
-	sta !currentx
+	sta !vwf_current_x
 
 	lda #$00
 	sta $0D
@@ -2827,42 +3023,47 @@ endif
 	clc
 	adc $0C
 	rep #$21
-	adc !vwftextsource
-	sta !vwftextsource
+	adc !vwf_text_source
+	sta !vwf_text_source
 	sep #$20
 
 	jsr InitLine
-	lda !nochoicelb
+	lda !vwf_no_choice_lb
 	beq .F0NotStart
-	lda !currenty
+	lda !vwf_current_y
 	dec #2
-	sta !currenty
+	sta !vwf_current_y
 
 .F0NotStart
-	lda !clearbox
+	lda !vwf_clear_box
 	beq .F0Return
-	lda !currentchoice
+	lda !vwf_current_choice
 	inc
-	sta !currentchoice
+	sta !vwf_current_choice
 
 .F0ClearOptions
-	lda !autowait
-	beq .F0NoAutowait
+	lda !vwf_auto_wait
+	beq .F0NoAutoWait
 	cmp #$01
 	beq .F0ButtonWait
-	lda !autowait
-	sta !wait
-	bra .F0NoAutowait
+	lda !vwf_auto_wait
+	dec
+	sta !vwf_wait
+	bra .F0NoAutoWait
 
 .F0ButtonWait
 	jsr EndBeep
-	!16bit rep #$20
-	!16bit lda #$FFFA
-	!8bit lda #$FA
-	sta !vwfchar
-	!16bit sep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda #$FA
+	sta !vwf_char
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda #$FFFA
+	sta !vwf_char
+	sep #$20
+endif
 
-.F0NoAutowait
+.F0NoAutoWait
 	jmp TextCreation
 
 .F0Return
@@ -2870,37 +3071,37 @@ endif
 
 .F1_Execute
 	lda #$22
-	sta !vwfroutine
+	sta !vwf_routine
 	ldy #$01
 	lda [$00],y
-	sta !vwfroutine+1
+	sta !vwf_routine+1
 	iny
 	lda [$00],y
-	sta !vwfroutine+2
+	sta !vwf_routine+2
 	iny
 	lda [$00],y
-	sta !vwfroutine+3
+	sta !vwf_routine+3
 	lda #$6B
-	sta !vwfroutine+4
+	sta !vwf_routine+4
 	jsr IncPointer
 	jsr IncPointer
 	jsr IncPointer
 	jsr IncPointer
-	jsl !vwfroutine
+	jsl !vwf_routine
 	jmp .NoButton
 
 .F2_ChangeFont
 	ldy #$01
 	lda [$00],y
-	sta !font
+	sta !vwf_font
 	jsr IncPointer
 	jsr IncPointer
 	jmp .NoButton
 
 .F3_ChangePalette
-	lda !property
+	lda !vwf_property
 	and #$E3
-	sta !property
+	sta !vwf_property
 	ldy #$01
 	lda [$00],y
 	asl #2
@@ -2910,14 +3111,14 @@ endif
 	tax
 	lda [$00],y
 	asl #2
-	ora !property
-	sta !property
-	lda !boxcolor
-	sta !palettebackupram,x
-	lda !boxcolor+1
-	sta !palettebackupram+1,x
+	ora !vwf_property
+	sta !vwf_property
+	lda !vwf_box_color
+	sta !vwf_palette_backup_ram,x
+	lda !vwf_box_color+1
+	sta !vwf_palette_backup_ram+1,x
 	lda #$01
-	sta !paletteupload
+	sta !vwf_palette_upload
 	plx
 	jsr IncPointer
 	jsr IncPointer
@@ -2926,10 +3127,15 @@ endif
 .F4_Character
 	jsr IncPointer
 	jsr ReadPointer
-	!16bit rep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda [$00]
-	sta !vwfchar
-	!16bit sep #$20
+	sta !vwf_char
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda [$00]
+	sta !vwf_char
+	sep #$20
+endif
 	jmp .WriteLetter
 
 .F5_RAMCharacter
@@ -2942,27 +3148,34 @@ endif
 	iny
 	lda [$00],y
 	sta $0E
-	!16bit rep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda [$0C]
-	sta !vwfroutine
-	!16bit sep #$20
+	sta !vwf_routine
 	lda #$FB
-	sta !vwfroutine+1+!bitmode
-	!16bit lda #$FF
-	!16bit sta !vwfroutine+3
+	sta !vwf_routine+1
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda [$0C]
+	sta !vwf_routine
+	sep #$20
+	lda #$FB
+	sta !vwf_routine+2
+	lda #$FF
+	sta !vwf_routine+3
+endif
 	rep #$20
 	lda $00
 	inc #4
-	sta !vwfroutine+2+!bitmode+!bitmode
+	sta !vwf_routine+2+(!vwf_bit_mode*2)
 	sep #$20
 	lda $02
-	sta !vwfroutine+4+!bitmode+!bitmode
-	lda.b #!vwfroutine
-	sta !vwftextsource
-	lda.b #!vwfroutine>>8
-	sta !vwftextsource+1
-	lda.b #!vwfroutine>>16
-	sta !vwftextsource+2
+	sta !vwf_routine+4+(!vwf_bit_mode*2)
+	lda.b #!vwf_routine
+	sta !vwf_text_source
+	lda.b #!vwf_routine>>8
+	sta !vwf_text_source+1
+	lda.b #!vwf_routine>>16
+	sta !vwf_text_source+2
 	jmp .NoButton
 
 .F6_HexValue
@@ -2977,48 +3190,86 @@ endif
 	sta $0E
 	lda [$0C]
 	lsr #4
-	sta !vwfroutine
-	!16bit lda #$00
-	!16bit sta !vwfroutine+1
+	sta !vwf_routine
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda [$0C]
 	and #$0F
-	sta !vwfroutine+1+!bitmode
-	!16bit lda #$00
-	!16bit sta !vwfroutine+3
+	sta !vwf_routine+1
 	lda #$FB
-	sta !vwfroutine+2+!bitmode+!bitmode
-	!16bit lda #$FF
-	!16bit sta !vwfroutine+5
+	sta !vwf_routine+2
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda #$00
+	sta !vwf_routine+1
+	lda [$0C]
+	and #$0F
+	sta !vwf_routine+2
+	lda #$00
+	sta !vwf_routine+3
+	lda #$FB
+	sta !vwf_routine+4
+	lda #$FF
+	sta !vwf_routine+5
+endif
 	rep #$20
 	lda $00
 	inc #4
-	sta !vwfroutine+3+!bitmode+!bitmode+!bitmode
+	sta !vwf_routine+3+(!vwf_bit_mode*3)
 	sep #$20
 	lda $02
-	sta !vwfroutine+5+!bitmode+!bitmode+!bitmode
-	lda.b #!vwfroutine
-	sta !vwftextsource
-	lda.b #!vwfroutine>>8
-	sta !vwftextsource+1
-	lda.b #!vwfroutine>>16
-	sta !vwftextsource+2
+	sta !vwf_routine+5+(!vwf_bit_mode*3)
+	lda.b #!vwf_routine
+	sta !vwf_text_source
+	lda.b #!vwf_routine>>8
+	sta !vwf_text_source+1
+	lda.b #!vwf_routine>>16
+	sta !vwf_text_source+2
+	
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda.b #2
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda.b #4
+endif
+	sta $03
+	lda !vwf_text_source
+	sta $00
+	lda !vwf_text_source+1
+	sta $01
+	lda !vwf_text_source+2
+	sta $02
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda !vwf_font
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda.b #$00
+endif
+	sta $04
+	jsr MapDigitsToFont
+	
 	jmp .NoButton
 
 .F7_DecValue
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda #$FB
-	!8bit sta !vwfroutine+5
-	!16bit sta !vwfroutine+10
-	!16bit lda #$FF
-	!16bit sta !vwfroutine+11
+	sta !vwf_routine+5
 	rep #$21
 	lda $00
 	adc #$0005
-	!8bit sta !vwfroutine+6
-	!16bit sta !vwfroutine+12
+	sta !vwf_routine+6
 	sep #$20
 	lda $02
-	!8bit sta !vwfroutine+8
-	!16bit sta !vwfroutine+14
+	sta !vwf_routine+8
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda #$FB
+	sta !vwf_routine+10
+	lda #$FF
+	sta !vwf_routine+11
+	rep #$21
+	lda $00
+	adc #$0005
+	sta !vwf_routine+12
+	sep #$20
+	lda $02
+	sta !vwf_routine+14
+endif
 
 	ldy #$01
 	lda [$00],y
@@ -3042,34 +3293,60 @@ endif
 	bne .SixteenBit
 	inc $00
 	inc $00
-	!16bit inc $00
-	!16bit inc $00
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	inc $00
+	inc $00
+endif
 
 .SixteenBit
 	pla
 	and #$0F
 	beq .NoZeros
 	lda $05
-	!16bit asl
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	asl
+endif
 	clc
 	adc $00
 	sta $00
 
 .NoZeros
 	rep #$21
-	lda.w #!vwfroutine
+	lda.w #!vwf_routine
 	adc $00
-	sta !vwftextsource
+	sta !vwf_text_source
 	sep #$20
-	lda.b #!vwfroutine>>16
-	sta !vwftextsource+2
+	lda.b #!vwf_routine>>16
+	sta !vwf_text_source+2
+	
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda.b #5
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda.b #10
+endif
+	sec
+	sbc $00
+	sta $03
+	lda !vwf_text_source
+	sta $00
+	lda !vwf_text_source+1
+	sta $01
+	lda !vwf_text_source+2
+	sta $02
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda !vwf_font
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda.b #$00
+endif
+	sta $04
+	jsr MapDigitsToFont
 
 	jmp .NoButton
 
 .F8_TextSpeed
 	ldy #$01
 	lda [$00],y
-	sta !frames
+	sta !vwf_frames
 	jsr IncPointer
 	jsr IncPointer
 	jmp .End
@@ -3077,9 +3354,9 @@ endif
 .F9_WaitFrames
 	ldy #$01
 	lda [$00],y
-	sta !wait
+	sta !vwf_wait
 	lda #$01
-	sta !forcesfx
+	sta !vwf_force_sfx
 	jsr IncPointer
 	jsr IncPointer
 	jmp .End
@@ -3092,42 +3369,80 @@ endif
 .FB_TextPointer
 	ldy #$01
 	lda [$00],y
-	sta !vwftextsource
+	sta !vwf_text_source
 	iny
 	lda [$00],y
-	sta !vwftextsource+1
+	sta !vwf_text_source+1
 	iny
 	lda [$00],y
-	sta !vwftextsource+2
+	sta !vwf_text_source+2
 	jmp .NoButton
 
 .FC_LoadMessage
 	lda #$6B
-	sta !messageasmopcode
+	sta !vwf_message_asm_opcode
 	ldy #$01
 	lda [$00],y
-	sta !message
+	sta !vwf_swap_message_id
 	iny
 	lda [$00],y
-	sta !message+1
-	lda !vwfmode
-	dec
-	sta !vwfmode
+	sta !vwf_swap_message_id+1
+	lda #%10000000
+	sta !vwf_swap_message_settings
+	jsr IncPointer
+	jsr IncPointer
+	
+	; RPG Hacker: Backwards compatibility hack. Uses a magic hex to determine
+	; if this is the new command format. Can be removed once version 1.3 has
+	; been released for a considerable amount of time.
+	lda !vwf_swap_message_id
+	and !vwf_swap_message_id+1
+	cmp #$FF
+	bne .Legacy
+	
+	iny
+	lda [$00],y
+	sta !vwf_swap_message_id
+	iny
+	lda [$00],y
+	sta !vwf_swap_message_id+1
+	iny
+	lda [$00],y		; Settings
+	ora #%10000000
+	sta !vwf_swap_message_settings
+	jsr IncPointer
+	jsr IncPointer
+	jsr IncPointer
+	
+.Legacy
+	; RPG Hacker: If we don't have the "show close animation" flag set, prepare the next message right now.
+	lda !vwf_swap_message_settings
+	and.b #%10000010
+	cmp.b #%10000000
+	bne .DontStartNow
+	
+	jsr PrepareNextMessage
+	
+.DontStartNow
 	lda #$01
-	sta !clearbox
-	jsr BufferGraphics_Start
-	jmp VWFInit
+	sta !vwf_end_dialog
+	jmp .End
+	
 
 .FD_LineBreak
-	!16bit rep #$20
-	!16bit lda #$FFFD
-	!8bit lda #$FD
-	sta !vwfchar
-	!16bit sep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda #$FD
+	sta !vwf_char
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda #$FFFD
+	sta !vwf_char
+	sep #$20
+endif
 	jsr IncPointer
 	jsr InitLine
-	lda !clearbox
-	ora !cursormove
+	lda !vwf_clear_box
+	ora !vwf_cursor_move
 	beq .FDReturn
 	jmp TextCreation
 
@@ -3136,12 +3451,12 @@ endif
 
 .FE_Space
 	jsr IncPointer
-	lda !vwfmaxwidth
-	cmp !space
+	lda !vwf_max_width
+	cmp !vwf_space
 	bcs .PutSpace
 	jsr InitLine
-	lda !clearbox
-	ora !cursormove
+	lda !vwf_clear_box
+	ora !vwf_cursor_move
 	bne .SpaceClearBox
 	jmp .FEReturn
 
@@ -3149,28 +3464,28 @@ endif
 	jmp TextCreation
 
 .PutSpace
-	lda !vwfmaxwidth
+	lda !vwf_max_width
 	sec
-	sbc !space
-	sta !vwfmaxwidth
+	sbc !vwf_space
+	sta !vwf_max_width
 
 if !use_sa1_mapping
 	lda #$01
 	sta $2250
 endif
-	lda !currentpixel
+	lda !vwf_current_pixel
 	clc
-	adc !space
+	adc !vwf_space
 	sta select(!use_sa1_mapping,$2251,$4204)
 	cmp #$08
 	bcc .NoNewTile
 	lda #$01
-	sta !firsttile
+	sta !vwf_first_tile
 
 .NoNewTile
-	stz select(!use_sa1_mapping,$2252,$4205)
+	stz.w select(!use_sa1_mapping,$2252,$4205)
 	lda #$08
-	sta select(!use_sa1_mapping,$2253,$4206)
+	sta.w select(!use_sa1_mapping,$2253,$4206)
 if !use_sa1_mapping
 	stz $2254
 	nop
@@ -3178,62 +3493,39 @@ if !use_sa1_mapping
 else
 	nop #8
 endif
-	lda select(!use_sa1_mapping,$2308,$4216)
-	sta !currentpixel
+	lda.w select(!use_sa1_mapping,$2308,$4216)
+	sta !vwf_current_pixel
 	rep #$20
-	lda select(!use_sa1_mapping,$2306,$4214)
+	lda.w select(!use_sa1_mapping,$2306,$4214)
 	asl
 	clc
-	adc !tile
-	sta !tile
+	adc !vwf_tile
+	sta !vwf_tile
 	sep #$20
-	lda select(!use_sa1_mapping,$2306,$4214)
+	lda.w select(!use_sa1_mapping,$2306,$4214)
 	clc
-	adc !currentx
-	sta !currentx
+	adc !vwf_current_x
+	sta !vwf_current_x
 
-	lda #$00	; Preserve everything and get width
-	sta !vwfwidth	; of next word (for word wrap)
-	lda !vwftextsource
-	pha
-	lda !vwftextsource+1
-	pha
-	lda !vwftextsource+2
-	pha
-	lda !font
-	pha
-	lda !vwfchar
-	pha
-	!16bit lda !vwfchar+1
-	!16bit pha
+	lda #$00
+	sta !vwf_char_width
 
-	jsr WordWidth
+	jsr WordWidth_Backup
+	jsr WordWidth	
+	jsr WordWidth_Restore
 
-	!16bit pla
-	!16bit sta !vwfchar+1
-	pla
-	sta !vwfchar
-	pla
-	sta !font
-	pla
-	sta !vwftextsource+2
-	pla
-	sta !vwftextsource+1
-	pla
-	sta !vwftextsource
-
-	lda !widthcarry
+	lda !vwf_width_carry
 	bne .FECarrySet
-	lda !vwfmaxwidth
-	cmp !vwfwidth
+	lda !vwf_max_width
+	cmp !vwf_char_width
 	bcs .FEReturn
 
 .FECarrySet
 	lda #$00
-	sta !widthcarry
+	sta !vwf_width_carry
 	jsr InitLine
-	lda !clearbox
-	ora !cursormove
+	lda !vwf_clear_box
+	ora !vwf_cursor_move
 	beq .FEReturn
 	jmp TextCreation
 
@@ -3241,33 +3533,46 @@ endif
 	jmp .NoButton
 
 .FF_End
-	lda !choices
+	lda !vwf_choices
 	beq .FFNoChoices
 	jmp .FD_LineBreak
 
 .FFNoChoices
 	lda #$01
-	sta !enddialog
+	sta !vwf_end_dialog
 	jsr IncPointer
 	jmp .End
 
 .WriteLetter
-	!16bit lda !vwfchar+1
-	!16bit sta !font
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+endif
+	lda !vwf_char
+	clc
+	adc !vwf_char_offset
+	sta !vwf_char
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	sep #$20
+endif
+
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	lda !vwf_char+1
+	sta !vwf_font
+endif
 	jsr GetFont
 
 	rep #$20
 	lda #$0001
 	sta $0C
-	lda !vwftextsource
+	lda.w #!vwf_char
 	sta $00
 	sep #$20
-	lda !vwftextsource+2
+	lda.b #bank(!vwf_char)
 	sta $02
 
 	lda [$00]	; Check if enough width available
 	tay
-	lda !vwfmaxwidth
+	lda !vwf_max_width
 	cmp [$06],y
 	bcs .Create
 	jsr InitLine
@@ -3275,180 +3580,197 @@ endif
 	rep #$20
 	lda #$0001
 	sta $0C
-	lda !vwftextsource
+	lda.w #!vwf_char
 	sta $00
 	sep #$20
-	lda !vwftextsource+2
+	lda.b #bank(!vwf_char)
 	sta $02
 
-	lda !clearbox
-	ora !cursormove
+	lda !vwf_clear_box
+	ora !vwf_cursor_move
 	beq .Create
 	jmp TextCreation
 
 .Create
 	jsr IncPointer
-	!16bit jsr IncPointer
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	jsr IncPointer
+endif
 	lda [$06],y
-	sta !vwfwidth
+	sta !vwf_char_width
 	jsr WriteTilemap
 
 	jsr GetDestination
 
-	lda !firsttile
+	lda !vwf_first_tile
 	bne .NoWipe
-	lda !boxcreate
+	lda !vwf_box_create
 	beq .NoWipe
 
 	jsr WipePixels
 
 .NoWipe
-	lda !currentpixel
+	lda !vwf_current_pixel
 	sta $0E
-	lda !firsttile
+	lda !vwf_first_tile
 	sta $0F
 
-	jsl GenerateVWF
+	jsl VWF_GenerateVWF
 
-	lda !boxcreate
+	lda !vwf_box_create
 	beq .End
 	rep #$20
-	lda.w #!vwfbuffer_bgtile
+	lda.w #!vwf_buffer_bg_tile
 	sta $00
-	lda !vwfbufferdest
+	lda !vwf_buffer_dest
 	sta $03
 	sep #$20
-	lda.b #!vwfbuffer_bgtile>>16
+	lda.b #!vwf_buffer_bg_tile>>16
 	sta $02
-	lda !vwfbufferdest+2
+	lda !vwf_buffer_dest+2
 	sta $05
 
 	lda #$06
 	sta $06
 
-	jsl AddPattern
+	jsl VWF_AddPattern
 
 .End
 	jmp Buffer_End
 
 HandleVWFStackByte1:
 .Pull
-	lda !vwfstackindex1
+	lda !vwf_tm_stack_index_1
 	dec
-	sta !vwfstackindex1
+	sta !vwf_tm_stack_index_1
 	tax
-	lda !vwfstack1,x
+	lda !vwf_tm_stack_1,x
 	rts
 
 .Push
 	pha
-	lda !vwfstackindex1
+	lda !vwf_tm_stack_index_1
 	tax
 	inc
-	sta !vwfstackindex1
+	sta !vwf_tm_stack_index_1
 	pla
-	sta !vwfstack1,x
+	sta !vwf_tm_stack_1,x
 	rts
 
 HandleVWFStackByte2:
 .Pull
-	lda !vwfstackindex2
+	lda !vwf_tm_stack_index_2
 	dec
-	sta !vwfstackindex2
+	sta !vwf_tm_stack_index_2
 	tax
-	lda !vwfstack2,x
+	lda !vwf_tm_stack_2,x
 	rts
 
 .Push
 	pha
-	lda !vwfstackindex2
+	lda !vwf_tm_stack_index_2
 	tax
 	inc
-	sta !vwfstackindex2
+	sta !vwf_tm_stack_index_2
 	pla
-	sta !vwfstack2,x
+	sta !vwf_tm_stack_2,x
 	rts
 
 GetFont:
 	lda #$06	; Multiply font number with 6
-	sta select(!use_sa1_mapping,$2251,$211B)
-	stz select(!use_sa1_mapping,$2252,$211B)
-	stz select(!use_sa1_mapping,$2250,$211C)
-	lda !font
-	sta select(!use_sa1_mapping,$2253,$211C)
+	sta.w select(!use_sa1_mapping,$2251,$211B)
+	stz.w select(!use_sa1_mapping,$2252,$211B)
+	stz.w select(!use_sa1_mapping,$2250,$211C)
+	lda !vwf_font
+	sta.w select(!use_sa1_mapping,$2253,$211C)
 if !use_sa1_mapping
 	stz $2254
 	nop
 endif
 	rep #$21
-	lda select(!use_sa1_mapping,$2306,$2134)
-	adc.w #Fonttable	; Add starting address
+	lda.w select(!use_sa1_mapping,$2306,$2134)
+	adc.w #FontTable	; Add starting address
 	sta $00
 	sep #$20
-	lda.b #Fonttable>>16
+	lda.b #FontTable>>16
 	sta $02
 	ldy #$00
 
 .Loop
 	lda [$00],y	; Load addresses from table
-	sta remap_ram($0003),y
+	sta remap_ram($03),y
 	iny
 	cpy #$06
 	bne .Loop
 	rts
+	
+; RPG Hacker: This might make 16-bit builds notably slower.
+; Though maybe not, since VWF_GenerateVWF isn't usually called for more than one character.
+GetFontLong:
+	jsr GetFont
+	rtl
 
 
 GetDestination:
 	rep #$20
-	lda !tile
+	lda !vwf_tile
 	and #$03FF	; Multiply tile number with 16
 	asl #4
 	clc
-	adc.w #!vwfbuffer_emptytile	; Add starting address
-	sta !vwfgfxdest
-	lda !vwfbufferindex
+	adc.w #!vwf_buffer_empty_tile	; Add starting address
+	sta !vwf_gfx_dest
+	lda !vwf_buffer_index
 	and #$003F	; Multiply tile number with 16
 	asl #4
 	clc
-	adc.w #!vwfbuffer_letters	; Add starting address
-	sta !vwfbufferdest
+	adc.w #!vwf_buffer_letters	; Add starting address
+	sta !vwf_buffer_dest
 	sta $09
 	sep #$20
-	lda.b #!vwfbuffer_letters>>16
-	sta !vwfgfxdest+2
-	sta !vwfbufferdest+2
+	lda.b #!vwf_buffer_letters>>16
+	sta !vwf_gfx_dest+2
+	sta !vwf_buffer_dest+2
 	sta $0B
 	rts
 
 
 IncPointer:
 	rep #$20
-	lda !vwftextsource
+	lda !vwf_text_source
 	inc
-	sta !vwftextsource
+	sta !vwf_text_source
+	sep #$20
+	rts
+
+
+DecPointer:
+	rep #$20
+	lda !vwf_text_source
+	dec
+	sta !vwf_text_source
 	sep #$20
 	rts
 
 
 ReadPointer:
 	rep #$20
-	lda !vwftextsource
+	lda !vwf_text_source
 	sta $00
 	sep #$20
-	lda !vwftextsource+2
+	lda !vwf_text_source+2
 	sta $02
 	rts
 
 
 Beep:
-	lda !soundoff
+	lda !vwf_sound_disabled
 	beq .Begin
 	rts
 
 .Begin
-	lda !forcesfx
+	lda !vwf_force_sfx
 	bne .Play
-	lda !frames
+	lda !vwf_frames
 	bne .Play
 	lda $13
 	and #$01
@@ -3456,64 +3778,64 @@ Beep:
 
 .Play
 	lda #$00
-	sta !forcesfx
+	sta !vwf_force_sfx
 	rep #$20
-	lda !beepbank
+	lda !vwf_beep_bank
 	sta $00
 	sep #$20
-	lda.b #!rambank
+	lda.b #!vwf_ram_bank
 	sta $02
-	lda !beep
+	lda !vwf_beep
 	sta [$00]
 
 .Return
 	rts
 
 EndBeep:
-	lda !soundoff
+	lda !vwf_sound_disabled
 	beq .Begin
 	rts
 
 .Begin
 	rep #$20
-	lda !beependbank
+	lda !vwf_beep_end_bank
 	sta $00
 	sep #$20
-	lda.b #!rambank
+	lda.b #!vwf_ram_bank
 	sta $02
-	lda !beepend
+	lda !vwf_beep_end
 	sta [$00]
 	rts
 
 CursorBeep:
-	lda !soundoff
+	lda !vwf_sound_disabled
 	beq .Begin
 	rts
 
 .Begin
 	rep #$20
-	lda !beepcursorbank
+	lda !vwf_beep_cursor_bank
 	sta $00
 	sep #$20
-	lda.b #!rambank
+	lda.b #!vwf_ram_bank
 	sta $02
-	lda !beepcursor
+	lda !vwf_beep_cursor
 	sta [$00]
 	rts
 
 ButtonBeep:
-	lda !soundoff
+	lda !vwf_sound_disabled
 	beq .Begin
 	rts
 
 .Begin
 	rep #$20
-	lda !beepchoicebank
+	lda !vwf_beep_choice_bank
 	sta $00
 	sep #$20
-	lda.b #!rambank
+	lda.b #!vwf_ram_bank
 	sta $02
-	lda !beepchoice
+	lda !vwf_beep_choice
 	sta [$00]
 	rts
 
@@ -3527,33 +3849,33 @@ WriteTilemap:
 	lda $04
 	pha
 	sep #$20
-	lda !currentx	; Get tilemap address
+	lda !vwf_current_x	; Get tilemap address
 	inc
 	clc
-	adc !xpos
+	adc !vwf_x_pos
 	sta $00
-	lda !currenty
+	lda !vwf_current_y
 	inc
 	clc
-	adc !ypos
+	adc !vwf_y_pos
 	sta $01
 	lda #$01
 	sta $02
 	jsr GetTilemapPos
-	lda.b #!vwfbuffer_textboxtilemap>>16
+	lda.b #!vwf_buffer_text_box_tilemap>>16
 	sta $05
-	sta !vwftilemapdest+2
+	sta !vwf_tilemap_dest+2
 	rep #$21
-	lda.w #!vwfbuffer_textboxtilemap
+	lda.w #!vwf_buffer_text_box_tilemap
 	adc $03
 	sta $03
-	sta !vwftilemapdest
+	sta !vwf_tilemap_dest
 
-	lda !vwfwidth
+	lda !vwf_char_width
 	clc
-	adc !currentpixel
+	adc !vwf_current_pixel
 	tax
-	lda !tile
+	lda !vwf_tile
 	ldy #$02
 
 	sta [$03]	; Write to tilemap
@@ -3568,7 +3890,7 @@ WriteTilemap:
 	sta [$03],y
 
 .SecondLine
-	lda !tile
+	lda !vwf_tile
 	inc
 	ldy #$40
 	sta [$03],y
@@ -3595,7 +3917,7 @@ WriteTilemap:
 
 
 WipePixels:
-	lda !currentpixel	; Wipe pixels to prevent overlapping
+	lda !vwf_current_pixel	; Wipe pixels to prevent overlapping
 	tax	; graphics
 	ldy #$00
 
@@ -3613,18 +3935,20 @@ WipePixels:
 	db $00,$80,$C0,$E0,$F0,$F8,$FC,$FE
 
 ;$07 : Address
-;$04 : Bitmode
+;$04 : Bit mode
 ;$05 : Zeros
 
 HextoDec:
 	jsr Convert8Bit
 	jsr GetZeros
-	!16bit lda #$00
-	!16bit sta !vwfroutine+1
-	!16bit sta !vwfroutine+3
-	!16bit sta !vwfroutine+5
-	!16bit sta !vwfroutine+7
-	!16bit sta !vwfroutine+9
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	lda #$00
+	sta !vwf_routine+1
+	sta !vwf_routine+3
+	sta !vwf_routine+5
+	sta !vwf_routine+7
+	sta !vwf_routine+9
+endif
 	rts
 
 Convert8Bit:
@@ -3654,11 +3978,11 @@ Convert8Bit:
 	bra .Tens
 
 .Ones
-	sta !vwfroutine+4+!bitmode+!bitmode+!bitmode+!bitmode
+	sta !vwf_routine+4+(!vwf_bit_mode*4)
 	lda $03
-	sta !vwfroutine+3+!bitmode+!bitmode+!bitmode
+	sta !vwf_routine+3+(!vwf_bit_mode*3)
 	lda $02
-	sta !vwfroutine+2+!bitmode+!bitmode
+	sta !vwf_routine+2+(!vwf_bit_mode*2)
 
 	rts
 
@@ -3693,7 +4017,11 @@ Convert16Bit:
 .End
 	pha
 	lda $00
-	sta !vwfroutine
+	sta !vwf_routine
+if !vwf_mode != VWF_BitMode.8Bit
+	lda $01
+	sta !vwf_routine+1+!vwf_bit_mode
+endif
 	pla
 	sep #$20
 	rts
@@ -3707,25 +4035,25 @@ GetZeros:
 
 .Tenthousands
 	inc $05
-	lda !vwfroutine
+	lda !vwf_routine
 	beq .Thousands
 	bra .End
 
 .Thousands
 	inc $05
-	lda !vwfroutine+1+!bitmode
+	lda !vwf_routine+1+!vwf_bit_mode
 	beq .Hundreds
 	bra .End
 
 .Hundreds
 	inc $05
-	lda !vwfroutine+2+!bitmode+!bitmode
+	lda !vwf_routine+2+(!vwf_bit_mode*2)
 	beq .Tens
 	bra .End
 
 .Tens
 	inc $05
-	lda !vwfroutine+3+!bitmode+!bitmode+!bitmode
+	lda !vwf_routine+3+(!vwf_bit_mode*3)
 	beq .Ones
 	bra .End
 
@@ -3734,33 +4062,127 @@ GetZeros:
 
 .End
 	rts
+	
+	
+
+; $00: The address of the number sequence to map (24-bit)
+; $03: The length of the sequence to map in bytes
+; $04: The font number
+MapDigitsToFont:
+	lda #$00
+	xba
+	lda $04
+	rep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	asl #4
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	asl #5
+endif
+	clc
+	adc.w #FontDigitsTable
+	sta $0A
+	sep #$20
+	lda.b #bank(FontDigitsTable)
+	sta $0C
+	
+	; Highly inefficient loop below. Wish there was an "lda [$00],x"...
+	ldy.b #$00
+	
+.Loop
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda [$00],y
+	tyx
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda [$00],y
+	tyx
+	asl
+endif
+	tay
+	lda [$0A],y
+	txy
+	sta [$00],y
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	iny
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	sep #$20
+	iny
+	iny
+endif
+	
+	cpy $03
+	bcc .Loop
+	
+	rts
 
 
 
 WordWidth:
-	!8bit jsr GetFont
+	; RPG Hacker: In order to make this function work reliably with the text macro system,
+	; we need to make a copy of the current text macro stack whenever we call it.
+	; I tested using a simple loop for this, because text macro stacks of more than one
+	; element should be rare, and simple loops sound like they should be faster for few iterations.
+	; However, in my testing, the MVN solution turned out to be faster even for simple stacks.
+	lda !vwf_tm_stack_index_1
+	sta !vwf_tm_stack_index_2
+	beq .NoStackCopy
+	
+	xba
+	lda.b #$00
+	xba
+	
+	rep #$30
+	
+	dec		; -1 because of how MVN works
+	
+	ldx.w #!vwf_tm_stack_1
+	ldy.w #!vwf_tm_stack_2
+	
+	phb
+	mvn bank(!vwf_tm_stack_2), bank(!vwf_tm_stack_1)
+	plb
+	
+	sep #$30
+	
+.NoStackCopy
+
+.GetFont
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	jsr GetFont
+endif
 
 .Begin
 	jsr ReadPointer
-	!16bit rep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda [$00]
-	sta !vwfchar
-	!8bit cmp #$E7
-	!16bit cmp #$FFE7
+	sta !vwf_char
+	cmp.b #!vwf_lowest_reserved_hex
 	bcs .Jump
-	!16bit sep #$20
-	!16bit jsr IncPointer
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda [$00]
+	sta !vwf_char
+	cmp.w #!vwf_lowest_reserved_hex
+	bcs .Jump
+	sep #$20
+	jsr IncPointer
+endif
 	jsr IncPointer
 	jmp .Add
 
 .Jump
 	sec
-	!8bit sbc #$E7
-	!16bit sbc #$FFE7
-	!16bit sep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	sbc.b #!vwf_lowest_reserved_hex
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	sbc.w #!vwf_lowest_reserved_hex
+	sep #$20
+endif
 	asl
 	tax
-	!16bit jsr IncPointer
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	jsr IncPointer
+endif
 	jsr IncPointer
 	jsr ReadPointer
 	jmp (.Routinetable,x)
@@ -3768,9 +4190,9 @@ WordWidth:
 .Routinetable
 	dw .E7_EndTextMacro
 	dw .E8_TextMacro
-	dw .FF_End
-	dw .FF_End
-	dw .EB_DoNothing
+	dw .E9_TextMacroGroup
+	dw .EA_CharOffset
+	dw .EB_LockTextBox
 	dw .EC_PlayBGM
 	dw .ED_ClearBox
 	dw .EE_ChangeColor
@@ -3794,47 +4216,124 @@ WordWidth:
 
 .E7_EndTextMacro
 	jsr HandleVWFStackByte2_Pull
-	sta !vwftextsource+2
+	sta !vwf_text_source+2
 	jsr HandleVWFStackByte2_Pull
-	xba
+	sta !vwf_text_source+1
 	jsr HandleVWFStackByte2_Pull
-	rep #$21
-	adc #$0002
-	sta !vwftextsource
-	sep #$20
+	sta !vwf_text_source
 	jmp .Begin
 
 .E8_TextMacro
+	rep #$20
 	lda $00
+	clc
+	adc.w #$0002
+	sep #$20
+	
 	jsr HandleVWFStackByte2_Push
-	lda $01
+	xba
 	jsr HandleVWFStackByte2_Push
 	lda $02
 	jsr HandleVWFStackByte2_Push
+	
 	rep #$30
 	lda.b [$00]
-	cmp #$0010
+	
+.TextMacroShared
+	sta $0C
+	asl
+	clc
+	adc $0C
+	cmp #!vwf_num_reserved_text_macros*3
 	bcs ..NotBufferedText
+	tax
+	lda !vwf_tm_buffers_text_pointers,x
+	sta !vwf_text_source
+	sep #$30
+	lda !vwf_tm_buffers_text_pointers+2,x
+	bra +
+
+..NotBufferedText
+	sec
+	sbc #!vwf_num_reserved_text_macros*3
+	tax
+	lda TextMacroPointers,x
+	sta !vwf_text_source
+	sep #$30
+	lda TextMacroPointers+2,x
++
+	sta !vwf_text_source+2
+	jmp .Begin
+	
+.E9_TextMacroGroup
+	rep #$20
+	lda $00
+	clc
+	adc.w #$0004
+	sep #$20
+	
+	jsr HandleVWFStackByte2_Push
+	xba
+	jsr HandleVWFStackByte2_Push
+	lda $02
+	jsr HandleVWFStackByte2_Push
+	
+	; Load RAM address
+	lda.b [$00]
+	sta $0C	
+	ldy #$01
+	lda.b [$00],y
+	sta $0D
+	iny
+	lda.b [$00],y
+	sta $0E
+	
+	lda #$00
+	pha
+	lda [$0C]
+	pha
+	
+	; Load group ID
+	iny
+	lda #$00
+	xba
+	lda.b [$00],y
+		
+	rep #$20
 	sta $0C
 	asl
 	clc
 	adc $0C
 	tax
-	lda !vwftbufferedtextpointers,x
-	sta !vwftextsource
-	sep #$30
-	lda.b #!vwftextbuffer>>16
-	bra +
-
-..NotBufferedText
+	sep #$20
+	
+	lda TextMacroGroupPointers,x
+	sta $0C
+	lda TextMacroGroupPointers+1,x
+	sta $0D
+	lda TextMacroGroupPointers+2,x
+	sta $0E
+	
+	rep #$30
+	pla
 	asl
-	tax
-	lda.l TextMacroPointers,x
-	sta !vwftextsource
-	sep #$30
-	lda.b #TextMacros>>16
-+
-	sta !vwftextsource+2
+	tay
+	lda [$0C],y
+	clc
+	adc.w #!vwf_num_reserved_text_macros
+
+	jmp .TextMacroShared
+	
+.EA_CharOffset
+	ldy #$01
+	lda [$00]
+	sta !vwf_char_offset
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	lda [$00],y
+	sta !vwf_char_offset+1
+	jsr IncPointer
+endif
+	jsr IncPointer
 	jmp .Begin
 
 .EE_ChangeColor
@@ -3847,20 +4346,25 @@ WordWidth:
 
 .F2_ChangeFont
 	lda [$00]
-	sta !font
+	sta !vwf_font
 	jsr IncPointer
-	jmp WordWidth
+	jmp .GetFont
 
 .F3_ChangePalette
 	jsr IncPointer
 	jmp .Begin
 
 .F4_Character
-	!16bit rep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda [$00]
-	sta !vwfchar
-	!16bit sep #$20
-	!16bit jsr IncPointer
+	sta !vwf_char
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda [$00]
+	sta !vwf_char
+	sep #$20
+	jsr IncPointer
+endif
 	jsr IncPointer
 	jmp .Add
 
@@ -3876,10 +4380,15 @@ WordWidth:
 	jsr IncPointer
 	jsr IncPointer
 	jsr IncPointer
-	!16bit rep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda [$0C]
-	sta !vwfchar
-	!16bit sep #$20
+	sta !vwf_char
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda [$0C]
+	sta !vwf_char
+	sep #$20
+endif
 	jmp .Add
 
 .F6_HexValue
@@ -3893,48 +4402,85 @@ WordWidth:
 	sta $0E
 	lda [$0C]
 	lsr #4
-	sta !vwfroutine
-	!16bit lda #$00
-	!16bit sta !vwfroutine+1
+	sta !vwf_routine
+if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda [$0C]
 	and #$0F
-	sta !vwfroutine+1+!bitmode
-	!16bit lda #$00
-	!16bit sta !vwfroutine+3
+	sta !vwf_routine+1
 	lda #$FB
-	sta !vwfroutine+2+!bitmode+!bitmode
-	!16bit lda #$FF
-	!16bit sta !vwfroutine+5
+	sta !vwf_routine+2
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda #$00
+	sta !vwf_routine+1
+	lda [$0C]
+	and #$0F
+	sta !vwf_routine+2
+	lda #$00
+	sta !vwf_routine+3
+	lda #$FB
+	sta !vwf_routine+4
+	lda #$FF
+	sta !vwf_routine+5
+endif
 	rep #$20
 	lda $00
 	inc #3
-	sta !vwfroutine+3+!bitmode+!bitmode+!bitmode
+	sta !vwf_routine+3+(!vwf_bit_mode*3)
 	sep #$20
 	lda $02
-	sta !vwfroutine+5+!bitmode+!bitmode+!bitmode
-	lda.b #!vwfroutine
-	sta !vwftextsource
-	lda.b #!vwfroutine>>8
-	sta !vwftextsource+1
-	lda.b #!vwfroutine>>16
-	sta !vwftextsource+2
+	sta !vwf_routine+5+(!vwf_bit_mode*3)
+	lda.b #!vwf_routine
+	sta !vwf_text_source
+	lda.b #!vwf_routine>>8
+	sta !vwf_text_source+1
+	lda.b #!vwf_routine>>16
+	sta !vwf_text_source+2
+	
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda.b #2
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda.b #4
+endif
+	sta $03
+	lda !vwf_text_source
+	sta $00
+	lda !vwf_text_source+1
+	sta $01
+	lda !vwf_text_source+2
+	sta $02
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda !vwf_font
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda.b #$00
+endif
+	sta $04
+	jsr MapDigitsToFont
+	
 	jmp .Begin
 
 .F7_DecValue
 	lda #$FB
-	!8bit sta !vwfroutine+5
-	!16bit sta !vwfroutine+10
-	!16bit lda #$FF
-	!16bit sta !vwfroutine+11
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	sta !vwf_routine+5
 	rep #$21
 	lda $00
 	adc #$0004
-	!8bit sta !vwfroutine+6
-	!16bit sta !vwfroutine+12
+	sta !vwf_routine+6
 	sep #$20
 	lda $02
-	!8bit sta !vwfroutine+8
-	!16bit sta !vwfroutine+14
+	sta !vwf_routine+8
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	sta !vwf_routine+10
+	lda #$FF
+	sta !vwf_routine+11
+	rep #$21
+	lda $00
+	adc #$0004
+	sta !vwf_routine+12
+	sep #$20
+	lda $02
+	sta !vwf_routine+14
+endif
 
 	ldy #$01
 	lda [$00]
@@ -3957,29 +4503,55 @@ WordWidth:
 	bne .SixteenBit
 	inc $00
 	inc $00
-	!16bit inc $00
-	!16bit inc $00
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	inc $00
+	inc $00
+endif
 
 .SixteenBit
 	pla
 	and #$0F
 	beq .NoZeros
 	lda $05
-	!16bit asl
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	asl
+endif
 	clc
 	adc $00
 	sta $00
 
 .NoZeros
 	rep #$21
-	lda.w #!vwfroutine
+	lda.w #!vwf_routine
 	adc $00
-	sta !vwftextsource
+	sta !vwf_text_source
 	sep #$20
-	lda.b #!vwfroutine>>16
-	sta !vwftextsource+2
+	lda.b #!vwf_routine>>16
+	sta !vwf_text_source+2
+	
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda.b #5
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda.b #10
+endif
+	sec
+	sbc $00
+	sta $03
+	lda !vwf_text_source
+	sta $00
+	lda !vwf_text_source+1
+	sta $01
+	lda !vwf_text_source+2
+	sta $02
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda !vwf_font
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	lda.b #$00
+endif
+	sta $04
+	jsr MapDigitsToFont
 
-	jmp WordWidth
+	jmp .GetFont
 
 .EC_PlayBGM
 .F8_TextSpeed
@@ -3993,15 +4565,15 @@ WordWidth:
 .FB_TextPointer
 	ldy #$01
 	lda [$00]
-	sta !vwftextsource
+	sta !vwf_text_source
 	lda [$00],y
-	sta !vwftextsource+1
+	sta !vwf_text_source+1
 	iny
 	lda [$00],y
-	sta !vwftextsource+2
+	sta !vwf_text_source+2
 	jmp .Begin
 
-.EB_DoNothing
+.EB_LockTextBox
 .ED_ClearBox
 .F0_Choices
 .FC_LoadMessage
@@ -4010,29 +4582,139 @@ WordWidth:
 .FF_End
 	jmp .Return
 
-.Add
-	!16bit lda !vwfchar+1
-	!16bit sta !font
-	!16bit jsr GetFont
-	lda !vwfchar
+.Add	
+;if !vwf_bit_mode == VWF_BitMode.16Bit
+;	rep #$20
+;endif
+;	lda !vwf_char
+;	clc
+;	adc !vwf_char_offset
+;if !vwf_bit_mode == VWF_BitMode.16Bit
+;	sep #$20
+;	xba
+;	sta !vwf_font
+;	xba
+;	pha
+;	jsr GetFont
+;	pla
+;endif
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+endif
+	lda !vwf_char
+	clc
+	adc !vwf_char_offset
+	sta !vwf_char
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	sep #$20
+endif
+
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	lda !vwf_char+1
+	sta !vwf_font
+	jsr GetFont
+endif
+	lda !vwf_char
 	tay
 	lda [$06],y
 	clc
-	adc !vwfwidth
+	adc !vwf_char_width
 	bcs .End
-	cmp !vwfmaxwidth
+	cmp !vwf_max_width
 	bcc .Continue
 	bne .End
 
 .Continue
-	sta !vwfwidth
+	sta !vwf_char_width
 	jmp .Begin
 
 .End
 	lda #$01
-	sta !widthcarry
+	sta !vwf_width_carry
 
-.Return
+.Return	
+	; RPG Hacker: This is necessary, because some outside code checks
+	; if the last character this routine read was a space.
+	; I don't even remember why. It's literally been over a decade since I initially wrote this.
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda !vwf_char
+	sta $0A
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda !vwf_char
+	sta $0A
+	sep #$20
+endif
+	
+	rts
+	
+	
+; RPG Hacker: These routines are kinda stinky.
+; Their purpose was to simplify code by removing duplication.
+; However, I feel they just made the code even more complicated.
+.Backup
+	pla
+	sta $0B
+	pla
+	sta $0C
+
+	lda !vwf_text_source
+	pha
+	lda !vwf_text_source+1
+	pha
+	lda !vwf_text_source+2
+	pha
+	lda !vwf_font
+	pha
+	lda !vwf_char
+	pha
+	lda !vwf_char_offset
+	pha
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	lda !vwf_char+1
+	pha
+	lda !vwf_char_offset+1
+	pha
+endif
+
+	lda $0C
+	pha
+	lda $0B
+	pha
+
+	rts
+
+	
+.Restore
+	pla
+	sta $0B
+	pla
+	sta $0C
+	
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	pla
+	sta !vwf_char_offset+1
+	pla
+	sta !vwf_char+1
+endif
+	pla
+	sta !vwf_char_offset
+	pla
+	sta !vwf_char
+	pla
+	sta !vwf_font
+	pla
+	sta !vwf_text_source+2
+	pla
+	sta !vwf_text_source+1
+	pla
+	sta !vwf_text_source
+
+	lda $0C
+	pha
+	lda $0B
+	pha
+	
 	rts
 
 
@@ -4045,7 +4727,7 @@ WordWidth:
 
 ; This loads up graphics and tilemaps to VRAM.
 
-VBlank:
+VBlank:	
 	phx
 	phy
 	pha
@@ -4059,18 +4741,18 @@ VBlank:
 	bra .End
 
 .NoPause
-	lda !vwfmode	; Prepare jump to routine
+	lda !vwf_mode	; Prepare jump to routine
 	beq .End
 
-	lda !paletteupload	; This code takes care of palette upload requests
+	lda !vwf_palette_upload	; This code takes care of palette upload requests
 	beq .skip
 	lda #$00
-	sta !paletteupload
+	sta !vwf_palette_upload
 	sta $2121
-	%dmatransfer(!dma_channel_nmi,!dma_write_twice,$2122,!palettebackupram,#$0040)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteTwice, $2122, !vwf_palette_backup_ram, #$0040)
 .skip
 
-	lda !vwfmode
+	lda !vwf_mode
 	asl
 	tax
 	lda #$F0	; Hide Status Bar item
@@ -4085,7 +4767,7 @@ VBlank:
 	ply
 	plx
 
-	lda !vwfmode	; Skip Status Bar in dialogues
+	lda !vwf_mode	; Skip Status Bar in dialogues
 	bne .SkipStatusBar
 	lda remap_ram($0D9B)
 	lsr
@@ -4127,13 +4809,13 @@ VBlankEnd:
 
 .NotSwitchPallace
 	lda #$00
-	sta !freezesprites
+	sta !vwf_freeze_sprites
 	
-	lda !teleport	; Check if teleport set
+	lda !vwf_teleport	; Check if teleport set
 	beq .NoTeleport
 
 	lda #$00
-	sta !teleport
+	sta !vwf_teleport
 
 if read1($05D7B9) == $22					;\ Account for LM 3.00's level dimension hijacks.
 	jsl.l read3($05D7BA)					;|
@@ -4150,9 +4832,9 @@ else								;/
 
 .SetupTeleport
 endif
-	lda !telepdest
+	lda !vwf_teleport_dest
 	sta remap_ram($19B8),x
-	lda !telepprop
+	lda !vwf_teleport_prop
 	ora #$04
 	sta remap_ram($19D8),x
 
@@ -4164,7 +4846,7 @@ endif
 
 .NoTeleport
 	lda #$00	; VWF dialogue end
-	sta !vwfmode
+	sta !vwf_mode
 
 	jmp VBlank_End
 
@@ -4176,25 +4858,25 @@ endif
 
 PrepareBackup:
 	lda #$08	; Prepare backup of layer 3
-	sta !counter
+	sta !vwf_counter
 	rep #$20
 	lda #$0000
-	sta !vrampointer
+	sta !vwf_vram_pointer
 	sep #$20
 
-	lda !vwfmode
+	lda !vwf_mode
 	cmp #$02
-	bne .dontpreserveL3
+	bne .DontPreserveL3
 	lda $3E
-	sta !l3priorityflag
+	sta !vwf_l3_priority_flag
 	lda remap_ram($0D9E)
-	sta !l3subscreenflag
+	sta !vwf_l3_sub_screen_flag
 	lda $40
-	sta !l3transparencyflag
+	sta !vwf_l3_transparency_flag
 	lda remap_ram($0D9D)
-	sta !l3mainscreenflag
+	sta !vwf_l3_main_screen_flag
 
-.dontpreserveL3
+.DontPreserveL3
 
 	lda #$04	; Hide layer 3
 	trb remap_ram($0D9D)
@@ -4205,9 +4887,9 @@ PrepareBackup:
 	sta $212D
 
 .End
-	lda !vwfmode
+	lda !vwf_mode
 	inc
-	sta !vwfmode
+	sta !vwf_mode
 	jmp VBlank_End
 
 
@@ -4217,45 +4899,45 @@ PrepareBackup:
 Backup:
 	rep #$21
 	lda #$4000	; Adjust VRAM address
-	adc !vrampointer
+	adc !vwf_vram_pointer
 	sta $02
 
-	lda !vrampointer
+	lda !vwf_vram_pointer
 	asl a
 	clc
-	adc.w #!backupram	; Adjust destination address
+	adc.w #!vwf_backup_ram	; Adjust destination address
 	sta $00
 
-	lda !vrampointer	; Adjust pointer
+	lda !vwf_vram_pointer	; Adjust pointer
 	clc
 	adc #$0400
-	sta !vrampointer
+	sta !vwf_vram_pointer
 	sep #$20
 
-	lda !vwfmode
+	lda !vwf_mode
 	cmp #$03
 	beq .Backup
 	jmp .Restore
 
 .Backup
-	%vramprepare(#$80,$02,"lda $2139","")
-	%dmatransfer(!dma_channel_nmi,!dma_read_once,$2139,dma_source_indirect_word($00, bank(!backupram)),#$0800)
+	%configure_vram_access(VRamAccessMode.Read, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, $02)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.ReadOnce, $2139, dma_source_indirect_word($00, bank(!vwf_backup_ram)), #$0800)
 	jmp .Continue
 
 .Restore
-	%vramprepare(#$80,$02,"","")
-	%dmatransfer(!dma_channel_nmi,!dma_write_once,$2118,dma_source_indirect_word($00, bank(!backupram)),#$0800)
+	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, $02)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, dma_source_indirect_word($00, bank(!vwf_backup_ram)), #$0800)
 
 .Continue
-	lda !counter	; Reduce iteration counter
+	lda !vwf_counter	; Reduce iteration counter
 	dec
-	sta !counter
+	sta !vwf_counter
 	bne .NotDone
 
 .End
-	lda !vwfmode
+	lda !vwf_mode
 	inc
-	sta !vwfmode
+	sta !vwf_mode
 
 .NotDone
 	jmp VBlank_End
@@ -4265,9 +4947,9 @@ Backup:
 
 
 BackupEnd:
-	lda !vwfmode
+	lda !vwf_mode
 	cmp #$06
-	bne .layer3Subscreen
+	bne .Layer3Subscreen
 	lda #$08
 	tsb $3E
 	lda remap_ram($0D9D)
@@ -4276,25 +4958,25 @@ BackupEnd:
 	trb $40
 
 .End
-	lda !vwfmode
+	lda !vwf_mode
 	inc
-	sta !vwfmode
+	sta !vwf_mode
 	jmp VBlank_End
 
-.layer3Subscreen
-	lda !l3subscreenflag
+.Layer3Subscreen
+	lda !vwf_l3_sub_screen_flag
 	and #$04
 	ora remap_ram($0D9E)
 	sta remap_ram($0D9E)
 	sta $212D
-	lda !l3mainscreenflag
+	lda !vwf_l3_main_screen_flag
 	and #$04
 	ora remap_ram($0D9D)
 	sta remap_ram($0D9D)
 	sta $212C
-	lda !l3priorityflag
+	lda !vwf_l3_priority_flag
 	sta $3E
-	lda !l3transparencyflag
+	lda !vwf_l3_transparency_flag
 	and #$04
 	ora $40
 	sta $40
@@ -4306,19 +4988,29 @@ BackupEnd:
 
 SetupColor:
 	stz $2121	; Backup or restore layer 3 colors
-	lda !vwfmode
+	lda !vwf_mode
 	cmp #$05
 	beq .Backup
 .Restore
-	%mvntransfer($0040, !palbackup, !palettebackupram, !cpu_snes)
-	%dmatransfer(!dma_channel_nmi,!dma_write_twice,$2122,!palettebackupram,#$0040)
+	%vwf_mvn_transfer($0040, !vwf_palette_backup, !vwf_palette_backup_ram, !vwf_cpu_snes)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteTwice, $2122, !vwf_palette_backup_ram, #$0040)
 	jmp .End
 
 .Backup
-	%dmatransfer(!dma_channel_nmi,!dma_read_twice,$213B,!palettebackupram,#$0040)
-	%mvntransfer($0040, !palettebackupram, !palbackup, !cpu_snes)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.ReadTwice, $213B, !vwf_palette_backup_ram, #$0040)
+	%vwf_mvn_transfer($0040, !vwf_palette_backup_ram, !vwf_palette_backup, !vwf_cpu_snes)
+	
+	jsr InitBoxColors
 
-	lda !boxpalette	; Set BG and letter color
+.End
+	lda !vwf_mode
+	inc
+	sta !vwf_mode
+	jmp VBlank_End
+	
+	
+InitBoxColors:
+	lda !vwf_box_palette	; Set BG and letter color
 	asl #2
 	inc
 	asl
@@ -4327,15 +5019,15 @@ SetupColor:
 	ldx #$00	
 	
 	; RPG Hacker: Because an "Absolute Long Indexed, Y" mode doesn't exist...
-	lda.b #!palettebackupram
+	lda.b #!vwf_palette_backup_ram
 	sta $00
-	lda.b #!palettebackupram>>8
+	lda.b #!vwf_palette_backup_ram>>8
 	sta $01
-	lda.b #!palettebackupram>>16
+	lda.b #!vwf_palette_backup_ram>>16
 	sta $02
 
 .BoxColorLoop
-	lda !boxcolor,x
+	lda !vwf_box_color,x
 	sta [$00],y
 	iny
 	inx
@@ -4343,32 +5035,27 @@ SetupColor:
 	bne .BoxColorLoop
 
 	ply
-	lda #!framepalette	; Set frame color
+	lda #!vwf_frame_palette	; Set frame color
 	asl #2
 	inc
 	asl
 	phx
 	tax
-	phk
-	pla
+	lda.b #bank(FramePalettes+2)
 	sta $02
-	lda #$08
-	sta $211B
-	stz $211B
-	stz $211C
-	lda !boxframe
-	sta $211C
-	nop
+	lda #$00
+	xba
+	lda !vwf_box_frame
 	rep #$21
-	lda $2134
-	adc.w #Palettes+2
+	asl #3
+	adc.w #FramePalettes+2
 	sta $00
 	sep #$20
 	ldy #$00
 
 .FrameColorLoop
 	lda [$00],y
-	sta !palettebackupram,x
+	sta !vwf_palette_backup_ram,x
 	inx
 	iny
 	cpy #$06
@@ -4376,29 +5063,26 @@ SetupColor:
 	plx
 
 	lda #$01
-	sta !paletteupload
-
-.End
-	lda !vwfmode
-	inc
-	sta !vwfmode
-	jmp VBlank_End
+	sta !vwf_palette_upload
+	
+	rts
 
 
 
 
 
 PrepareScreen:
-	%vramprepare(#$80,#$4000,"","")	; Upload graphics and tilemap to VRAM
-	%dmatransfer(!dma_channel_nmi,!dma_write_once,$2118,!vwfbuffer_emptytile,#$00B0)
+	; Upload graphics and tilemap to VRAM
+	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, #$4000)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, !vwf_buffer_empty_tile, #$00B0)
 
-	%vramprepare(#$80,#$5C80,"","")
-	%dmatransfer(!dma_channel_nmi,!dma_write_once,$2118,!vwfbuffer_textboxtilemap,#$0700)
+	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, #$5C80)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, !vwf_buffer_text_box_tilemap, #$0700)
 
 .End
-	lda !vwfmode
+	lda !vwf_mode
 	inc
-	sta !vwfmode
+	sta !vwf_mode
 	jmp VBlank_End
 
 
@@ -4406,131 +5090,165 @@ PrepareScreen:
 
 
 CreateWindow:
-	%vramprepare(#$80,#$5C80,"","")
-	%dmatransfer(!dma_channel_nmi,!dma_write_once,$2118,!vwfbuffer_textboxtilemap,#$0700)
+	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, #$5C80)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, !vwf_buffer_text_box_tilemap, #$0700)
 
-	lda !counter
+	lda !vwf_counter
 	cmp #$02
 	bne .Return
 
 .End
 	lda #$00
-	sta !counter
-	lda !vwfmode
+	sta !vwf_counter
+	lda !vwf_mode
 	inc
-	sta !vwfmode
-
+	sta !vwf_mode
+	
+	; RPG Hacker: Check if we still have "next message" stored from the "load message" command.
+	; If so, we gotta jump back to an earlier step.
+	lda !vwf_swap_message_settings
+	and.b #%10000010
+	cmp.b #%10000010
+	bne .NoNextMessage
+	
+	jsr StartNextMessage
+	
+.NoNextMessage
 .Return
 	jmp VBlank_End
 
 
 TextUpload:
-	lda !cursorfix
+	lda !vwf_cursor_fix
 	beq .SkipCursor
 	dec
-	sta !cursorfix
+	sta !vwf_cursor_fix
 
-	%vramprepare(#$80,!cursorvram,"","")
-	%dmatransfer(!dma_channel_nmi,!dma_write_once,$2118,dma_source_indirect_word(!cursorsrc, bank(!vwfbuffer_textboxtilemap)),#$0046)
+	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, !vwf_cursor_vram)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, dma_source_indirect_word(!vwf_cursor_source, bank(!vwf_buffer_text_box_tilemap)), #$0046)
 
 .SkipCursor
-	lda !wait	; Wait for frames?
+	lda !vwf_wait	; Wait for frames?
 	beq .NoFrames
-	lda !wait
+	lda !vwf_wait
 	dec
-	sta !wait
+	sta !vwf_wait
 	jmp .Return
 
 .NoFrames
-	lda !cursormove
+	lda !vwf_cursor_move
 	bne .Cursor
 	jmp .NoCursor
 
 
 .Cursor
-	lda !cursorupload
+	lda !vwf_cursor_upload
 	bne .UploadCursor
 	jmp .NoCursorUpload
 
 .UploadCursor
 	lda #$00
-	sta !cursorupload
+	sta !vwf_cursor_upload
 
-	%vramprepare(#$80,#$5C50,"","")
-	%dmatransfer(!dma_channel_nmi,!dma_write_once,$2118,!vwftileram,#$0060)
+	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, #$5C50)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, !vwf_tile_ram, #$0060)
 
 	rep #$20
-	lda !vwftilemapdest
+	lda !vwf_tilemap_dest
 	sec
-	sbc.w #!vwfbuffer_textboxtilemap
+	sbc.w #!vwf_buffer_text_box_tilemap
 	lsr
 	clc
 	adc #$5C80
 	sta $00
 	sep #$20
 
-	%vramprepare(#$80,$00,"","")
-	%dmatransfer(!dma_channel_nmi,!dma_write_once,$2118,dma_source_indirect(!vwftilemapdest),#$0046)
+	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, $00)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, dma_source_indirect(!vwf_tilemap_dest), #$0046)
 
 	jmp .Return
 
 .NoCursorUpload
-	lda !cursorend
+	lda !vwf_cursor_end
 	bne .CursorEnd
 	jmp .Return
 
 .CursorEnd
 	lda #$00
-	sta !cursorend
-	lda !currentchoice
+	sta !vwf_cursor_end
+	lda !vwf_current_choice
 	dec
-	sta !currentchoice
+	sta !vwf_current_choice
 	asl
 	clc
-	adc !currentchoice
+	adc !vwf_current_choice
 	tay
-	lda !choicetable
+	lda !vwf_choice_table
 	sta $00
-	lda !choicetable+1
+	lda !vwf_choice_table+1
 	sta $01
-	lda !choicetable+2
+	lda !vwf_choice_table+2
 	sta $02
 	lda [$00],y
-	sta !vwftextsource
+	sta !vwf_text_source
 	iny
 	lda [$00],y
-	sta !vwftextsource+1
+	sta !vwf_text_source+1
 	iny
 	lda [$00],y
-	sta !vwftextsource+2
+	sta !vwf_text_source+2
 	lda #$00
-	sta !cursormove
-	sta !choices
-	sta !currentchoice
-	sta !vwfchar
-	!16bit sta !vwfchar+1
+	sta !vwf_cursor_move
+	sta !vwf_choices
+	sta !vwf_current_choice
+	sta !vwf_char
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	sta !vwf_char+1
+endif
 	lda #$01
-	sta !clearbox
+	sta !vwf_clear_box
 	jmp .Return
 
 
 .NoCursor
-	lda !enddialog	; Dialogue done?
+	lda !vwf_end_dialog	; Dialogue done?
 	beq .NoEnd
 	lda #$00
-	sta !enddialog
-	!16bit rep #$20
-	!16bit lda #$0000
-	!8bit lda #$00
-	sta !vwfchar
-	!16bit sep #$20
+	sta !vwf_end_dialog
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda #$00
+	sta !vwf_char
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda #$0000
+	sta !vwf_char
+	sep #$20
+endif
+	
+	; RPG Hacker: Display next message now if we're coming from a "load message"
+	; command and don't have the "show close animation" flag set.
+	lda !vwf_swap_message_settings
+	and.b #%10000010
+	cmp.b #%10000000
+	bne .NoNextMessage
+	
+	jsr StartNextMessage
+	jmp VBlank_End
+	
+.NoNextMessage
 	jmp .End
 
 .NoEnd
-	lda !vwfchar
-	!8bit cmp #$FA	; Waiting for A button?
-	!16bit cmp #$FFFA
-	!16bit sep #$20
+	; Are we waiting for an A button press?
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda !vwf_char
+	cmp #$FA
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda !vwf_char
+	cmp #$FFFA
+	sep #$20
+endif
 	beq .CheckButton
 	jmp .Upload
 
@@ -4541,29 +5259,31 @@ TextUpload:
 	bne .NotPressed
 	jsr ButtonBeep
 	lda #$00
-	sta !vwfchar
-	!16bit sta !vwfchar+1
+	sta !vwf_char
+if !vwf_bit_mode == VWF_BitMode.16Bit
+	sta !vwf_char+1
+endif
 	lda #$00
-	sta !timer
+	sta !vwf_timer
 
 .NotPressed
-	lda !boxcreate
+	lda !vwf_box_create
 	bne .CheckTimer
 	jmp .Return
 
 .CheckTimer
-	lda !timer	; Display arrow if waiting for button
+	lda !vwf_timer	; Display arrow if waiting for button
 	inc
-	sta !timer
+	sta !vwf_timer
 	cmp #$21
 	bcc .NoReset
 	lda #$00
-	sta !timer
+	sta !vwf_timer
 
 .NoReset
-	%vramprepare(#$00,!arrowvram,"","")
+	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnLowByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, !vwf_arrow_vram)
 
-	lda !timer
+	lda !vwf_timer
 	cmp #$11
 	bcs .Arrow
 	lda #$05
@@ -4577,92 +5297,149 @@ TextUpload:
 	jmp .Return
 
 .Upload
-	lda !clearbox
+	lda !vwf_clear_box
 	beq .Begin
 	lda #$00
-	sta !clearbox
-	sta !isnotatstartoftext
-	%vramprepare(#$80,#$5C80,"","")
-	%dmatransfer(!dma_channel_nmi,!dma_write_once,$2118,!vwfbuffer_textboxtilemap,#$0700)
+	sta !vwf_clear_box
+	lda #$01
+	sta !vwf_at_start_of_text
+	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, #$5C80)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, !vwf_buffer_text_box_tilemap, #$0700)
 	jmp .Return
 
 .Begin
 	rep #$20	; Upload GFX
-	lda !vwfgfxdest
+	lda !vwf_gfx_dest
 	sec
-	sbc.w #!vwfbuffer_emptytile
+	sbc.w #!vwf_buffer_empty_tile
 	lsr
 	clc
 	adc #$4000
 	sta $00
 	sep #$20
-	%vramprepare(#$80,$00,"","")
-	%dmatransfer(!dma_channel_nmi,!dma_write_once,$2118,dma_source_indirect(!vwfbufferdest),#$0060)
+	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, $00)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, dma_source_indirect(!vwf_buffer_dest), #$0060)
 
 	rep #$20	; Upload Tilemap
-	lda !vwftilemapdest
+	lda !vwf_tilemap_dest
 	sec
-	sbc.w #!vwfbuffer_textboxtilemap
+	sbc.w #!vwf_buffer_text_box_tilemap
 	lsr
 	clc
 	adc #$5C80
 	sta $00
 	sep #$20
-	%vramprepare(#$80,$00,"","")
-	%dmatransfer(!dma_channel_nmi,!dma_write_once,$2118,dma_source_indirect(!vwftilemapdest),#$0046)
+	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, $00)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, dma_source_indirect(!vwf_tilemap_dest), #$0046)
 
 	jsr Beep
 
-	lda !frames
-	sta !wait
+	lda !vwf_frames
+	sta !vwf_wait
 
-	lda !speedup
+	lda !vwf_speed_up
 	beq .Return
-	!16bit rep #$20
-	lda !vwfchar
-	!8bit cmp #$F9
-	!16bit cmp #$FFF9
-	!16bit sep #$20
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda !vwf_char
+	cmp #$F9
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda !vwf_char
+	cmp #$FFF9
+	sep #$20
+endif
 	beq .Return
 	lda $15
 	and #$80
 	cmp #$80
 	bne .Return
 	lda #$00
-	sta !wait
+	sta !vwf_wait
 	jmp .Return
 
 .End
-	lda !vwfmode
+	lda !vwf_mode
 	inc
-	sta !vwfmode
+	sta !vwf_mode
 
 .Return
 	jmp VBlank_End
+	
+	
+; RPG Hacker: This is split into two routines, because some code needs to run in the buffering phase,
+; and other code needs to run in the graphics upload phase. It might actually be save to do all of it
+; in the same one, but I don't even want to risk it, especially not with SA-1 compatibility being a factor.
+PrepareNextMessage:
+	lda !vwf_swap_message_id
+	sta !vwf_message
+	lda !vwf_swap_message_id+1
+	sta !vwf_message+1
+	
+	lda !vwf_swap_message_settings
+	bit.b #%00000001
+	beq .NoOpenAnim
+	
+	jsr BufferGraphics_Start
+	jsr GetMessage
+	jsr LoadHeader
+	
+	bra .Return
+	
+.NoOpenAnim	
+	jsr BufferGraphics_Start
+	
+.Return	
+	rts
+	
+	
+StartNextMessage:
+	lda !vwf_swap_message_settings
+	bit.b #%00000001
+	beq .NoOpenAnim
+	
+	lda #$06
+	sta !vwf_mode
+	
+	jsr InitBoxColors
+	
+	bra .Return
+	
+.NoOpenAnim	
+	lda #$08
+	sta !vwf_mode
+	
+.Return
+	lda #$00
+	sta !vwf_swap_message_settings
+	sta !vwf_swap_message_id
+	sta !vwf_swap_message_id+1
+	
+	rts
+
 
 
 
 BackupTilemap:
-	lda !edge
+	lda !vwf_edge
 	lsr #3
 	clc
-	adc !xpos
+	adc !vwf_x_pos
 	inc
 	sta $00
 
-	lda !currenty
+	lda !vwf_current_y
 	sec
-	sbc !choices
+	sbc !vwf_choices
 	sec
-	sbc !choices
+	sbc !vwf_choices
 	sta $01
-	lda !currentchoice
+	lda !vwf_current_choice
 	dec
 	asl
 	clc
 	adc $01
 	clc
-	adc !ypos
+	adc !vwf_y_pos
 	inc
 	sta $01
 
@@ -4671,10 +5448,10 @@ BackupTilemap:
 
 	jsr GetTilemapPos
 
-	lda.b #!vwfbuffer_textboxtilemap>>16
+	lda.b #!vwf_buffer_text_box_tilemap>>16
 	sta $05
 	rep #$21
-	lda.w #!vwfbuffer_textboxtilemap
+	lda.w #!vwf_buffer_text_box_tilemap
 	adc $03
 	sta $03
 	sep #$20
@@ -4687,21 +5464,21 @@ BackupTilemap:
 	rep #$20
 	ldy #$02
 	lda [$03]
-	sta !vwfbuffer_choicebackup
+	sta !vwf_buffer_choice_backup
 	lda [$03],y
-	sta !vwfbuffer_choicebackup+$02
+	sta !vwf_buffer_choice_backup+$02
 	iny #2
 	lda [$03],y
-	sta !vwfbuffer_choicebackup+$04
+	sta !vwf_buffer_choice_backup+$04
 	ldy #$40
 	lda [$03],y
-	sta !vwfbuffer_choicebackup+$06
+	sta !vwf_buffer_choice_backup+$06
 	iny #2
 	lda [$03],y
-	sta !vwfbuffer_choicebackup+$08
+	sta !vwf_buffer_choice_backup+$08
 	iny #2
 	lda [$03],y
-	sta !vwfbuffer_choicebackup+$0A
+	sta !vwf_buffer_choice_backup+$0A
 	sep #$20
 
 	rts
@@ -4709,21 +5486,21 @@ BackupTilemap:
 .Restore
 	rep #$20
 	ldy #$02
-	lda !vwfbuffer_choicebackup
+	lda !vwf_buffer_choice_backup
 	sta [$03]
-	lda !vwfbuffer_choicebackup+$02
+	lda !vwf_buffer_choice_backup+$02
 	sta [$03],y
 	iny #2
-	lda !vwfbuffer_choicebackup+$04
+	lda !vwf_buffer_choice_backup+$04
 	sta [$03],y
 	ldy #$40
-	lda !vwfbuffer_choicebackup+$06
+	lda !vwf_buffer_choice_backup+$06
 	sta [$03],y
 	iny #2
-	lda !vwfbuffer_choicebackup+$08
+	lda !vwf_buffer_choice_backup+$08
 	sta [$03],y
 	iny #2
-	lda !vwfbuffer_choicebackup+$0A
+	lda !vwf_buffer_choice_backup+$0A
 	sta [$03],y
 	sep #$20
 
@@ -4739,248 +5516,19 @@ BackupTilemap:
 	rep #$20
 	lda $03
 	sec
-	sbc.w #!vwfbuffer_textboxtilemap
+	sbc.w #!vwf_buffer_text_box_tilemap
 	lsr
 	clc
 	adc #$5C80
-	sta !cursorvram
+	sta !vwf_cursor_vram
 	lda $03
-	sta !cursorsrc
+	sta !vwf_cursor_source
 	sep #$20
 	lda #$01
-	sta !cursorfix
+	sta !vwf_cursor_fix
 
 	rts
-
-
-
-
-
-;;;;;;;;;;;;;;
-;VWF Routines;
-;;;;;;;;;;;;;;
-
-; The actual VWF Creation routine.
-
-;$00 : Text
-;$03 : GFX 1
-;$06 : Width
-;$09 : Destination
-;$0C : Number of Bytes -> GFX 2
-;$0E : Current Pixel
-;$0F : First Tile?
-
-GenerateVWF:
-	lda $0E
-	sta !currentpixel
-	lda $0F
-	sta !firsttile
-	rep #$20
-	lda $0C
-	sta !vwfbytes
-	sep #$20
-	lda $05	; Get GFX 2 Offset
-	sta $0E
-	rep #$21
-	lda $03
-	adc #$0020
-	sta $0C
-
-.Read
-	lda [$00]	; Read character
-	inc $00
-	!16bit inc $00
-	!8bit sep #$20
-	sta !vwfchar
-	!16bit sep #$20
-	!16bit lda !vwfchar+1
-	!16bit sta !font
-	!16bit jsr GetFont
-	!16bit lda $05
-	!16bit sta $0E
-	!16bit rep #$21
-	!16bit lda $03
-	!16bit adc #$0020
-	!16bit sta $0C
-	!16bit sep #$20
-	!16bit lda !vwfchar
-	tay
-	lda [$06],y	; Get width
-	sta !vwfwidth
-	lda !vwfmaxwidth
-	sec
-	sbc !vwfwidth
-	sta !vwfmaxwidth
-
-.Begin
-	lda !vwfchar	; Get letter offset into Y
-	sta select(!use_sa1_mapping,$2251,$211B)
-	stz select(!use_sa1_mapping,$2252,$211B)
-	stz select(!use_sa1_mapping,$2250,$211C)
-	lda #$40
-	sta select(!use_sa1_mapping,$2253,$211C)
-	if !use_sa1_mapping : stz $2254
-	rep #$10
-	ldy select(!use_sa1_mapping,$2306,$2134)
-	ldx #$0000
-
-.Draw
-	lda !currentpixel
-	sta $0F
-	lda [$03],y	; Load one pixelrow of letter
-	sta !vwftileram,x
-	lda [$0C],y
-	sta !vwftileram+32,x
-	lda #$00
-	sta !vwftileram+64,x
-
-.Check
-	lda $0F
-	beq .Skip
-	lda !vwftileram,x	; Shift to the right
-	lsr
-	sta !vwftileram,x
-	lda !vwftileram+32,x
-	ror
-	sta !vwftileram+32,x
-	lda !vwftileram+64,x
-	ror
-	sta !vwftileram+64,x
-	dec $0F
-	bra .Check
-
-.Skip
-	iny
-	inx
-	cpx #$0020
-	bne .Draw
-	sep #$10
-	ldx #$00
-	txy
-
-	lda !firsttile	; Skip one step if first tile in line
-	beq .Combine
-	lda #$00
-	sta !firsttile
-	bra .Copy
-
-.Combine
-	lda !vwftileram,x	; Combine old graphic with new
-	ora [$09],y
-	sta [$09],y
-	inx
-	iny
-	cpx #$20
-	bne .Combine
-
-.Copy
-	lda !vwftileram,x	; Copy remaining part of letter
-	sta [$09],y
-	inx
-	iny
-	cpx #$60
-	bne .Copy
-
-if !use_sa1_mapping
-	lda #$01
-	sta $2250
-endif
-	lda !currentpixel	; Adjust destination address
-	clc
-	adc !vwfwidth
-	sta select(!use_sa1_mapping,$2251,$4204)
-	stz select(!use_sa1_mapping,$2252,$4205)
-	lda #$08
-	sta select(!use_sa1_mapping,$2253,$4206)
-if !use_sa1_mapping
-	stz $2254
-	nop
-	bra $00
-else
-	nop #8
-endif
-	lda select(!use_sa1_mapping,$2308,$4216)
-	sta !currentpixel
-	rep #$20
-	lda select(!use_sa1_mapping,$2306,$4214)
-	asl
-	pha
-	clc
-	adc !tile
-	sta !tile
-	pla
-	clc
-	sep #$20
-	adc !vwfbufferindex
-	sta !vwfbufferindex
-	lda select(!use_sa1_mapping,$2306,$4214)
-	clc
-	adc !currentx
-	sta !currentx
-	lda select(!use_sa1_mapping,$2306,$4214)
-	sta select(!use_sa1_mapping,$2251,$211B)
-	stz select(!use_sa1_mapping,$2250,$211B)
-	stz select(!use_sa1_mapping,$2252,$211C)
-	lda #$20
-	sta select(!use_sa1_mapping,$2253,$211C)
-if !use_sa1_mapping
-	stz $2254
-	nop
-endif
-	rep #$21
-	lda select(!use_sa1_mapping,$2306,$2134)
-	adc $09
-	sta $09
-
-	lda !vwfbytes	; Adjust number of bytes
-	dec
-	sta !vwfbytes
-	beq .End
-	jmp .Read
-
-.End
-	sep #$20
-	rtl
-
-
-
-
-
-; Adds the background pattern to letters.
-
-
-;$00 : Graphic
-;$03 : Destination
-;$06 : Number of tiles
-
-AddPattern:
-	ldy #$00
-
-.Combine
-	iny
-	lda [$03],y
-	eor #$FF
-	dey
-	and [$00],y
-	ora [$03],y
-	sta [$03],y
-
-	iny #2
-	cpy #$10
-	bne .Combine
-
-	rep #$21
-	lda $03
-	adc #$0010
-	sta $03
-	sep #$20
-	dec $06
-	lda $06
-	bne AddPattern
-
-.End
-	rtl
-
+	
 
 
 
@@ -4992,85 +5540,123 @@ Emptytile:
 
 
 
-;;;;;;;;;;;;;;;;
-;[CUSTOMTABLES];
-;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;
+;Main Data Section;
+;;;;;;;;;;;;;;;;;;;
 
-Fonttable:
-incsrc vwffontpointers.asm
+!frame_palette_num_math = ((FramePalettesEnd-FramePalettes)/8)
 
-Palettes:
-incsrc vwfframes.asm
+!frame_num_math = ((FramesEnd-Frames)/(9*8*2))
 
 
-
-
-
-;;;;;;;;;;;;;;;;
-;External Files;
-;;;;;;;;;;;;;;;;
-
+!num_frames := !frame_palette_num_math
+NumFrames:
+	db !num_frames
+	
+	
 Frames:
-incbin vwfframes.bin
+incbin data/gfx/vwfframes.bin
+FramesEnd:
 
-Patterns:
-incbin vwfpatterns.bin
-
-Font1:
-incbin vwffont1.bin
-.Width
-incsrc vwffont1.asm
-
-freedata
-!PrevFreespace:
-
-Pointers:
-incsrc vwfmessagepointers.asm
-
-Text:
-incsrc vwfmessages.asm
-
-Code:
-incsrc vwfcode.asm
-
-;-------------------------------------------------------------
-;INSERT DATA HERE!
+FramePalettes:
+	%vwf_define_frames()
+FramePalettesEnd:
 
 
+assert !frame_num_math == round(!frame_num_math, 0), "vwfframes.bin has an unexpected size. Should be divisible by ",dec(9*8*2),"."
+
+assert !frame_palette_num_math == round(!frame_palette_num_math, 0), "%vwf_define_frames() has an unexpected size. Should be divisible by 8."
+
+assert !frame_num_math == !frame_palette_num_math, "The number of text box frames in vwfframes.bin and the number of frame properties in %vwf_define_frames() mismatch. Found ",double(!frame_num_math)," frames and ",double(!frame_palette_num_math)," frame properties."
 
 
+!bg_pattern_num_math = ((BgPatternsEnd-BgPatterns)/(8*2))
 
-;END
-;-------------------------------------------------------------
+
+!num_bg_patterns := !bg_pattern_num_math
+NumBgPatterns:
+	db !num_bg_patterns
+	
+	
+BgPatterns:
+incbin data/gfx/vwfbgpatterns.bin
+BgPatternsEnd:
+
+
+assert !bg_pattern_num_math == round(!bg_pattern_num_math, 0), "vwfbgpatterns.bin has an unexpected size. Should be divisible by ",dec(8*2),"."
+
+
+%vwf_first_bank()
+
+MainDataStart:
+	; RPG Hacker: Using ?= for this, so that we can overwrite it for the test suite.
+	!vwf_data_include ?= %vwf_define_data()
+	!vwf_data_include
+
+; RPG Hacker: Would prefer to call this in vwfmacros.asm, but that
+; would throw an error on !vwf_default_font, because it wouldn't know
+; how many fonts have actually been added yet.
+%vwf_verfiy_default_arguments()
+
+%vwf_next_bank()
+
+%vwf_generate_pointers()
+
+SharedRoutinesTable:
+	%vwf_generate_shared_routines_table()
+
 
 print ""
 print "Patch inserted at $",hex(FreecodeStart),"."
-print "Text data inserted at $",hex(Text),"."
+
+!temp_i #= 0
+while !temp_i < !vwf_num_text_files
+	print "Text data !temp_i inserted at $",hex(TextFile!temp_i),"."
+	!temp_i #= !temp_i+1
+endwhile
+undef "temp_i"
+
+!temp_i #= 0
+while !temp_i < !vwf_num_fonts
+	print "Font data !temp_i inserted at $",hex(Font!temp_i),"."
+	!temp_i #= !temp_i+1
+endwhile
+undef "temp_i"
+
 print freespaceuse," bytes of free space used."
-print dec(!varrampos)," bytes of \!varram used."
+print dec(!vwf_var_rampos)," bytes of \!vwf_var_ram used."
 
 print ""
-print "VWF Creation Routine at address $",hex(GenerateVWF),"."
-print "Pattern Addition Routine at address $",hex(AddPattern),"."
-print "DisplayAMessage routine located at $",hex(DisplayAMessage),"."
-
-print ""
-print "VWF State register at address $",hex(!vwfmode),"."
-print "Message register at address $",hex(!message),"."
-print "BG GFX register at address $",hex(!boxbg),"."
-print "BG Color register at address $",hex(!boxcolor),"."
-print "Frame GFX register at address $",hex(!boxframe),"."
-print "Abort Dialogue Processing register at address $",hex(!enddialog),"."
-;print "MessageASM opcode register at address $",hex(!messageasmopcode),"."
-;print "Active VWF Message Flag at address $",hex(!vwfactiveflag),"."
-
-print ""
-print "See Readme for details!"
-
+print "Shared routines inserted at start address $",hex(SharedRoutines)
+print "Reserved ",dec(SharedRoutinesEnd-SharedRoutines)," bytes of free space for shared routines."
 print ""
 
+!temp_i #= 0
+while !temp_i < !vwf_num_shared_routines
+	print "Shared routine '!{vwf_shared_routine_!{temp_i}_label_name}' at address $",hex(!{vwf_shared_routine_!{temp_i}_label_name}),"."
 
-freedata : prot !PrevFreespace : Kleenex: db $00	;ignore this line, it must be at the end of the patch for technical reasons
+	!temp_i #= !temp_i+1
+endwhile
+undef "temp_i"
+
+
+print ""
+print "VWF State register at address $",hex(!vwf_mode),"."
+print "Message register at address $",hex(!vwf_message),"."
+print "BG GFX register at address $",hex(!vwf_box_bg),"."
+print "BG Color register at address $",hex(!vwf_box_color),"."
+print "Frame GFX register at address $",hex(!vwf_box_frame),"."
+print "Abort Dialogue Processing register at address $",hex(!vwf_end_dialog),"."
+;print "MessageASM opcode register at address $",hex(!vwf_message_asm_opcode),"."
+;print "Active VWF Message Flag at address $",hex(!vwf_active_flag),"."
+
+print ""
+print "Check the manual for details!"
+
+print ""
+
+
+freedata : prot !vwf_prev_freespace : Kleenex: db $00	;ignore this line, it must be at the end of the patch for technical reasons
 ;print "End of VWF data at $",pc,"."
 
 namespace off

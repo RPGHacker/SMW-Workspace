@@ -6,7 +6,8 @@
 
 ; Unit Test: RAM Remapping
 
-incsrc ./../shared.asm
+incsrc shared/shared.asm
+incsrc shared/ram_getters.asm
 
 
 !num_tests_performed = 0
@@ -97,6 +98,7 @@ print ""
 %test_remap_function(remap_ram, $B5, $30A9)
 %test_remap_function(remap_ram, $154C, $32DC)
 %test_remap_function(remap_ram, $0100, $6100)
+%test_remap_function(remap_ram, $7E0100, $400100)
 %test_remap_function(remap_ram, $1000, $7000)
 %test_remap_function(remap_ram, $7EC800, $40C800)
 %test_remap_function(remap_ram, $7FAB1C, $6056)

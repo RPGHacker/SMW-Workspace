@@ -12,10 +12,44 @@
 	image-rendering: crisp-edges;
 }
 
+table.api-documentation {
+	border-collapse: separate;
+	border-spacing: 0em 1em;
+	border-style: hidden;
+	padding: 5px;
+}
+
+ul.parameter-list {
+	list-style-type: none;
+	padding: 0;
+	margin: 0;
+}
+
+table.api-documentation th {
+	text-align: center;
+	padding: 0px 15px;
+}
+
+table.api-documentation td > ul.parameter-list {
+	margin-top:	1rem;
+	margin-bottom:	1rem;
+	margin-block-start:	1rem;
+	margin-block-end:	1rem;
+
+	padding-left:	1rem;
+	padding-right:	1rem;
+	padding-inline-start:	1rem;
+	padding-inline-end:	1rem;
+}
+
 table.kv-map > tbody > tr > th::after {
 	content:	":";
 	margin-left:	2px;
 	margin-right:	8px;
+}
+
+table.parameter-list > tr > td:first-child {
+	white-space: nowrap;
 }
 
 dd {
@@ -78,4 +112,11 @@ ol > details > summary,
 ul > details > summary {
 	display:	list-item	flex;
 	list-style-position:	outside;
+}
+
+table, th, td {
+  border: 1px solid;
+  padding: 5px;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }

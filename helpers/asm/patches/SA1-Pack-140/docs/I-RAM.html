@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> I-RAM.html</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>
+<a id="user-content-i-ram" class="anchor" href="#i-ram" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>I-RAM</h1>
+<p>I-RAM is the SA-1 internal memory. 2 kB (2048 bytes) big, it's clocked at 10.74 MHz and can be accessed though addresses <code>$3000-$37FF</code> on the S-CPU and <code>$0000-$07FF</code> or <code>$3000-$37FF</code> on the C-CPU
+though banks <code>$00-$3F</code> and <code>$80-$BF</code>.</p>
+<p>Being the fastest memory available, it's used mainly to hold the SMW's Direct Page,
+as cache/scratch memory, some sprite tables as well C-CPU's stack and
+Character Conversion DMA buffer.</p>
+<p>The I-RAM has unrestricted memory access. C-CPU always accesses it at 10.74 MHz and S-CPU accesses at 2.68 MHz. The memory also offers write protection, useful for preventing data loss in case of a game crash. See SA-1 registers <code>$2229</code> and <code>$222A</code> for more information.</p>
+<hr>
+<h3>
+<a id="user-content-i-ram-memory-map" class="anchor" href="#i-ram-memory-map" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>I-RAM Memory Map</h3>
+<p><strong>Page</strong> in this document refers to a block of <code>0x100</code> or 256 bytes.</p>
+<h5>
+<a id="user-content-page-0" class="anchor" href="#page-0" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Page 0</h5>
+<table>
+<thead>
+<tr>
+<th align="center">Start</th>
+<th align="center">End</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>$3000</code></td>
+<td align="center"><code>$30FF</code></td>
+<td>SMW's<code>$7E:0000-$7E:00FF</code>-- the Direct Page.</td>
+</tr>
+</tbody>
+</table>
+<h5>
+<a id="user-content-page-1" class="anchor" href="#page-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Page 1</h5>
+<table>
+<thead>
+<tr>
+<th align="center">Start</th>
+<th align="center">End</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>$3100</code></td>
+<td align="center"><code>$313F</code></td>
+<td>Extended scratch memory for the SA-1. Sometimes<code>$00-$07</code>is used in part of the boost patches, for sharing information between C-CPU and S-CPU.</td>
+</tr>
+<tr>
+<td align="center"><code>$3140</code></td>
+<td align="center"><code>$317E</code></td>
+<td>Empty. Cleared on reset.</td>
+</tr>
+<tr>
+<td align="center"><code>$317F</code></td>
+<td align="center"><code>-</code></td>
+<td>Total character conversions to be done during NMI. If non-zero, the CC-DMA is executed on the next V-Blank period.</td>
+</tr>
+<tr>
+<td align="center"><code>$3180</code></td>
+<td align="center"><code>$3182</code></td>
+<td>SA-1 Code Pointer (from S-CPU to C-CPU).</td>
+</tr>
+<tr>
+<td align="center"><code>$3183</code></td>
+<td align="center"><code>$3185</code></td>
+<td>SNES Code Pointer (from C-CPU to S-CPU).</td>
+</tr>
+<tr>
+<td align="center"><code>$3186</code></td>
+<td align="center"><code>$3188</code></td>
+<td>SA-1 Parallel Mode Pointer.</td>
+</tr>
+<tr>
+<td align="center"><code>$3189</code></td>
+<td align="center"><code>-</code></td>
+<td>SA-1 done flag (sets when the code pointed at <code>$3080-$3082</code>returns).</td>
+</tr>
+<tr>
+<td align="center"><code>$318A</code></td>
+<td align="center"><code>-</code></td>
+<td>SNES done flag (sets when the code pointed at <code>$3083-$3085</code>returns).</td>
+</tr>
+<tr>
+<td align="center"><code>$318B</code></td>
+<td align="center"><code>-</code></td>
+<td>Parallel Mode flag (set to start SA-1 Parallel Mode).</td>
+</tr>
+<tr>
+<td align="center"><code>$318C</code></td>
+<td align="center"><code>-</code></td>
+<td>SA-1 DMA done flag (sets when finished).</td>
+</tr>
+<tr>
+<td align="center"><code>$318D</code></td>
+<td align="center"><code>-</code></td>
+<td>Character Conversion DMA flag (sets when enabled).</td>
+</tr>
+<tr>
+<td align="center"><code>$318E</code></td>
+<td align="center"><code>-</code></td>
+<td>
+<strong>Special Flags (zw------)</strong> <ul>
+<li>w: Sets to 1 when the emulator (usually Snes9x) swaps the lower and upper part of a 6 or 8MB ROM, altering the behavior of the Super MMC registers<code>$2220-$2223</code>.</li>
+<li>z: ZSNES flag, which is used by certain parts of the patch to correct eventual emulator-specific issues.</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$318F</code></td>
+<td align="center"><code>-</code></td>
+<td>Copy of the register<code>$2225</code>. If you change<code>$2225</code>, make sure to change this too. It's used to preserve the register value on SA-1 IRQs.</td>
+</tr>
+<tr>
+<td align="center"><code>$3190</code></td>
+<td align="center"><code>$31DF</code></td>
+<td>Character Conversion DMA table. The table is 80 bytes long and allows up to 10 slots. See also <code>$317F</code>.</td>
+</tr>
+<tr>
+<td align="center"><code>$31E0</code></td>
+<td align="center"><code>$31FF</code></td>
+<td>Memory reserved and dedicated for the Parallel Mode.</td>
+</tr>
+</tbody>
+</table>
+<h5>
+<a id="user-content-page-2" class="anchor" href="#page-2" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Page 2</h5>
+<table>
+<thead>
+<tr>
+<th align="center">Start</th>
+<th align="center">End</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>$3200</code></td>
+<td align="center"><code>$3215</code></td>
+<td>SMW's<code>$7E:009E</code> <em>(used to be Direct Page)</em>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$3216</code></td>
+<td align="center"><code>$322B</code></td>
+<td>SMW's<code>$7E:00D8</code> <em>(used to be Direct Page)</em>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$322C</code></td>
+<td align="center"><code>$3241</code></td>
+<td>SMW's<code>$7E:00E4</code> <em>(used to be Direct Page)</em>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$3242</code></td>
+<td align="center"><code>$3257</code></td>
+<td>SMW's<code>$7E:14C8</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$3258</code></td>
+<td align="center"><code>$326D</code></td>
+<td>SMW's<code>$7E:14D4</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$326E</code></td>
+<td align="center"><code>$3283</code></td>
+<td>SMW's<code>$7E:14E0</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$3284</code></td>
+<td align="center"><code>$3299</code></td>
+<td>SMW's<code>$7E:151C</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$329A</code></td>
+<td align="center"><code>$32AF</code></td>
+<td>SMW's<code>$7E:1528</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$32B0</code></td>
+<td align="center"><code>$32C5</code></td>
+<td>SMW's<code>$7E:1534</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$32C6</code></td>
+<td align="center"><code>$32DB</code></td>
+<td>SMW's<code>$7E:1540</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$32DC</code></td>
+<td align="center"><code>$32F1</code></td>
+<td>SMW's<code>$7E:154C</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$32F2</code></td>
+<td align="center"><strong><code>$3307</code></strong></td>
+<td>SMW's<code>$7E:1558</code>
+</td>
+</tr>
+</tbody>
+</table>
+<h5>
+<a id="user-content-page-3" class="anchor" href="#page-3" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Page 3</h5>
+<table>
+<thead>
+<tr>
+<th align="center">Start</th>
+<th align="center">End</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><strong><code>$3308</code></strong></td>
+<td align="center"><code>$331D</code></td>
+<td>SMW's<code>$7E:1564</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$331E</code></td>
+<td align="center"><code>$3333</code></td>
+<td>SMW's<code>$7E:1570</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$3334</code></td>
+<td align="center"><code>$3349</code></td>
+<td>SMW's<code>$7E:157C</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$334A</code></td>
+<td align="center"><code>$335F</code></td>
+<td>SMW's<code>$7E:1588</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$3360</code></td>
+<td align="center"><code>$3375</code></td>
+<td>SMW's<code>$7E:1594</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$3376</code></td>
+<td align="center"><code>$338B</code></td>
+<td>SMW's<code>$7E:15A0</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$338C</code></td>
+<td align="center"><code>$33A1</code></td>
+<td>SMW's<code>$7E:15AC</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$33A2</code></td>
+<td align="center"><code>$33B7</code></td>
+<td>SMW's<code>$7E:15EA</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$33B8</code></td>
+<td align="center"><code>$33CD</code></td>
+<td>SMW's<code>$7E:15F6</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$33CE</code></td>
+<td align="center"><code>$33E3</code></td>
+<td>SMW's<code>$7E:1602</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$33E4</code></td>
+<td align="center"><code>$33F9</code></td>
+<td>SMW's<code>$7E:160E</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$33FA</code></td>
+<td align="center"><strong><code>$340F</code></strong></td>
+<td>SMW's<code>$7E:163E</code>
+</td>
+</tr>
+</tbody>
+</table>
+<h5>
+<a id="user-content-page-4" class="anchor" href="#page-4" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Page 4</h5>
+<table>
+<thead>
+<tr>
+<th align="center">Start</th>
+<th align="center">End</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><strong><code>$3410</code></strong></td>
+<td align="center"><code>$3425</code></td>
+<td>SMW's<code>$7E:187B</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$3426</code></td>
+<td align="center"><code>$34FF</code></td>
+<td>Empty. Cleared on reset.</td>
+</tr>
+</tbody>
+</table>
+<h5>
+<a id="user-content-page-5" class="anchor" href="#page-5" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Page 5</h5>
+<table>
+<thead>
+<tr>
+<th align="center">Start</th>
+<th align="center">End</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>$3500</code></td>
+<td align="center"><code>$35FF</code></td>
+<td>Empty. Cleared on reset.</td>
+</tr>
+</tbody>
+</table>
+<h5>
+<a id="user-content-page-6" class="anchor" href="#page-6" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Page 6</h5>
+<table>
+<thead>
+<tr>
+<th align="center">Start</th>
+<th align="center">End</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>$3600</code></td>
+<td align="center"><code>$36FF</code></td>
+<td>Empty. Cleared on reset.</td>
+</tr>
+</tbody>
+</table>
+<h5>
+<a id="user-content-page-7" class="anchor" href="#page-7" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Page 7</h5>
+<table>
+<thead>
+<tr>
+<th align="center">Start</th>
+<th align="center">End</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>$3700</code></td>
+<td align="center"><code>$377F</code></td>
+<td>Character Conversion output. This memory region is used by the hardware either as a buffer during the Character Conversion 1 DMA operation or as the character output during the Character Conversion 2 operation. Uses 32 bytes for 2BPP mode, 64 bytes for 4BPP mode and 128 bytes for 8BPP mode. See the SNES development book II, Section 1, Chapter 6 for more information.</td>
+</tr>
+<tr>
+<td align="center"><code>$3780</code></td>
+<td align="center"><code>$37FF</code></td>
+<td>Reserved for the SA-1 CPU stack.</td>
+</tr>
+</tbody>
+</table>
+
+</body>
+</html>

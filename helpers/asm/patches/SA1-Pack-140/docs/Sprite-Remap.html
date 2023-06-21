@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> Sprite-Remap.html</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>
+<a id="user-content-arujuss-more-sprites-patch-remap" class="anchor" href="#arujuss-more-sprites-patch-remap" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Arujus's More Sprites Patch Remap</h1>
+<blockquote>
+<p>The main task of the patch is to remap three sprite tables that were previously on the direct page off of the direct page, namely the sprite number table, the X position low byte table and the Y position low byte table. The main idea for doing this is to store three pointers on the direct page that point to the appropriate indices into these tables and then replace accesses to the old sprite tables indexed by x with indirect accesses to one of the pointers on the direct page, which will point to the correct address into the new sprite table.</p>
+</blockquote>
+<p>Arujus's words extracted from <code>more_sprites.asm</code>. The main challenge of the sprite expansion patch wasn't to remap the sprite tables to I-RAM, nor expand them, but move three tables in particular from direct page addressing to absolute addressing without having to reallocate half of the game code. With the remapping done, it was fairly trivial to expand the direct page addressing sprite tables to 22 bytes long with the extra space freed from the other direct page tables.</p>
+<h2>
+<a id="user-content-more-sprites-special-dp-addresses" class="anchor" href="#more-sprites-special-dp-addresses" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>'More Sprites' Special DP Addresses</h2>
+<p>These addresses are updated as soon as a sprite starts executing and are workarounds for when it's not possible to change a 2-byte to 3-byte opcode to accommodate<code>$3200+x</code>,<code>$3216+x</code>and<code>$322C+x</code>.</p>
+<table>
+<thead>
+<tr>
+<th align="center">DP</th>
+<th align="center">Size</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>$87</code></td>
+<td align="center">1 byte</td>
+<td>Holds the current sprite number. Used when a sprite can't load <code>$B4</code> indirectly, for example when it wants to load it on the X/Y register instead of the accumulator A.</td>
+</tr>
+<tr>
+<td align="center"><code>$B4</code></td>
+<td align="center">2 bytes</td>
+<td>Points to<code>$3200</code>+ current sprite slot, which holds the current sprite number.</td>
+</tr>
+<tr>
+<td align="center"><code>$CC</code></td>
+<td align="center">2 bytes</td>
+<td>Points to<code>$3216</code>+ current sprite slot, which holds the current sprite Y position low byte.</td>
+</tr>
+<tr>
+<td align="center"><code>$EE</code></td>
+<td align="center">2 bytes</td>
+<td>Points to<code>$322C</code>+ current sprite slot, which holds the current sprite X position low byte.</td>
+</tr>
+</tbody>
+</table>
+<h2>
+<a id="user-content-sprite-tables-memory-map" class="anchor" href="#sprite-tables-memory-map" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Sprite Tables Memory Map</h2>
+<p>Below is the memory map of all sprite tables. Each table is now 22 bytes long, compared to the original SMW which was 12 bytes long.</p>
+<h3>
+<a id="user-content-direct-page-i-ram-addresses" class="anchor" href="#direct-page-i-ram-addresses" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Direct Page I-RAM Addresses</h3>
+<table>
+<thead>
+<tr>
+<th align="center">Start</th>
+<th align="center">End</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>$309E</code></td>
+<td align="center"><code>$30B3</code></td>
+<td>SMW's <code>$7E:00AA</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$30B6</code></td>
+<td align="center"><code>$30CB</code></td>
+<td>SMW's <code>$7E:00B6</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$30D8</code></td>
+<td align="center"><code>$30ED</code></td>
+<td>SMW's <code>$7E:00C2</code>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>
+<a id="user-content-absolute-i-ram-addresses" class="anchor" href="#absolute-i-ram-addresses" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Absolute I-RAM Addresses</h3>
+<table>
+<thead>
+<tr>
+<th align="center">Start</th>
+<th align="center">End</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>$3200</code></td>
+<td align="center"><code>$3215</code></td>
+<td>SMW's <code>$7E:009E</code> <em>(used to be Direct Page)</em>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$3216</code></td>
+<td align="center"><code>$322B</code></td>
+<td>SMW's <code>$7E:00D8</code> <em>(used to be Direct Page)</em>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$322C</code></td>
+<td align="center"><code>$3241</code></td>
+<td>SMW's <code>$7E:00E4</code> <em>(used to be Direct Page)</em>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$3242</code></td>
+<td align="center"><code>$3257</code></td>
+<td>SMW's <code>$7E:14C8</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$3258</code></td>
+<td align="center"><code>$326D</code></td>
+<td>SMW's <code>$7E:14D4</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$326E</code></td>
+<td align="center"><code>$3283</code></td>
+<td>SMW's <code>$7E:14E0</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$3284</code></td>
+<td align="center"><code>$3299</code></td>
+<td>SMW's <code>$7E:151C</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$329A</code></td>
+<td align="center"><code>$32AF</code></td>
+<td>SMW's <code>$7E:1528</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$32B0</code></td>
+<td align="center"><code>$32C5</code></td>
+<td>SMW's <code>$7E:1534</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$32C6</code></td>
+<td align="center"><code>$32DB</code></td>
+<td>SMW's <code>$7E:1540</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$32DC</code></td>
+<td align="center"><code>$32F1</code></td>
+<td>SMW's <code>$7E:154C</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$32F2</code></td>
+<td align="center"><code>$3307</code></td>
+<td>SMW's <code>$7E:1558</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$3308</code></td>
+<td align="center"><code>$331D</code></td>
+<td>SMW's <code>$7E:1564</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$331E</code></td>
+<td align="center"><code>$3333</code></td>
+<td>SMW's <code>$7E:1570</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$3334</code></td>
+<td align="center"><code>$3349</code></td>
+<td>SMW's <code>$7E:157C</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$334A</code></td>
+<td align="center"><code>$335F</code></td>
+<td>SMW's <code>$7E:1588</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$3360</code></td>
+<td align="center"><code>$3375</code></td>
+<td>SMW's <code>$7E:1594</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$3376</code></td>
+<td align="center"><code>$338B</code></td>
+<td>SMW's <code>$7E:15A0</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$338C</code></td>
+<td align="center"><code>$33A1</code></td>
+<td>SMW's <code>$7E:15AC</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$33A2</code></td>
+<td align="center"><code>$33B7</code></td>
+<td>SMW's <code>$7E:15EA</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$33B8</code></td>
+<td align="center"><code>$33CD</code></td>
+<td>SMW's <code>$7E:15F6</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$33CE</code></td>
+<td align="center"><code>$33E3</code></td>
+<td>SMW's <code>$7E:1602</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$33E4</code></td>
+<td align="center"><code>$33F9</code></td>
+<td>SMW's <code>$7E:160E</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$33FA</code></td>
+<td align="center"><code>$340F</code></td>
+<td>SMW's <code>$7E:163E</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$3410</code></td>
+<td align="center"><code>$3425</code></td>
+<td>SMW's <code>$7E:187B</code>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>
+<a id="user-content-absolute-bw-ram-addresses" class="anchor" href="#absolute-bw-ram-addresses" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Absolute BW-RAM Addresses</h3>
+<table>
+<thead>
+<tr>
+<th align="center">Start</th>
+<th align="center">End</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>$74C8</code></td>
+<td align="center"><code>$74DD</code></td>
+<td>SMW's <code>$7E:14EC</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$74DE</code></td>
+<td align="center"><code>$74F3</code></td>
+<td>SMW's <code>$7E:14F8</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$74F4</code></td>
+<td align="center"><code>$7509</code></td>
+<td>SMW's <code>$7E:1504</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$750A</code></td>
+<td align="center"><code>$751F</code></td>
+<td>SMW's <code>$7E:1510</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$7520</code></td>
+<td align="center"><code>$7535</code></td>
+<td>SMW's <code>$7E:15B8</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$7536</code></td>
+<td align="center"><code>$754B</code></td>
+<td>SMW's <code>$7E:15C4</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$754C</code></td>
+<td align="center"><code>$7561</code></td>
+<td>SMW's <code>$7E:15D0</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$7562</code></td>
+<td align="center"><code>$7577</code></td>
+<td>SMW's <code>$7E:15DC</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$7578</code></td>
+<td align="center"><code>$758D</code></td>
+<td>SMW's <code>$7E:161A</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$758E</code></td>
+<td align="center"><code>$75A3</code></td>
+<td>SMW's <code>$7E:1626</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$75A4</code></td>
+<td align="center"><code>$75B9</code></td>
+<td>SMW's <code>$7E:1632</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$7658</code></td>
+<td align="center"><code>$766D</code></td>
+<td>SMW's <code>$7E:190F</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$766E</code></td>
+<td align="center"><code>$7683</code></td>
+<td>SMW's <code>$7E:1FD6</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$7FD6</code></td>
+<td align="center"><code>$7FEB</code></td>
+<td>SMW's <code>$7E:1FE2</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$75BA</code></td>
+<td align="center"><code>$75CF</code></td>
+<td>SMW's <code>$7E:164A</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$75D0</code></td>
+<td align="center"><code>$75E5</code></td>
+<td>SMW's <code>$7E:1656</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$75EA</code></td>
+<td align="center"><code>$75FF</code></td>
+<td>SMW's <code>$7E:1662</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$7600</code></td>
+<td align="center"><code>$7615</code></td>
+<td>SMW's <code>$7E:166E</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$7616</code></td>
+<td align="center"><code>$762B</code></td>
+<td>SMW's <code>$7E:167A</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$762C</code></td>
+<td align="center"><code>$7641</code></td>
+<td>SMW's <code>$7E:1686</code>
+</td>
+</tr>
+<tr>
+<td align="center"><code>$7642</code></td>
+<td align="center"><code>$7657</code></td>
+<td>SMW's <code>$7E:186C</code>
+</td>
+</tr>
+</tbody>
+</table>
+
+</body>
+</html>

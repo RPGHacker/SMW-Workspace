@@ -1,0 +1,62 @@
+When using sa-1, here are things you need to consiter before you insert your code:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-obviously you need to convert the ram address:
+
+	$0000-$00FF -> $3000-$30FF	;>Add by $3000
+	$0100-$0FFF -> $6100-$6FFF	;\Add by $6000
+	$1000-$1FFF -> $7000-$7FFF	;/
+
+;^If its a byte address (2 hex digit, i.e LDA $00 to LDA $FF), no need to convert.
+;Even better, use "+!Base1" (thats $3000) or "+!Base2" (thats $6000) at the end
+;of each ram addresses (LDA $0100+!Base2 for example), this will work on both sa-1
+;and normal smw, thanks to the if statements that determines what the values are.
+
+The fast and easy to do this is by adding $3000 or $6000 to the ram address you
+need to convert. These above are only used if you load a 2-byte "word" ram address
+(4 hex digits, i.e LDA $0100 will be $6100). If you are loading a 3-byte "long" or
+"direct" (6 hex digit address, i.e LDA $7E0000, not LDA $00 or LDA $0000) address,
+use this conversion instead:
+
+	$7E:C800-$7E:FFFF -> $40:C800-$40:FFFF	;\subtract by $3E0000
+	$7F:C800-$7E:FFFF -> $41:C800-$41:FFFF	;/
+	$7F:9A7B-$7F:9C7A -> $41:8800-$41:89FF	;>subtract by $3E127B
+	$70:0000-$70:07FF -> $41:C000-$41:C7FF	;>subtract by $2E4000
+	$70:0800-$70:27FF -> $41:A000-$41:BFFF	;>subtract by $2E6800
+
+For normal sprite tables, just look at /docs/I-RAM.txt I wouldn't show it off here
+as its extremely large.
+
+For new sprite tables, replace them with this:
+
+	$7FAB10 -> $6040
+	$7FAB1C -> $6056
+	$7FAB28 -> $6057
+	$7FAB34 -> $606D
+	$7FAB9E -> $6083
+
+Speaking of sprite slot increase, If you are using a loop that scans the slots,
+make sure that you check 22 slots, not 12, for example:
+
+	LDX #$15	;>Loop start, it starts at slot 21 because slot 0 exists.
+-
+	LDA $3242,x	;>the new sprite status table, origionally $14C8,x
+	BEQ .FreeSlot
+	DEX		;>Next slot down.
+	BPL -		;>If index is at minimum, then loop, otherwise if its -1, exit
+	RTL		;>return
+
+.FreeSlot:
+
+Or else some of your sprites are not checked.
+If you want to make a code that detects sa-1 in any of the uberasm files, refer to
+the "SA1 detector" and use the following syntax template:
+
+if !SA1
+	;code for sa-1
+else
+	;code for non-sa-1
+endif
+
+Since the hub main asm file (asar_patch.asm) uses "incsrc", it kept the label
+names reserved.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

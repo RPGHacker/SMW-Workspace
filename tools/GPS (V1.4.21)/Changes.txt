@@ -1,0 +1,83 @@
+Should be 10 items total in case a file is missing.
+
+Updates (mm/dd/yyyy):
+ 01/11/2020 (V1.4.21) (TheBiob)
+  - Removed align attribute for fullsa1 roms as asar doesn't seem to like that
+  - Removed namespaces and all normal labels from subroutines to prevent issues with sublabels and nested subroutines
+  - Added |!bank to main.asm for better fastrom compatibility
+
+ 07/21/2020 (V1.4.2) (TheBiob) (rejected)
+  - GPS now uses Asar 1.71's dll
+  - Fixed normal labels in spawn_sprite.asm, spawn_sprite_block.asm and glitter.asm preventing sublabel bugs when calling the routines
+  - Fixed SA-1 ROMs of 6MB+ sizes not using fullsa1rom as the mapper
+  - Changed freespace finding to aligned so asar stops throwing bankcross errors
+  - Blocks can now use the full feature set of DSC files (see readme for details on how to use them)
+
+ 12/30/2018 (V1.4.1) (TheBiob)
+  - Fixed change_map16.asm not working in vertical levels
+  - Fixed check_sprite_kicked_vertical.asm not working on sa-1 (Majorflare)
+  - Added custom bounce sprites support in spawn_bounce_block.asm (MarioFanGamer)
+     Note that the map16 tile was moved from $02 to $03 which breaks resources that expect it to be $02 so keep that in mind
+
+ 12/25/2018 (V1.4.0) (TheBiob)
+  - GPS now uses Asar 1.60's dll
+  - Now tells you which version you're using
+  - Now removes all temporary files unless -k is provided
+  - Added support for big level layouts
+  - Added new option -rom
+  - Fixed sublabel issue when using routines
+  - Fixed more sublabel issues when using routines
+  - Fixed change_map16.asm messing up in sprite offsets
+  - Fixed an oversight where the first routine pointer would overwrite the end of the "The End" screen tilemap
+  - Fixed GPS not inserting when block paths have spaces in them
+  - Fixed spawn_item_sprite.asm and check_sprite_kicked_horizontal.asm not working on SA-1
+  - Fixed a minor oversight with spawn_bounce_sprite.asm where it did not return the used slot in Y properly
+
+ 05/07/2018 (V1.3.1) (TheBiob)
+  - Fixed a bug with descriptions not working if there was a block between two with the same file name
+  - Fixed GPS breaking 6MB+ SA-1 ROMS because Asar doesn't fully support full sa1 roms yet
+  - Fixed rainbow_shatter_block.asm breaking on non-SA-1 due to a falsely put !bank8
+  - teleport.asm now sets the "exit exists" flag automatically. A bit slower in most cases but more true to what the description says it does.
+  - Added new standard routines
+    - layer2_sprite_position.asm ; Gets the actual sprite position even if the block is placed on layer 2
+
+ 10/16/2017 (V1.3.0) (TheBiob)
+  - Now supports Lunar Magic's new Map16 pages (Pages 40+)
+  - Added "@dsc" command to the list file
+  - Added new standard routines
+    - swap_XY.asm
+    - move_spawn_relative.asm
+    - check_sprite_kicked_vertical.asm
+    - check_sprite_kicked_horizontal.asm
+    - spawn_sprite_block.asm
+  - Updated routines
+    - change_map16.asm (Faster and smaller version, Akaginite)
+    - spawn_bounce_sprite (Now allows for usage with the Bounce Block Unrestrictor and/or Custom Bounce Blocks, MarioFanGamer) (Read the comments in the asm file for more information)
+  - (Officially) Added ways to assign the same file and acts like to multiple blocks in one line
+  - GPS now uses Asar 1.50's dll
+  - List file now supports comments (; at the beginning of a line)
+  - Added additional information in block_clean.asm telling you what it's cleaning (This was mainly used for debugging but I figured someone might find this useful so I left it in)
+  - Fixed a minor bug which no one noticed since it's something no one would ever do so I'm not sure why I mention it here (You were forced to put JMP after db $37 for it to work which is now fixed)
+
+ 03/15/2017 (V1.2.31) (TheBiob)
+  - Added another overlooked offset to db $37
+
+ 03/11/2017 (V1.2.3) (TheBiob)
+  - Added a new header (db $37) which allows a block to use the new Wallrun offset
+
+ 02/27/2017 (V1.2.2) (GHB) (rejected)
+  - Was removed because the new offset was not optional causing all current blocks to be incompatible.
+
+ 02/08/2017 (V1.2.1) (GHB)
+  - Fix a bug where spriteH may not execute block codes when embedded deeply in the block. This can be
+    proven by having a block act like $130 via Lunar magic, but have spriteH and spriteV both run this code:
+     ;----code----;
+      LDY #$00
+      LDA #$25
+      STA $1693
+     ;----end_code----;
+    which causes the sprites (mostly dropped sprites, like shells) to be pushed out. Therefore, the block
+    partially behaves $025. This works the other way around too: $025 by Lunar Magic, behaves $130 with
+    block codes and the blocks fail to push sprites outward.
+
+  - Added another block offset: MarioWallRun.

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> BW-RAM.html</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>
+<a id="user-content-bw-ram" class="anchor" href="#bw-ram" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>BW-RAM</h1>
+<p>BW-RAM is the SA-1 backup and work memory. Plays a similar role to the S-RAM, but it is also part of the work memory considering the SA-1 CPU does not have W-RAM access.</p>
+<p>Clocked at 5.37 MHz, the BW-RAM has a configurable size, varying from 2 kB to 256 kB. Currently SA-1 Pack sets the BW-RAM size to 128 kB.</p>
+<p>The BW-RAM is mapped on banks<code>$40-$4F</code>, with its contents mirrored though banks<code>$42-$4F</code>(assuming 128 kB BW-RAM).</p>
+<h3>
+<a id="user-content-virtual-memory" class="anchor" href="#virtual-memory" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Virtual Memory</h3>
+<p>The SAS (Super Accelerator System) Memory Map also mirrors a page of the BW-RAM on<code>$6000-$7FFF</code>though banks<code>$00-$3F</code>and<code>$80-$BF</code>. By default, SA-1 Pack maps<code>$6000-$7FFF</code> to<code>$40:0000-$40:1FFF</code>, <strong>but the SAS allows to it be mapped to any page.</strong> Using register <code>$2224</code> for the S-CPU and <code>$2225</code> for the C-CPU, you can define to which page<code>$6000-$7FFF</code>maps to. Currently SA-1 Pack preserves<code>$2225</code> by pushing <code>$318F</code> during interrupts and storing back to <code>$2225</code> during SA-1 IRQs.</p>
+<h3>
+<a id="user-content-virtual-vram" class="anchor" href="#virtual-vram" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Virtual VRAM</h3>
+<p>Banks <code>$60-$6F</code> on the SA-1 CPU Memory Map are also known as <strong>Virtual Bitmap VRAM</strong> or <strong>Bitmap Data Storage Area</strong>. It's an area made for drawing 4BPP or 2BPP bitmap images. The SAS splits and projects the BW-RAM into blocks of four or two bits to the region. See the Memory Map document for more information about it.</p>
+<p>The region can also be mirrored to<code>$6000-$7FFF</code>though bit 7 of the register<code>$2225</code>.</p>
+<h3>
+<a id="user-content-access-time" class="anchor" href="#access-time" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Access Time</h3>
+<p>The BW-RAM has unrestricted access from both C-CPU and S-CPU. However, because it's clocked at 5.37 MHz, there's an additional memory cycle on the SA-1 CPU.</p>
+<p>For example,<code>STA $400000</code>(8-bit A) will take six 10.74 MHz cycles and not five. The "effective speed" on this case will be ~8.95 MHz.
+<code>STA $00</code>(DP =<code>$6000</code>, 16-bit A) will take six 10.74 MHz cycles compared to four. "Effective speed" will be ~7.16 MHz.</p>
+<h2>
+<a id="user-content-bw-ram-memory-map" class="anchor" href="#bw-ram-memory-map" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>BW-RAM Memory Map</h2>
+<p><strong>Page</strong> in this document refers to a block of <code>0x2000</code> or 8192 bytes.</p>
+<p><strong>Not cleared</strong> means that the region is not cleared and is therefore saved to the cart S-RAM.</p>
+<h5>
+<a id="user-content-page-0" class="anchor" href="#page-0" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Page 0</h5>
+<table>
+<thead>
+<tr>
+<th align="center">Start</th>
+<th align="center">End</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>$40:0000</code></td>
+<td align="center"><code>$40:00FF</code></td>
+<td>Empty. Not cleared. Strongly not recommended to use, because it's the memory region used by Sprite Tool to put additional sprite tables.</td>
+</tr>
+<tr>
+<td align="center"><code>$40:0100</code></td>
+<td align="center"><code>$40:010A</code></td>
+<td>SMW's<code>$7E:0100-$7E:010A</code>.</td>
+</tr>
+<tr>
+<td align="center"><code>$40:010B</code></td>
+<td align="center"><code>$40:010C</code></td>
+<td>Stores current level number on most LevelASM/UberASM patches/tool.</td>
+</tr>
+<tr>
+<td align="center"><code>$40:010D</code></td>
+<td align="center"><code>$40:010F</code></td>
+<td><strong>Reserved by SA-1 Pack for future expansion.</strong></td>
+</tr>
+<tr>
+<td align="center"><code>$40:0110</code></td>
+<td align="center"><code>$40:0112</code></td>
+<td>Finish OAM hook. This is a 24-bit pointer to execute custom code before finishing the OAM writing area. This is useful in case you want to take the remaining OAM slots or rearrange it before it's rendered to the screen. This also ensures that no other code will override the OAM table, since it's running on the end of the frame. SA-1 CPU will be used to execute the code. To activate it, store the 24-bit pointer <em>every frame</em> on $6110-$6112, since $6110-$6111 is automatically cleared before it jumps to the pointer you specified.</td>
+</tr>
+<tr>
+<td align="center"><code>$40:0113</code></td>
+<td align="center"><code>$40:017F</code></td>
+<td><strong>Reserved by SA-1 Pack for future expansion.</strong></td>
+</tr>
+<tr>
+<td align="center"><code>$40:0180</code></td>
+<td align="center"><code>$40:018F</code></td>
+<td>MaxTile pointer #0</td>
+</tr>
+<tr>
+<td align="center"><code>$40:0190</code></td>
+<td align="center"><code>$40:019F</code></td>
+<td>MaxTile pointer #1</td>
+</tr>
+<tr>
+<td align="center"><code>$40:01A0</code></td>
+<td align="center"><code>$40:01AF</code></td>
+<td>MaxTile pointer #2</td>
+</tr>
+<tr>
+<td align="center"><code>$40:01B0</code></td>
+<td align="center"><code>$40:01BF</code></td>
+<td>MaxTile pointer #3</td>
+</tr>
+<tr>
+<td align="center"><code>$40:01C0</code></td>
+<td align="center"><code>$40:01FF</code></td>
+<td>Empty. Cleared at reset and title screen load. Originally reserved for S-CPU's stack, which stayed at W-RAM and was moved to<code>$7E:1F00-$7E:1FFF</code>. <strong>Reserved by SA-1 Pack for future expansion.</strong>
+</td>
+</tr>
+</tbody>
+</table>
+<p><code>$40:0200</code>|<code>$40:1FFF</code>| SMW's<code>$7E:0200-$7E:1FFF</code>.</p>
+<h5>
+<a id="user-content-page-1" class="anchor" href="#page-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Page 1</h5>
+<table>
+<thead>
+<tr>
+<th align="center">Start</th>
+<th align="center">End</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>$40:2000</code></td>
+<td align="center"><code>$40:3FFF</code></td>
+<td>Empty. Not cleared. Strongly recommended to use the region as Character Conversion 1 bitmap buffer, which is mapped to<code>$60:4000-$60:7FFF</code> (VRAM 4BPP mode) or <code>$60:8000-$60:FFFF</code> (VRAM 2BPP mode).</td>
+</tr>
+</tbody>
+</table>
+<h5>
+<a id="user-content-pages-2-7" class="anchor" href="#pages-2-7" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Pages 2-7</h5>
+<p>(<code>$4000-$5FFF</code>,<code>$6000-$7FFF</code>,<code>$8000-$9FFF</code>,<code>$A000-$BFFF</code>,<code>$C000-$DFFF</code>,<code>$E000-$FFFF</code>)</p>
+<table>
+<thead>
+<tr>
+<th align="center">Start</th>
+<th align="center">End</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>$40:4000</code></td>
+<td align="center"><code>$40:AFFF</code></td>
+<td>Empty. Not cleared.</td>
+</tr>
+<tr>
+<td align="center"><code>$40:B000</code></td>
+<td align="center"><code>$40:BFFF</code></td>
+<td><strong>Reserved by SA-1 MaxTile</strong></td>
+</tr>
+<tr>
+<td align="center"><code>$40:C000</code></td>
+<td align="center"><code>$40:C7FF</code></td>
+<td>Empty. Not cleared.</td>
+</tr>
+<tr>
+<td align="center"><code>$40:C800</code></td>
+<td align="center"><code>$40:FFFF</code></td>
+<td>SMW's<code>$7E:C800-$7E:FFFF</code>.</td>
+</tr>
+</tbody>
+</table>
+<h5>
+<a id="user-content-pages-8-11" class="anchor" href="#pages-8-11" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Pages 8-11</h5>
+<p>(<code>$0000-$1FFF</code>,<code>$2000-$3FFF</code>,<code>$4000-$5FFF</code>,<code>$6000-$7FFF</code>)</p>
+<table>
+<thead>
+<tr>
+<th align="center">Start</th>
+<th align="center">End</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>$41:0000</code></td>
+<td align="center"><code>$41:7FFF</code></td>
+<td>Used as a general-purpose buffer by SA-1 Pack, including GFX decompression. Also used on RPG Hacker's VWF dialogues. 32 kB total.</td>
+</tr>
+</tbody>
+</table>
+<h5>
+<a id="user-content-page-12" class="anchor" href="#page-12" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Page 12</h5>
+<table>
+<thead>
+<tr>
+<th align="center">Start</th>
+<th align="center">End</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>$41:8000</code></td>
+<td align="center"><code>$41:87FF</code></td>
+<td>smkdan's dynamic sprites (dsx) buffer. If dynamic sprites are not used, empty. Not cleared.</td>
+</tr>
+<tr>
+<td align="center"><code>$41:8800</code></td>
+<td align="center"><code>$41:89FF</code></td>
+<td>SMW's<code>$7F:9A7B</code>. Wiggler's segment buffer.</td>
+</tr>
+<tr>
+<td align="center"><code>$41:8A00</code></td>
+<td align="center"><code>$41:8AFE</code></td>
+<td>SMW's<code>$7E:1938</code>. Sprite load status within the level, extended to 255 entries.</td>
+</tr>
+<tr>
+<td align="center"><code>$41:8AFF</code></td>
+<td align="center"><code>$41:9FFF</code></td>
+<td>Empty. Not cleared. It's 5377 bytes (~5.25 KB) free in total.</td>
+</tr>
+</tbody>
+</table>
+<h5>
+<a id="user-content-page-13" class="anchor" href="#page-13" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Page 13</h5>
+<table>
+<thead>
+<tr>
+<th align="center">Start</th>
+<th align="center">End</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>$41:A000</code></td>
+<td align="center"><code>$41:BFFF</code></td>
+<td>Reserved for SRAM Expansion Area. May be used by S-RAM/BW-RAM Plus. Otherwise empty, not cleared.</td>
+</tr>
+</tbody>
+</table>
+<h5>
+<a id="user-content-pages-14-15" class="anchor" href="#pages-14-15" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Pages 14-15</h5>
+<p>(<code>$C000-$DFFF</code>,<code>$E000-$FFFF</code>)</p>
+<table>
+<thead>
+<tr>
+<th align="center">Start</th>
+<th align="center">End</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>$41:C000</code></td>
+<td align="center"><code>$41:C7FF</code></td>
+<td>SMW's SRAM Area. Originally<code>$70:0000-$70:07FF</code>, which is now unmapped and replaced by the BW-RAM.</td>
+</tr>
+<tr>
+<td align="center"><code>$41:C800</code></td>
+<td align="center"><code>$41:FFFF</code></td>
+<td>SMW's<code>$7F:C800-$7F:FFFF</code>.</td>
+</tr>
+</tbody>
+</table>
+
+</body>
+</html>

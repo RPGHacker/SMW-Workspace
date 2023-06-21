@@ -5,15 +5,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-incsrc ../free_7F4000/freeconfig.cfg
+incsrc free_7F4000/freeconfig.cfg
 incsrc hpconfig.cfg
-incsrc ../shared/shared.asm
+incsrc shared/shared.asm
+incsrc shared/ram_getters.asm
 
 
 print "HP/MP Counter Patch - (c) RPG Hacker"
 
 
-math pri on
 math round off
 
 pushtable
@@ -47,9 +47,6 @@ if !use_sa1_mapping
 endif
 
 !IntroLevel #= select(equal(!IntroLevel,0),0,(!IntroLevel+$24))
-
-!false	= 0
-!true	= 1
 
 
 
@@ -421,17 +418,17 @@ macro BowserBattle_SBDigit(addr,dest,offset)
 	asl #5
 ?Proceed:
 	clc : adc.w #BowserBattle_SBGFX
-	sta select(!use_sa1_mapping,$2232,$4302)
-	ldy.b #get_bank_byte(BowserBattle_SBGFX)
-	sty select(!use_sa1_mapping,$2234,$4304)
+	sta.w select(!use_sa1_mapping,$2232,$4302)
+	ldy.b #bank(BowserBattle_SBGFX)
+	sty.w select(!use_sa1_mapping,$2234,$4304)
 
 	lda.w #$0020
-	sta select(!use_sa1_mapping,$2238,$4305)
+	sta.w select(!use_sa1_mapping,$2238,$4305)
 
 	lda.w #remap_ram(!BowserRAM+(<dest><<5))
-	sta select(!use_sa1_mapping,$2235,$2181)
-	ldy.b #get_bank_byte(remap_ram(!BowserRAM))
-	sty select(!use_sa1_mapping,$2237,$2183)
+	sta.w select(!use_sa1_mapping,$2235,$2181)
+	ldy.b #bank(remap_ram(!BowserRAM))
+	sty.w select(!use_sa1_mapping,$2237,$2183)
 
 	if !use_sa1_mapping
 	-	ldx $318C
@@ -524,17 +521,17 @@ if !EnableBowserBattleStatusBar
 			sty.w $4301
 		endif
 		lda.w #BowserBattle_SBGFX+$200
-		sta select(!use_sa1_mapping,$2232,$4302)
-		ldy.b #get_bank_byte(BowserBattle_SBGFX)
-		sty select(!use_sa1_mapping,$2234,$4304)
+		sta.w select(!use_sa1_mapping,$2232,$4302)
+		ldy.b #bank(BowserBattle_SBGFX)
+		sty.w select(!use_sa1_mapping,$2234,$4304)
 
 		lda.w #$0360
-		sta select(!use_sa1_mapping,$2238,$4305)
+		sta.w select(!use_sa1_mapping,$2238,$4305)
 
 		lda.w #remap_ram(!BowserRAM)
-		sta select(!use_sa1_mapping,$2235,$2181)
-		ldy.b #get_bank_byte(remap_ram(!BowserRAM))
-		sty select(!use_sa1_mapping,$2237,$2183)
+		sta.w select(!use_sa1_mapping,$2235,$2181)
+		ldy.b #bank(remap_ram(!BowserRAM))
+		sty.w select(!use_sa1_mapping,$2237,$2183)
 
 		if !use_sa1_mapping
 		-	ldx $318C
@@ -627,7 +624,7 @@ if !EnableBowserBattleStatusBar
 		sty $4301
 		lda.w #remap_ram(!BowserRAM)
 		sta $4302
-		ldy.b #get_bank_byte(remap_ram(!BowserRAM))
+		ldy.b #bank(remap_ram(!BowserRAM))
 		sty $4304
 		lda #$0360
 		sta $4305
@@ -1058,7 +1055,7 @@ Fireball:
 	lda $73
 	ora remap_ram($187A)
 	bne .return
-	bit select(!FireballsOnlyOnX,$18,$16)	; Shoot with X/Y buttons or only with X button?
+	bit.b select(!FireballsOnlyOnX,$18,$16)	; Shoot with X/Y buttons or only with X button?
 	bvc .return
 	jsl ShootFireball
 	
@@ -1389,7 +1386,7 @@ ItemFix:
 		!tmp_vwfloc	= read3(remap_rom($008298))
 		!tmp_vwfmode	= read3(!tmp_vwfloc+2)
 		if read1(!tmp_vwfloc) == $DA && read1(!tmp_vwfloc+1) == $AF && \
-			or(select(!use_sa1_mapping,equal(get_bank_byte(!tmp_vwfmode)&$F0,$40),0),equal(get_bank_byte(!tmp_vwfmode)&$F0,$70))
+			or(select(!use_sa1_mapping,equal(bank(!tmp_vwfmode)&$F0,$40),0),equal(bank(!tmp_vwfmode)&$F0,$70))
 			.vwfCompat:
 				sep #$30
 				lda remap_ram(!tmp_vwfmode)

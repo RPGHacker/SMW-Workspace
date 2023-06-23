@@ -76,9 +76,12 @@ pre {
 	padding-inline-end:	1rem;
 }
 
-a > code,
 pre > code {
 	color:	#E83E8C;
+}
+
+a > code {
+	color:	#9966ff;
 }
 
 pre > code > table {

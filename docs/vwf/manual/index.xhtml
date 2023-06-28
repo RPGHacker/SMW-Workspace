@@ -8,7 +8,17 @@
 		<link rel="stylesheet" type="text/css" href="style.css"/>
 		<script type="application/javascript" defer="true" src="lib/jquery-3.2.1.slim.min.js"></script>
 		<script type="application/javascript" defer="true" src="lib/popper-1.12.9.min.js"></script>
-		<script type="application/javascript" defer="true" src="lib/bootstrap-4.0.0.min.js"></script>
+		<script type="application/javascript" defer="true" src="lib/bootstrap-4.0.0.min.js"></script>		
+		<link rel="stylesheet" href="shared/highlight_js/styles/default.css"/>
+		<script src="shared/highlight_js/highlight.pack.js"></script>
+		<script>
+				hljs.configure(
+					{
+						tabReplace: '    ',
+					}
+				);
+				hljs.initHighlightingOnLoad();
+		</script>
 	</head>
 
 	<!-- Body Begin -->
@@ -363,7 +373,7 @@
 						</table>
 						When set to <code>false</code>, SMW message boxes and VWF Dialogues can coexist within the same ROM. In this case, you need VWF Dialogue compatible custom sprites or custom blocks in order to use them. One example of those would be wye's NPC sprites.
 						</li>
-					<li><code>!vwf_enable_short_aliases</code>: When set to <code>true</code>, the patch defines a number of short aliases for most text commands. For example, you may use <code>!str("Hello!")</code> or <code>!text("Hello!")</code> instead of <code>%vwf_text("Hello!")</code>, <code>!font($01)</code> instead of <code>%vwf_font($01)</code> or <code>!press_a</code> instead of <code>%vwf_wait_for_a()</code>. These short aliases are intended for convenience and to make VWF Dialogues easier to read in code. It's very unlikely that you'll ever need to set this to <code>false</code>. The only conceivable scenario would be when you include <code>vwf_dialogues.asm</code> from within another patch via an <code>incsrc</code>. In that case, disabling this feature might make sense to reduce the likelihood of naming conflicts occuring. Further details on available short aliases will be provided along with the documentation of each text command.</li>
+					<li><code>!vwf_enable_short_aliases</code>: When set to <code>true</code>, the patch defines a number of short aliases for most text commands. For example, you may use <code class="65c816_asar">!str("Hello!")</code> or <code class="65c816_asar">!text("Hello!")</code> instead of <code class="65c816_asar">%vwf_text("Hello!")</code>, <code class="65c816_asar">!font($01)</code> instead of <code class="65c816_asar">%vwf_font($01)</code> or <code class="65c816_asar">!press_a</code> instead of <code class="65c816_asar">%vwf_wait_for_a()</code>. These short aliases are intended for convenience and to make VWF Dialogues easier to read in code. It's very unlikely that you'll ever need to set this to <code>false</code>. The only conceivable scenario would be when you include <code>vwf_dialogues.asm</code> from within another patch via an <code>incsrc</code>. In that case, disabling this feature might make sense to reduce the likelihood of naming conflicts occuring. Further details on available short aliases will be provided along with the documentation of each text command.</li>
 				</ul>
 			</p>
 			
@@ -459,7 +469,7 @@
 						<img class="d-block m-1 my-2 ir-crisp" src="screenshots/lm-palette-1.png" alt="Screenshot" width="530" height="329"/>
 					</li>
 					<li>The palettes of text box frames are controlled via the <code>vwf_define_frames()</code> macro in <code>vwfconfig.cfg</code>. Here's quick example for the format:
-					<pre><code>
+					<pre><code class="65c816_asar">
 macro vwf_define_frames()
 	; Frame $00
 	db %00000000,%00000000
@@ -488,7 +498,7 @@ endmacro
 					<li>Only colors <code>$02</code> and <code>$03</code> of a palette may be used for the glyphs (that is, the third and fourth color of each palette). Color $01, as mentioned previously, is already reserved for the background pattern. Generally, you'll want to use color $02 for the letters and color $03 for their outlines or drop shadows.</li>
 					<li>Each glyph should touch the left edge of its tile. This is important for the VWF text generator to work properly. (At least according to past me. I don't remember why that is, and I haven't checked the code to make sure this is actually still true. Whoopsies!)</li>
 					<li>However, not the entire width of a glyph tile is actually rendered in a text box. Instead, this is where the character width table files come into a play. Open one up and you should see a format similar to this:
-					<pre><code>;Char00to0F:
+					<pre><code class="65c816_asar">;Char00to0F:
 db $07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$07,$06,$06
 ;Char10to1F:
 db $07,$07,$05,$07,$08,$06,$09,$08,$07,$07,$07,$07,$06,$07,$07,$07
@@ -498,7 +508,7 @@ db $07,$07,$05,$07,$08,$06,$09,$08,$07,$07,$07,$07,$06,$07,$07,$07
 					Each number here represents the pixel width of one glyph from the respective .bin file. The first number is for the first glyph in the .bin file, the second number for the second glyph and so forth. The patch will look up those numbers and use them to determine how many columns of each glyph tile should be rendered, thus creating its variable width text.</li>
 					<li>If you don't want to create width tables manually, a Python helper script is included at <code>code/scripts/generate_widths.py</code> which attempts to generate them for you. Just drop your .bin file onto the script and you should get the width table .asm file as an output. A valid installation of Python 2.7 or Python 3.0 is required for this. Note that you might still have to manually touch up the width table a little bit. For example, I personally find it useful to give all digits in a font a unified width, which makes it easier to create clean layouts with them. You can also use the script to generate a fixed-width table by running it from the command line and passing <code>-f</code> as an argument. That will use the widest glyph from the font as the width of all characters.</li>
 					<li>The character-to-glyph mapping file is what Asar uses to know which characters in a text command correspond to which glyph in a font .bin file. The format looks like this:
-					<pre><code>'0' = $00
+					<pre><code class="65c816_asar">'0' = $00
 '1' = $01
 '2' = $02
 '3' = $03
@@ -519,8 +529,8 @@ db $07,$07,$05,$07,$08,$06,$09,$08,$07,$07,$07,$07,$06,$07,$07,$07
 'I' = $12
 ; ...
 </code></pre>
-					Given the mapping from the example above, the command <code>%vwf_text("ABC")</code> would render tiles <code>$0A</code>, <code>$0B</code> and <code>$0C</code> from the current font's .bin file to the text box. In Asar v1.90, only ASCII character mappings are supported, but starting with Asar v2.0, any single-codepoint Unicode characters can be mapped. That makes it possible to even use a mapping for Japanese text (this will likely require running in 16-bit mode). Example:
-					<pre><code>'あ' = $0100
+					Given the mapping from the example above, the command <code class="65c816_asar">%vwf_text("ABC")</code> would render tiles <code>$0A</code>, <code>$0B</code> and <code>$0C</code> from the current font's .bin file to the text box. In Asar v1.90, only ASCII character mappings are supported, but starting with Asar v2.0, any single-codepoint Unicode characters can be mapped. That makes it possible to even use a mapping for Japanese text (this will likely require running in 16-bit mode). Example:
+					<pre><code class="65c816_asar">'あ' = $0100
 'い' = $0101
 'う' = $0102
 'え' = $0103
@@ -538,7 +548,7 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 					<li>Each font can contain up to 256 glyphs (that's equal to four pages in YY-CHR with the settings mentioned above).</li>
 					<li>Fonts with more than 256 glyphs can be simulated by just creating separate fonts containing 256 glyphs each. In that case, you might want to use 16-bit mode to access them more easily. This can be useful for languages with a large character set, like Japanese.</li>
 					<li>To add a new font to the patch, create a new .bin file with the glyph graphics, a new .asm file with the width table and (if needed) a new .asm file with the character-to-glyph mapping. Then add the following line to the <code>vwf_define_data()</code> macro in <code>vwfconfig.cfg</code>:
-					<pre><code>%vwf_add_font("data/fonts/som/vwffont.bin", "data/fonts/som/vwffont.asm", "data/fonts/vwftable.asm")</code></pre>
+					<pre><code class="65c816_asar">%vwf_add_font("data/fonts/som/vwffont.bin", "data/fonts/som/vwffont.asm", "data/fonts/vwftable.asm")</code></pre>
 					Where the first argument is the graphics .bin file, the second argument is the width table .asm file, and the third argument is the character-to-glyph mapping .asm file. The order of <code>%vwf_add_font()</code> calls inside the <code>vwf_define_data()</code> macro determines the ID of each font. The first %vwf_add_font() will be font <code>$00</code>, the second %vwf_add_font() will be <code>$01</code> and so forth. It is crucial that the character-to-glyph mapping file contains at least valid mappings for the characters <code>0 1 2 3 4 5 6 7 8 9 A B C D E F</code> for that respective font, because the functionality of all number-related text functions depends on it.</li>
 				</ul>
 			</p>
@@ -553,7 +563,7 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 				Anyways, for the few people who have legitimate reasons to create new message files, here's a brief explanation on them. Note that it only covers the format of message files themselves, not on the messages within them. See section <a href="#message-format">Message Format</a> for details on that.
 				<ul>
 					<li>To add a new message file to the patch, first create it, then add the following line to the <code>vwf_define_data()</code> macro in <code>vwfconfig.cfg</code>:
-					<pre><code>%vwf_add_messages("data/vwfmessages.asm", "data/fonts/vwftable.asm")</code></pre>
+					<pre><code class="65c816_asar">%vwf_add_messages("data/vwfmessages.asm", "data/fonts/vwftable.asm")</code></pre>
 					Where the first argument is the path to the message file itself and the second argument is the path to the default character-to-glyph mapping file to use for it (see section <a href="#resources-fonts">Fonts</a> for details).</li>
 				</ul>
 				That's really all there is to it.
@@ -563,7 +573,7 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 			<p>
 				Adding new messages to this patch is as simple as adding the following lines to one of your message files (usually <code>data/vwfmessages.asm</code>):
 				
-				<pre><code>%vwf_message_start(0000)
+				<pre><code class="65c816_asar">%vwf_message_start(0000)
 
 	%vwf_header()
 	
@@ -589,7 +599,7 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 			<p>
 				Putting everything together, here is a simple example of what a full text box might look like:
 				
-				<pre><code>%vwf_message_start(001A)
+				<pre><code class="65c816_asar">%vwf_message_start(001A)
 
 	%vwf_header(x_pos(10), y_pos(10), width(5), height(1), text_alignment(TextAlignment.Centered))
 	
@@ -602,7 +612,7 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 			<p>
 				When defining your own text boxes, the very first thing you'll want to look at are the header settings. These settings define a number of general properties of your text box, like position, size, sound effects and more. The way this works is by passing optional arguments as function calls to the <code>%vwf_header()</code> macro in your message. Here's an example:
 				
-				<pre><code>%vwf_header(vwf_x_pos(0), vwf_y_pos(0), vwf_width(15), vwf_height(13))</code></pre>
+				<pre><code class="65c816_asar">%vwf_header(vwf_x_pos(0), vwf_y_pos(0), vwf_width(15), vwf_height(13))</code></pre>
 				
 				When any argument is omitted, its value will be pulled from the default values defined in <code>vwfconfig.cfg</code>. For example, when you omit the <code>vwf_x_pos</code> argument, the patch will use the <code>!vwf_default_x_pos</code> define in its place.
 			</p>
@@ -610,7 +620,7 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 			<p>
 				Header arguments, like text commands, support short aliases via the <code>!vwf_enable_short_aliases</code> setting. When enabled, the <code>vwf_</code> prefix on all arguments can be omitted. Example:
 				
-				<pre><code>%vwf_header(x_pos(0), y_pos(0), width(15), height(13))</code></pre>
+				<pre><code class="65c816_asar">%vwf_header(x_pos(0), y_pos(0), width(15), height(13))</code></pre>
 				
 				What follows is a list of all header arguments along with a brief explanation.
 			</p>			
@@ -622,11 +632,11 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_x_pos(x_pos)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_x_pos(x_pos)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>x_pos(x_pos) = vwf_x_pos(x_pos)</code></pre></td>
+							<td><pre><code class="65c816_asar">x_pos(x_pos) = vwf_x_pos(x_pos)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -643,11 +653,11 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_y_pos(y_pos)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_y_pos(y_pos)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>y_pos(y_pos) = vwf_y_pos(y_pos)</code></pre></td>
+							<td><pre><code class="65c816_asar">y_pos(y_pos) = vwf_y_pos(y_pos)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -664,11 +674,11 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_width(width)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_width(width)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>width(width) = vwf_width(width)</code></pre></td>
+							<td><pre><code class="65c816_asar">width(width) = vwf_width(width)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -685,11 +695,11 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_height(height)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_height(height)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>height(height) = vwf_height(height)</code></pre></td>
+							<td><pre><code class="65c816_asar">height(height) = vwf_height(height)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -706,11 +716,11 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_box_animation(animation)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_box_animation(animation)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>box_animation(animation) = vwf_box_animation(animation)
+							<td><pre><code class="65c816_asar">box_animation(animation) = vwf_box_animation(animation)
 BoxAnimation = VWF_BoxAnimation</code></pre></td>
 						</tr>
 						<tr>
@@ -740,11 +750,11 @@ BoxAnimation = VWF_BoxAnimation</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_font(font_id)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_font(font_id)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>font(font_id) = vwf_font(font_id)</code></pre></td>
+							<td><pre><code class="65c816_asar">font(font_id) = vwf_font(font_id)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -761,11 +771,11 @@ BoxAnimation = VWF_BoxAnimation</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_text_palette(palette_id)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_text_palette(palette_id)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>text_palette(palette_id) = vwf_text_palette(palette_id)</code></pre></td>
+							<td><pre><code class="65c816_asar">text_palette(palette_id) = vwf_text_palette(palette_id)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -782,11 +792,11 @@ BoxAnimation = VWF_BoxAnimation</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_text_color(color)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_text_color(color)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>text_color(color) = vwf_text_color(color)</code></pre></td>
+							<td><pre><code class="65c816_asar">text_color(color) = vwf_text_color(color)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -803,11 +813,11 @@ BoxAnimation = VWF_BoxAnimation</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_outline_color(color)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_outline_color(color)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>outline_color(color) = vwf_outline_color(color)</code></pre></td>
+							<td><pre><code class="65c816_asar">outline_color(color) = vwf_outline_color(color)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -824,11 +834,11 @@ BoxAnimation = VWF_BoxAnimation</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_space_width(width)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_space_width(width)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>space_width(width) = vwf_space_width(width)</code></pre></td>
+							<td><pre><code class="65c816_asar">space_width(width) = vwf_space_width(width)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -845,11 +855,11 @@ BoxAnimation = VWF_BoxAnimation</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_text_margin(margin)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_text_margin(margin)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>text_margin(margin) = vwf_text_margin(margin)</code></pre></td>
+							<td><pre><code class="65c816_asar">text_margin(margin) = vwf_text_margin(margin)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -866,11 +876,11 @@ BoxAnimation = VWF_BoxAnimation</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_text_alignment(alignment)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_text_alignment(alignment)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>text_alignment(alignment) = vwf_text_alignment(alignment)
+							<td><pre><code class="65c816_asar">text_alignment(alignment) = vwf_text_alignment(alignment)
 TextAlignment = VWF_TextAlignment</code></pre></td>
 						</tr>
 						<tr>
@@ -897,11 +907,11 @@ TextAlignment = VWF_TextAlignment</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_freeze_game(freeze)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_freeze_game(freeze)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>freeze_game(freeze) = vwf_freeze_game(freeze)</code></pre></td>
+							<td><pre><code class="65c816_asar">freeze_game(freeze) = vwf_freeze_game(freeze)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -931,11 +941,11 @@ TextAlignment = VWF_TextAlignment</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_text_speed(speed)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_text_speed(speed)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>text_speed(speed) = vwf_text_speed(speed)</code></pre></td>
+							<td><pre><code class="65c816_asar">text_speed(speed) = vwf_text_speed(speed)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -952,11 +962,11 @@ TextAlignment = VWF_TextAlignment</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_auto_wait(mode)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_auto_wait(mode)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>auto_wait(mode) = vwf_auto_wait(mode)
+							<td><pre><code class="65c816_asar">auto_wait(mode) = vwf_auto_wait(mode)
 AutoWait = VWF_AutoWait</code></pre></td>
 						</tr>
 						<tr>
@@ -981,11 +991,11 @@ AutoWait = VWF_AutoWait</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_button_speedup(enable)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_button_speedup(enable)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>button_speedup(enable) = vwf_button_speedup(enable)</code></pre></td>
+							<td><pre><code class="65c816_asar">button_speedup(enable) = vwf_button_speedup(enable)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1002,11 +1012,11 @@ AutoWait = VWF_AutoWait</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_enable_skipping(enable)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_enable_skipping(enable)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>enable_skipping(enable) = vwf_enable_skipping(enable)</code></pre></td>
+							<td><pre><code class="65c816_asar">enable_skipping(enable) = vwf_enable_skipping(enable)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1026,11 +1036,11 @@ AutoWait = VWF_AutoWait</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_enable_sfx(enable)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_enable_sfx(enable)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>enable_sfx(enable) = vwf_enable_sfx(enable)</code></pre></td>
+							<td><pre><code class="65c816_asar">enable_sfx(enable) = vwf_enable_sfx(enable)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1047,11 +1057,11 @@ AutoWait = VWF_AutoWait</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_letter_sound(sound_bank, sound_id)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_letter_sound(sound_bank, sound_id)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>letter_sound(sound_bank, sound_id) = vwf_letter_sound(sound_bank, sound_id)</code></pre></td>
+							<td><pre><code class="65c816_asar">letter_sound(sound_bank, sound_id) = vwf_letter_sound(sound_bank, sound_id)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1069,11 +1079,11 @@ AutoWait = VWF_AutoWait</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_wait_sound(sound_bank, sound_id)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_wait_sound(sound_bank, sound_id)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>wait_sound(sound_bank, sound_id) = vwf_wait_sound(sound_bank, sound_id)</code></pre></td>
+							<td><pre><code class="65c816_asar">wait_sound(sound_bank, sound_id) = vwf_wait_sound(sound_bank, sound_id)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1091,11 +1101,11 @@ AutoWait = VWF_AutoWait</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_cursor_sound(sound_bank: number, sound_id: number)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_cursor_sound(sound_bank: number, sound_id: number)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>cursor_sound(sound_bank, sound_id) = vwf_cursor_sound(sound_bank, sound_id)</code></pre></td>
+							<td><pre><code class="65c816_asar">cursor_sound(sound_bank, sound_id) = vwf_cursor_sound(sound_bank, sound_id)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1113,11 +1123,11 @@ AutoWait = VWF_AutoWait</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_continue_sound(sound_bank: number, sound_id: number)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_continue_sound(sound_bank: number, sound_id: number)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>continue_sound(sound_bank, sound_id) = vwf_continue_sound(sound_bank, sound_id)</code></pre></td>
+							<td><pre><code class="65c816_asar">continue_sound(sound_bank, sound_id) = vwf_continue_sound(sound_bank, sound_id)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1138,11 +1148,11 @@ AutoWait = VWF_AutoWait</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_enable_message_asm(enable)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_enable_message_asm(enable)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>enable_message_asm(enable) = vwf_enable_message_asm(enable)</code></pre></td>
+							<td><pre><code class="65c816_asar">enable_message_asm(enable) = vwf_enable_message_asm(enable)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1159,7 +1169,7 @@ AutoWait = VWF_AutoWait</code></pre></td>
 			<p>
 				With everything else out of the way, it's time to finally start defining the actual contents of our text boxes. This is done by inserting text commands between a message's <code>%vwf_header()</code> and <code>%vwf_message_end()</code> (see section <a href="#message-format">Message Format</a> for details). These text commands usually take the form of macro calls, but can also be defines when using short aliases. Here's a simple example of a message containing some text commands:
 				
-				<pre><code>%vwf_message_start(0000)
+				<pre><code class="65c816_asar">%vwf_message_start(0000)
 
 	%vwf_header()
 	

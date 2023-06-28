@@ -30,6 +30,8 @@ IF EXIST "./%patchname%.zip" (
 cd ..\..
 
 "C:\Program Files\7-Zip\7z.exe" a ./patches/%patchname%/%patchname%.zip docs/vwf/manual
+"C:\Program Files\7-Zip\7z.exe" a ./patches/%patchname%/%patchname%.zip docs/shared
 
 "C:\Program Files\7-Zip\7z.exe" rn ./patches/%patchname%/%patchname%.zip docs/vwf/manual manual
+"C:\Program Files\7-Zip\7z.exe" rn ./patches/%patchname%/%patchname%.zip docs/shared manual/shared
 

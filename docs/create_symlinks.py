@@ -10,6 +10,6 @@ for subdir, dirs, files in os.walk(os.getcwd()):
 	for dir in dirs:
 		if dir != 'shared':
 			target_dir = os.path.join(subdir, dir, 'manual/shared')
-			source_dir = os.path.join(subdir, 'shared')
+			source_dir = os.path.normpath('../../shared')
 			os.symlink(source_dir, target_dir)
 	break

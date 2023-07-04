@@ -244,7 +244,6 @@
 					<li><a href="#problem-solving">Problem Solving</a><ul>
 						<li><a href="#problem-solving-error-messages">Better Error Messages</a></li>
 						<li><a href="#problem-solving-migration">Migration</a></li>
-						<li><a href="#problem-solving-unfrozen-sprites">Dialogues Without Frozen Sprites</a></li>
 						<li><a href="#problem-solving-bank-limits">Bank Limits</a></li>
 						<li><a href="#problem-solving-hdma-conflicts">Conflicts With HDMA Effects</a></li>
 						<li><a href="#problem-solving-compatibility">Compatibility With Other Patches</a></li>
@@ -2287,51 +2286,6 @@ endif</code></pre>
 			<p>
 				As I said, there's unfortunately no easy way of migrating to newer patch versions. However, on the positive side, version 1.3 of the patch was designed in a way that makes it a lot easier to extend in the future without breaking compatibility, so once you go through the effort of migrating, you'll hopefully never have to do it again to that degree for newer versions.
 			</p>
-
-			<h3 id="problem-solving-unfrozen-sprites" class="text-center">Dialogues Without Frozen Sprites</h3>
-			<p>
-				So you’re planning to use a dialogue in your game without freezing sprites? Dialogues like that can be found in various RPGs as system messages. First of all, there are certain things you have to note when using this option:
-			</p>
-			<ul>
-				<li>
-					Currently the patch doesn’t contain any hijack to end a dialogue when touching a goal tape.
-				</li>
-			</ul>
-			<p>
-				Well, if you plan to use this feature anyways you may notice that it can be pretty slow in certain situations, so here are a few tips to help you speed it up:
-			</p>
-			<ul>
-				<li>
-					Use the SA-1 Enhancement Chip.
-					<a tabindex="0" role="button" data-toggle="collapse" data-target="#videosa1" aria-expanded="false" aria-controls="videosa1">Case in point.</a>
-					
-					<div class="col-12 col-md-6 mt-3">
-						<div id="videosa1" class="collapse nobefore">
-							<iframe class="video" src="https://www.youtube.com/embed/hGmuaMoVO9I?rel=0&amp;start=71" allow="autoplay; encrypted-media" allowfullscreen="true"></iframe>
-						</div>
-					</div>
-				</li>
-				<li>
-					If you can’t use the SA-1 chip for whatever reason, then the following should provide a useable alternative:
-					<ul>
-						<li>
-							Use the newest version of Lunar Magic and activate the FastROM patch and FastROM addressing. This speeds up the game by a whole lot. Enough to make use of this feature reasonable.
-						</li>
-						<li>
-							Use slower text speeds. The slower the text speed, the more frames between each letter. The more frames between each letter, the less the player will notice any slowdown.
-						</li>
-						<li>
-							Show only small parts of text at the same time. In Secret of Mana for example system messages always consisted of only one line of text. If you do it like that and put waits at the end of each line, then the "lag phases" will be a lot shorter and won’t be noticed that much.
-						</li>
-						<li>
-							Avoid putting lots of sprites on the screen, especially big ones. Pretty much all of the slow downs are caused by sprites. Two or three small sprites on a screen should be fine, but any additional sprite will most likely slow it down.
-						</li>
-						<li>
-							Use Text Box Creation Style 0 (=No Text Box). This will skip the Pattern Addition Routine and therefore save a good amount of cycles.
-						</li>
-					</ul>
-				</li>
-			</ul>
 
 			<h3 id="problem-solving-bank-limits" class="text-center">Bank Limits</h3>
 			<p>

@@ -33,37 +33,26 @@ hljsAsar = {
     			contains:
     			[
     				{
-    					className: "built_in",
+    					scope: "built_in",
     					begin: "(" + asarIntrinsicFunctions.join('|') + ")\\(",
     					end: "\\)"
     				},
     				hljs.COMMENT("[;]", "$"),
     				hljs.C_BLOCK_COMMENT_MODE,
     				hljs.QUOTE_STRING_MODE,
+    				hljs.APOS_STRING_MODE,
     				{
-    					className: "string",
-    					begin: '"',
-    					end: '"',
-    					relevance: 0
-    				},
-    				{
-    					className: "string",
-    					begin: '\'',
-    					end: '\'',
-    					relevance: 0
-    				},
-    				{
-    					className: "special",
+    					scope: "special",
     					begin: '\\s*^@',
     					end: '$',
     					relevance: 0
     				},
     				{
-    					className: "keywords",
+    					scope: "keywords",
     					begin: asarKeywords.join('\\b|').concat('\\b')
     				},
     				{
-    					className: "number",
+    					scope: "number",
     					variants:
     					[
     						{
@@ -85,7 +74,7 @@ hljsAsar = {
     					relevance: 0
     				},
     				{
-    					className: "function",
+    					scope: "function",
     					variants:
     					[
     						{
@@ -93,10 +82,16 @@ hljsAsar = {
     							end: "\\)"
     						}
     					],
+						contains:
+						[
+							hljs.QUOTE_STRING_MODE,
+							hljs.APOS_STRING_MODE,
+							'self'
+						],
     					relevance: 0
     				},
     				{
-    					className: "define",
+    					scope: "define",
     					variants:
     					[
     						{
@@ -109,11 +104,11 @@ hljsAsar = {
     					relevance: 10
     				},
     				{
-    					className: "opcodes",
+    					scope: "opcodes",
     					begin: asarOpcodes.join('(\\.[bwl]|\\b)|').concat('(\\.[bwl]|\\b)')
     				},
     				{
-    					className: "label",
+    					scope: "label",
     					variants:
     					[
     						{

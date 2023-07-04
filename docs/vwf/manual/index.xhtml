@@ -1198,11 +1198,11 @@ AutoWait = VWF_AutoWait</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_text(text)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_text(text)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!text(text) = %vwf_text(text)
+							<td><pre><code class="65c816_asar">!text(text) = %vwf_text(text)
 !str(text) = %vwf_text(text)</code></pre></td>
 						</tr>
 						<tr>
@@ -1221,11 +1221,11 @@ AutoWait = VWF_AutoWait</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_char(char)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_char(char)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!char(char) = %vwf_char(char)
+							<td><pre><code class="65c816_asar">!char(char) = %vwf_char(char)
 !chr(char) = %vwf_char(char)</code></pre></td>
 						</tr>
 						<tr>
@@ -1243,11 +1243,11 @@ AutoWait = VWF_AutoWait</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_char_at_address(address)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_char_at_address(address)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!ram_char(address) = %vwf_char_at_address(address)
+							<td><pre><code class="65c816_asar">!ram_char(address) = %vwf_char_at_address(address)
 !ram_chr(address) = %vwf_char_at_address(address)</code></pre></td>
 						</tr>
 						<tr>
@@ -1265,11 +1265,11 @@ AutoWait = VWF_AutoWait</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_space()</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_space()</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!sp = %vwf_space()
+							<td><pre><code class="65c816_asar">!sp = %vwf_space()
 !space = %vwf_space()</code></pre></td>
 						</tr>
 					</table>
@@ -1281,14 +1281,14 @@ AutoWait = VWF_AutoWait</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_non_breaking_space()</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_non_breaking_space()</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!nbsp = %vwf_non_breaking_space()</code></pre></td>
+							<td><pre><code class="65c816_asar">!nbsp = %vwf_non_breaking_space()</code></pre></td>
 						</tr>
 					</table>
-					An alias for <code>%vwf_char(!vwf_nbsp_char)</code>, with <code>!vwf_nbsp_char = $00FE</code>. Basically, this prints character <code>$00FE</code> (which usually maps to a space) to the text box as a raw character. The purpose of this command is to print a space without invoking the word wrapping processor, similar to the <code>&amp;nbsp;</code> HTML entity. Useful when you want to prevent two words from being separated and ending up on two different lines. For example, if you want the name &quot;Super Mario&quot; to always appear on a single line, you can assure that by using this command in place of the space.
+					An alias for <code class="65c816_asar">%vwf_char(!vwf_nbsp_char)</code>, with <code class="65c816_asar">!vwf_nbsp_char = $00FE</code>. Basically, this prints character <code>$00FE</code> (which usually maps to a space) to the text box as a raw character. The purpose of this command is to print a space without invoking the word wrapping processor, similar to the <code>&amp;nbsp;</code> HTML entity. Useful when you want to prevent two words from being separated and ending up on two different lines. For example, if you want the name &quot;Super Mario&quot; to always appear on a single line, you can assure that by using this command in place of the space.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_decimal"><code>%vwf_decimal()</code></dt>
@@ -1296,11 +1296,11 @@ AutoWait = VWF_AutoWait</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_decimal(address, address_size, leading_zeros)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_decimal(address, address_size, leading_zeros)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!dec(address, address_size, leading_zeros) = %vwf_decimal(address, address_size, leading_zeros)
+							<td><pre><code class="65c816_asar">!dec(address, address_size, leading_zeros) = %vwf_decimal(address, address_size, leading_zeros)
 AddressSize = VWF_AddressSize</code></pre></td>
 						</tr>
 						<tr>
@@ -1326,11 +1326,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_hex(address)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_hex(address)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!hex(address) = %vwf_hex(address)</code></pre></td>
+							<td><pre><code class="65c816_asar">!hex(address) = %vwf_hex(address)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1350,11 +1350,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_set_font(font_id)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_set_font(font_id)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!font(font_id) = %vwf_set_font(font_id)</code></pre></td>
+							<td><pre><code class="65c816_asar">!font(font_id) = %vwf_set_font(font_id)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1371,11 +1371,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_char_offset(offset)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_char_offset(offset)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!char_offset(offset) = %vwf_char_offset(offset)
+							<td><pre><code class="65c816_asar">!char_offset(offset) = %vwf_char_offset(offset)
 !chr_offset(offset) = %vwf_char_offset(offset)</code></pre></td>
 						</tr>
 						<tr>
@@ -1386,14 +1386,14 @@ AddressSize = VWF_AddressSize</code></pre></td>
 						</tr>
 					</table>
 					Sets a character offset which is added to every single character printed to the text box (default value: <code>$0000</code>). Here's a simple example:
-					<pre><code>%vwf_char_offset($0010)
+					<pre><code class="65c816_asar">%vwf_char_offset($0010)
 %vwf_char($01) : %vwf_char($02) : %vwf_char($03)</code></pre>
-					Normally, you would expect this to print characters <code>$01</code>, <code>$02</code> and <code>$03</code> to the text box, but due to the <code>%vwf_char_offset($0010)</code>, what actually gets printed are characters <code>$11</code>, <code>$12</code> and <code>$13</code>.<br/><br/>
+					Normally, you would expect this to print characters <code>$01</code>, <code>$02</code> and <code>$03</code> to the text box, but due to the <code class="65c816_asar">%vwf_char_offset($0010)</code>, what actually gets printed are characters <code>$11</code>, <code>$12</code> and <code>$13</code>.<br/><br/>
 					The main purpose of this command is to enable the usage of arbitrarily sized fonts. This is especially useful in 16-bit mode, where any of the regular font settings and commands are ignored. Imagine a scenario in which you have one font occupying font slots <code>$00</code> to <code>$03</code> (each containing <code>$100</code> glyphs) and another occupying font slots <code>$04</code> to <code>$07</code>. Running the patch in 16-bit mode, you could do something like this:
-					<pre><code>%vwf_text("Hello world!")
+					<pre><code class="65c816_asar">%vwf_text("Hello world!")
 %vwf_char_offset($0400)
 %vwf_text("Hello world!")</code></pre>
-					The first &quot;Hello world!&quot; here would be printed with glyphs starting at font slot <code>$00</code>, whereas the second &quot;Hello world!&quot; would be printed with glyphs starting at font slot <code>$04</code>, making it possible to print each of the strings in a different font. In 8-bit mode, this usually wouldn't be necessary, since you could just use <code>%vwf_set_font($04)</code> instead.
+					The first &quot;Hello world!&quot; here would be printed with glyphs starting at font slot <code>$00</code>, whereas the second &quot;Hello world!&quot; would be printed with glyphs starting at font slot <code>$04</code>, making it possible to print each of the strings in a different font. In 8-bit mode, this usually wouldn't be necessary, since you could just use <code class="65c816_asar">%vwf_set_font($04)</code> instead.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_change_colors"><code>%vwf_change_colors()</code></dt>
@@ -1401,11 +1401,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_change_colors(start_color_no, color_values...)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_change_colors(start_color_no, color_values...)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!edit_pal(start_color_no, color_values...) = %vwf_change_colors(start_color_no, color_values...)</code></pre></td>
+							<td><pre><code class="65c816_asar">!edit_pal(start_color_no, color_values...) = %vwf_change_colors(start_color_no, color_values...)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1423,11 +1423,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_set_text_palette(palette_index)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_set_text_palette(palette_index)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!set_pal(palette_index) = %vwf_set_text_palette(palette_index)
+							<td><pre><code class="65c816_asar">!set_pal(palette_index) = %vwf_set_text_palette(palette_index)
 !reset_color = %vwf_set_text_palette(!vwf_default_text_palette)</code></pre></td>
 						</tr>
 						<tr>
@@ -1445,11 +1445,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_set_text_color(palette_index, text_color_value)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_set_text_color(palette_index, text_color_value)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!set_color(palette_index, text_color_value) = %vwf_set_text_color(color_no, text_color_value)</code></pre></td>
+							<td><pre><code class="65c816_asar">!set_color(palette_index, text_color_value) = %vwf_set_text_color(color_no, text_color_value)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1471,11 +1471,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_line_break()</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_line_break()</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!n = %vwf_line_break()
+							<td><pre><code class="65c816_asar">!n = %vwf_line_break()
 !lf = %vwf_line_break()
 !break = %vwf_line_break()
 !new_line = %vwf_line_break()</code></pre></td>
@@ -1489,11 +1489,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_clear()</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_clear()</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!clear = %vwf_clear()</code></pre></td>
+							<td><pre><code class="65c816_asar">!clear = %vwf_clear()</code></pre></td>
 						</tr>
 					</table>
 					Clears the text box. Following text being printed will start back at the first line of the text box.
@@ -1504,11 +1504,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_set_skip_location()</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_set_skip_location()</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!skip_loc = %vwf_set_skip_location()</code></pre></td>
+							<td><pre><code class="65c816_asar">!skip_loc = %vwf_set_skip_location()</code></pre></td>
 						</tr>
 					</table>
 					When the <a href="#header-settings-vwf_enable_skipping"><code>vwf_enable_skipping()</code></a> header setting was set to <code>true</code>, this text command can be used to mark the destination of skipping. When pressing the Start button, the text box will immediately jump to the location in the message where this command was used. Can only be used once per message.
@@ -1519,11 +1519,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_close()</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_close()</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!close = %vwf_close()</code></pre></td>
+							<td><pre><code class="65c816_asar">!close = %vwf_close()</code></pre></td>
 						</tr>
 					</table>
 					Closes the text box, restores backed up layer 3 and palette data, and resumes gameplay. It's normally not necessary to call this command explicitly, as each <code>%vwf_message_end()</code> already does so automatically. You only need to use it when you want to close a text box early (for example: from a specific choice of a <a href="#text-commands-vwf_display_options"><code>%vwf_display_options()</code></a>).
@@ -1534,11 +1534,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_wait_for_a()</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_wait_for_a()</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!press_a = %vwf_wait_for_a()</code></pre></td>
+							<td><pre><code class="65c816_asar">!press_a = %vwf_wait_for_a()</code></pre></td>
 						</tr>
 					</table>
 					Pauses the text box until the player presses the A button.
@@ -1549,11 +1549,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_wait_frames(num_frames)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_wait_frames(num_frames)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!wait_frames(num_frames) = %vwf_wait_frames(num_frames)</code></pre></td>
+							<td><pre><code class="65c816_asar">!wait_frames(num_frames) = %vwf_wait_frames(num_frames)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1570,11 +1570,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_set_text_speed(speed)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_set_text_speed(speed)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!wait_frames(speed) = %vwf_set_text_speed(speed)</code></pre></td>
+							<td><pre><code class="65c816_asar">!wait_frames(speed) = %vwf_set_text_speed(speed)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1591,11 +1591,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_freeze()</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_freeze()</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!freeze = %vwf_freeze()
+							<td><pre><code class="65c816_asar">!freeze = %vwf_freeze()
 !halt = %vwf_freeze()</code></pre></td>
 						</tr>
 					</table>
@@ -1607,11 +1607,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_set_text_pointer(address)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_set_text_pointer(address)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!jump(address) = %vwf_set_text_pointer(address)</code></pre></td>
+							<td><pre><code class="65c816_asar">!jump(address) = %vwf_set_text_pointer(address)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1628,11 +1628,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_display_message(message_no, show_close_anim, show_open_anim)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_display_message(message_no, show_close_anim, show_open_anim)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!open_message(message_no, show_close_anim, show_open_anim) = %vwf_display_message(message_no, show_close_anim, show_open_anim)</code></pre></td>
+							<td><pre><code class="65c816_asar">!open_message(message_no, show_close_anim, show_open_anim) = %vwf_display_message(message_no, show_close_anim, show_open_anim)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1651,11 +1651,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_display_options(unique_label_name, option_texts...)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_display_options(unique_label_name, option_texts...)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!options(unique_label_name, option_texts...) = %vwf_display_options(unique_label_name, option_texts...)</code></pre></td>
+							<td><pre><code class="65c816_asar">!options(unique_label_name, option_texts...) = %vwf_display_options(unique_label_name, option_texts...)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1673,11 +1673,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_set_option_location(options_label_name, option_id)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_set_option_location(options_label_name, option_id)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!opt_loc(options_label_name, option_id) = %vwf_set_option_location(options_label_name, option_id)</code></pre></td>
+							<td><pre><code class="65c816_asar">!opt_loc(options_label_name, option_id) = %vwf_set_option_location(options_label_name, option_id)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1688,9 +1688,9 @@ AddressSize = VWF_AddressSize</code></pre></td>
 						</tr>
 					</table>
 					Sets the target destination for a specific choice of a <a href="#text-commands-vwf_display_options"><code>%vwf_display_options()</code></a> command. Upon selecting that choice, the text box will continue at the location where <code>%vwf_set_option_location()</code> was called. The <code>options_label_name</code> parameter must be identical to the <code>unique_label_name</code> passed to <a href="#text-commands-vwf_display_options"><code>%vwf_display_options()</code></a>. The <code>option_id</code> parameter specifies which choice you're setting the location for, starting at <code>0</code>. So if you had the following <a href="#text-commands-vwf_display_options"><code>%vwf_display_options()</code></a> call
-					<pre><code>%vwf_display_options(MyOptions, %vwf_text("One"), %vwf_text("Two"), %vwf_text("Three"))</code></pre>
+					<pre><code class="65c816_asar">%vwf_display_options(MyOptions, %vwf_text("One"), %vwf_text("Two"), %vwf_text("Three"))</code></pre>
 					then calling
-					<pre><code>%vwf_set_option_location(MyOptions, 1)</code></pre>
+					<pre><code class="65c816_asar">%vwf_set_option_location(MyOptions, 1)</code></pre>
 					would set the target location of the <code>Two</code> choice.
 				</p></dd>
 			</dl>	
@@ -1703,11 +1703,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_play_bgm(bgm_id)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_play_bgm(bgm_id)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!play_bgm(bgm_id) = %vwf_play_bgm(bgm_id)</code></pre></td>
+							<td><pre><code class="65c816_asar">!play_bgm(bgm_id) = %vwf_play_bgm(bgm_id)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1724,11 +1724,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_setup_teleport(destination, is_secondary, is_midway_or_water)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_setup_teleport(destination, is_secondary, is_midway_or_water)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!teleport(destination, is_secondary, is_midway_or_water) = %vwf_setup_teleport(destination, is_secondary, is_midway_or_water)</code></pre></td>
+							<td><pre><code class="65c816_asar">!teleport(destination, is_secondary, is_midway_or_water) = %vwf_setup_teleport(destination, is_secondary, is_midway_or_water)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1751,11 +1751,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_execute_text_macro(macro_name)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_execute_text_macro(macro_name)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!macro(macro_name) = %vwf_execute_text_macro(macro_name)</code></pre></td>
+							<td><pre><code class="65c816_asar">!macro(macro_name) = %vwf_execute_text_macro(macro_name)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1772,11 +1772,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_execute_text_macro_by_indexed_group(group_name, index_address)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_execute_text_macro_by_indexed_group(group_name, index_address)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!macro_group(group_name, index_address) = %vwf_execute_text_macro_by_indexed_group(group_name, index_address)</code></pre></td>
+							<td><pre><code class="65c816_asar">!macro_group(group_name, index_address) = %vwf_execute_text_macro_by_indexed_group(group_name, index_address)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1794,11 +1794,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_execute_buffered_text_macro(macro_id)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_execute_buffered_text_macro(macro_id)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!macro_buf(macro_id) = %vwf_execute_buffered_text_macro(macro_id)</code></pre></td>
+							<td><pre><code class="65c816_asar">!macro_buf(macro_id) = %vwf_execute_buffered_text_macro(macro_id)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1821,11 +1821,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_execute_subroutine(address)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_execute_subroutine(address)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!execute(address) = %vwf_execute_subroutine(address)
+							<td><pre><code class="65c816_asar">!execute(address) = %vwf_execute_subroutine(address)
 !exec(address) = %vwf_execute_subroutine(address)</code></pre></td>
 						</tr>
 						<tr>
@@ -1852,7 +1852,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>rgb_15(r, g, b)</code></pre></td>
+							<td><pre><code class="65c816_asar">rgb_15(r, g, b)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1871,11 +1871,11 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>vwf_get_color_index_2bpp(palette_index, type)</code></pre></td>
+							<td><pre><code class="65c816_asar">vwf_get_color_index_2bpp(palette_index, type)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code>!text_color_0 = vwf_get_color_index_2bpp($00, VWF_ColorID.Text)
+							<td><pre><code class="65c816_asar">!text_color_0 = vwf_get_color_index_2bpp($00, VWF_ColorID.Text)
 !text_color_1 = vwf_get_color_index_2bpp($01, VWF_ColorID.Text)
 !text_color_2 = vwf_get_color_index_2bpp($02, VWF_ColorID.Text)
 !text_color_3 = vwf_get_color_index_2bpp($03, VWF_ColorID.Text)
@@ -1918,7 +1918,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_wrap(commands...)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_wrap(commands...)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1928,7 +1928,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 						</tr>
 					</table>
 					Wraps an arbitrary number of text commands so that they can be passed to a macro as a single argument. This can be useful, for example, to pass multiple commands as a single option to <a href="#text-commands-vwf_display_options"><code>%vwf_display_options()</code></a>. Usage example:
-					<pre><code>!edit_pal(!text_color_5, rgb_15(6, 31, 6), rgb_15(0, 0, 0))
+					<pre><code class="65c816_asar">!edit_pal(!text_color_5, rgb_15(6, 31, 6), rgb_15(0, 0, 0))
 					
 !options(SampleOptions,
 	%vwf_wrap( !set_pal($05), !char($00AC), !reset_color, !str(" Bullet Point 1") ),
@@ -1946,7 +1946,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_inline(commands...)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_inline(commands...)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1963,7 +1963,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>remap_ram(address)</code></pre></td>
+							<td><pre><code class="65c816_asar">remap_ram(address)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -1973,7 +1973,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 						</tr>
 					</table>
 					Automatically remaps a RAM address as needed when applying the patch to an SA-1 ROM (and in theory, also a SuperFX ROM). This can be used to create messages that work consistently in both regular ROMs and SA-1 ROMs. In regular ROMs, the function will effectively "do nothing". In SA-1 ROMs, it will automatically remap the RAM address to the correct SA-1 equivalent. Usage example:
-					<pre><code>; This will turn into $7E0DBF in a regular ROM, but into $003DBF in an SA-1 ROM.
+					<pre><code class="65c816_asar">; This will turn into $7E0DBF in a regular ROM, but into $003DBF in an SA-1 ROM.
 !str("Mario's current coins: ") : !dec(remap_ram($7E0DBF), AddressSize.8Bit, true) : !new_line</code></pre>
 				</p></dd>
 			</dl>
@@ -1997,7 +1997,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_register_text_macro(unique_macro_name, commands...)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_register_text_macro(unique_macro_name, commands...)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -2011,7 +2011,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 				</p></dd>
 				
 				Here's a simple example to demonstrate the usage of text macros:
-				<pre><code>%vwf_register_text_macro("Mario", !str("Mario") )
+				<pre><code class="65c816_asar">%vwf_register_text_macro("Mario", !str("Mario") )
 %vwf_register_text_macro("Luigi", !str("Luigi") )
 
 %vwf_message_start(0050)	; Message 104-1
@@ -2036,7 +2036,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_start_text_macro_group(unique_group_name)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_start_text_macro_group(unique_group_name)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -2053,7 +2053,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_add_text_macro_to_group(macro_name)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_add_text_macro_to_group(macro_name)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -2070,14 +2070,14 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code>%vwf_end_text_macro_group()</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_end_text_macro_group()</code></pre></td>
 						</tr>
 					</table>
 					Ends the current text macro group.
 				</p></dd>
 			
 				Here's an advanced example, combining different text macro functionality (regular text macros, text macro groups, nested text macros) in a practical way to create some super handy text macros:
-<pre><code>; Registers text macros for Mario's and Luigi's names
+<pre><code class="65c816_asar">; Registers text macros for Mario's and Luigi's names
 %vwf_register_text_macro("MarioName", !str("Mario") )
 %vwf_register_text_macro("LuigiName", !str("Luigi") )
 
@@ -2165,7 +2165,7 @@ AddressSize = VWF_AddressSize</code></pre></td>
 			<p>
 				As already mentioned, doing so is thankfully very simple and only requires you to call the <code>VWF_DisplayAMessage</code> shared routine from your own code. See section <a href="#shared-routines">Shared Routines</a> on details for how to use shared routines. Usage of the routine is documented in code right next to it, but calling it is usually as simple as:
 				
-				<pre><code>lda.b #MessageNumber
+				<pre><code class="65c816_asar">lda.b #MessageNumber
 ldx.b #MessageNumber>>8
 jsl VWF_DisplayAMessage</code></pre>
 			</p>
@@ -2173,7 +2173,7 @@ jsl VWF_DisplayAMessage</code></pre>
 			<h3 id="message-asm" class="text-center">MessageASM</h3>
 			<p>
 				MessageASM is an optional feature that allows you to to add code routines to messages. These routines are called every frame as long as a text box with that specific message is open. Think of it as UberASM, but tied to message numbers instead of level numbers. Enabling MessageASM is as simple as setting the <a href="#header-settings-vwf_enable_message_asm"><code>vwf_enable_message_asm</code></a> setting to <code>true</code> and adding a routine called <code>MessageASMXXXX</code> to the code, where <code>XXXX</code> must be the ID of the message for which MessageASM was enabled. This routine can go into your <code>vwfmessages.asm</code> file if desired, but never directly inside a message body. It also must end in an <code>rtl</code>. Here's a simple example:
-				<pre><code>%vwf_message_start(0050)	; Message 104-1
+				<pre><code class="65c816_asar">%vwf_message_start(0050)	; Message 104-1
 
 	%vwf_header(enable_message_asm(true), freeze_game(false))
 	
@@ -2221,7 +2221,7 @@ MessageASM0050:
 			<p>
 				First of all, to use shared routines in other resources, you need to copy the file <code>code/external/vwfsharedroutines.asm</code> next to them and then <code>incsrc</code> it. However, since that file reads the locations of routines from ROM, this requires the VWF Dialogues Patch to always be patched to it before the other resources. If you plan to release a resource accessing a shared routine, it's a good idea to mention this fact in your readme. As an additional safety measure, your resources can check for the existence of specific defines, which indicate that a shared routine has been found. Here is a simple example. It demonstrates how to display text boxes from custom code (probably 99% of use cases for shared routines):
 				
-				<pre><code>incsrc "vwfsharedroutines.asm"
+				<pre><code class="65c816_asar">incsrc "vwfsharedroutines.asm"
 				
 if defined("vwf_shared_routine_VWF_DisplayAMessage_exists")
 	lda.b #MessageNumber
@@ -2342,7 +2342,7 @@ endif</code></pre>
 				That leaves only message files. Since they grow in size with every single message or piece of text added, they have a very real chance of exceeding the bank size limit. An average hack is unlikely to ever run into this limitation, because 32768 bytes amount to a lot of text. However, if you're creating a particularly text- and story-heavy hack, you might run into this issue eventually. This is what it might look like:
 				<img class="d-block m-1 my-2" src="screenshots/console-2.png" alt="Screenshot" width="1115" height="172" />
 				Thankfully, the fix for this, too, is pretty simple. Just create a new messages file next to the existing one. Let's say <code>vwfmessages2.asm</code>. In <code>vwfconfig.cfg</code>, include this file inside the <code>vwf_define_data</code> macro, like so:
-				<pre><code>%vwf_add_messages("data/vwfmessages2.asm", "data/fonts/vwftable.asm")</code></pre>
+				<pre><code class="65c816_asar">%vwf_add_messages("data/vwfmessages2.asm", "data/fonts/vwftable.asm")</code></pre>
 				And then simply start moving entire messages from your first <code>vwfmessages.asm</code> file to your second <code>vwfmessages2.asm</code> file until the error goes aways. From here on out, use <code>vwfmessages2.asm</code> whenever adding new messages. When you edit a message in <code>vwfmessages.asm</code> and the error pops up again, move that entire message over to <code>vwfmessages2.asm</code>.
 			</p>
 

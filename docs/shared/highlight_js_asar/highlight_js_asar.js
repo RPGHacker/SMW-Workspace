@@ -1,10 +1,13 @@
 hljsAsar = {
-  init : function() {
-    hljs.registerLanguage("powershell", function(e) {
+  init : function()
+  {
+    hljs.registerLanguage("powershell", function(hljs)
+	{
       return {
           aliases: ["ps"],
           case_insensitive: true,
-          keywords: {
+          keywords:
+		  {
             $pattern: /-?[A-z\.\-]+/
           }
       }
@@ -17,6 +20,45 @@ hljsAsar = {
     
     const asarIntrinsicFunctions = ["read1", "read2", "read3", "read4", "canread1", "canread2", "canread4", "sqrt", "sin", "cos", "tan", "asin", "acos", "atan", "arcsin", "arccos", "arctan", "log", "log10", "log2", "_read1", "_read2", "_read3", "_read4", "_canread1", "_canread2", "_canread4", "_sqrt", "_sin", "_cos", "_tan", "_asin", "_acos", "_atan", "_arcsin", "_arccos", "_arctan", "_log", "_log10", "_log2", "readfile1", "_readfile1", "readfile2", "_readfile2", "readfile3", "_readfile3", "readfile4", "_readfile4", "canreadfile1", "_canreadfile1", "canreadfile2", "_canreadfile2", "canreadfile3", "_canreadfile3", "canreadfile4", "_canreadfile4", "canreadfile", "_canreadfile", "filesize", "_filesize", "getfilestatus", "_getfilestatus", "snestopc", "_snestopc", "pctosnes", "_pctosnes", "max", "_max", "min", "_min", "clamp", "_clamp", "safediv", "_safediv", "select", "_select", "not", "_not", "equal", "_equal", "notequal", "_notequal", "less", "_less", "lessequal", "_lessequal", "greater", "_greater", "greaterequal", "_greaterequal", "and", "_and", "or", "_or", "nand", "_nand", "nor", "_nor", "xor", "_xor", "defined", "_defined", "sizeof", "_sizeof", "objectsize", "_objectsize", "stringsequal", "_stringsequal", "stringsequalnocase", "_stringsequalnocase"];
     
+	const asarNumberLiteralsMode = 
+    {
+    	scope: "number",
+    	variants:
+    	[
+    		{
+    			begin: /(?<=\W|^)#?[+\-~]?0x[0-9a-fA-F]+(?=\W|$)/
+    		},
+    		{
+    			begin: /(?<=\W|^)#?[+\-~]?[0-9]+(\.[0-9]+)?(?=\W|$)/
+    		},
+    		{
+    			begin: /(?<=\W|^)#?[+\-~]?%[0-1]+(?=\W|$)/
+    		},
+    		{
+    			begin: /(?<=\W|^)#?[+\-~]?\$[0-9a-fA-F]+(?=\W|$)/
+    		}/*,
+    		{
+    			begin: /(?<=\W|^)#?(\(|\)|\+|\-|\*|\/|\%|\<\<|\>\>|\&|\||\^|\~|\*\*)+/
+    		}*/
+    	],
+    	relevance: 0
+    };
+	
+	const asarLabelsMode =
+    {
+    	scope: "label",
+    	variants:
+    	[
+    		{
+    			begin: /#?\??\.*[a-zA-Z0-9_]+:?/
+    		},				
+    		{
+    			begin: /\??(-+|\++):?/
+    		}
+    	],
+    	relevance: 0
+    }
+	
     hljs.registerLanguage("65c816_asar",
     	function(hljs)
     	{
@@ -27,66 +69,58 @@ hljsAsar = {
     			{
     				opcodes: asarOpcodes.join(' '),
     				keywords: asarKeywords.join(' '),
-    				built_in: asarIntrinsicFunctions.join(' '),
+    				builtin: asarIntrinsicFunctions.join(' '),
 					$pattern: hljs.IDENT_RE
     			},
     			contains:
     			[
-    				{
-    					scope: "built_in",
-    					begin: "(" + asarIntrinsicFunctions.join('|') + ")\\(",
-    					end: "\\)"
-    				},
     				hljs.COMMENT("[;]", "$"),
     				hljs.C_BLOCK_COMMENT_MODE,
     				hljs.QUOTE_STRING_MODE,
     				hljs.APOS_STRING_MODE,
     				{
     					scope: "special",
-    					begin: '\\s*^@',
-    					end: '$',
+    					begin: /\s*^@/,
+    					end: /$/,
     					relevance: 0
     				},
     				{
     					scope: "keywords",
     					begin: asarKeywords.join('\\b|').concat('\\b')
     				},
+    				asarNumberLiteralsMode,
     				{
-    					scope: "number",
-    					variants:
-    					[
-    						{
-    							begin: "#?[+\\-~]?0x[0-9a-fA-F]+"
-    						},
-    						{
-    							begin: "#?[+\\-~]?[0-9]+(\\.[0-9]+)?"
-    						},
-    						{
-    							begin: "#?[+\\-~]?%[0-1]+"
-    						},
-    						{
-    							begin: "#?[+\\-~]?\\$[0-9a-fA-F]+"
-    						}/*,
-    						{
-    							begin: "#?(\\(|\\)|\\+|\\-|\\*|\\/|\\%|\\<\\<|\\>\\>|\\&|\\||\\^|\\~|\\*\\*)+"
-    						}*/
-    					],
-    					relevance: 0
+    					scope: "builtin",
+    					begin: "(" + asarIntrinsicFunctions.join('|') + ")\\(",
+    					end: "\\)",
+						contains:
+						[
+							hljs.QUOTE_STRING_MODE,
+							hljs.APOS_STRING_MODE,
+							asarNumberLiteralsMode,
+							'self',
+							asarLabelsMode
+						],
     				},
     				{
     					scope: "function",
     					variants:
     					[
     						{
-    							begin: "%?[a-zA-Z0-9_]+\\(",
-    							end: "\\)"
+								// RPG Hacker: The exclamation mark here is for the case when defines are used as functions.
+								// Probably not a very common case, but my VWF Dialogues Patch uses it a lot, and this makes
+								// stuff a lot more readable in those cases.
+    							begin: /(?:%|!)?[a-zA-Z0-9_]+\(/,
+    							end: /\)/
     						}
     					],
 						contains:
 						[
 							hljs.QUOTE_STRING_MODE,
 							hljs.APOS_STRING_MODE,
-							'self'
+							asarNumberLiteralsMode,
+							'self',
+							asarLabelsMode
 						],
     					relevance: 0
     				},
@@ -95,10 +129,10 @@ hljsAsar = {
     					variants:
     					[
     						{
-    							begin: "!\\^*[a-zA-Z0-9_{}]+"
+    							begin: /!\^*[a-zA-Z0-9_{}]+/
     						},
     						{
-    							begin: "<\\^*[a-zA-Z0-9_]+>"
+    							begin: /<\^*[a-zA-Z0-9_]+>/
     						},
     					],
     					relevance: 10
@@ -107,19 +141,7 @@ hljsAsar = {
     					scope: "opcodes",
     					begin: asarOpcodes.join('(\\.[bwl]|\\b)|').concat('(\\.[bwl]|\\b)')
     				},
-    				{
-    					scope: "label",
-    					variants:
-    					[
-    						{
-    							begin: "#?\\??\\.*[a-zA-Z0-9_]+:?"
-    						},				
-    						{
-    							begin: "\\??(-+|\\++):?"
-    						}
-    					],
-    					relevance: 0
-    				}
+					asarLabelsMode
     			],
     			i: "/"
     		}

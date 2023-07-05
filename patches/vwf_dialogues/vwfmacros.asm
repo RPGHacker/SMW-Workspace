@@ -41,6 +41,7 @@ macro vwf_define_enums(prefix)
 	; decide to add right-aligned text to version 1.4 or later if we desire.
 	%define_enum(<prefix>TextAlignment, Left, Centered)
 	%define_enum(<prefix>AutoWait, None, WaitForA)
+	%define_enum(<prefix>TeleportToOwMode, NoExit, PrimaryExit, SecondaryExit)
 	
 	%define_enum_with_values(<prefix>ColorID, Text, 2, Outline, 3)
 	
@@ -1143,6 +1144,17 @@ macro vwf_setup_teleport_to_secondary_entrance(destination_entrance, is_water_le
 	endif
 endmacro
 
+macro vwf_setup_teleport_to_overworld(mode)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	elseif <mode> < !enum_VWF_TeleportToOwMode_first || <mode> > !enum_VWF_TeleportToOwMode_last
+		error "%vwf_setup_teleport_to_overworld(): ""mode"" must be a value between ""!enum_VWF_TeleportToOwMode_first"" and ""!enum_VWF_TeleportToOwMode_last""."
+	else		
+		%vwf_generate_command_table($E6)
+		db <mode>
+	endif
+endmacro
+
 macro vwf_change_colors(palette_start, ...)
 	if !vwf_message_command_error_condition
 		%vwf_print_message_command_error()
@@ -1338,6 +1350,7 @@ if !vwf_enable_short_aliases != false
 	!play_bgm = %vwf_play_bgm
 	!teleport_to_level = %vwf_setup_teleport_to_level
 	!teleport_to_secondary = %vwf_setup_teleport_to_secondary_entrance
+	!teleport_to_ow = %vwf_setup_teleport_to_overworld
 	
 	!options = %vwf_display_options
 	!opt_loc = %vwf_set_option_location

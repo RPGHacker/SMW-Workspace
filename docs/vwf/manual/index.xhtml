@@ -203,6 +203,7 @@
 									<li><a href="#text-commands-vwf_play_bgm"><code>%vwf_play_bgm()</code></a></li>
 									<li><a href="#text-commands-vwf_setup_teleport_to_level"><code>%vwf_setup_teleport_to_level()</code></a></li>
 									<li><a href="#text-commands-vwf_setup_teleport_to_secondary_entrance"><code>%vwf_setup_teleport_to_secondary_entrance()</code></a></li>
+									<li><a href="#text-commands-vwf_setup_teleport_to_overworld"><code>%vwf_setup_teleport_to_overworld()</code></a></li>
 								</ul></details>
 							
 								<details><summary><a href="#text-commands-text-macros">Text Macros</a></summary><ul>
@@ -1216,7 +1217,7 @@ AutoWait = VWF_AutoWait</code></pre></td>
 						</tr>
 					</table>
 					This command prints a string of regular text to the text box. Your currently active <a href="#resources-fonts">table file</a> defines how each character maps onto the currently active <a href="#resources-fonts">font</a> to display the respective character. Whenever a text string you print would overflow the available space of the text box, the <a href="#header-settings-vwf_auto_wait">vwf_auto_wait()</a> header setting defines what action should be taken.<br/><br/>
-					A word of caution: For the implementation of text commands, the patch reserves a certain number of character values. Currently, these are <code>$E7</code> to <code>$FF</code> when running in 8-bit mode, or <code>$FFE7</code> to <code>$FFFF</code> when running in 16-bit mode. Trying to print any character with this command that maps onto one of those values (except for <code>$FE</code>, which represents the <a href="#text-commands-vwf_space">vwf_space()</a> command) will likely result in bugs. Currently, these characters need to be escaped manually using the <a href="#text-commands-vwf_char">vwf_char()</a> command. A future version of the patch might automate this process if possible.
+					A word of caution: For the implementation of text commands, the patch reserves a certain number of character values. Currently, these are <code>$E6</code> to <code>$FF</code> when running in 8-bit mode, or <code>$FFE6</code> to <code>$FFFF</code> when running in 16-bit mode. Trying to print any character with this command that maps onto one of those values (except for <code>$FE</code>, which represents the <a href="#text-commands-vwf_space">vwf_space()</a> command) will likely result in bugs. Currently, these characters need to be escaped manually using the <a href="#text-commands-vwf_char">vwf_char()</a> command. A future version of the patch might automate this process if possible.
 				</p></dd>
 				
 				<dt id="text-commands-vwf_char"><code>%vwf_char()</code></dt>
@@ -1764,6 +1765,35 @@ AddressSize = VWF_AddressSize</code></pre></td>
 						</tr>
 					</table>
 					Sets up a teleport to a secondary entrance that will activate once the text box closes.
+				</p></dd>
+				
+				<dt id="text-commands-vwf_setup_teleport_to_overworld"><code>%vwf_setup_teleport_to_overworld()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code class="65c816_asar">%vwf_setup_teleport_to_overworld(mode)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code class="65c816_asar">!teleport_to_ow(mode) = %vwf_setup_teleport_to_overworld(mode)
+TeleportToOwMode = VWF_TeleportToOwMode</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">								
+								<li><code>mode: VWF_TeleportToOwMode:</code> How to exit the level. Valid values:
+								<table class="parameter-list">
+									<tr><th>Value</th><th>Description</th></tr>
+									<tr><td><code>VWF_TeleportToOwMode.NoExit</code></td><td>Exit the level as if by pressing Start + Select (don't activate a level exit).</td></tr>
+									<tr><td><code>VWF_TeleportToOwMode.PrimaryExit</code></td><td>Activate the primary level exit.</td></tr>
+									<tr><td><code>VWF_TeleportToOwMode.SecondaryExit</code></td><td>Activate the secondary level exit.</td></tr>
+								</table>								
+								</li>
+							</ul></td>
+						</tr>
+					</table>
+					Sets up a teleport to the overworld that will activate once the text box closes.
 				</p></dd>
 			</dl>	
 	
@@ -2409,14 +2439,14 @@ endif</code></pre>
 						<li>Added the ability to modify the text pointer using the start button.</li>
 						<li>Added a text macro system, allowing one to define strings of text/commands to be called at any time in a message.</li>
 						<li>Added an extra step to message initialization that initializes all the VWF variables on message load, not just on title screen load.</li>
-						<li>Added command byte <code>$EB</code> that forces a textbox to freeze until something modifies the text pointer.</li>
+						<li>Added command byte <code>$EB</code> (<code>%vwf_freeze()</code> text command) that forces a textbox to freeze until something modifies the text pointer.</li>
 						<li>Added command bytes <code>$E8</code> and <code>$E7</code> for the text macro system and that act like a JSR and RTS to the textbox system, respectively.</li>
 						<li>Added several useful routines that can be called from within messages, such as a text buffering routine.</li>
 						<li>Made it so that the textbox will be forced to close when the screen fades out. The fadeout will also be delayed until the textbox closes.</li>
 						<li>Added some functionality that enables the textbox to close if another message is being set to display</li>
 						<li>Changed the hijack location for initializing the VWF RAM on the title screen from $0086E2 to $0096B4, because the former location was very questionable.</li>
 						<li>Fixed certain incompatibilities with Vitor Vilela's SA-1 Pack Patch v1.30 and up.</li>
-						<li>Adjusted the <code>$EF</code> command to work with secondary entrances $0200-$1FFF, levels using Lunar Magic 3.00 custom level dimensions, and layer 2 horizontal levels.</li>
+						<li>Adjusted the <code>$EF</code> (teleport) text command to work with secondary entrances $0200-$1FFF, levels using Lunar Magic 3.00 custom level dimensions, and layer 2 horizontal levels.</li>
 						<li>Added a RAM flag that indicates that the text box has just been cleared.</li>
 						<li>Added placeholder text to messages with no content, which makes it easier for players to report them to hack creators.</li>
 						<li>Cut RAM usage in half by optimizing how the text tiles are buffered.</li>
@@ -2431,6 +2461,7 @@ endif</code></pre>
 						<li>Character mapping table now supports a bunch of special characters, as well as Japanese (both available from Asar 2.0 onwards).</li>
 						<li>Added new character offset command, which allows applying an offset value to every single character being rendered. Useful for creating fonts with a custom number of characters.</li>
 						<li>Fixed: When running in 16-bit mode and displaying a 16-bit decimal number, the thousands digit didn't work and displayed a random character instead.</li>
+						<li>Added a <code>%vwf_setup_teleport_to_overworld()</code> text command.</li>
 					</ul>
 				</p></dd>
 

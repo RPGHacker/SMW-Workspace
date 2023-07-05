@@ -124,6 +124,7 @@ endmacro
 %vwf_claim_varram(teleport, 1)               ; Flag indicating whether a teleport should take place.
 %vwf_claim_varram(teleport_dest, 1)          ; Data that gets stored to the table at $19B8 when the teleport function is active.
 %vwf_claim_varram(teleport_prop, 1)          ; Data that gets stored to the table at $19D8 when the teleport function is active.
+%vwf_claim_varram(teleport_to_ow, 1)         ; Stores whether we want to teleport to the overworld, and how
 %vwf_claim_varram(force_sfx, 1)
 %vwf_claim_varram(width_carry, 1)
 %vwf_claim_varram(choices, 1)
@@ -215,7 +216,7 @@ endif
 !vwf_cpu_sa1 = 1
 
 ; RPG Hacker: IMPORTANT: Adjust this define when adding any new commands to the patch!
-!vwf_lowest_reserved_hex = $FFE7
+!vwf_lowest_reserved_hex = $FFE6
 
 
 
@@ -2606,6 +2607,7 @@ endif
 	jmp (.Routinetable,x)
 
 .Routinetable
+	dw .E6_TeleportToOw
 	dw .E7_EndTextMacro
 	dw .E8_TextMacro
 	dw .E9_TextMacroGroup
@@ -2631,6 +2633,15 @@ endif
 	dw .FD_LineBreak
 	dw .FE_Space
 	dw .FF_End
+	
+.E6_TeleportToOw
+	ldy #$01
+	lda [$00],y
+	inc
+	sta !vwf_teleport_to_ow
+	jsr IncPointer
+	jsr IncPointer
+	jmp .NoButton	
 
 .E7_EndTextMacro
 	jsr HandleVWFStackByte1_Pull
@@ -4188,6 +4199,7 @@ endif
 	jmp (.Routinetable,x)
 
 .Routinetable
+	dw .E6_TeleportToOw
 	dw .E7_EndTextMacro
 	dw .E8_TextMacro
 	dw .E9_TextMacroGroup
@@ -4213,6 +4225,10 @@ endif
 	dw .FD_LineBreak
 	dw .FE_Space
 	dw .FF_End
+	
+.E6_TeleportToOw
+	jsr IncPointer
+	jmp .Begin
 
 .E7_EndTextMacro
 	jsr HandleVWFStackByte2_Pull
@@ -4845,6 +4861,26 @@ endif
 	stz $88
 
 .NoTeleport
+	lda !vwf_teleport_to_ow
+	beq .NoTeleportToOw
+	
+	dec
+	bne +
+	
+	jsl VWF_CloseMessageAndGoToOverworld_StartPlusSelect
+	bra .NoTeleportToOw
+	
++	
+	dec
+	bne +
+	
+	jsl VWF_CloseMessageAndGoToOverworld_NormalExit
+	bra .NoTeleportToOw
+	
++
+	jsl VWF_CloseMessageAndGoToOverworld_SecretExit
+	
+.NoTeleportToOw
 	lda #$00	; VWF dialogue end
 	sta !vwf_mode
 

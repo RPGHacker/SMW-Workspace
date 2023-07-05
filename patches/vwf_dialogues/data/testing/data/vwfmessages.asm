@@ -1619,15 +1619,15 @@ MessageASM0044:
 		!str("Cancel"))
 	
 	!opt_loc(ReturnToOWExitSelect, 0)
-		!execute(.ReturnToOW_NormalExit)
+		!teleport_to_ow(TeleportToOwMode.PrimaryExit)
 		!close
 	
 	!opt_loc(ReturnToOWExitSelect, 1)
-		!execute(.ReturnToOW_SecretExit)
+		!teleport_to_ow(TeleportToOwMode.SecondaryExit)
 		!close
 	
 	!opt_loc(ReturnToOWExitSelect, 2)
-		!execute(.ReturnToOW_StartPlusSelect)
+		!teleport_to_ow(TeleportToOwMode.NoExit)
 		!close
 		
 	!opt_loc(ReturnToOWExitSelect, 3)
@@ -1637,18 +1637,6 @@ MessageASM0044:
 	!opt_loc(ReturnToOWExitSelect, 4)
 
 %vwf_message_end()
-	
-.ReturnToOW_NormalExit
-	jsl VWF_CloseMessageAndGoToOverworld_NormalExit
-	rtl
-	
-.ReturnToOW_SecretExit
-	jsl VWF_CloseMessageAndGoToOverworld_SecretExit
-	rtl
-	
-.ReturnToOW_StartPlusSelect
-	jsl VWF_CloseMessageAndGoToOverworld_StartPlusSelect
-	rtl
 	
 .EndLevelAndTeleportToYoshisHouse
     lda #$01

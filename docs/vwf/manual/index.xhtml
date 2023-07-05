@@ -203,7 +203,7 @@
 									<li><a href="#text-commands-vwf_play_bgm"><code>%vwf_play_bgm()</code></a></li>
 									<li><a href="#text-commands-vwf_setup_teleport_to_level"><code>%vwf_setup_teleport_to_level()</code></a></li>
 									<li><a href="#text-commands-vwf_setup_teleport_to_secondary_entrance"><code>%vwf_setup_teleport_to_secondary_entrance()</code></a></li>
-									<li><a href="#text-commands-vwf_setup_teleport_to_overworld"><code>%vwf_setup_teleport_to_overworld()</code></a></li>
+									<li><a href="#text-commands-vwf_setup_exit_to_overworld"><code>%vwf_setup_exit_to_overworld()</code></a></li>
 								</ul></details>
 							
 								<details><summary><a href="#text-commands-text-macros">Text Macros</a></summary><ul>
@@ -1767,33 +1767,33 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					Sets up a teleport to a secondary entrance that will activate once the text box closes.
 				</p></dd>
 				
-				<dt id="text-commands-vwf_setup_teleport_to_overworld"><code>%vwf_setup_teleport_to_overworld()</code></dt>
+				<dt id="text-commands-vwf_setup_exit_to_overworld"><code>%vwf_setup_exit_to_overworld()</code></dt>
 				<dd><p>
 					<table class="api-documentation">
 						<tr>
 							<th>Usage</th>
-							<td><pre><code class="65c816_asar">%vwf_setup_teleport_to_overworld(mode)</code></pre></td>
+							<td><pre><code class="65c816_asar">%vwf_setup_exit_to_overworld(mode)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code class="65c816_asar">!teleport_to_ow(mode) = %vwf_setup_teleport_to_overworld(mode)
-TeleportToOwMode = VWF_TeleportToOwMode</code></pre></td>
+							<td><pre><code class="65c816_asar">!exit_to_ow(mode) = %vwf_setup_exit_to_overworld(mode)
+ExitToOwMode = VWF_ExitToOwMode</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
 							<td><ul class="parameter-list">								
-								<li><code>mode: VWF_TeleportToOwMode:</code> How to exit the level. Valid values:
+								<li><code>mode: VWF_ExitToOwMode:</code> How to exit the level. Valid values:
 								<table class="parameter-list">
 									<tr><th>Value</th><th>Description</th></tr>
-									<tr><td><code>VWF_TeleportToOwMode.NoExit</code></td><td>Exit the level as if by pressing Start + Select (don't activate a level exit).</td></tr>
-									<tr><td><code>VWF_TeleportToOwMode.PrimaryExit</code></td><td>Activate the primary level exit.</td></tr>
-									<tr><td><code>VWF_TeleportToOwMode.SecondaryExit</code></td><td>Activate the secondary level exit.</td></tr>
+									<tr><td><code>VWF_ExitToOwMode.NoExit</code></td><td>Exit the level as if by pressing Start + Select (don't activate a level exit).</td></tr>
+									<tr><td><code>VWF_ExitToOwMode.PrimaryExit</code></td><td>Activate the primary level exit.</td></tr>
+									<tr><td><code>VWF_ExitToOwMode.SecondaryExit</code></td><td>Activate the secondary level exit.</td></tr>
 								</table>								
 								</li>
 							</ul></td>
 						</tr>
 					</table>
-					Sets up a teleport to the overworld that will activate once the text box closes.
+					Sets up an exit to the overworld that will activate once the text box closes.
 				</p></dd>
 			</dl>	
 	
@@ -2461,7 +2461,7 @@ endif</code></pre>
 						<li>Character mapping table now supports a bunch of special characters, as well as Japanese (both available from Asar 2.0 onwards).</li>
 						<li>Added new character offset command, which allows applying an offset value to every single character being rendered. Useful for creating fonts with a custom number of characters.</li>
 						<li>Fixed: When running in 16-bit mode and displaying a 16-bit decimal number, the thousands digit didn't work and displayed a random character instead.</li>
-						<li>Added a <code>%vwf_setup_teleport_to_overworld()</code> text command.</li>
+						<li>Added a <code>%vwf_setup_exit_to_overworld()</code> text command.</li>
 					</ul>
 				</p></dd>
 

@@ -124,7 +124,7 @@ endmacro
 %vwf_claim_varram(teleport, 1)               ; Flag indicating whether a teleport should take place.
 %vwf_claim_varram(teleport_dest, 1)          ; Data that gets stored to the table at $19B8 when the teleport function is active.
 %vwf_claim_varram(teleport_prop, 1)          ; Data that gets stored to the table at $19D8 when the teleport function is active.
-%vwf_claim_varram(teleport_to_ow, 1)         ; Stores whether we want to teleport to the overworld, and how
+%vwf_claim_varram(exit_to_ow, 1)             ; Stores whether we want to exit to the overworld, and how
 %vwf_claim_varram(force_sfx, 1)
 %vwf_claim_varram(width_carry, 1)
 %vwf_claim_varram(choices, 1)
@@ -2607,7 +2607,7 @@ endif
 	jmp (.Routinetable,x)
 
 .Routinetable
-	dw .E6_TeleportToOw
+	dw .E6_ExitToOw
 	dw .E7_EndTextMacro
 	dw .E8_TextMacro
 	dw .E9_TextMacroGroup
@@ -2634,11 +2634,11 @@ endif
 	dw .FE_Space
 	dw .FF_End
 	
-.E6_TeleportToOw
+.E6_ExitToOw
 	ldy #$01
 	lda [$00],y
 	inc
-	sta !vwf_teleport_to_ow
+	sta !vwf_exit_to_ow
 	jsr IncPointer
 	jsr IncPointer
 	jmp .NoButton	
@@ -4199,7 +4199,7 @@ endif
 	jmp (.Routinetable,x)
 
 .Routinetable
-	dw .E6_TeleportToOw
+	dw .E6_ExitToOw
 	dw .E7_EndTextMacro
 	dw .E8_TextMacro
 	dw .E9_TextMacroGroup
@@ -4226,7 +4226,7 @@ endif
 	dw .FE_Space
 	dw .FF_End
 	
-.E6_TeleportToOw
+.E6_ExitToOw
 	jsr IncPointer
 	jmp .Begin
 
@@ -4861,26 +4861,26 @@ endif
 	stz $88
 
 .NoTeleport
-	lda !vwf_teleport_to_ow
-	beq .NoTeleportToOw
+	lda !vwf_exit_to_ow
+	beq .NoExitToOw
 	
 	dec
 	bne +
 	
 	jsl VWF_CloseMessageAndGoToOverworld_StartPlusSelect
-	bra .NoTeleportToOw
+	bra .NoExitToOw
 	
 +	
 	dec
 	bne +
 	
 	jsl VWF_CloseMessageAndGoToOverworld_NormalExit
-	bra .NoTeleportToOw
+	bra .NoExitToOw
 	
 +
 	jsl VWF_CloseMessageAndGoToOverworld_SecretExit
 	
-.NoTeleportToOw
+.NoExitToOw
 	lda #$00	; VWF dialogue end
 	sta !vwf_mode
 

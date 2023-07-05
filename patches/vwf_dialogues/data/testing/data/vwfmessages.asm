@@ -1619,15 +1619,15 @@ MessageASM0044:
 		!str("Cancel"))
 	
 	!opt_loc(ReturnToOWExitSelect, 0)
-		!teleport_to_ow(TeleportToOwMode.PrimaryExit)
+		!exit_to_ow(ExitToOwMode.PrimaryExit)
 		!close
 	
 	!opt_loc(ReturnToOWExitSelect, 1)
-		!teleport_to_ow(TeleportToOwMode.SecondaryExit)
+		!exit_to_ow(ExitToOwMode.SecondaryExit)
 		!close
 	
 	!opt_loc(ReturnToOWExitSelect, 2)
-		!teleport_to_ow(TeleportToOwMode.NoExit)
+		!exit_to_ow(ExitToOwMode.NoExit)
 		!close
 		
 	!opt_loc(ReturnToOWExitSelect, 3)

@@ -444,7 +444,7 @@ org remap_rom($00A1DA)
 	jml OriginalMessageBox
 	; This code should never get executed. It's literally only here because
 	; static freespace requires an autoclean. A prot won't work.
-	autoclean jml SharedRoutines
+	autoclean jml SharedRoutinesJumpTable
 	nop
 
 ; SRAM expansion ($07 => 2^7 kb = 128 kb)
@@ -461,26 +461,23 @@ endif
 ;MAIN CODE START;
 ;;;;;;;;;;;;;;;;;
 
+freecode : prot Kleenex
+
+FreecodeStart:
 
 
-; RPG Hacker: We use static freespace for shared routines, so that re-applying
-; the patch won't move them around all the time. This would probably get very
-; annoying for average end users.
-freespace ram,static
+
+
+
+;;;;;;;;;;;;;;;;;
+;Shared Routines;
+;;;;;;;;;;;;;;;;;
 
 SharedRoutines:
 	incsrc vwfroutines.asm	
 
-; A little bit of padding after the shared routines, just in case we do need
-; to grow the free space. Routines themselves also have padding between them.
-skip 128
-
-SharedRoutinesEnd:
-
-
-freecode : prot Kleenex
-
-FreecodeStart:
+SharedRoutinesTable:
+	%vwf_generate_shared_routines_table()
 
 
 
@@ -5637,9 +5634,16 @@ MainDataStart:
 %vwf_next_bank()
 
 %vwf_generate_pointers()
-
-SharedRoutinesTable:
-	%vwf_generate_shared_routines_table()
+	
+	
+; Shared routine tables go here.
+; We put them into a static free space so that they don't move when we modify the patch.
+freespace ram,static
+	
+SharedRoutinesJumpTable:
+	%vwf_generate_shared_routines_jump_table()
+	
+SharedRoutinesJumpTableEnd:
 
 
 print ""
@@ -5663,8 +5667,8 @@ print freespaceuse," bytes of free space used."
 print dec(!vwf_var_rampos)," bytes of \!vwf_var_ram used."
 
 print ""
-print "Shared routines inserted at start address $",hex(SharedRoutines)
-print "Reserved ",dec(SharedRoutinesEnd-SharedRoutines)," bytes of free space for shared routines."
+print "Shared routines jump table inserted at start address $",hex(SharedRoutinesJumpTable)
+print "Reserved ",dec(SharedRoutinesJumpTableEnd-SharedRoutinesJumpTable)," bytes of free space for shared routines jump table."
 print ""
 
 !temp_i #= 0

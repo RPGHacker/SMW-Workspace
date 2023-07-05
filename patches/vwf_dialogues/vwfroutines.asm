@@ -2,6 +2,10 @@
 ; This file contains mostly shared routines.
 ; That is, routines that will be callable from both inside and outside of the patch.
 macro vwf_register_shared_routine(label)
+	if !vwf_num_shared_routines == !vwf_max_num_shared_routines
+		error "Exceeded the reserved maximum number of shared routines. To add more shared routines, you need to increase \!vwf_max_num_shared_routines in vwfconfig.cfg and port everything to a clean ROM!"
+	endif
+
 	<label>:
 	.SharedRoutineStart
 	
@@ -23,13 +27,31 @@ macro vwf_generate_shared_routines_table()
 		; Use 0 as a terminator. There currently is no "string_length()" in Asar.
 		; Shouldn't make much of a difference, anyways.
 		db "!{vwf_shared_routine_!{temp_i}_label_name}",0
-		dl !{vwf_shared_routine_!{temp_i}_label_name}
+		dl !{vwf_shared_routine_!{temp_i}_label_name}_Jump
 	
 		!temp_i #= !temp_i+1
 	endwhile
 	undef "temp_i"
 	
 	pulltable
+endmacro
+
+
+macro vwf_generate_shared_routines_jump_table()
+	!temp_reserved #= !vwf_max_num_shared_routines*4
+	
+	!temp_i #= 0	
+	while !temp_i < !vwf_num_shared_routines
+		!{vwf_shared_routine_!{temp_i}_label_name}_Jump:
+			jml !{vwf_shared_routine_!{temp_i}_label_name}
+	
+		!temp_reserved #= !temp_reserved-4
+		!temp_i #= !temp_i+1
+	endwhile	
+	undef "temp_i"
+	
+	skip !temp_reserved
+	undef "temp_reserved"
 endmacro
 
 
@@ -232,8 +254,6 @@ endif
 	sep #$20
 	rtl
 
-skip 16
-
 
 
 ; Adds the background pattern to VWF text in memory.
@@ -274,8 +294,6 @@ skip 16
 .End
 	rtl
 
-skip 16
-
 
 ; This routine checks whether a VWF Dialogues message box is currently open.
 ; 
@@ -285,8 +303,6 @@ skip 16
 %vwf_register_shared_routine(VWF_IsMessageActive)	
 	lda !vwf_mode
 	rtl
-
-skip 16
 
 
 ; This routine lets you display a message and force the current textbox to close if one is already up.
@@ -313,8 +329,6 @@ skip 16
 	sta !vwf_active_flag
 	rtl
 
-skip 16
-
 
 ; This routine allows you to change the text pointer to wherever you specify
 ; 
@@ -331,8 +345,6 @@ skip 16
 	sta !vwf_text_source+2
 	rtl
 
-skip 16
-
 
 ; This routine allows you to change the MessageASM pointer to wherever you specify
 ; 
@@ -348,8 +360,6 @@ skip 16
 	tya
 	sta !vwf_message_asm_loc+2
 	rtl
-
-skip 16
 
 
 ; This routine lets you toggle MessageASM. Call directly with the %vwf_execute_subroutine() command or within a MessageASM routine.
@@ -368,8 +378,6 @@ skip 16
 	sta !vwf_message_asm_opcode
 	rtl
 
-skip 16
-
 
 ; This routine allows you to change the message skip pointer to wherever you specify
 ; 
@@ -386,8 +394,6 @@ skip 16
 	sta !vwf_skip_message_loc+2
 	rtl
 
-skip 16
-
 
 ; This routine lets you toggle message skip. Call directly with the %vwf_execute_subroutine() command or within a MessageASM routine.
 %vwf_register_shared_routine(VWF_ToggleMessageSkip)
@@ -396,8 +402,6 @@ skip 16
 	eor.b #$01
 	sta !vwf_skip_message_flag
 	rtl
-	
-skip 16
 
 
 ; This routine lets you check if the player skipped the current message with start.
@@ -408,8 +412,6 @@ skip 16
 %vwf_register_shared_routine(VWF_WasMessageSkipped)
 	lda !vwf_message_was_skipped	
 	rtl
-
-skip 16
 
 
 ; These three routines let you warp to the overworld and trigger an event (if desired).
@@ -437,8 +439,6 @@ VWF_CloseMessageAndGoToOverworld_End:
 	lda #$0B
 	sta remap_ram($0100)
 	rtl
-
-skip 16
 	
 	
 ; Resets all buffered text macros.
@@ -449,8 +449,6 @@ skip 16
 	sta !vwf_tm_buffers_text_index
 	sta !vwf_tm_buffers_text_index+1
 	rtl
-
-skip 16
 	
 	
 ; Begins constructing a new buffered text macro, starting at text macro ID 0 and incrementing
@@ -485,8 +483,6 @@ skip 16
 	sta !vwf_tm_buffers_text_pointer_index
 	
 	rtl
-
-skip 16
 	
 	
 ; Adds text to to a buffered text macro that was started with BeginBufferedTextMacro.
@@ -576,8 +572,6 @@ skip 16
 	
 	rtl
 
-skip 16
-
 	
 ; Convenience macro, for when we want to add a hard-coded address to the buffer.
 macro add_to_buffered_text_macro(address)
@@ -601,5 +595,3 @@ endmacro
 	
 .EndMacroData
 	%vwf_inline( %vwf_text_macro_end() )
-
-skip 16

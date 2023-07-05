@@ -1115,21 +1115,31 @@ macro vwf_set_option_location(label_prefix, id)
 	endif
 endmacro
 
-macro vwf_setup_teleport(destination_level_or_entrance, is_secondary, midway_or_water_level)
+macro vwf_setup_teleport_to_level(destination_level, is_midway)
 	if !vwf_message_command_error_condition
 		%vwf_print_message_command_error()
-	elseif <is_secondary> != true && <is_secondary> != false
-		error "%vwf_setup_teleport(): is_secondary needs to be either true or false."
-	elseif <is_secondary> == false && or(less(<destination_level_or_entrance>, $000), greater(<destination_level_or_entrance>, $1FF))
-		error "%vwf_setup_teleport(): destination_level must be a number between $000 and $1FF (current: $",hex(<destination_level_or_entrance>),")."
-	elseif <is_secondary> == true && or(less(<destination_level_or_entrance>, $0000), greater(<destination_level_or_entrance>, $1FFF))
-		error "%vwf_setup_teleport(): destination_entrance must be a number between $0000 and $1FFF (current: $",hex(<destination_level_or_entrance>),")."
-	elseif <midway_or_water_level> != true && <midway_or_water_level> != false
-		error "%vwf_setup_teleport(): midway_or_water_level needs to be either true or false."
+	elseif or(less(<destination_level>, $000), greater(<destination_level>, $1FF))
+		error "%vwf_setup_teleport_to_level(): destination_level must be a number between $000 and $1FF (current: $",hex(<destination_level>),")."
+	elseif <is_midway> != true && <is_midway> != false
+		error "%vwf_setup_teleport_to_level(): is_midway needs to be either true or false."
 	else
 		%vwf_generate_command_table($EF)
-		dw <destination_level_or_entrance>
-		db (<midway_or_water_level><<3)|(<is_secondary><<1)
+		dw <destination_level>
+		db (<is_midway><<3)|(0<<1)
+	endif
+endmacro
+
+macro vwf_setup_teleport_to_secondary_entrance(destination_entrance, is_water_level)
+	if !vwf_message_command_error_condition
+		%vwf_print_message_command_error()
+	elseif or(less(<destination_entrance>, $0000), greater(<destination_entrance>, $1FFF))
+		error "%vwf_setup_teleport_to_secondary_entrance(): destination_entrance must be a number between $0000 and $1FFF (current: $",hex(<destination_entrance>),")."
+	elseif <is_water_level> != true && <is_water_level> != false
+		error "%vwf_setup_teleport_to_secondary_entrance(): is_water_level needs to be either true or false."
+	else
+		%vwf_generate_command_table($EF)
+		dw <destination_entrance>
+		db (<is_water_level><<3)|(1<<1)
 	endif
 endmacro
 
@@ -1326,7 +1336,8 @@ if !vwf_enable_short_aliases != false
 	!hex = %vwf_hex
 	
 	!play_bgm = %vwf_play_bgm
-	!teleport = %vwf_setup_teleport
+	!teleport_to_level = %vwf_setup_teleport_to_level
+	!teleport_to_secondary = %vwf_setup_teleport_to_secondary_entrance
 	
 	!options = %vwf_display_options
 	!opt_loc = %vwf_set_option_location

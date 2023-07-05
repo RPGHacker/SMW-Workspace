@@ -218,19 +218,19 @@ endif
 			!str("Exit"))
 		
 		!opt_loc(TeleportDestination, 0)
-			!teleport($0105, false, false)
+			!teleport_to_level($0105, false)
 			!close
 			
 		!opt_loc(TeleportDestination, 1)
-			!teleport($0105, false, true)
+			!teleport_to_level($0105, true)
 			!close
 			
 		!opt_loc(TeleportDestination, 2)
-			!teleport($01CB, true, false)
+			!teleport_to_secondary($01CB, false)
 			!close
 			
 		!opt_loc(TeleportDestination, 3)
-			!teleport($01CB, true, true)
+			!teleport_to_secondary($01CB, true)
 			!close
 			
 		!opt_loc(TeleportDestination, 4)

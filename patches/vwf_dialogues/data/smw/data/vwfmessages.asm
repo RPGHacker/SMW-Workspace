@@ -2,7 +2,6 @@
 ; They're all completely identical aside from different colors.
 %vwf_register_text_macro("SwitchPalace",\
 	!new_line, !text("- SWITCH PALACE -"), !new_line, !new_line,\
-	\
 	!text("The power of the switch you have pushed will turn"), !new_line,\
 	!set_pal($06), !chr($AD), !set_pal($07), !text(" into "), !set_pal($06), !chr($AE), !set_pal($07), !text(" ."), !new_line,\
 	!new_line, !text("Your progress will also be saved."), !new_line, !new_line\

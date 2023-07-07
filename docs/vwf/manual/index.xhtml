@@ -2401,8 +2401,10 @@ endif</code></pre>
 					<li>The patch includes a setting <code>!vwf_sa1_use_dma_for_gfx_transfer</code>. When it's set to <code>true</code>, SA-1 ROMs use DMA transfers to copy graphics instead of MVN transfers, which might provide performance benefits. However, in newer versions of BSNES/Higan (tested in v115) this breaks and produces the following outcome:
 					<img class="d-block m-1 my-2" src="screenshots/known-bug-1.png" alt="Screenshot" width="256" height="224" /></li>
 					It's unknown whether this is a bug in BSNES/Higan, or an inaccuracy in other emulators (and thus a bug in the patch's code). The setting is set to <code>false</code> by default, so unless you change it, you shouldn't run into this bug.
-					<li>Some part of buffered text macro functionality performs MVN transfers under the hood. It was found that using it to copy data from RAM to RAM (rather than from ROM to RAM) produces unexpected results in an SA-1 ROM when running on an sd2snes, as demonstrated by the following gif:
-					<img class="d-block m-1 my-2" src="screenshots/known-bug-2.gif" alt="Screenshot" width="853" height="480" />
+					<li>Some part of buffered text macro functionality performs MVN transfers under the hood. It was found that using it to copy data from RAM to RAM (rather than from ROM to RAM) produces unexpected results in an SA-1 ROM when running on an sd2snes, as demonstrated by the following video:
+					<p>
+						<video width="853" height="480" controls=""><source src="screenshots/known-bug-2.webm" type="video/webm" />This broswer doesn't support the video tag. <a href="screenshots/known-bug-2.webm">Click here instead.</a></video>
+					</p>
 					It is unknown whether this is a bug in the SA-1 emulation of sd2snes, or an inaccuracy in emulators (and thus a bug in the patch's code). In any case, the bug can be avoided entirely by never creating buffered text macros directly from data in RAM.</li>
 				</ul>
 			</p>

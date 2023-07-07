@@ -3118,6 +3118,7 @@ endif
 	phx
 	tax
 	lda [$00],y
+	sta !vwf_box_palette
 	asl #2
 	ora !vwf_property
 	sta !vwf_property

@@ -320,8 +320,8 @@ endif
 	bne .ForceActiveMessageToClose
 	inc
 	sta !vwf_mode
-	lda #$6B
-	sta !vwf_message_asm_opcode
+	lda #$00
+	sta !vwf_message_asm_enabled
 	rtl
 
 .ForceActiveMessageToClose
@@ -364,18 +364,9 @@ endif
 
 ; This routine lets you toggle MessageASM. Call directly with the %vwf_execute_subroutine() command or within a MessageASM routine.
 %vwf_register_shared_routine(VWF_ToggleMessageASM)
-	lda !vwf_message_asm_opcode
-	cmp #$5C
-	bne .Enable
-
-.Disable
-	lda #$6B
-	bra +
-
-.Enable
-	lda #$5C
-+
-	sta !vwf_message_asm_opcode
+	lda !vwf_message_asm_enabled
+	eor #%00000001
+	sta !vwf_message_asm_enabled
 	rtl
 
 

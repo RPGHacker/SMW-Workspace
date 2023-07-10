@@ -148,7 +148,7 @@ endmacro
 %vwf_claim_varram(swap_message_id, 2)
 %vwf_claim_varram(swap_message_settings, 1)
 
-%vwf_claim_varram(message_asm_opcode, 1)        ; Determines whether MessageASM code will run. Contains either $5C (JML) or $6B (RTL)
+%vwf_claim_varram(message_asm_enabled, 1)       ; Determines whether MessageASM code will run.
 %vwf_claim_varram(message_asm_loc, 3)           ; 24-bit pointer to the current MessageASM routine.
 %vwf_claim_varram(active_flag, 1)               ; Flag indicating that a VWF Message is active. Used to tell the VWF system to close the current text box before opening the new one.
 %vwf_claim_varram(skip_message_flag, 1)         ; Flag indicating that the message skip function is enabled for the current textbox.
@@ -550,8 +550,8 @@ InitRAM:
 	bcc .InitVarRAM
 	sep #$30
 	
-	lda #$6B
-	sta !vwf_message_asm_opcode
+	lda #$00
+	sta !vwf_message_asm_enabled
 .End
 	plx
 	rts
@@ -799,21 +799,38 @@ endif
 	sta !vwf_mode
 	lda #$00
 	sta !vwf_active_flag
-	lda #$6B
-	sta !vwf_message_asm_opcode
+	sta !vwf_message_asm_enabled
 	bra .End
 
 .NotForceClose
 	lda !vwf_mode	; Prepare jump to routine
 	beq .End
-	cmp #$01					;\ If in VWF mode 01 (initialize RAM), don't run the MessageASM code
-	beq .NoMessageASM				;/
-	phb						;\ Run whatever MessageASM routine was defined in the message header.
-	lda !vwf_message_asm_opcode+3				;|
-	pha						;|
-	plb						;|
-	jsl !vwf_message_asm_opcode				;|
-	plb						;/
+	cmp #$01					; If in VWF mode 01 (initialize RAM), don't run the MessageASM code
+	beq .NoMessageASM
+	
+	lda !vwf_message_asm_enabled
+	beq .NoMessageASM
+	
+	lda !vwf_message_asm_loc	; Run whatever MessageASM routine was defined in the message header.
+	sta $00
+	lda !vwf_message_asm_loc+1
+	sta $01
+	lda !vwf_message_asm_loc+2
+	sta $02
+	
+	phb
+	phk
+	pea .MessageASMEnd-1
+	
+	lda $02
+	pha
+	plb						
+	
+	jml [$0000]
+	
+.MessageASMEnd
+	plb
+	
 .NoMessageASM
 	lda !vwf_mode
 	asl
@@ -934,12 +951,12 @@ endif
 	lda [$00],y		; Message ASM Flag
 	and.b #%00000001
 	beq .NoMessageASM
-	lda #$5C
-	bra .StoreMessageASMOpcode
+	lda #$01
+	bra .StoreMessageASMSetting
 .NoMessageASM
-	lda #$6B
-.StoreMessageASMOpcode
-	sta !vwf_message_asm_opcode
+	lda #$00
+.StoreMessageASMSetting
+	sta !vwf_message_asm_enabled
 	iny
 
 	lda [$00],y	; Letter color
@@ -1045,17 +1062,16 @@ endif
 	sta $03
 	
 .NoMessageSkipPointer
-	lda !vwf_message_asm_opcode
-	cmp #$5C
-	bne .NoMessageASMPointer
+	lda !vwf_message_asm_enabled
+	beq .NoMessageASMPointer
 	rep #$21
 	lda [$00],y		; Message ASM location (address)
-	sta !vwf_message_asm_opcode+1
+	sta !vwf_message_asm_loc
 	sep #$20
 	iny
 	iny
 	lda [$00],y		; Message ASM location (bank)
-	sta !vwf_message_asm_opcode+3
+	sta !vwf_message_asm_loc+2
 	iny
 	lda $03
 	clc
@@ -3078,24 +3094,26 @@ endif
 	jmp .NoButton
 
 .F1_Execute
-	lda #$22
-	sta !vwf_routine
 	ldy #$01
 	lda [$00],y
-	sta !vwf_routine+1
+	sta $03
 	iny
 	lda [$00],y
-	sta !vwf_routine+2
+	sta $04
 	iny
 	lda [$00],y
-	sta !vwf_routine+3
-	lda #$6B
-	sta !vwf_routine+4
+	sta $05
 	jsr IncPointer
 	jsr IncPointer
 	jsr IncPointer
 	jsr IncPointer
-	jsl !vwf_routine
+	
+	phk
+	pea .F1_ExecuteEnd-1
+	
+	jml [$0003]
+	
+.F1_ExecuteEnd
 	jmp .NoButton
 
 .F2_ChangeFont
@@ -3388,8 +3406,8 @@ endif
 	jmp .NoButton
 
 .FC_LoadMessage
-	lda #$6B
-	sta !vwf_message_asm_opcode
+	lda #$00
+	sta !vwf_message_asm_enabled
 	ldy #$01
 	lda [$00],y
 	sta !vwf_swap_message_id
@@ -5688,7 +5706,6 @@ print "BG GFX register at address $",hex(!vwf_box_bg),"."
 print "BG Color register at address $",hex(!vwf_box_color),"."
 print "Frame GFX register at address $",hex(!vwf_box_frame),"."
 print "Abort Dialogue Processing register at address $",hex(!vwf_end_dialog),"."
-;print "MessageASM opcode register at address $",hex(!vwf_message_asm_opcode),"."
 ;print "Active VWF Message Flag at address $",hex(!vwf_active_flag),"."
 
 print ""

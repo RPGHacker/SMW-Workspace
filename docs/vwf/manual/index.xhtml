@@ -2425,6 +2425,19 @@ endif</code></pre>
 			<h2 id="history" class="text-center">Version History</h2>
 
 			<dl>
+				<dt><h5>Version 1.32 - <span data-date="2023-07-12">07/12/2023</span></h5></dt>
+				<dd><p>
+					<h6>Contributors:</h6>
+					<ul>
+						<li>RPG Hacker</li>
+					</ul>
+
+					<h6>Changes:</h6>
+					<ul>
+						<li>Changed the default setting for <code>!vwf_var_ram_sa1</code>. The old setting pointed to an area within the GFX decompression buffer. Decompressing sufficiently large graphics (like player ExGFX) could cause the patch's memory to be trampled, causing it to malfunction.</li>
+					</ul>
+				</p></dd>
+				
 				<dt><h5>Version 1.31 - <span data-date="2023-07-10">07/10/2023</span></h5></dt>
 				<dd><p>
 					<h6>Contributors:</h6>

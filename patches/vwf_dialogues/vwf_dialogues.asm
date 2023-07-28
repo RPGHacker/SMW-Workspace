@@ -453,6 +453,11 @@ if !vwf_patch_sram_expansion != false && read1(remap_rom($00FFD8)) < $07
 		db $07
 endif
 
+; Hijack reserve item box draw routine to hide the item when a dialog is open.
+org remap_rom($009090)
+	jml CheckHideReserveItem
+	nop
+
 
 
 
@@ -681,6 +686,26 @@ endif
 	
 .RunGameFrame
 	jml remap_rom($00A1E4)	; Don't skip frame simulation
+
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;Reserve Item Box Hijack;
+;;;;;;;;;;;;;;;;;;;;;;;;;
+
+CheckHideReserveItem:
+	lda !vwf_mode
+	bne .Hide
+	
+	ldy.w remap_ram($0DC2)
+	beq .Hide
+	
+	jml remap_rom($009095)
+
+.Hide
+	jml remap_rom($0090D0)
 
 
 
@@ -4787,8 +4812,6 @@ VBlank:
 	lda !vwf_mode
 	asl
 	tax
-	lda #$F0	; Hide Status Bar item
-	sta remap_ram($02E1)
 
 	jmp (.Routinetable,x)
 

@@ -257,6 +257,12 @@ endif
 			!str("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW")
 			!reset_color
 			!press_a : !clear
+			
+			!execute(.GiveReserveMushroom)
+			!str("I just put a mushroom into your reserve item box.") : !new_line : !new_line
+			!str("It should be hidden while this dialog box remains open.")
+			!press_a : !clear
+			
 			!jump(.Start)
 			
 	!opt_loc(TestSelection, 8)
@@ -271,6 +277,11 @@ endif
 	;!close
 
 %vwf_message_end()
+
+.GiveReserveMushroom
+	lda.b #$01
+	sta remap_ram($0DC2)
+	rtl
 
 ;-------------------------------------------------------
 

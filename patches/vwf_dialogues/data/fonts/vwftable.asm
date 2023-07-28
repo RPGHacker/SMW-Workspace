@@ -64,7 +64,7 @@
 '!' = $74
 '?' = $76
 '"' = $7A
-''' = $7F : ''' = $7F
+''' = $7F : ''' = $7F	; This looks funny to work around an Asar bug
 ',' = $80
 '.' = $81
 '-' = $82
@@ -92,7 +92,8 @@
 '*' = $A3
 '|' = $A4
 '@' = $A5
-' ' = $FFFE
+' ' = $FFFE	; Space
+'	' = $FFFE ; Tab
 
 ; UTF-8 support only exists in Asar 2.0+
 if !assembler_ver >= 20000

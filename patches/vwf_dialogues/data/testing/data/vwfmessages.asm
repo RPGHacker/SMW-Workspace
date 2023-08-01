@@ -261,9 +261,9 @@ endif
 			!execute(.GiveReserveMushroom)
 			!str("I just put a mushroom into your reserve item box.") : !new_line : !new_line
 			!str("It should be hidden while this dialog box remains open.")
-			!press_a : !clear
+			!press_a
 			
-			!jump(.Start)
+			!open_message(0045)
 			
 	!opt_loc(TestSelection, 8)
 	!opt_loc(TestSelection, 9)
@@ -1592,9 +1592,30 @@ MessageASM0044:
 
 ;-------------------------------------------------------
 
+; Macros that reproduce some bugs simoncaio ran into.
+%vwf_register_text_macro("AlignmentBug1",\
+    !str("6"), !text(" cueres ")\
+)
+
+%vwf_register_text_macro("AlignmentBug2",\
+    !str("6"), !text(" cueres")\
+)
+
 %vwf_message_start(0045)	; Message 022-2
 
-	; Message header & text go here
+	%vwf_header(x_pos(8), height(4), width(8), text_alignment(TextAlignment.Centered))
+
+	!str("Centered") : !new_line
+	!macro("AlignmentBug1") : !new_line
+	!str("Centered") : !new_line
+	!press_a : !clear
+
+	!str("Centered")
+	!macro("AlignmentBug2") : !new_line
+	!str("Centered") : !new_line
+	!press_a : !clear
+
+	!open_message(0050)
 
 %vwf_message_end()
 

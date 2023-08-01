@@ -4170,33 +4170,6 @@ endif
 
 
 WordWidth:
-	; RPG Hacker: In order to make this function work reliably with the text macro system,
-	; we need to make a copy of the current text macro stack whenever we call it.
-	; I tested using a simple loop for this, because text macro stacks of more than one
-	; element should be rare, and simple loops sound like they should be faster for few iterations.
-	; However, in my testing, the MVN solution turned out to be faster even for simple stacks.
-	lda !vwf_tm_stack_index_1
-	sta !vwf_tm_stack_index_2
-	beq .NoStackCopy
-	
-	xba
-	lda.b #$00
-	xba
-	
-	rep #$30
-	
-	dec		; -1 because of how MVN works
-	
-	ldx.w #!vwf_tm_stack_1
-	ldy.w #!vwf_tm_stack_2
-	
-	phb
-	mvn bank(!vwf_tm_stack_2), bank(!vwf_tm_stack_1)
-	plb
-	
-	sep #$30
-	
-.NoStackCopy
 
 .GetFont
 if !vwf_bit_mode == VWF_BitMode.8Bit
@@ -4739,6 +4712,35 @@ endif
 	lda $0B
 	pha
 
+	; RPG Hacker: In order to make the WordWidth function work reliably with the text macro system,
+	; we need to make a copy of the current text macro stack whenever we begin calculating widths.
+	; I tested using a simple loop for this, because text macro stacks of more than one
+	; element should be rare, and simple loops sound like they should be faster for few iterations.
+	; However, in my testing, the MVN solution turned out to be faster even for simple stacks.
+.CheckCopyTextMacroStack
+	lda !vwf_tm_stack_index_1
+	sta !vwf_tm_stack_index_2
+	beq .NoStackCopy
+
+.DoStackCopy	
+	xba
+	lda.b #$00
+	xba
+	
+	rep #$30
+	
+	dec		; -1 because of how MVN works
+	
+	ldx.w #!vwf_tm_stack_1
+	ldy.w #!vwf_tm_stack_2
+	
+	phb
+	mvn bank(!vwf_tm_stack_2), bank(!vwf_tm_stack_1)
+	plb
+	
+	sep #$30
+	
+.NoStackCopy
 	rts
 
 	

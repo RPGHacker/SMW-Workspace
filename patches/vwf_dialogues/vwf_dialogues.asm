@@ -5031,7 +5031,7 @@ BackupEnd:
 	tsb $3E
 	lda remap_ram($0D9D)
 	ora #$04
-	tsb $212C
+	sta $212C
 	trb $40
 
 .End
@@ -5057,7 +5057,7 @@ BackupEnd:
 	and #$04
 	ora $40
 	sta $40
-	BRA .End
+	bra .End
 
 
 

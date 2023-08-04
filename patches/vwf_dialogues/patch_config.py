@@ -41,6 +41,7 @@ patch_config = patching_utility.PatchConfig( os.path.dirname(__file__),
 		),
 		patching_utility.InsertMap16(os.path.join(os.path.dirname(__file__), 'testing/display_once_block.map16'), 104),
 		patching_utility.InsertLevel(os.path.join(os.path.dirname(__file__), 'testing/level_104.mwl'), 104),
+		patching_utility.InsertLevel(os.path.join(os.path.dirname(__file__), 'testing/level_018.mwl'), 18),
 	]
 	
 )

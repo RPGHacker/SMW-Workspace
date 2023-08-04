@@ -1614,8 +1614,11 @@ MessageASM0044:
 	!macro("AlignmentBug2") : !new_line
 	!str("Centered") : !new_line
 	!press_a : !clear
+	
+	!teleport_to_level($0018, false)
+	!close
 
-	!open_message(0050)
+	;!open_message(0050)
 
 %vwf_message_end()
 

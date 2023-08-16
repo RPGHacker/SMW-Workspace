@@ -2371,7 +2371,11 @@ endif</code></pre>
 				<ul>
 					<li class="font-weight-bold">Sprite Status Bar</li>
 					<dd>
-						The sprite status bar doesn’t disappear when a message box is opened, but you probaably shouldn’t be using both the Sprite Status Bar and the Layer 3 dialogue box in the same level anyway, since the Sprite Status Bar’s purpose is to allow full usage of the Layer 3, which the dialogue box completely hides while it’s shown.
+						The sprite status bar doesn’t disappear when a text box is opened, but you probably shouldn’t be using both the Sprite Status Bar and the Layer 3 dialogue box in the same level anyway, since the Sprite Status Bar’s purpose is to allow full usage of the Layer 3, which the dialogue box completely hides while it’s shown.
+					</dd>
+					<li class="font-weight-bold">Any patches eating up larger amounts of V-Blank time</li>
+					<dd>
+						Can cause HDMA effects to explode while a text box is open. See known bugs for details on this issue, along with potential workarounds.
 					</dd>
 				</ul>
 				The following patches are known to be incompatible:
@@ -2406,6 +2410,9 @@ endif</code></pre>
 						<video width="853" height="480" controls=""><source src="screenshots/known-bug-2.webm" type="video/webm" />This broswer doesn't support the video tag. <a href="screenshots/known-bug-2.webm">Click here instead.</a></video>
 					</p>
 					It is unknown whether this is a bug in the SA-1 emulation of sd2snes, or an inaccuracy in emulators (and thus a bug in the patch's code). In any case, the bug can be avoided entirely by never creating buffered text macros directly from data in RAM.</li>
+					<li>Multiple users have reported errors with HDMA effects (such as parallax BGs) getting all messed up while a dialog was open. Sometimes, this error occurred randomly, other times, the error was 100% reproducible. After investigating the issue, it was determined that this is caused by a V-Blank overrun, simulated here by putting a long loop at the beginning of V-Blank:
+					<img class="d-block m-1 my-2" src="screenshots/known-bug-3.png" alt="Screenshot" width="256" height="224" />
+					Things that are known to cause the error include Lunar Magic ExAnimation system (randomly) and LX5's Custom Powerups patch (100% reproduction). Unfortunately, since this problem is caused by hardware limitations, there is no reliable fix for it. All that can be done is to try optimizing the performance of anything that uses V-Blank time. On your end, you could start by trying out V-Blank optimization patches <a href="https://www.smwcentral.net/?p=section&amp;a=details&amp;id=28028">such as this one</a>. If that doesn't make the problem go away, you could ask the authors of the patches you are using that you know hijack V-Blank to try and optimize for performance. If that can't be done, the only real workaround is to avoid using VWF text boxes in levels with these effects active.</li>
 				</ul>
 			</p>
 			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
@@ -2439,6 +2446,7 @@ endif</code></pre>
 						<li>Added a tab to vwftable.asm (it maps to the same character as a space).</li>
 						<li>Fixed: Word-wrapping could break when combining text macros with centered text.</li>
 						<li>Fixed: A bug with how the main screen register was being written could lead to (essentially) random layer priorities.</li>
+						<li>Added note another known bug that as recently discovered.</li>
 					</ul>
 				</p></dd>
 				

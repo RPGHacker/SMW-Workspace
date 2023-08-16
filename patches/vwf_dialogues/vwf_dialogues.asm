@@ -45,6 +45,8 @@ if !use_sa1_mapping
 	!vwf_palette_backup_ram	= !vwf_palette_backup_ram_sa1
 endif
 
+!vwf_debug_vblank_time = false
+
 
 !vwf_var_rampos #= 0
 
@@ -4802,6 +4804,26 @@ VBlank:
 .NoPause
 	lda !vwf_mode	; Prepare jump to routine
 	beq .End
+	
+if !vwf_debug_vblank_time != false
+	macro vwf_debug_waste_time()
+		lda #$FF
+	?Again:
+		dec
+		bne ?Again
+	endmacro
+	
+	%vwf_debug_waste_time()
+	%vwf_debug_waste_time()
+	%vwf_debug_waste_time()
+	%vwf_debug_waste_time()
+	%vwf_debug_waste_time()
+	%vwf_debug_waste_time()
+	%vwf_debug_waste_time()
+	%vwf_debug_waste_time()
+	%vwf_debug_waste_time()
+	%vwf_debug_waste_time()
+endif
 
 	lda !vwf_palette_upload	; This code takes care of palette upload requests
 	beq .skip

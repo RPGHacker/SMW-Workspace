@@ -10,6 +10,7 @@ patcher = patching_utility.PatchingUtility()
 patcher.add_option('--messages_file', values=['testing', 'smw'], default_index=0)
 patcher.add_option('--bit_mode', values=['8-bit', '16-bit'], default_index=0)
 patcher.add_option('--message_box_hijack', values=['enable', 'disable'], default_index=0)
+patcher.add_option('--debug_vblank', values=['false', 'true'], default_index=0)
 
 	
 patch_config = patching_utility.PatchConfig( os.path.dirname(__file__),
@@ -60,6 +61,9 @@ def main() -> None:
 		
 	if options.message_box_hijack == 'disable':
 		vwf_dialogues_asm.defines.append('hijackbox=false')
+		
+	if options.debug_vblank == 'true':
+		vwf_dialogues_asm.defines.append('vwf_debug_vblank_time=true')
 		
 	patcher.create_rom(patch_config, options)
 	

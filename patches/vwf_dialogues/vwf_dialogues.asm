@@ -45,7 +45,7 @@ if !use_sa1_mapping
 	!vwf_palette_backup_ram	= !vwf_palette_backup_ram_sa1
 endif
 
-!vwf_debug_vblank_time = false
+!vwf_debug_vblank_time ?= false
 
 
 !vwf_var_rampos #= 0
@@ -877,7 +877,7 @@ endif
 
 .Routinetable
 	dw .End,InitVWFRAM,.End,VWFSetup,BufferGraphics,.End
-	dw .End,BufferWindow,VWFInit,TextCreation,CollapseWindow
+	dw InitBoxPalette,BufferWindow,VWFInit,TextCreation,CollapseWindow
 	dw .End,.End,.End,.End,.End
 
 
@@ -4860,9 +4860,9 @@ endif
 	jml remap_rom($0081F7)
 
 .Routinetable
-	dw .End,.End,PrepareBackup,Backup,PrepareScreen,SetupColor
+	dw .End,.End,PrepareBackup,Backup,PrepareScreen,BackupPalette
 	dw BackupEnd,CreateWindow,PrepareScreen,TextUpload,CreateWindow
-	dw PrepareBackup,Backup,SetupColor,BackupEnd,VBlankEnd
+	dw PrepareBackup,Backup,BackupPalette,BackupEnd,VBlankEnd
 
 
 
@@ -5085,7 +5085,7 @@ BackupEnd:
 
 
 
-SetupColor:
+BackupPalette:
 	stz $2121	; Backup or restore layer 3 colors
 	lda !vwf_mode
 	cmp #$05
@@ -5098,8 +5098,6 @@ SetupColor:
 .Backup
 	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.ReadTwice, $213B, !vwf_palette_backup_ram, #$0040)
 	%vwf_mvn_transfer($0040, !vwf_palette_backup_ram, !vwf_palette_backup, !vwf_cpu_snes)
-	
-	jsr InitBoxColors
 
 .End
 	lda !vwf_mode
@@ -5108,7 +5106,16 @@ SetupColor:
 	jmp VBlank_End
 	
 	
-InitBoxColors:
+InitBoxPalette:
+	jsr LoadBoxPalette
+	
+	;lda !vwf_mode
+	;inc
+	;sta !vwf_mode
+	jmp Buffer_End
+	
+	
+LoadBoxPalette:
 	lda !vwf_box_palette	; Set BG and letter color
 	asl #2
 	inc
@@ -5482,6 +5489,8 @@ PrepareNextMessage:
 	jsr GetMessage
 	jsr LoadHeader
 	
+	jsr LoadBoxPalette
+	
 	bra .Return
 	
 .NoOpenAnim	
@@ -5498,8 +5507,6 @@ StartNextMessage:
 	
 	lda #$06
 	sta !vwf_mode
-	
-	jsr InitBoxColors
 	
 	bra .Return
 	

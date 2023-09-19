@@ -1229,23 +1229,46 @@ BufferGraphics:
 ; This routine clears the screen by filling the tilemap with $00.
 
 ClearScreen:
-	lda Emptytile
-	sta !vwf_tile
-	lda !vwf_box_palette
+	phb
+	lda.b #bank(!vwf_gfx_ram)
+	pha
+	plb
+
+	lda.l Emptytile
+	sta.l !vwf_tile
+	lda.l !vwf_box_palette
 	asl #2
-	ora Emptytile+1
-	sta !vwf_property
-	rep #$30
-	ldx #$0000
-	lda !vwf_tile
-
+	ora.l Emptytile+1
+	sta.l !vwf_property
+	rep.b #$20
+	ldx.b #$6E
+	lda.l !vwf_tile
+	
 .InitTilemap
-	sta !vwf_buffer_text_box_tilemap,x
-	inx #2
-	cpx #$0700
-	bne .InitTilemap
-
-	sep #$30
+	sta.w !vwf_buffer_text_box_tilemap+$0000,x
+	sta.w !vwf_buffer_text_box_tilemap+$0070,x
+	sta.w !vwf_buffer_text_box_tilemap+$00E0,x
+	sta.w !vwf_buffer_text_box_tilemap+$0150,x
+	sta.w !vwf_buffer_text_box_tilemap+$01C0,x
+	sta.w !vwf_buffer_text_box_tilemap+$0230,x
+	sta.w !vwf_buffer_text_box_tilemap+$02A0,x
+	sta.w !vwf_buffer_text_box_tilemap+$0310,x
+	sta.w !vwf_buffer_text_box_tilemap+$0380,x
+	sta.w !vwf_buffer_text_box_tilemap+$03F0,x
+	sta.w !vwf_buffer_text_box_tilemap+$0460,x
+	sta.w !vwf_buffer_text_box_tilemap+$04D0,x
+	sta.w !vwf_buffer_text_box_tilemap+$0540,x
+	sta.w !vwf_buffer_text_box_tilemap+$05B0,x
+	sta.w !vwf_buffer_text_box_tilemap+$0620,x
+	sta.w !vwf_buffer_text_box_tilemap+$0690,x
+	
+	dex #2	
+	bpl.b .InitTilemap
+	
+	sep.b #$20
+	
+	plb
+	
 	rts
 
 

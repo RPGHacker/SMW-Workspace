@@ -77,182 +77,224 @@ endmacro
 ; $0E: Current pixel offset into destination memory buffer
 ; $0F: #$01 if this is writing first tile in the current buffer, otherwise #$00
 %vwf_register_shared_routine(VWF_GenerateVWF)
-	lda $0E
-	sta !vwf_current_pixel
-	lda $0F
-	sta !vwf_first_tile
-	rep #$20
-	lda $0C
-	sta !vwf_num_bytes
-	sep #$20
-	lda $05	; Get GFX 2 Offset
-	sta $0E
+	phb
+	lda.b #bank(!vwf_var_ram)
+	pha
+	plb
+	
+	lda.b $0E
+	sta.w !vwf_current_pixel
+	lda.b $0F
+	sta.w !vwf_first_tile
+	lda.b $05			; Get GFX 2 Offset
+	sta.b $0E
 	rep #$21
-	lda $03
-	adc #$0020
-	sta $0C
-
-.Read
-	lda [$00]	; Read character
-	inc $00
+	lda.b $0C
+	sta.w !vwf_num_bytes
+	lda.b $03
+	adc.w #$0020
+	sta.b $0C
+.Read:
+	lda.b [$00]	; Read character
+	inc.b $00
 if !vwf_bit_mode == VWF_BitMode.8Bit
-	sep #$20
-	sta !vwf_char
+	and.w #$00FF
+	sta.w !vwf_char				; !vwf_char_width is written to here as well, but it's initialize later anyway.
 elseif !vwf_bit_mode == VWF_BitMode.16Bit
-	inc $00
-	sta !vwf_char
-	sep #$20
-	lda !vwf_char+1
-	sta !vwf_font
-	jsl GetFontLong
-	lda $05
-	sta $0E
-	rep #$21
-	lda $03
-	adc #$0020
-	sta $0C
-	sep #$20
-	lda !vwf_char
-endif
-	tay
-	lda [$06],y	; Get width
-	sta !vwf_char_width
-	lda !vwf_max_width
-	sec
-	sbc !vwf_char_width
-	sta !vwf_max_width
-
-.Begin
-	lda !vwf_char	; Get letter offset into Y
-	sta.w select(!use_sa1_mapping,$2251,$211B)
-	stz.w select(!use_sa1_mapping,$2252,$211B)
-	stz.w select(!use_sa1_mapping,$2250,$211C)
-	lda #$40
-	sta.w select(!use_sa1_mapping,$2253,$211C)
-	if !use_sa1_mapping
-		stz $2254
-	endif
-	rep #$10
-	ldy.w select(!use_sa1_mapping,$2306,$2134)
-	ldx #$0000
-
-.Draw
-	lda !vwf_current_pixel
-	sta $0F
-	lda [$03],y	; Load one pixelrow of letter
-	sta !vwf_tile_ram,x
-	lda [$0C],y
-	sta !vwf_tile_ram+32,x
-	lda #$00
-	sta !vwf_tile_ram+64,x
-
-.Check
-	lda $0F
-	beq .Skip
-	lda !vwf_tile_ram,x	; Shift to the right
-	lsr
-	sta !vwf_tile_ram,x
-	lda !vwf_tile_ram+32,x
-	ror
-	sta !vwf_tile_ram+32,x
-	lda !vwf_tile_ram+64,x
-	ror
-	sta !vwf_tile_ram+64,x
-	dec $0F
-	bra .Check
-
-.Skip
-	iny
-	inx
-	cpx #$0020
-	bne .Draw
-	sep #$10
-	ldx #$00
-	txy
-
-	lda !vwf_first_tile	; Skip one step if first tile in line
-	beq .Combine
-	lda #$00
-	sta !vwf_first_tile
-	bra .Copy
-
-.Combine
-	lda !vwf_tile_ram,x	; Combine old graphic with new
-	ora [$09],y
-	sta [$09],y
-	inx
-	iny
-	cpx #$20
-	bne .Combine
-
-.Copy
-	lda !vwf_tile_ram,x	; Copy remaining part of letter
-	sta [$09],y
-	inx
-	iny
-	cpx #$60
-	bne .Copy
-
-if !use_sa1_mapping
-	lda #$01
-	sta $2250
-endif
-	lda !vwf_current_pixel	; Adjust destination address
+	inc.b $00
+	sta.w !vwf_char
+	ldy.w !vwf_char+1
+	sty.w !vwf_font
+	jsr .GetFont
+	ldy.b $05
+	sty.b $0E
+	lda.b $03
 	clc
-	adc !vwf_char_width
-	sta.w select(!use_sa1_mapping,$2251,$4204)
-	stz.w select(!use_sa1_mapping,$2252,$4205)
-	lda #$08
-	sta.w select(!use_sa1_mapping,$2253,$4206)
-if !use_sa1_mapping
-	stz $2254
-	nop
-	bra $00
-else
-	nop #8
+	adc.w #$0020
+	sta.b $0C
+	lda.w !vwf_char
+	and.w #$00FF
 endif
-	lda.w select(!use_sa1_mapping,$2308,$4216)
-	sta !vwf_current_pixel
+	rep #$10
+	tay
+	xba
+	lsr
+	lsr
+	adc.w #$001E
+	tax
+	sep #$20
+	lda.b [$06],y
+	sta.w !vwf_char_width
+	lda.w !vwf_max_width
+	sec
+	sbc.w !vwf_char_width		; Get width
+	sta.w !vwf_max_width
+.Begin:
+	txy
+	ldx.w #$001E
 	rep #$20
-	lda.w select(!use_sa1_mapping,$2306,$4214)
+.Draw:
+	lda.b [$03],y		; Load one pixelrow of letter
+	sta.w !vwf_tile_ram,x
+	lda.b [$0C],y
+	sta.w !vwf_tile_ram+32,x
+	stz.w !vwf_tile_ram+64,x
+	dey
+	dey
+	dex
+	dex
+	bpl.b .Draw
+	sep #$30
+	ldx.b #$0E
+.Shift:
+	ldy.w !vwf_current_pixel
+	beq .Skip
+.Check2:
+	tya
+.Check:
+	lsr.w !vwf_tile_ram,x	; Shift to the right
+	ror.w !vwf_tile_ram+32,x
+	ror.w !vwf_tile_ram+64,x
+	lsr.w !vwf_tile_ram+1,x
+	ror.w !vwf_tile_ram+33,x
+	ror.w !vwf_tile_ram+65,x
+	lsr.w !vwf_tile_ram+16,x
+	ror.w !vwf_tile_ram+48,x
+	ror.w !vwf_tile_ram+80,x
+	lsr.w !vwf_tile_ram+17,x
+	ror.w !vwf_tile_ram+49,x
+	ror.w !vwf_tile_ram+81,x
+	dec
+	bne.b .Check
+	dex
+	dex
+	bpl.b .Check2
+.Skip:
+if !use_sa1_mapping
+	lda.b #$01
+	sta.l $2250
+endif
+	ldx.b #$00
+	txy
+	lda.w !vwf_current_pixel	; Adjust destination address
+	clc
+	adc.w !vwf_char_width
+	sta.l select(!use_sa1_mapping,$2251,$4204)
+	lda.b #$00
+	sta.l select(!use_sa1_mapping,$2252,$4205)
+	lda.b #$08
+	sta.l select(!use_sa1_mapping,$2253,$4206)
+if !use_sa1_mapping
+	lda.b #$00
+	sta.l $2254
+endif
+	lda.w !vwf_first_tile		; Skip one step if first tile in line
+	beq .Combine
+	stz.w !vwf_first_tile
+	rep #$20
+	bra.b .Copy
+
+.Combine:
+	rep #$20
+-:
+	lda.w !vwf_tile_ram,x	; Combine old graphic with new
+	ora.b [$09],y
+	sta.b [$09],y
+	inx
+	inx
+	iny
+	iny
+	cpx.b #$20
+	bne.b -
+.Copy:
+	lda.w !vwf_tile_ram,x	; Copy remaining part of letter
+	sta.b [$09],y
+	inx
+	inx
+	iny
+	iny
+	cpx.b #$60
+	bne.b .Copy
+	lda.l select(!use_sa1_mapping,$2306,$4214)
 	asl
 	pha
 	clc
-	adc !vwf_tile
-	sta !vwf_tile
+	adc.w !vwf_tile
+	sta.w !vwf_tile
 	pla
 	clc
 	sep #$20
-	adc !vwf_buffer_index
-	sta !vwf_buffer_index
-	lda.w select(!use_sa1_mapping,$2306,$4214)
-	clc
-	adc !vwf_current_x
-	sta !vwf_current_x
-	lda.w select(!use_sa1_mapping,$2306,$4214)
-	sta.w select(!use_sa1_mapping,$2251,$211B)
-	stz.w select(!use_sa1_mapping,$2250,$211B)
-	stz.w select(!use_sa1_mapping,$2252,$211C)
-	lda #$20
-	sta.w select(!use_sa1_mapping,$2253,$211C)
+	adc.w !vwf_buffer_index
+	sta.w !vwf_buffer_index
 if !use_sa1_mapping
-	stz $2254
-	nop
+	lda.b #$00
+	sta.l $2250
+endif
+	lda.l select(!use_sa1_mapping,$2308,$4216)
+	sta.w !vwf_current_pixel
+	lda.b #$20
+	sta.l select(!use_sa1_mapping,$2251,$4202)
+	lda.l select(!use_sa1_mapping,$2306,$4214)
+	sta.l select(!use_sa1_mapping,$2253,$4203)
+	clc
+	adc.w !vwf_current_x
+	sta.w !vwf_current_x
+if !use_sa1_mapping
+	lda.b #$00
+	sta.l $2254
 endif
 	rep #$21
-	lda.w select(!use_sa1_mapping,$2306,$2134)
-	adc $09
-	sta $09
-
-	lda !vwf_num_bytes	; Adjust number of bytes
-	dec
-	sta !vwf_num_bytes
+	lda.l select(!use_sa1_mapping,$2308,$4216)
+	adc.b $09
+	sta.b $09
+	dec.w !vwf_num_bytes		; Adjust number of bytes
 	beq .End
 	jmp .Read
 
-.End
+.End:
 	sep #$20
+	
+	plb
+	
 	rtl
+
+; RPG Hacker: There's now a local copy of this routine, because optimizations to GenerateVWF
+; made it incompatible with the other one, and this is simply the easiest way to fix that.
+if !vwf_bit_mode == VWF_BitMode.16Bit
+.GetFont:
+	sep #$20
+	lda.b #$06	; Multiply font number with 6
+	sta.l select(!use_sa1_mapping,$2251,$211B)
+	lda.b #$00
+	sta.l select(!use_sa1_mapping,$2252,$211B)
+	sta.l select(!use_sa1_mapping,$2250,$211C)
+	lda.w !vwf_font
+	sta.l select(!use_sa1_mapping,$2253,$211C)
+if !use_sa1_mapping
+	lda.b #$00
+	sta.l $2254
+	nop
+endif
+	rep #$20
+	lda.l select(!use_sa1_mapping,$2306,$2134)
+	clc
+	adc.w #FontTable	; Add starting address
+	sta.b $00
+	ldy.b #FontTable>>16
+	sty.b $02
+	ldy.b #$00
+
+.Loop
+	; RPG Hacker: Don't like this very much, but this lda opcode only exists for the Y
+	; register, and this sta opcode only exists for the X register...
+	tyx
+	lda.b [$00],y	; Load addresses from table
+	sta.b remap_ram($03),x
+	iny #2
+	cpy.b #$06
+	bne .Loop
+	rts
+endif
 
 
 

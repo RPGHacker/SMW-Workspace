@@ -4637,22 +4637,7 @@ endif
 .FF_End
 	jmp .Return
 
-.Add	
-;if !vwf_bit_mode == VWF_BitMode.16Bit
-;	rep #$20
-;endif
-;	lda !vwf_char
-;	clc
-;	adc !vwf_char_offset
-;if !vwf_bit_mode == VWF_BitMode.16Bit
-;	sep #$20
-;	xba
-;	sta !vwf_font
-;	xba
-;	pha
-;	jsr GetFont
-;	pla
-;endif
+.Add
 if !vwf_bit_mode == VWF_BitMode.16Bit
 	rep #$20
 endif

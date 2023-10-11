@@ -77,6 +77,8 @@ endmacro
 ; $0E: Current pixel offset into destination memory buffer
 ; $0F: #$01 if this is writing first tile in the current buffer, otherwise #$00
 %vwf_register_shared_routine(VWF_GenerateVWF)
+	!vwf_var_ram_and_gfx_ram_in_same_bank #= equal(bank(!vwf_var_ram), bank(!vwf_gfx_ram))
+
 	phb
 	lda.b #bank(!vwf_var_ram)
 	pha
@@ -99,7 +101,7 @@ endmacro
 	inc.b $00
 if !vwf_bit_mode == VWF_BitMode.8Bit
 	and.w #$00FF
-	sta.w !vwf_char				; !vwf_char_width is written to here as well, but it's initialize later anyway.
+	sta.w !vwf_char				; !vwf_char_width is written to here as well, but it's initialized later anyway.
 elseif !vwf_bit_mode == VWF_BitMode.16Bit
 	inc.b $00
 	sta.w !vwf_char
@@ -149,9 +151,32 @@ endif
 .Shift:
 	ldy.w !vwf_current_pixel
 	beq .Skip
-.Check2:
+	lda.w !vwf_char_width
+	cmp.b #$09
+	bcs.b .HandleWideLetter
+.HandleSmallLetter:
+..Check2:
 	tya
-.Check:
+..Check:
+	lsr.w !vwf_tile_ram,x	; Shift to the right
+	ror.w !vwf_tile_ram+32,x
+	lsr.w !vwf_tile_ram+1,x
+	ror.w !vwf_tile_ram+33,x
+	lsr.w !vwf_tile_ram+16,x
+	ror.w !vwf_tile_ram+48,x
+	lsr.w !vwf_tile_ram+17,x
+	ror.w !vwf_tile_ram+49,x
+	dec
+	bne.b ..Check
+	dex
+	dex
+	bpl.b ..Check2
+	bra.b .Skip
+
+.HandleWideLetter:
+..Check2:
+	tya
+..Check:
 	lsr.w !vwf_tile_ram,x	; Shift to the right
 	ror.w !vwf_tile_ram+32,x
 	ror.w !vwf_tile_ram+64,x
@@ -165,17 +190,21 @@ endif
 	ror.w !vwf_tile_ram+49,x
 	ror.w !vwf_tile_ram+81,x
 	dec
-	bne.b .Check
+	bne.b ..Check
 	dex
 	dex
-	bpl.b .Check2
+	bpl.b ..Check2
 .Skip:
 if !use_sa1_mapping
 	lda.b #$01
 	sta.l $2250
 endif
+if !vwf_var_ram_and_gfx_ram_in_same_bank != false
+	ldy.b #$00
+else
 	ldx.b #$00
 	txy
+endif
 	lda.w !vwf_current_pixel	; Adjust destination address
 	clc
 	adc.w !vwf_char_width
@@ -197,23 +226,34 @@ endif
 .Combine:
 	rep #$20
 -:
+if !vwf_var_ram_and_gfx_ram_in_same_bank != false
+	lda.w !vwf_tile_ram,y	; Combine old graphic with new
+	ora.b ($09),y
+	sta.b ($09),y
+else
 	lda.w !vwf_tile_ram,x	; Combine old graphic with new
 	ora.b [$09],y
 	sta.b [$09],y
 	inx
 	inx
+endif
 	iny
 	iny
-	cpx.b #$20
+	cpy.b #$20
 	bne.b -
 .Copy:
+if !vwf_var_ram_and_gfx_ram_in_same_bank != false
+	lda.w !vwf_tile_ram,y	; Copy remaining part of letter
+	sta.b ($09),y
+else
 	lda.w !vwf_tile_ram,x	; Copy remaining part of letter
 	sta.b [$09],y
 	inx
 	inx
+endif
 	iny
 	iny
-	cpx.b #$60
+	cpy.b #$60
 	bne.b .Copy
 	lda.l select(!use_sa1_mapping,$2306,$4214)
 	asl

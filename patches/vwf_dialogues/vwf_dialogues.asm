@@ -33,6 +33,9 @@ namespace vwf_dialogues_
 ; DO NOT EDIT ANYTHING HERE, UNLESS YOU KNOW EXACTLY WHAT YOU'RE DOING!
 
 
+assert !vwf_backup_duration_in_frames >= 8, "\!vwf_backup_duration_in_frames must have a value of at least 8."
+
+
 %define_enum(VWF_BitMode, 8Bit, 16Bit)
 
 
@@ -4838,7 +4841,7 @@ endif
 	lda #$00
 	sta !vwf_palette_upload
 	sta $2121
-	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteTwice, $2122, !vwf_palette_backup_ram, #$0040)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteTwice, $2122, !vwf_palette_backup_ram, $0040)
 .skip
 
 	lda !vwf_mode
@@ -4964,7 +4967,7 @@ endif
 
 
 PrepareBackup:
-	lda #$08	; Prepare backup of layer 3
+	lda.b #!vwf_backup_duration_in_frames	; Prepare backup of layer 3
 	sta !vwf_counter
 	rep #$20
 	lda #$0000
@@ -4984,7 +4987,6 @@ PrepareBackup:
 	sta !vwf_l3_main_screen_flag
 
 .DontPreserveL3
-
 	lda #$04	; Hide layer 3
 	trb remap_ram($0D9D)
 	trb remap_ram($0D9E)
@@ -5004,6 +5006,9 @@ PrepareBackup:
 
 
 Backup:
+	!vwf_backup_size_per_frame #= $4000/!vwf_backup_duration_in_frames
+	!vwf_vram_pointer_adjust_per_frame #= !vwf_backup_size_per_frame/2
+
 	rep #$21
 	lda #$4000	; Adjust VRAM address
 	adc !vwf_vram_pointer
@@ -5017,7 +5022,7 @@ Backup:
 
 	lda !vwf_vram_pointer	; Adjust pointer
 	clc
-	adc #$0400
+	adc.w #!vwf_vram_pointer_adjust_per_frame
 	sta !vwf_vram_pointer
 	sep #$20
 
@@ -5028,12 +5033,12 @@ Backup:
 
 .Backup
 	%configure_vram_access(VRamAccessMode.Read, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, $02)
-	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.ReadOnce, $2139, dma_source_indirect_word($00, bank(!vwf_backup_ram)), #$0800)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.ReadOnce, $2139, dma_source_indirect_word($00, bank(!vwf_backup_ram)), !vwf_backup_size_per_frame)
 	jmp .Continue
 
 .Restore
 	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, $02)
-	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, dma_source_indirect_word($00, bank(!vwf_backup_ram)), #$0800)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, dma_source_indirect_word($00, bank(!vwf_backup_ram)), !vwf_backup_size_per_frame)
 
 .Continue
 	lda !vwf_counter	; Reduce iteration counter
@@ -5100,11 +5105,11 @@ BackupPalette:
 	beq .Backup
 .Restore
 	%vwf_mvn_transfer($0040, !vwf_palette_backup, !vwf_palette_backup_ram, !vwf_cpu_snes)
-	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteTwice, $2122, !vwf_palette_backup_ram, #$0040)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteTwice, $2122, !vwf_palette_backup_ram, $0040)
 	jmp .End
 
 .Backup
-	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.ReadTwice, $213B, !vwf_palette_backup_ram, #$0040)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.ReadTwice, $213B, !vwf_palette_backup_ram, $0040)
 	%vwf_mvn_transfer($0040, !vwf_palette_backup_ram, !vwf_palette_backup, !vwf_cpu_snes)
 
 .End
@@ -5188,10 +5193,10 @@ LoadBoxPalette:
 PrepareScreen:
 	; Upload graphics and tilemap to VRAM
 	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, #$4000)
-	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, !vwf_buffer_empty_tile, #$00B0)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, !vwf_buffer_empty_tile, $00B0)
 
 	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, #$5C80)
-	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, !vwf_buffer_text_box_tilemap, #$0700)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, !vwf_buffer_text_box_tilemap, $0700)
 
 .End
 	lda !vwf_mode
@@ -5205,7 +5210,7 @@ PrepareScreen:
 
 CreateWindow:
 	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, #$5C80)
-	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, !vwf_buffer_text_box_tilemap, #$0700)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, !vwf_buffer_text_box_tilemap, $0700)
 
 	lda !vwf_counter
 	cmp #$02
@@ -5239,7 +5244,7 @@ TextUpload:
 	sta !vwf_cursor_fix
 
 	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, !vwf_cursor_vram)
-	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, dma_source_indirect_word(!vwf_cursor_source, bank(!vwf_buffer_text_box_tilemap)), #$0046)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, dma_source_indirect_word(!vwf_cursor_source, bank(!vwf_buffer_text_box_tilemap)), $0046)
 
 .SkipCursor
 	lda !vwf_wait	; Wait for frames?
@@ -5265,7 +5270,7 @@ TextUpload:
 	sta !vwf_cursor_upload
 
 	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, #$5C50)
-	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, !vwf_tile_ram, #$0060)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, !vwf_tile_ram, $0060)
 
 	rep #$20
 	lda !vwf_tilemap_dest
@@ -5278,7 +5283,7 @@ TextUpload:
 	sep #$20
 
 	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, $00)
-	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, dma_source_indirect(!vwf_tilemap_dest), #$0046)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, dma_source_indirect(!vwf_tilemap_dest), $0046)
 
 	jmp .Return
 
@@ -5418,7 +5423,7 @@ endif
 	lda #$01
 	sta !vwf_at_start_of_text
 	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, #$5C80)
-	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, !vwf_buffer_text_box_tilemap, #$0700)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, !vwf_buffer_text_box_tilemap, $0700)
 	jmp .Return
 
 .Begin
@@ -5432,7 +5437,7 @@ endif
 	sta $00
 	sep #$20
 	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, $00)
-	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, dma_source_indirect(!vwf_buffer_dest), #$0060)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, dma_source_indirect(!vwf_buffer_dest), $0060)
 
 	rep #$20	; Upload Tilemap
 	lda !vwf_tilemap_dest
@@ -5444,7 +5449,7 @@ endif
 	sta $00
 	sep #$20
 	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, $00)
-	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, dma_source_indirect(!vwf_tilemap_dest), #$0046)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, dma_source_indirect(!vwf_tilemap_dest), $0046)
 
 	jsr Beep
 

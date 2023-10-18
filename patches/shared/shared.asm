@@ -195,6 +195,12 @@ function dma_source_indirect(address) = $01000000|(address&$FFFFFF)
 function dma_source_indirect_word(address, bank) = ((bank&$FF)<<24)|(address&$FFFFFF)
 
 
+; Helper function for %dma_transfer() to signify that the num_bytes passed in is actually
+; a RAM address that contains the number of bytes.
+
+function dma_size_indirect(address) = $01000000|(address&$FFFFFF)
+
+
 ; A simple macro for preparing access to VRAM.
 
 macro configure_vram_access(access_mode, increment_mode, increment_size, address_remap, vram_address)
@@ -221,7 +227,7 @@ endmacro
 ; A simple helper macro that will cover most cases of DMA transfers.
 ; Either pass in the source address directly, or use the helper functions above to pass an indirect source address.
 
-macro dma_transfer(channel, dma_settings, destination, source, bytes)
+macro dma_transfer(channel, dma_settings, destination, source, num_bytes)
 	assert <channel> >= 0 && <channel> <= 7,"%dma_transfer() channel parameter must be a value between 0 and 7. Current: <channel>"
 	
 	assert <destination> >= $2100 && <destination> <= $21FF, "Invalid destination passed to %dma_transfer(): <destination>. Must be a PPU register between $2100 and $21FF."
@@ -244,6 +250,17 @@ macro dma_transfer(channel, dma_settings, destination, source, bytes)
 		!temp_dma_source_high = "lda !temp_source_without_header+1"
 		!temp_dma_source_bank = "lda.b #!temp_dma_source_address_mode"
 	endif
+	
+	!temp_num_bytes_resolved #= <num_bytes>
+	!temp_dma_num_bytes_mode #= ((!temp_num_bytes_resolved>>24)&$FF)
+	
+	assert !temp_dma_num_bytes_mode <= 1, "Invalid argument passed to num_bytes of %dma_transfer()."
+	
+	if !temp_dma_num_bytes_mode == 0	
+		!temp_dma_num_bytes = "lda.w #<num_bytes>"
+	elseif !temp_dma_num_bytes_mode == 1
+		!temp_dma_num_bytes = "lda <num_bytes>"
+	endif
 
 	lda.b #<dma_settings>
 	sta.w DMA_Regs[<channel>].Control
@@ -256,7 +273,7 @@ macro dma_transfer(channel, dma_settings, destination, source, bytes)
 	!temp_dma_source_bank
 	sta.w DMA_Regs[<channel>].Source_Address_Bank
 	rep #$20
-	lda <bytes>
+	!temp_dma_num_bytes
 	sta.w DMA_Regs[<channel>].Size_Word
 	sep #$20
 	lda.b #(1<<<channel>)
@@ -268,6 +285,9 @@ macro dma_transfer(channel, dma_settings, destination, source, bytes)
 	undef "temp_dma_source_low"
 	undef "temp_dma_source_high"
 	undef "temp_dma_source_bank"
+	undef "temp_num_bytes_resolved"
+	undef "temp_dma_num_bytes_mode"
+	undef "temp_dma_num_bytes"
 endmacro
 
 

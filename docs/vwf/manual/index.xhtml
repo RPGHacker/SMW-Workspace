@@ -2451,6 +2451,7 @@ endif</code></pre>
 						<li>Optimized performance of patch in V-Blank to reduce the chance of graphical bugs occurring from the interaction with other patches.</li>
 						<li>Optimized performance of some VWF core functionality, including text generation.</li>
 						<li>Added new <code>!vwf_backup_duration_in_frames</code> setting, which allows reducing the patch's V-Blank duration in the initialization step at the cost of longer start-up times for text boxes.</li>
+						<li>Reduced the amount of time the patch spends in V-Blank for smaller text boxes during the text box animation phase. This is achieved by only copying enough tiles to VRAM to cover the visible area of the text box (previous versions always copied an entire screen worth of tiles).</li>
 					</ul>
 				</p></dd>
 				

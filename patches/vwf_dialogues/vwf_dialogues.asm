@@ -179,6 +179,9 @@ endmacro
 %vwf_claim_varram(tm_buffers_text_pointers, !vwf_num_reserved_text_macros*3)    ; 24-bit pointer table for the buffered text macros.
 %vwf_claim_varram(tm_buffers_text_buffer, !vwf_buffered_text_macro_buffer_size) ; Buffer dedicated for uploading VWF text to in order to display variable text.
 
+%vwf_claim_varram(create_window_start_pos, 2) ; Start position and length for CreateWindow DMA
+%vwf_claim_varram(create_window_length, 2)
+
 !vwf_buffer_empty_tile = !vwf_gfx_ram
 !vwf_buffer_bg_tile = !vwf_gfx_ram+$10
 !vwf_buffer_frame = !vwf_gfx_ram+$20
@@ -1273,6 +1276,46 @@ ClearScreen:
 	plb
 	
 	rts
+	
+	
+	
+
+; Calculates the start position and number of bytes to copy for the DMA in CreateWindow.
+; This is mainly an optimization to use up less V-Blank time for smaller text boxes.
+; Write the starting line number (Y position) to $7E0001 and the number of lines to draw
+; to $7E0005.
+SetWindowCopyArea:
+	; First, we calculate the starting line.
+	stz $00
+	lda.b #$01
+	sta $02
+	jsr GetTilemapPos
+	
+	lda $03
+	sta !vwf_create_window_start_pos
+	lda $04
+	sta !vwf_create_window_start_pos+1
+	
+	; Then we calculate the number of bytes we need to copy.
+	; For this, we need to multiply the text box height with #$40 (64 in dec).
+	; Since that's exactly 2^6, we can just ASL six times.
+	; It's still quicker than an actual multiplication.
+	lda.b #$00
+	xba
+	lda $05
+	rep #$20
+	
+	; Sizes of 0 are bad, so make sure we calculate at last one line.
+	bne .NotZero
+	inc
+	
+.NotZero
+	asl #6
+	
+	sta !vwf_create_window_length
+	sep #$20
+	
+	rts
 
 
 
@@ -1304,6 +1347,30 @@ BufferWindow:
 	dw .NoBox,.SoEBox,.SoMBox,.MMZBox,.InstBox
 
 .End
+	lda !vwf_current_y
+	bpl .NoUnderflow
+	lda.b #$00
+	
+.NoUnderflow
+	sta $01
+	lda !vwf_current_height
+	inc #2
+	sta $05
+	
+	clc
+	adc $01
+	
+	cmp.b #28+1
+	bcc .NoOverflow
+	
+	lda.b #28
+	sec
+	sbc $01
+	sta $05
+	
+.NoOverflow
+	jsr SetWindowCopyArea
+
 	jmp Buffer_End
 
 
@@ -1807,7 +1874,43 @@ CollapseWindow:
 .Routinetable
 	dw .NoBox,.SoEBox,.SoMBox,.MMZBox,.InstBox
 
-.End	
+.End
+	; Since we're shrinking the text box, we might have to copy more tiles than the
+	; actual text box size. That's what we use .AdditionalLineCopyTable for.
+	lda !vwf_box_create
+	asl
+	tax
+		
+	lda !vwf_current_y
+	sec
+	sbc .AdditionalLineCopyTable,x
+	; inc	
+	bpl .NoUnderflow
+	lda.b #$00
+	
+.NoUnderflow
+	sta $01
+	
+	lda !vwf_current_height
+	clc
+	adc .AdditionalLineCopyTable+1,x
+	inc #2
+	sta $05
+	
+	clc
+	adc $01
+	
+	cmp.b #28+1
+	bcc .NoOverflow
+	
+	lda.b #28
+	sec
+	sbc $01
+	sta $05
+	
+.NoOverflow
+	jsr SetWindowCopyArea
+	
 	lda !vwf_counter
 	cmp #$02	
 	bne .NotDone
@@ -1823,6 +1926,18 @@ CollapseWindow:
 .NoNextMessage
 .NotDone
 	jmp Buffer_End
+	
+.AdditionalLineCopyTable
+	; This table defines how many extra lines (in addition to the lines covering the text box)
+	; need to be copied to the screen when collapsing a text box. The idea here is that shrinking
+	; the text box should also erase tiles from the previous text box.
+	; Each entry here is two bytes, the first one meaning "Y pos to subtract" and the second
+	; "height to add".
+	db 0, 0; .NoBox
+	db 0, 2; .SoEBox
+	db 1, 2; .SoMBox
+	db 0, 0; .MMZBox
+	db 0, 0; .InstBox
 
 
 
@@ -5200,6 +5315,23 @@ PrepareScreen:
 
 .End
 	lda !vwf_mode
+	cmp.b #$04
+	bne .NoNextMessage
+	
+	; Check if we're coming from a "display message" command.
+	; If so, we need to skip parts of the initialization process.
+	lda !vwf_swap_message_settings
+	bit.b #%10000000
+	beq .NoNextMessage
+	
+	lda #$00
+	sta !vwf_swap_message_settings
+	lda.b #$06
+	sta !vwf_mode
+	jmp VBlank_End
+	
+.NoNextMessage
+	lda !vwf_mode
 	inc
 	sta !vwf_mode
 	jmp VBlank_End
@@ -5209,8 +5341,21 @@ PrepareScreen:
 
 
 CreateWindow:
-	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, #$5C80)
-	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, !vwf_buffer_text_box_tilemap, $0700)
+	rep #$20
+	lda !vwf_create_window_start_pos
+	lsr
+	clc
+	adc #$5C80
+	sta $00
+	
+	lda.w #!vwf_buffer_text_box_tilemap
+	clc
+	adc !vwf_create_window_start_pos
+	sta $02
+	sep #$20
+
+	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, $00)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, dma_source_indirect_word($02, bank(!vwf_buffer_text_box_tilemap)), dma_size_indirect(!vwf_create_window_length))
 
 	lda !vwf_counter
 	cmp #$02
@@ -5518,18 +5663,19 @@ StartNextMessage:
 	bit.b #%00000001
 	beq .NoOpenAnim
 	
-	lda #$06
+	lda.b #$04
 	sta !vwf_mode
+	lda.b #$00
 	
 	bra .Return
 	
 .NoOpenAnim	
-	lda #$08
+	lda.b #$08
 	sta !vwf_mode
+	lda.b #$00
+	sta !vwf_swap_message_settings
 	
 .Return
-	lda #$00
-	sta !vwf_swap_message_settings
 	sta !vwf_swap_message_id
 	sta !vwf_swap_message_id+1
 	

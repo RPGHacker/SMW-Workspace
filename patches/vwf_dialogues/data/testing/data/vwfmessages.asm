@@ -39,6 +39,22 @@
 %vwf_register_text_macro("CurrentPlayerWithPowerup", !macro_group("PlayerPowerup", remap_ram($7E0019)), !nbsp, !macro("CurrentPlayer"))
 
 
+%vwf_register_text_macro("No", !str("NO") )
+%vwf_register_text_macro("Yes", !str("YES") )
+
+%vwf_start_text_macro_group("NoYes")
+	%vwf_add_text_macro_to_group("No")
+	%vwf_add_text_macro_to_group("Yes")
+%vwf_end_text_macro_group()
+
+	
+; RPG Hacker: This is just for testing purposes. Don't use %vwf_claim_varram() in your actual hacks. Use proper free RAM instead.
+%vwf_claim_varram(box_anim_test_show_open_old, 1)
+%vwf_claim_varram(box_anim_test_show_close_old, 1)
+%vwf_claim_varram(box_anim_test_show_open, 1)
+%vwf_claim_varram(box_anim_test_show_close, 1)
+
+
 ; Messages:
 
 ; RPG Hacker: Really, message $0050 (Yoshi's House) is the most important one for us, since it's the quickest one to get to.
@@ -76,7 +92,7 @@ endif
 		%vwf_wrap( !set_pal($05), !char($00AC), !reset_color, !str(" Routines Test") ),
 		%vwf_wrap( !set_pal($05), !char($00AC), !reset_color, !str(" Error Handling Test") ),
 		%vwf_wrap( !set_pal($05), !char($00AC), !reset_color, !str(" Edge Cases") ),
-		!str("Reserved"),
+		%vwf_wrap( !set_pal($05), !char($00AC), !reset_color, !str(" Message Box Anims") ),
 		!str("Reserved"),
 		!str("Reserved"),
 		!str("Exit"))
@@ -247,25 +263,28 @@ endif
 		!open_message(0060)
 	
 	!opt_loc(TestSelection, 7)
-			!str("The following boxes of text should all stay the same color:") : !press_a : !clear
-			!set_color($06, rgb_15(31, 0, 0))
-			!str("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW")
-			!str("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW")
-			!str("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW")
-			!str("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW")
-			!str("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW")
-			!str("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW")
-			!reset_color
-			!press_a : !clear
+		!str("The following boxes of text should all stay the same color:") : !press_a : !clear
+		!set_color($06, rgb_15(31, 0, 0))
+		!str("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW")
+		!str("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW")
+		!str("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW")
+		!str("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW")
+		!str("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW")
+		!str("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW")
+		!reset_color
+		!press_a : !clear
+		
+		!execute(.GiveReserveMushroom)
+		!str("I just put a mushroom into your reserve item box.") : !new_line : !new_line
+		!str("It should be hidden while this dialog box remains open.")
+		!press_a
+		
+		!open_message(0045)
 			
-			!execute(.GiveReserveMushroom)
-			!str("I just put a mushroom into your reserve item box.") : !new_line : !new_line
-			!str("It should be hidden while this dialog box remains open.")
-			!press_a
+	!opt_loc(TestSelection, 8)	
+		!execute(MessageBoxAnimTestInit)
+		!open_message(0080, false, false)
 			
-			!open_message(0045)
-			
-	!opt_loc(TestSelection, 8)
 	!opt_loc(TestSelection, 9)
 	!opt_loc(TestSelection, 10)
 	!opt_loc(TestSelection, 11)
@@ -2212,15 +2231,184 @@ BufferOverflowTest:
 
 %vwf_message_start(0080)	; Message 11C-1
 
-	; Message header & text go here
+	%vwf_header(x_pos(0), y_pos(0), width(15), height(13), text_alignment(TextAlignment.Centered), box_animation(BoxAnimation.Instant))
+		
+.Start
+	!clear
+
+	!options(MessageBoxAnimSelection,
+		%vwf_wrap( !str("Show Open (current): "), !macro_group("NoYes", !vwf_box_anim_test_show_open_old)),
+		%vwf_wrap( !str("Show Close (current): "), !macro_group("NoYes", !vwf_box_anim_test_show_close_old)),
+		%vwf_wrap( !str("Show Open (next): "), !macro_group("NoYes", !vwf_box_anim_test_show_open)),
+		%vwf_wrap( !str("Show Close (next): "), !macro_group("NoYes", !vwf_box_anim_test_show_close)),
+		!str(""),
+		!str("None"),
+		!str("SoE"),
+		!str("SoM"),
+		!str("MMZ"),
+		!str("Instant"),
+		!str(""),
+		!str("Exit"))
+	
+	!opt_loc(MessageBoxAnimSelection, 0)
+		!execute(.ToggleShowOpenOld)
+		!jump(.Start)
+	
+	!opt_loc(MessageBoxAnimSelection, 1)
+		!execute(.ToggleShowCloseOld)
+		!jump(.Start)
+		
+	!opt_loc(MessageBoxAnimSelection, 2)
+		!execute(.ToggleShowOpen)
+		!jump(.Start)
+	
+	!opt_loc(MessageBoxAnimSelection, 3)
+		!execute(.ToggleShowClose)
+		!jump(.Start)
+		
+	!opt_loc(MessageBoxAnimSelection, 4)
+		!jump(.Start)
+		
+	!opt_loc(MessageBoxAnimSelection, 5)
+		!execute(.SetupMessageBoxAnimTest_None)
+		!clear
+		!macro_buf(0)
+	!opt_loc(MessageBoxAnimSelection, 6)
+		!execute(.SetupMessageBoxAnimTest_SoE)
+		!clear
+		!macro_buf(0)
+	!opt_loc(MessageBoxAnimSelection, 7)
+		!execute(.SetupMessageBoxAnimTest_SoM)
+		!clear
+		!macro_buf(0)
+	!opt_loc(MessageBoxAnimSelection, 8)
+		!execute(.SetupMessageBoxAnimTest_MMZ)
+		!clear
+		!macro_buf(0)
+	!opt_loc(MessageBoxAnimSelection, 9)
+		!execute(.SetupMessageBoxAnimTest_Instant)
+		!clear
+		!macro_buf(0)		
+	
+	!opt_loc(MessageBoxAnimSelection, 10)
+		!jump(.Start)
+		
+	!opt_loc(MessageBoxAnimSelection, 11)
+		!open_message(0050)
 
 %vwf_message_end()
+
+.ToggleShowOpenOld:
+	lda !vwf_box_anim_test_show_open_old
+	eor.b #$01
+	sta !vwf_box_anim_test_show_open_old
+	rtl
+
+.ToggleShowCloseOld:
+	lda !vwf_box_anim_test_show_close_old
+	eor.b #$01
+	sta !vwf_box_anim_test_show_close_old
+	rtl
+
+.ToggleShowOpen:
+	lda !vwf_box_anim_test_show_open
+	eor.b #$01
+	sta !vwf_box_anim_test_show_open
+	rtl
+
+.ToggleShowClose:
+	lda !vwf_box_anim_test_show_close
+	eor.b #$01
+	sta !vwf_box_anim_test_show_close
+	rtl
+	
+.SetupMessageBoxAnimTest
+	!vwf_test_message_id_base = $0081
+
+..None
+	lda.b #!vwf_test_message_id_base+$00
+	pha
+	bra ..CreateMacro
+	
+..SoE
+	lda.b #!vwf_test_message_id_base+$01
+	pha
+	bra ..CreateMacro
+	
+..SoM
+	lda.b #!vwf_test_message_id_base+$02
+	pha
+	bra ..CreateMacro
+	
+..MMZ
+	lda.b #!vwf_test_message_id_base+$03
+	pha
+	bra ..CreateMacro
+	
+..Instant
+	lda.b #!vwf_test_message_id_base+$04
+	pha
+	
+..CreateMacro
+	jsl VWF_ResetBufferedTextMacros
+	
+	
+	jsl VWF_BeginBufferedTextMacro
+	%add_to_buffered_text_macro(..RawCommand1)
+	jsl VWF_EndBufferedTextMacro
+	
+	; This modifies the arguments of the buffered !open_message() command.
+	lda !vwf_tm_buffers_text_index
+	dec #4
+	tax
+	pla
+	sta !vwf_tm_buffers_text_buffer,x
+	inx #2
+	
+	lda !vwf_box_anim_test_show_close_old
+	asl
+	ora !vwf_box_anim_test_show_open
+	sta !vwf_tm_buffers_text_buffer,x
+	
+	
+	jsl VWF_BeginBufferedTextMacro
+	%add_to_buffered_text_macro(..RawCommand2)
+	jsl VWF_EndBufferedTextMacro
+	
+	; Same as above
+	lda !vwf_tm_buffers_text_index
+	dec #2
+	tax
+	
+	lda !vwf_box_anim_test_show_close
+	asl
+	ora !vwf_box_anim_test_show_open_old
+	sta !vwf_tm_buffers_text_buffer,x
+	
+	rtl
+	
+..RawCommand1:
+	%vwf_inline(!open_message(0000, true, true))
+	
+..RawCommand2:
+	%vwf_inline(!open_message(0080, true, true))
+	
+MessageBoxAnimTestInit:
+	lda.b #$00
+	sta !vwf_box_anim_test_show_open_old
+	sta !vwf_box_anim_test_show_close_old
+	sta !vwf_box_anim_test_show_open
+	sta !vwf_box_anim_test_show_close
+	rtl
 
 ;-------------------------------------------------------
 
 %vwf_message_start(0081)	; Message 11C-2
 
-	; Message header & text go here
+	%vwf_header(box_animation(BoxAnimation.None))
+	
+	!str("Test") : !press_a
+	!macro_buf(1)
 
 %vwf_message_end()
 
@@ -2228,7 +2416,10 @@ BufferOverflowTest:
 
 %vwf_message_start(0082)	; Message 11D-1
 
-	; Message header & text go here
+	%vwf_header(box_animation(BoxAnimation.SoE))
+	
+	!str("Test") : !press_a
+	!macro_buf(1)
 
 %vwf_message_end()
 
@@ -2236,7 +2427,10 @@ BufferOverflowTest:
 
 %vwf_message_start(0083)	; Message 11D-2
 
-	; Message header & text go here
+	%vwf_header(box_animation(BoxAnimation.SoM))
+	
+	!str("Test") : !press_a
+	!macro_buf(1)
 
 %vwf_message_end()
 
@@ -2244,7 +2438,10 @@ BufferOverflowTest:
 
 %vwf_message_start(0084)	; Message 11E-1
 
-	; Message header & text go here
+	%vwf_header(box_animation(BoxAnimation.MMZ))
+	
+	!str("Test") : !press_a
+	!macro_buf(1)
 
 %vwf_message_end()
 
@@ -2252,7 +2449,10 @@ BufferOverflowTest:
 
 %vwf_message_start(0085)	; Message 11E-2
 
-	; Message header & text go here
+	%vwf_header(box_animation(BoxAnimation.Instant))
+	
+	!str("Test") : !press_a
+	!macro_buf(1)
 
 %vwf_message_end()
 

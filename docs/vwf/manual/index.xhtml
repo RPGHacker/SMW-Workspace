@@ -2412,7 +2412,14 @@ endif</code></pre>
 					It is unknown whether this is a bug in the SA-1 emulation of sd2snes, or an inaccuracy in emulators (and thus a bug in the patch's code). In any case, the bug can be avoided entirely by never creating buffered text macros directly from data in RAM.</li>
 					<li>Multiple users have reported errors with HDMA effects (such as parallax BGs) getting all messed up while a dialog was open. Sometimes, this error occurred randomly, other times, the error was 100% reproducible. After investigating the issue, it was determined that this is caused by a V-Blank overrun, simulated here by putting a long loop at the beginning of V-Blank:
 					<img class="d-block m-1 my-2" src="screenshots/known-bug-3.png" alt="Screenshot" width="256" height="224" />
-					Things that are known to cause the error include Lunar Magic ExAnimation system (randomly) and LX5's Custom Powerups patch (100% reproduction). Unfortunately, since this problem is caused by hardware limitations, there is no reliable fix for it. All that can be done is to try optimizing the performance of anything that uses V-Blank time. On your end, you could start by trying out V-Blank optimization patches <a href="https://www.smwcentral.net/?p=section&amp;a=details&amp;id=28028">such as this one</a>. If that doesn't make the problem go away, you could ask the authors of the patches you are using that you know hijack V-Blank to try and optimize for performance. If that can't be done, the only real workaround is to avoid using VWF text boxes in levels with these effects active.</li>
+					Things that are known to cause the error include Lunar Magic's ExAnimation system (randomly) and LX5's Custom Powerups patch (100% reproduction). Unfortunately, since this problem is caused by hardware limitations, there is no guaranteed fix for it. Your general aim should be to reduce the amount of time your hack spends in V-Blank as much as possible. Here's a few suggestions that could help to either get rid of the bug entirely or greatly reduce its impact:
+					<ul>
+						<li>Applying general V-Blank optimization patches such as <a href="https://www.smwcentral.net/?p=section&amp;a=details&amp;id=28028">Lunar Magic's &quot;VRAM Patch&quot; Optimization</a> could reduce the likelihood of the bug occurring.</li>
+						<li>Applying the <a href="https://www.smwcentral.net/?p=section&amp;a=details&amp;id=35281">Fix HDMA Flickering</a> patch could get rid of the nastier side effects of the bug (so instead of HDMA effects breaking entirely, you might only get black scanlines).</li>
+						<li>In the VWF Dialogues Patch itself, you could tweak the <code>!vwf_backup_duration_in_frames</code> and <code>!vwf_clear_screen_duration_in_frames</code> settings, which will reduce the amount of time the patch spends in V-Blank at the cost of some operations (such as text box clears) taking a few frames longer. If you only add a few frames to each setting, the difference shouldn't even be noticeable by players (we're still talking about fractions of seconds here). A few frames alone can already make a world of a difference and could prevent the bug from occuring.</li>
+						<li>If you're using any other patches in your hack that do anything graphical with the game (and thus likely hijack V-Blank), you could kindly ask the respective patch authors if they can take another look at their patch to check for potential optimizations.</li>
+					</ul>
+					If none of the above helps you get rid of the bug, the only real workaround is to avoid using VWF text boxes entirely in levels that trigger it.</li>
 				</ul>
 			</p>
 			<p class="text-center my-4"><a href="#index">Return to Index</a></p>
@@ -2452,6 +2459,7 @@ endif</code></pre>
 						<li>Optimized performance of some VWF core functionality, including text generation.</li>
 						<li>Added new <code>!vwf_backup_duration_in_frames</code> setting, which allows reducing the patch's V-Blank duration in the initialization step at the cost of longer start-up times for text boxes.</li>
 						<li>Reduced the amount of time the patch spends in V-Blank for smaller text boxes during the text box animation phase. This is achieved by only copying enough tiles to VRAM to cover the visible area of the text box (previous versions always copied an entire screen worth of tiles).</li>
+						<li>Added new <code>!vwf_clear_screen_duration_in_frames</code> setting, which can reduce the amount of time the patch spends in V-Blank during text box clears at the cost of extending their duration to multiple frames.</li>
 					</ul>
 				</p></dd>
 				

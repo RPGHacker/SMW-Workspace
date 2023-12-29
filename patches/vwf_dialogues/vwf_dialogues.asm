@@ -34,6 +34,9 @@ namespace vwf_dialogues_
 
 
 assert !vwf_backup_duration_in_frames >= 8, "\!vwf_backup_duration_in_frames must have a value of at least 8."
+assert floor($4000/!vwf_backup_duration_in_frames)*!vwf_backup_duration_in_frames == $4000, "$4000 is not divisible by the value of \!vwf_backup_duration_in_frames (currently ",dec(!vwf_backup_duration_in_frames),"). Try a diffrent value."
+assert !vwf_clear_screen_duration_in_frames >= 1, "\!vwf_clear_screen_duration_in_frames must have a value of at least 1."
+assert floor($0700/!vwf_clear_screen_duration_in_frames)*!vwf_clear_screen_duration_in_frames == $0700, "$700 is not divisible by the value of \!vwf_clear_screen_duration_in_frames (currently ",dec(!vwf_clear_screen_duration_in_frames),"). Try a diffrent value."
 
 
 %define_enum(VWF_BitMode, 8Bit, 16Bit)
@@ -76,7 +79,7 @@ endmacro
 ; RPG Hacker: RAM addresses defined above this point won't automatically get cleared on opening message boxes.
 !vwf_ram_clear_start_pos #= !vwf_var_rampos
 
-%vwf_claim_varram(counter, 1)
+%vwf_claim_varram(sub_step, 1)
 
 %vwf_claim_varram(width, 1)
 %vwf_claim_varram(height, 1)
@@ -103,6 +106,7 @@ endmacro
 %vwf_claim_varram(auto_wait, 1)
 
 %vwf_claim_varram(vram_pointer, 2)
+%vwf_claim_varram(clear_box_remaining_bytes, 2)
 %vwf_claim_varram(current_width, 1)
 %vwf_claim_varram(current_height, 1)
 %vwf_claim_varram(current_x, 1)
@@ -1207,7 +1211,12 @@ endif
 
 
 BufferGraphics:
+	lda !vwf_sub_step
+	bne .Return
+
 	jsr .Start
+	
+.Return
 	jmp Buffer_End
 
 .Start
@@ -1321,7 +1330,7 @@ SetWindowCopyArea:
 
 
 BufferWindow:
-	lda !vwf_counter	; Buffer text box tilemap
+	lda !vwf_sub_step	; Buffer text box tilemap
 	bne .SkipInit
 	lda #$00	; Text box init
 	sta !vwf_current_width
@@ -1335,7 +1344,7 @@ BufferWindow:
 	adc !vwf_height
 	sta !vwf_current_y
 	lda #$01
-	sta !vwf_counter
+	sta !vwf_sub_step
 
 .SkipInit
 	lda !vwf_box_create	; Prepare jump to routine
@@ -1377,7 +1386,7 @@ BufferWindow:
 
 .NoBox
 	lda #$02	; No text box
-	sta !vwf_counter
+	sta !vwf_sub_step
 	jmp .End
 
 
@@ -1397,7 +1406,7 @@ BufferWindow:
 	cmp !vwf_current_height
 	bne .SoEEnd
 	lda #$02
-	sta !vwf_counter
+	sta !vwf_sub_step
 
 .SoEEnd
 	lda !vwf_current_height
@@ -1437,7 +1446,7 @@ BufferWindow:
 
 .SoMEnd
 	lda #$02
-	sta !vwf_counter
+	sta !vwf_sub_step
 	jmp .End
 
 
@@ -1457,7 +1466,7 @@ BufferWindow:
 	cmp !vwf_current_width
 	bne .MMZEnd
 	lda #$02
-	sta !vwf_counter
+	sta !vwf_sub_step
 
 .MMZEnd
 	lda !vwf_current_width
@@ -1482,7 +1491,7 @@ BufferWindow:
 
 .InstEnd
 	lda #$02
-	sta !vwf_counter
+	sta !vwf_sub_step
 	jmp .End
 
 
@@ -1605,40 +1614,32 @@ DrawBox:
 ; tilemap starting address after this routine is done.
 
 GetTilemapPos:
-	lda $02	; Tilemap consists of double bytes?
-	beq .NoDouble
+	; We need to do the calculation in 16-bit mode, so we temporarily
+	; copy our X position from $00 (8-bit) into $03 + $04 (16-bit).
 	lda $00
-	asl
-	sta $00
-	lda #$40
-	bra .Store
-
-.NoDouble
-	lda #$20
-
-.Store
-	sta.w select(!use_sa1_mapping,$2251,$211B)	; Multiply Y coordinate by $20/$40
-	stz.w select(!use_sa1_mapping,$2252,$211B)
-	stz.w select(!use_sa1_mapping,$2250,$211C)
-	lda $01
-	sta.w select(!use_sa1_mapping,$2253,$211C)
-	if !use_sa1_mapping
-		stz $2254
-	endif
-	lda #$00
+	sta $03
+	lda.b #$00
+	sta $04
+	
 	xba
-	lda $00
+	lda $01
+	
 	rep #$21
-	adc.w select(!use_sa1_mapping,$2306,$2134)
+	asl #5	; "asl #5" is equal to a multiplication by $20 (32)
+	
+	ldx $02
+	beq .NoDouble
+	
+	asl		; An additional "asl" makes this a multiplication by $40 (64)
+	
+	adc $03
+	
+.NoDouble
+	adc $03
+	
 	sta $03
 	sep #$20
-	lda $02
-	beq .End
-	lda $00	; Half $7E0000 again if previously doubled
-	lsr
-	sta $00
 
-.End
 	rts
 
 
@@ -1850,7 +1851,7 @@ DrawTile:
 
 
 CollapseWindow:
-	lda !vwf_counter	; Collapse text box
+	lda !vwf_sub_step	; Collapse text box
 	bne .SkipInit
 	lda !vwf_width
 	asl
@@ -1863,7 +1864,7 @@ CollapseWindow:
 	lda !vwf_y_pos
 	sta !vwf_current_y
 	lda #$01
-	sta !vwf_counter
+	sta !vwf_sub_step
 
 .SkipInit
 	lda !vwf_box_create	; Prepare jump to routine
@@ -1911,7 +1912,7 @@ CollapseWindow:
 .NoOverflow
 	jsr SetWindowCopyArea
 	
-	lda !vwf_counter
+	lda !vwf_sub_step
 	cmp #$02	
 	bne .NotDone
 
@@ -1944,7 +1945,7 @@ CollapseWindow:
 .NoBox
 	jsr ClearScreen
 	lda #$02
-	sta !vwf_counter
+	sta !vwf_sub_step
 	jmp .End
 
 
@@ -1969,7 +1970,7 @@ CollapseWindow:
 	lda !vwf_current_height
 	bne .SoEEnd
 	lda #$02
-	sta !vwf_counter
+	sta !vwf_sub_step
 
 .SoEEnd
 	lda !vwf_current_height
@@ -2032,7 +2033,7 @@ CollapseWindow:
 
 .SoMEnd
 	lda #$02
-	sta !vwf_counter
+	sta !vwf_sub_step
 	jmp .End
 
 
@@ -2057,7 +2058,7 @@ CollapseWindow:
 	lda !vwf_current_width
 	bne .MMZEnd
 	lda #$02
-	sta !vwf_counter
+	sta !vwf_sub_step
 
 .MMZEnd
 	lda !vwf_current_width
@@ -2071,7 +2072,7 @@ CollapseWindow:
 .InstBox
 	jsr ClearScreen
 	lda #$02
-	sta !vwf_counter
+	sta !vwf_sub_step
 	jmp .End
 
 
@@ -2146,6 +2147,9 @@ ClearHoriz:
 
 
 VWFInit:
+	lda !vwf_sub_step
+	bne .End
+	
 	jsr GetMessage
 	jsr LoadHeader
 
@@ -2163,8 +2167,8 @@ if !use_sa1_mapping
 	stz $018A
 
 	jsr ClearBox
-.End
 	
+.End	
 	jmp Buffer_End
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2431,7 +2435,6 @@ ClearBox:
 	asl
 	sta !vwf_current_height
 	jsr DrawBox
-	bra .Init
 
 .Init
 	lda #$FE
@@ -2495,6 +2498,43 @@ endif
 
 
 TextCreation:
+	lda !vwf_clear_box_remaining_bytes
+	ora !vwf_clear_box_remaining_bytes+1
+	beq .NotWaitingForClearBox
+	jmp .End
+	
+.NotWaitingForClearBox
+	lda !vwf_clear_box
+	beq .NoInitClearBox
+	
+	jsr ClearBox
+	
+	stz $00
+	lda !vwf_y_pos
+	inc
+	sta $01
+	lda.b #$01
+	sta $02
+	jsr GetTilemapPos
+	
+	lda.b #$00
+	sta !vwf_clear_box
+	xba
+	lda !vwf_height
+	
+	rep #$20
+	asl									; One standalone "asl" because !vwf_height assumes 16-pixel tiles (we need 8-pixel tiles)
+	asl #6								; "asl #6" effectively does a multiplication by $40 (64)
+	sta !vwf_clear_box_remaining_bytes
+	
+	lda $03
+	lsr									; We need to half this address, because it's being used as a VRAM offset
+	sta !vwf_vram_pointer	
+	sep #$20
+	
+	jmp .End
+
+.NoInitClearBox	
 	lda !vwf_skip_message_flag
 	beq .DontSkip
 	
@@ -2551,7 +2591,7 @@ endif
 	inc
 	sta !vwf_message_was_skipped
 	sta !vwf_clear_box
-	jmp .NoButton
+	jmp TextCreation
 
 .DontSkip
 	lda !vwf_wait
@@ -2725,12 +2765,6 @@ endif
 	jmp .End
 
 .NoButton
-	lda !vwf_clear_box
-	beq .NoClearBox
-	jsr ClearBox
-	jmp .End
-
-.NoClearBox	
 	; RPG Hacker: This was previously called from the SNES CPU, which isn't supported, because
 	; GetTilemapPos uses SA-1 multiplication in SA-1 builds. Therefore, I'm preprocessing the address
 	; and storing it in a variable for later use.
@@ -5083,7 +5117,7 @@ endif
 
 PrepareBackup:
 	lda.b #!vwf_backup_duration_in_frames	; Prepare backup of layer 3
-	sta !vwf_counter
+	sta !vwf_sub_step
 	rep #$20
 	lda #$0000
 	sta !vwf_vram_pointer
@@ -5156,9 +5190,9 @@ Backup:
 	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, dma_source_indirect_word($00, bank(!vwf_backup_ram)), !vwf_backup_size_per_frame)
 
 .Continue
-	lda !vwf_counter	; Reduce iteration counter
+	lda !vwf_sub_step	; Reduce iteration counter
 	dec
-	sta !vwf_counter
+	sta !vwf_sub_step
 	bne .NotDone
 
 .End
@@ -5306,14 +5340,53 @@ LoadBoxPalette:
 
 
 PrepareScreen:
-	; Upload graphics and tilemap to VRAM
+	; Upload graphics and tilemap to VRAM	
+	!vwf_prepare_screen_size_per_frame #= $0700/!vwf_clear_screen_duration_in_frames
+	!vwf_prepare_screen_vram_pointer_adjust_per_frame #= !vwf_prepare_screen_size_per_frame/2
+	
+	lda !vwf_sub_step
+	bne .SkipEmptyTile
+	
+	rep #$20
+	lda.w #$0000
+	sta !vwf_vram_pointer
+	sep #$20
+	
 	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, #$4000)
 	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, !vwf_buffer_empty_tile, $00B0)
 
-	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, #$5C80)
-	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, !vwf_buffer_text_box_tilemap, $0700)
+.SkipEmptyTile
+	rep #$21	
+	lda.w #$5C80
+	adc !vwf_vram_pointer
+	sta $02
+	
+	lda !vwf_vram_pointer
+	asl a
+	clc
+	adc.w #!vwf_buffer_text_box_tilemap
+	sta $00
+	
+	lda !vwf_vram_pointer
+	clc
+	adc.w #!vwf_prepare_screen_vram_pointer_adjust_per_frame
+	sta !vwf_vram_pointer
+	sep #$20
+	
+	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, $02)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, dma_source_indirect_word($00, bank(!vwf_buffer_text_box_tilemap)), !vwf_prepare_screen_size_per_frame)
+	
+	lda !vwf_sub_step
+	inc	
+	sta !vwf_sub_step
+	cmp.b #!vwf_clear_screen_duration_in_frames
+	
+	bne .Return
 
 .End
+	lda.b #$00
+	sta !vwf_sub_step
+	
 	lda !vwf_mode
 	cmp.b #$04
 	bne .NoNextMessage
@@ -5334,6 +5407,8 @@ PrepareScreen:
 	lda !vwf_mode
 	inc
 	sta !vwf_mode
+	
+.Return
 	jmp VBlank_End
 
 
@@ -5357,13 +5432,13 @@ CreateWindow:
 	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, $00)
 	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, dma_source_indirect_word($02, bank(!vwf_buffer_text_box_tilemap)), dma_size_indirect(!vwf_create_window_length))
 
-	lda !vwf_counter
+	lda !vwf_sub_step
 	cmp #$02
 	bne .Return
 
 .End
 	lda #$00
-	sta !vwf_counter
+	sta !vwf_sub_step
 	lda !vwf_mode
 	inc
 	sta !vwf_mode
@@ -5514,7 +5589,7 @@ elseif !vwf_bit_mode == VWF_BitMode.16Bit
 	sep #$20
 endif
 	beq .CheckButton
-	jmp .Upload
+	jmp .CheckClearBox
 
 .CheckButton
 	lda $18
@@ -5560,18 +5635,66 @@ endif
 	sta $2118
 	jmp .Return
 
-.Upload
-	lda !vwf_clear_box
-	beq .Begin
-	lda #$00
+.CheckClearBox
+	lda !vwf_clear_box_remaining_bytes
+	ora !vwf_clear_box_remaining_bytes+1
+	bne .ProcessClearBox
+	
+	jmp .UploadTextGfx
+	
+.ProcessClearBox
+	; Calculations below here could be moved out of V-Blank if necessary to reduce the risk of V-Blank overflow.
+	
+	rep #$20
+	lda.w #$5C80
+	clc
+	adc !vwf_vram_pointer
+	sta $02	
+	
+	lda !vwf_vram_pointer
+	asl a
+	clc
+	adc.w #!vwf_buffer_text_box_tilemap
+	sta $00
+	
+	lda !vwf_vram_pointer
+	clc
+	adc.w #!vwf_prepare_screen_vram_pointer_adjust_per_frame
+	sta !vwf_vram_pointer
+	
+	lda !vwf_clear_box_remaining_bytes
+	cmp.w #!vwf_prepare_screen_size_per_frame+1
+	bcc .FinalClearFrame
+	
+	lda.w #!vwf_prepare_screen_size_per_frame
+	
+.FinalClearFrame
+	sta $04
+	sep #$20
+	
+	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, $02)
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, dma_source_indirect_word($00, bank(!vwf_buffer_text_box_tilemap)), dma_size_indirect($04))
+	
+	rep #$20
+	lda !vwf_clear_box_remaining_bytes
+	sec
+	sbc $04
+	sta !vwf_clear_box_remaining_bytes	
+	sep #$20
+	
+	beq .ClearDone
+	
+	jmp .Return
+	
+.ClearDone
+	lda.b #$00
 	sta !vwf_clear_box
-	lda #$01
+	lda.b #$01
 	sta !vwf_at_start_of_text
-	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, #$5C80)
-	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, !vwf_buffer_text_box_tilemap, $0700)
+	
 	jmp .Return
 
-.Begin
+.UploadTextGfx
 	rep #$20	; Upload GFX
 	lda !vwf_gfx_dest
 	sec

@@ -5216,6 +5216,7 @@ BackupEnd:
 	lda remap_ram($0D9D)
 	ora #$04
 	sta $212C
+	lda.b #$04
 	trb $40
 
 .End

@@ -92,8 +92,8 @@ endif
 		%vwf_wrap( !set_pal($05), !char($00AC), !reset_color, !str(" Routines Test") ),
 		%vwf_wrap( !set_pal($05), !char($00AC), !reset_color, !str(" Error Handling Test") ),
 		%vwf_wrap( !set_pal($05), !char($00AC), !reset_color, !str(" Edge Cases") ),
-		%vwf_wrap( !set_pal($05), !char($00AC), !reset_color, !str(" Message Box Anims") ),
-		!str("Reserved"),
+		%vwf_wrap( !set_pal($05), !char($00AC), !reset_color, !str(" Message Box Anims") ),		
+		%vwf_wrap( !set_pal($05), !char($00AC), !reset_color, !str(" Layer Priorities") ),
 		!str("Reserved"),
 		!str("Exit"))
 		
@@ -285,7 +285,24 @@ endif
 		!execute(MessageBoxAnimTestInit)
 		!open_message(0080, false, false)
 			
-	!opt_loc(TestSelection, 9)
+	!opt_loc(TestSelection, 9)	
+		!options(LayerPrioritiesTestSelection,
+			!str("Level Header: 0E"),
+			!str("Level Header: 1E"),
+			!str("Exit"))
+		
+		!opt_loc(LayerPrioritiesTestSelection, 0)
+			!teleport_to_level($0018, false)
+			!close
+		
+		!opt_loc(LayerPrioritiesTestSelection, 1)
+			!teleport_to_level($0017, false)
+			!close
+			
+		!opt_loc(LayerPrioritiesTestSelection, 2)
+			!clear
+			!jump(.Start)
+	
 	!opt_loc(TestSelection, 10)
 	!opt_loc(TestSelection, 11)
 	
@@ -1634,7 +1651,6 @@ MessageASM0044:
 	!str("Centered") : !new_line
 	!press_a : !clear
 	
-	!teleport_to_level($0018, false)
 	!close
 
 	;!open_message(0050)

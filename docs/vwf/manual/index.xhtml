@@ -472,7 +472,7 @@
 					<li>The define <code>!vwf_frame_palette</code> in <code>data/vwfconfig.cfg</code> dictates which section of CGRAM text box frames use for their palette. To give you a better idea of what this means: This define controls which parts of the Lunar Magic palette get overwritten by the text box frame palette while a VWF text box is on screen. Usable values are <code>$00</code> to <code>$07</code>. This image illustrates how these values map onto the palette from Lunar Magic:					
 						<img class="d-block m-1 my-2 ir-crisp" src="screenshots/lm-palette-1.png" alt="Screenshot" width="530" height="329"/>
 					</li>
-					<li>The palettes of text box frames are controlled via the <code>vwf_define_frames()</code> macro in <code>vwfconfig.cfg</code>. Here's quick example for the format:
+					<li>The palettes of text box frames are controlled via the <code>vwf_define_frames()</code> macro in <code>vwfconfig.cfg</code>. Here's a quick example for the format:
 					<pre><code class="65c816_asar">
 macro vwf_define_frames()
 	; Frame $00
@@ -2453,13 +2453,14 @@ endif</code></pre>
 						<li>Fixed: SA-1 ROMs didn't hide reserve item while a dialog was open.</li>
 						<li>Added a tab to vwftable.asm (it maps to the same character as a space).</li>
 						<li>Fixed: Word-wrapping could break when combining text macros with centered text.</li>
-						<li>Fixed: A bug with how the main screen register was being written could lead to (essentially) random layer priorities.</li>
+						<li>Fixed: A bug with how the main screen register was being written could lead to (essentially) random layer priorities. The bug was noticed in a level using level mode 0E, but could have affected other modes as well.</li>
 						<li>Added note another known bug that as recently discovered.</li>
 						<li>Optimized performance of patch in V-Blank to reduce the chance of graphical bugs occurring from the interaction with other patches.</li>
 						<li>Optimized performance of some VWF core functionality, including text generation.</li>
 						<li>Added new <code>!vwf_backup_duration_in_frames</code> setting, which allows reducing the patch's V-Blank duration in the initialization step at the cost of longer start-up times for text boxes.</li>
 						<li>Reduced the amount of time the patch spends in V-Blank for smaller text boxes during the text box animation phase. This is achieved by only copying enough tiles to VRAM to cover the visible area of the text box (previous versions always copied an entire screen worth of tiles).</li>
 						<li>Added new <code>!vwf_clear_screen_duration_in_frames</code> setting, which can reduce the amount of time the patch spends in V-Blank during text box clears at the cost of extending their duration to multiple frames.</li>
+						<li>Fixed: The patch wrote to the color math register mirror in incorrect ways. In levels using transparent layers, this could lead to layers becoming non-transparent and staying that way even after a text box closed. The bug was noticed in a level using level mode 1E, but could have affected other modes as well.</li>
 					</ul>
 				</p></dd>
 				

@@ -65,6 +65,9 @@
 	%vwf_header(x_pos(0), y_pos(0), width(15), height(13), text_alignment(TextAlignment.Centered))
 	
 .Start
+!opt_loc(TestSelectionPage2, 11)
+	!clear()
+
 	!edit_pal(!text_color_4, rgb_15(15, 15, 31), rgb_15(0, 0, 0))
 	!edit_pal(!text_color_5, rgb_15(6, 31, 6), rgb_15(0, 0, 0))
 	!edit_pal(!text_color_6, rgb_15(31, 12, 12), rgb_15(0, 0, 0))
@@ -94,8 +97,26 @@ endif
 		%vwf_wrap( !set_pal($05), !char($00AC), !reset_color, !str(" Edge Cases") ),
 		%vwf_wrap( !set_pal($05), !char($00AC), !reset_color, !str(" Message Box Anims") ),		
 		%vwf_wrap( !set_pal($05), !char($00AC), !reset_color, !str(" Layer Priorities") ),
-		!str("Reserved"),
+		%vwf_wrap( !char($94), !str(" Page 2") ),
 		!str("Exit"))
+		
+	!opt_loc(TestSelection, 10)
+		.Page2Start
+		!clear()
+		!options(TestSelectionPage2,
+			!str("Wait for Buttons"),
+			!str("-"),
+			!str("-"),
+			!str("-"),
+			!str("-"),
+			!str("-"),
+			!str("-"),
+			!str("-"),
+			!str("-"),
+			!str("-"),
+			!str("-"),
+			%vwf_wrap( !char($93), !str(" Page 1") ),
+			!str("Exit"))		
 		
 	;!edit_pal(-1, $0000)
 	;!edit_pal($100, $0000)
@@ -110,7 +131,7 @@ endif
 		!str("This is a new line.") : !new_line
 		!str("Now some text...") : !wait_frames(60) : !str(" with a long pause.") : !wait_frames(30) : !new_line
 		!set_speed(5) : !str("This text appears very slowly.") : !set_speed(0) : !new_line
-		!press_a : !clear
+		!press_button : !clear
 		
 		!str("Time for some numbers!") : !new_line
 		!str("Mario's current coins: ") : !dec(remap_ram($7E0DBF), AddressSize.8Bit, true) : !new_line
@@ -119,7 +140,7 @@ endif
 		!str("Current X speed (hex): $") : !hex(remap_ram($7E007B)) : !new_line
 		!str("Current text box color: $") : !hex(!vwf_box_color+1) : !hex(!vwf_box_color) : !new_line
 		!str("Current timer: ") : !ram_char(remap_ram($7E0F31)) : !ram_char(remap_ram($7E0F32)) : !ram_char(remap_ram($7E0F33)) : !new_line
-		!press_a : !clear		
+		!press_button : !clear		
 		
 		!str("Further number tests.") : !new_line
 		!str("(Left = target, right = actual)") : !new_line
@@ -133,13 +154,13 @@ endif
 		!str("65535: ") : !dec(.TestNumber03, AddressSize.16Bit) : !new_line
 		!str("$69: $") : !hex(.TestNumber04) : !new_line
 		!str("123: ") : !ram_char(.TestNumber05) : !ram_char(.TestNumber05+2) : !ram_char(.TestNumber05+4) : !new_line
-		!press_a : !clear
+		!press_button : !clear
 		
 		!str("ThisLongTextDoesContain") : !nbsp : !str("ANonBreakingSpace") : !new_line
-		!press_a : !clear	
+		!press_button : !clear	
 		
 		!str("Have some text in a ") : !set_color($06, rgb_15(31, 24, 2)) : !str("different color ") : !reset_color : !str("- hooray!") : !new_line
-		!press_a : !clear
+		!press_button : !clear
 		
 		!font($01)
 		
@@ -151,11 +172,11 @@ endif
 		
 		!font(!vwf_default_font)
 		!str("And now back to the default.") : !new_line
-		!press_a : !clear
+		!press_button : !clear
 		
 		!str("How about a different song?") : !new_line
 		!play_bgm($05)
-		!press_a
+		!press_button
 		!play_bgm($02)
 		!clear		
 
@@ -182,14 +203,14 @@ if !assembler_ver >= 20000
 		%write_japanese_text($02, "Ｈｏｗ　ａｂｏｕｔ　ｓｏｍｅ　Ｊａｐａｎｅｓｅ　ｔｅｘｔ？") : !new_line : !new_line
 		%write_japanese_text($03, "こんにちは", $02, "、RPG", $03, "ハッカーです", $02, "！") : !new_line
 		%write_japanese_text($07, "私", $03, "は", $04, "日本語", $03, "が", $04, "話", $03, "せないので", $02, "、", $03, "ここにランダムな", $05, "漢", $04, "字", $03, "を挿", $04, "入", $03, "します。") : !new_line
-		%write_japanese_text($05, "兄係軽血決県研言庫湖公向幸港号根") : !press_a : !clear
+		%write_japanese_text($05, "兄係軽血決県研言庫湖公向幸港号根") : !press_button : !clear
 
 		!char_offset($0000)
 		!font($00)
 endif
 		
 		!str("Commands test complete!") : !new_line
-		!press_a
+		!press_button
 	
 		!clear		
 		!jump(.Start)
@@ -263,7 +284,7 @@ endif
 		!open_message(0060)
 	
 	!opt_loc(TestSelection, 7)
-		!str("The following boxes of text should all stay the same color:") : !press_a : !clear
+		!str("The following boxes of text should all stay the same color:") : !press_button : !clear
 		!set_color($06, rgb_15(31, 0, 0))
 		!str("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW")
 		!str("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW")
@@ -272,12 +293,12 @@ endif
 		!str("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW")
 		!str("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW")
 		!reset_color
-		!press_a : !clear
+		!press_button : !clear
 		
 		!execute(.GiveReserveMushroom)
 		!str("I just put a mushroom into your reserve item box.") : !new_line : !new_line
 		!str("It should be hidden while this dialog box remains open.")
-		!press_a
+		!press_button
 		
 		!open_message(0045)
 			
@@ -303,14 +324,34 @@ endif
 			!clear
 			!jump(.Start)
 	
-	!opt_loc(TestSelection, 10)
-	!opt_loc(TestSelection, 11)
+	!opt_loc(TestSelectionPage2, 0)
+			!str("Press A") : !press_custom_button(ControllerButton.A) : !new_line
+			!str("Press B") : !press_custom_button(ControllerButton.B) : !new_line
+			!str("Press X") : !press_custom_button(ControllerButton.X) : !new_line
+			!str("Press Y") : !press_custom_button(ControllerButton.Y) : !new_line
+			!str("Press Up or Down") : !press_custom_button(ControllerButton.DpadUp|ControllerButton.DpadDown) : !new_line
+			!str("Press Left or Right") : !press_custom_button(ControllerButton.DpadLeft|ControllerButton.DpadRight) : !new_line
+			!str("Press Select") : !press_custom_button(ControllerButton.Select) : !new_line
+			!str("Press L or R") : !press_custom_button(ControllerButton.L|ControllerButton.R)
 	
-	!opt_loc(TestSelection, 12)
+			!clear
+			!jump(.Page2Start)
+			
+	!opt_loc(TestSelectionPage2, 1)
+	!opt_loc(TestSelectionPage2, 2)
+	!opt_loc(TestSelectionPage2, 3)
+	!opt_loc(TestSelectionPage2, 4)
+	!opt_loc(TestSelectionPage2, 5)
+	!opt_loc(TestSelectionPage2, 6)
+	!opt_loc(TestSelectionPage2, 7)
+	!opt_loc(TestSelectionPage2, 8)
+	!opt_loc(TestSelectionPage2, 9)
+	!opt_loc(TestSelectionPage2, 10)
+	
+	!opt_loc(TestSelection, 11)	
+	!opt_loc(TestSelectionPage2, 12)
 	!skip_loc
-		!str("Thank you for using VWF Dialogues Patch by RPG Hacker!") : !press_a
-
-	;!close
+		!str("Thank you for using VWF Dialogues Patch by RPG Hacker!") : !press_button
 
 %vwf_message_end()
 
@@ -335,7 +376,7 @@ macro generate_message_test_messages(first_message_id, second_message_id, show_a
 			!nbsp : !nbsp
 			!str("<...[!temp_i]>")
 			if !temp_i == sizeof(...)-1
-				!press_a
+				!press_button
 			else
 				!new_line
 			endif
@@ -380,7 +421,7 @@ macro generate_message_test_messages(first_message_id, second_message_id, show_a
 		
 		<text>
 		
-		!press_a
+		!press_button
 		
 		if <show_animations> != false
 			!open_message(<next_message>, true, false)
@@ -434,8 +475,8 @@ endmacro
 
 ; Messages 006-1 and 006-2
 %generate_message_test_messages(000C, 000D, false, false,
-	%vwf_wrap( !str("This text box, on the other hand, uses some hilariously fucking funny sound effects! HAHAHA!"), !press_a, !clear,
-		!str("I mean, that was already fucking hilarious, but check out that cursor sound effect! xDDDD"), !press_a, !clear,	
+	%vwf_wrap( !str("This text box, on the other hand, uses some hilariously fucking funny sound effects! HAHAHA!"), !press_button, !clear,
+		!str("I mean, that was already fucking hilarious, but check out that cursor sound effect! xDDDD"), !press_button, !clear,	
 		!options(CheckFunnyCursorSound,
 			!str("Okay, let me see..."),
 			!str("HAHAHAHAHAHA!")),	
@@ -475,7 +516,7 @@ endmacro
 
 	%vwf_header()
 
-	!str("Message box test complete!") : !press_a
+	!str("Message box test complete!") : !press_button
 	
 	!open_message(0050)
 
@@ -976,23 +1017,23 @@ MessageASM0025:
 
 	%vwf_header()
 		
-	!str("Text macro:") : !press_a : !clear
-	!str("This is a ") : !macro("Mario") : !str(" game! Oh yeah, ") : !macro("Luigi") : !str(" is also here.") : !press_a : !clear
+	!str("Text macro:") : !press_button : !clear
+	!str("This is a ") : !macro("Mario") : !str(" game! Oh yeah, ") : !macro("Luigi") : !str(" is also here.") : !press_button : !clear
 	
-	!str("Nested text macro:") : !press_a : !clear
-	!str("Welcome to ") : !macro("SuperMario") : !str(" World!") : !press_a : !clear
+	!str("Nested text macro:") : !press_button : !clear
+	!str("Welcome to ") : !macro("SuperMario") : !str(" World!") : !press_button : !clear
 	
-	!str("Indexed text macro group:") : !press_a : !clear
-	!str("Hey there, ") : !macro_group("PlayerName", remap_ram($7E0DB3)) : !str(" - how are you doing?") : !press_a : !clear
+	!str("Indexed text macro group:") : !press_button : !clear
+	!str("Hey there, ") : !macro_group("PlayerName", remap_ram($7E0DB3)) : !str(" - how are you doing?") : !press_button : !clear
 	
-	!str("Indexed text macro group inside a text macro:") : !press_a : !clear
-	!str("Welcome back, ") : !macro("CurrentPlayer") : !str(" - good to see you again!") : !press_a : !clear
+	!str("Indexed text macro group inside a text macro:") : !press_button : !clear
+	!str("Welcome back, ") : !macro("CurrentPlayer") : !str(" - good to see you again!") : !press_button : !clear
 	
-	!str("Multiple indexed text macro groups inside a multi-level deep text macro:") : !press_a : !clear
-	!str("If that ain't the infamous ") : !macro("CurrentPlayerWithPowerup") : !str(" - what brought you here?") : !press_a : !clear
+	!str("Multiple indexed text macro groups inside a multi-level deep text macro:") : !press_button : !clear
+	!str("If that ain't the infamous ") : !macro("CurrentPlayerWithPowerup") : !str(" - what brought you here?") : !press_button : !clear
 	
-	!str("A couple of buffered macros:") : !execute(InitializeBufferedMacros1) : !press_a : !clear
-	!str("Hey now, who do we have here? If it isn't our friends ") : !macro_buf(0) : !str(" and ") : !macro_buf(1) : !str("!") : !press_a : !clear
+	!str("A couple of buffered macros:") : !execute(InitializeBufferedMacros1) : !press_button : !clear
+	!str("Hey now, who do we have here? If it isn't our friends ") : !macro_buf(0) : !str(" and ") : !macro_buf(1) : !str("!") : !press_button : !clear
 	
 	!open_message(0034)
 
@@ -1042,7 +1083,7 @@ InitializeBufferedMacros1:
 	%vwf_header(enable_message_asm(true))
 	
 	!str("This text box uses MessageASM to animate the text color, WHOOOA!")
-	!press_a : !clear
+	!press_button : !clear
 	
 	!open_message(0032)
 
@@ -1139,7 +1180,7 @@ MessageASM0032:
 	!clear
 
 	!str("Pointers test complete!") : !new_line
-	!press_a
+	!press_button
 	
 	!open_message(0050)
 
@@ -1202,7 +1243,7 @@ MessageASM0032:
 		
 	
 	!opt_loc(PlayerNameEntry, 10)
-		!str("Welcome, ") : !macro_buf(0) : !str("!") : !press_a
+		!str("Welcome, ") : !macro_buf(0) : !str("!") : !press_button
 	
 		!open_message(0031)
 
@@ -1449,12 +1490,12 @@ EditPlayerName:
 
 	%vwf_header()
 	
-	!str("Hey, did you know? Hold L and press either X or Y anywhere in this hack for a secret message.") : !press_a : !clear
-	!str("The L + X message even works while a message is already open. I'm serious, try it right now!") : !press_a : !clear
+	!str("Hey, did you know? Hold L and press either X or Y anywhere in this hack for a secret message.") : !press_button : !clear
+	!str("The L + X message even works while a message is already open. I'm serious, try it right now!") : !press_button : !clear
 	
-	!str("Now... Using VWF_DisplayAMessage to switch to another message in 3... 2... 1...") : !press_a : !execute(Message0040_ChangeTextPtr)
+	!str("Now... Using VWF_DisplayAMessage to switch to another message in 3... 2... 1...") : !press_button : !execute(Message0040_ChangeTextPtr)
 	
-	!str("Uh-oh! You should never get to see this text!") : !press_a
+	!str("Uh-oh! You should never get to see this text!") : !press_button
 
 %vwf_message_end()
 
@@ -1471,7 +1512,7 @@ Message0040_ChangeTextPtr:
 
 	%vwf_header()
 	
-	!str("You found the secret L + X UberASM test message! AWESOME!") : !press_a
+	!str("You found the secret L + X UberASM test message! AWESOME!") : !press_button
 
 %vwf_message_end()
 
@@ -1481,7 +1522,7 @@ Message0040_ChangeTextPtr:
 
 	%vwf_header()
 	
-	!str("You found the secret L + Y UberASM test message! AWESOME!") : !press_a
+	!str("You found the secret L + Y UberASM test message! AWESOME!") : !press_button
 
 %vwf_message_end()
 
@@ -1491,27 +1532,27 @@ Message0040_ChangeTextPtr:
 
 	%vwf_header(height(4), vwf_enable_skipping(true), enable_message_asm(false))
 	
-	!str("Success! Now using VWF_ChangeVWFTextPtr to change the text pointer in 3... 2... 1...") : !press_a : !clear : !execute(.ChangeTextPtr_1)
+	!str("Success! Now using VWF_ChangeVWFTextPtr to change the text pointer in 3... 2... 1...") : !press_button : !clear : !execute(.ChangeTextPtr_1)
 	
-	!str("Uh-oh! You should never get to see this text!") : !press_a
+	!str("Uh-oh! You should never get to see this text!") : !press_button
 	
 .Success
-	!str("Success! Now using VWF_ChangeMessageASMPtr and VWF_ToggleMessageASM to animate text color in 3... 2... 1...") : !execute(.ChangeTextPtr_2) : !press_a : !clear
+	!str("Success! Now using VWF_ChangeMessageASMPtr and VWF_ToggleMessageASM to animate text color in 3... 2... 1...") : !execute(.ChangeTextPtr_2) : !press_button : !clear
 	
 	!edit_pal(!text_color_7, rgb_15(31, 31, 31))
 	
-	!execute(.DisableSkipping) : !str("Message skip is now disabled for this one message alone. Try it by pressing start!") : !press_a : !clear
+	!execute(.DisableSkipping) : !str("Message skip is now disabled for this one message alone. Try it by pressing start!") : !press_button : !clear
 	
-	!execute(.EnableSkipping) : !str("Now it's enabled again, but points to a different location. Try it, press start!") : !press_a : !clear
+	!execute(.EnableSkipping) : !str("Now it's enabled again, but points to a different location. Try it, press start!") : !press_button : !clear
 	
 .ModifiedSkipLocation
-	!execute(.ResetSkipping) : !str("Now whether you skipped or not, you will always arrive at this text box here.") : !press_a : !clear : !execute(.SkipCheck)
+	!execute(.ResetSkipping) : !str("Now whether you skipped or not, you will always arrive at this text box here.") : !press_button : !clear : !execute(.SkipCheck)
 	
 .NoSkip
-	!str("But only because you DIDN'T skip, you're getting to see this text box!") : !press_a : !clear : !jump(.Continue)
+	!str("But only because you DIDN'T skip, you're getting to see this text box!") : !press_button : !clear : !jump(.Continue)
 
 .DidSkip
-	!str("However, this text box is visible only to players who DID skip!") : !press_a : !clear
+	!str("However, this text box is visible only to players who DID skip!") : !press_button : !clear
 
 .Continue
 	!str("Teleport to Chocolate Island 2?") : !new_line
@@ -1609,9 +1650,9 @@ Message0040_ChangeTextPtr:
 
 	%vwf_header(enable_message_asm(true))
 	
-	!str("This uses \\\\\\\!vwf_at_start_of_text to play a 1-UP sound at every clear.") : !press_a : !clear
+	!str("This uses \\\\\\\!vwf_at_start_of_text to play a 1-UP sound at every clear.") : !press_button : !clear
 
-	!str("Routines test complete!") : !press_a
+	!str("Routines test complete!") : !press_button
 	!open_message(0050)
 
 %vwf_message_end()
@@ -1644,16 +1685,14 @@ MessageASM0044:
 	!str("Centered") : !new_line
 	!macro("AlignmentBug1") : !new_line
 	!str("Centered") : !new_line
-	!press_a : !clear
+	!press_button : !clear
 
 	!str("Centered")
 	!macro("AlignmentBug2") : !new_line
 	!str("Centered") : !new_line
-	!press_a : !clear
-	
-	!close
+	!press_button : !clear
 
-	;!open_message(0050)
+	!open_message(0046)
 
 %vwf_message_end()
 
@@ -1661,9 +1700,34 @@ MessageASM0044:
 
 %vwf_message_start(0046)	; Message 023-1
 
-	; Message header & text go here
+	%vwf_header(freeze_game(false))
+	
+	!str("Exit level via Start + Select?")
+		
+	!options(ExitViaStartSelect,
+		!str("Yes"),
+		!str("No"))
+	
+	!opt_loc(ExitViaStartSelect, 0)
+		!execute(.ExitViaStartSelect)		
+		!clear
+		
+		!str("Exiting level...")
+		!freeze
+	
+	!opt_loc(ExitViaStartSelect, 1)
+		!close
 
 %vwf_message_end()
+
+.ExitViaStartSelect
+    phk
+	pea.w .Return-1
+    pea.w $0084CF-1
+    jml remap_rom($00A269)
+	
+.Return
+	rtl
 
 ;-------------------------------------------------------
 
@@ -1793,8 +1857,8 @@ MessageASM0044:
 
 	%vwf_header()
 	
-	!str("This block uses touch_mXX.asm and vwfsharedroutines.asm to display a message once.") : !press_a : !clear
-	!str("Depending on the \\\\\\\!free_ram used, re-entering the level might display this message again.") : !press_a : !clear
+	!str("This block uses touch_mXX.asm and vwfsharedroutines.asm to display a message once.") : !press_button : !clear
+	!str("Depending on the \\\\\\\!free_ram used, re-entering the level might display this message again.") : !press_button : !clear
 
 %vwf_message_end()
 
@@ -1929,11 +1993,11 @@ MessageASM0044:
 	
 	!opt_loc(ErrorCheck, 0)
 		!execute(IdOverflowTest)
-		!str("If you can read this text, then no error was triggered. Please adjust the test to make sure the respective error is triggered.") : !press_a : !close
+		!str("If you can read this text, then no error was triggered. Please adjust the test to make sure the respective error is triggered.") : !press_button : !close
 		
 	!opt_loc(ErrorCheck, 1)
 		!execute(BufferOverflowTest)
-		!str("If you can read this text, then no error was triggered. Please adjust the test to make sure the respective error is triggered.") : !press_a : !close
+		!str("If you can read this text, then no error was triggered. Please adjust the test to make sure the respective error is triggered.") : !press_button : !close
 		
 	!opt_loc(ErrorCheck, 2)
 		!open_message(0061)
@@ -2423,7 +2487,7 @@ MessageBoxAnimTestInit:
 
 	%vwf_header(box_animation(BoxAnimation.None))
 	
-	!str("Test") : !press_a
+	!str("Test") : !press_button
 	!macro_buf(1)
 
 %vwf_message_end()
@@ -2434,7 +2498,7 @@ MessageBoxAnimTestInit:
 
 	%vwf_header(box_animation(BoxAnimation.SoE))
 	
-	!str("Test") : !press_a
+	!str("Test") : !press_button
 	!macro_buf(1)
 
 %vwf_message_end()
@@ -2445,7 +2509,7 @@ MessageBoxAnimTestInit:
 
 	%vwf_header(box_animation(BoxAnimation.SoM))
 	
-	!str("Test") : !press_a
+	!str("Test") : !press_button
 	!macro_buf(1)
 
 %vwf_message_end()
@@ -2456,7 +2520,7 @@ MessageBoxAnimTestInit:
 
 	%vwf_header(box_animation(BoxAnimation.MMZ))
 	
-	!str("Test") : !press_a
+	!str("Test") : !press_button
 	!macro_buf(1)
 
 %vwf_message_end()
@@ -2467,7 +2531,7 @@ MessageBoxAnimTestInit:
 
 	%vwf_header(box_animation(BoxAnimation.Instant))
 	
-	!str("Test") : !press_a
+	!str("Test") : !press_button
 	!macro_buf(1)
 
 %vwf_message_end()

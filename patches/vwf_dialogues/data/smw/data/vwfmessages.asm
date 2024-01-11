@@ -9,7 +9,7 @@
 
 ; Text macro for re-occurring "Point of Advice" text.
 %vwf_register_text_macro("PointOfAdvice",\
-	!new_line, !text("-POINT OF ADVICE-"), !press_a, !clear\
+	!new_line, !text("-POINT OF ADVICE-"), !press_button, !clear\
 )
 
 ;-------------------------------------------------------
@@ -32,7 +32,7 @@
 
 	%vwf_header()
 
-	!text("Hooray! Thank you for rescuing me. My name is Yoshi. On my way to rescue my friends, Bowser trapped me in that egg.") : !press_a
+	!text("Hooray! Thank you for rescuing me. My name is Yoshi. On my way to rescue my friends, Bowser trapped me in that egg.") : !press_button
 
 %vwf_message_end()
 
@@ -98,7 +98,7 @@
 
 	%vwf_header()
 
-	!text("This is a Ghost House. Can you find the exit? Hee, hee, hee... Don't get lost!") : !press_a
+	!text("This is a Ghost House. Can you find the exit? Hee, hee, hee... Don't get lost!") : !press_button
 
 %vwf_message_end()
 
@@ -108,8 +108,8 @@
 
 	%vwf_header()
 
-	!text("You can slide the screen left or right by pressing the L or R Buttons on top of the controller.") : !press_a : !clear
-	!text("You may be able to see further ahead.") : !press_a
+	!text("You can slide the screen left or right by pressing the L or R Buttons on top of the controller.") : !press_button : !clear
+	!text("You may be able to see further ahead.") : !press_button
 
 %vwf_message_end()
 
@@ -338,8 +338,8 @@
 
 	%vwf_header()
 
-	!text("There are five entrances to the Star World in Dinosaur Land.") : !press_a : !clear
-	!text("Find them all and you can travel between many different places.") : !press_a
+	!text("There are five entrances to the Star World in Dinosaur Land.") : !press_button : !clear
+	!text("Find them all and you can travel between many different places.") : !press_button
 
 %vwf_message_end()
 
@@ -376,8 +376,8 @@
 
 	%vwf_header()
 
-	!text("The red dot areas on the map have two different exits.") : !press_a : !clear
-	!text("If you have the time and skill, be sure to look for them.") : !press_a
+	!text("The red dot areas on the map have two different exits.") : !press_button : !clear
+	!text("If you have the time and skill, be sure to look for them.") : !press_button
 
 %vwf_message_end()
 
@@ -387,8 +387,8 @@
 
 	%vwf_header()
 
-	!text("Use Mario's cape to soar through the air! Run fast, jump, and hold the Y Button.") : !press_a : !clear
-	!text("To keep balance, use left and right on the Control Pad.") : !press_a
+	!text("Use Mario's cape to soar through the air! Run fast, jump, and hold the Y Button.") : !press_button : !clear
+	!text("To keep balance, use left and right on the Control Pad.") : !press_button
 
 %vwf_message_end()
 
@@ -630,8 +630,8 @@
 
 	%vwf_header()
 
-	!text("Here, the coins you collect or the time remaining can change your progress.") : !press_a : !clear
-	!text("Can you find the special goal?") : !press_a
+	!text("Here, the coins you collect or the time remaining can change your progress.") : !press_button : !clear
+	!text("Can you find the special goal?") : !press_button
 
 %vwf_message_end()
 
@@ -641,8 +641,8 @@
 
 	%vwf_header()
 
-	!text("Press Up on the Control Pad while jumping and you can cling to the fence.") : !press_a : !clear
-	!text("To go in the door at the end of this area, use Up also.") : !press_a
+	!text("Press Up on the Control Pad while jumping and you can cling to the fence.") : !press_button : !clear
+	!text("To go in the door at the end of this area, use Up also.") : !press_button
 
 %vwf_message_end()
 
@@ -653,8 +653,8 @@
 	%vwf_header(text_alignment(TextAlignment.Centered))
 
 	!macro("PointOfAdvice")
-	!text("One of Yoshi's friends is trapped in the castle by Iggy Koopa.") : !press_a : !clear
-	!text("To defeat him, push him into the lava pool.") : !press_a
+	!text("One of Yoshi's friends is trapped in the castle by Iggy Koopa.") : !press_button : !clear
+	!text("To defeat him, push him into the lava pool.") : !press_button
 
 %vwf_message_end()
 
@@ -664,8 +664,8 @@
 
 	%vwf_header()
 
-	!text("You get Bonus Stars if you cut the tape at the end of each area.") : !press_a : !clear
-	!text("If you collect 100 Bonus Stars you can play a fun bonus game.") : !press_a
+	!text("You get Bonus Stars if you cut the tape at the end of each area.") : !press_button : !clear
+	!text("If you collect 100 Bonus Stars you can play a fun bonus game.") : !press_button
 
 %vwf_message_end()
 
@@ -675,7 +675,7 @@
 
 	%vwf_header()
 
-	!text("If you are in an area that you have already cleared, you can return to the map screen by pressing START, then SELECT.") : !press_a
+	!text("If you are in an area that you have already cleared, you can return to the map screen by pressing START, then SELECT.") : !press_button
 
 %vwf_message_end()
 
@@ -685,8 +685,8 @@
 
 	%vwf_header()
 
-	!text("When you stomp on an enemy, you can jump high if you hold the jump button.") : !press_a : !clear
-	!text("Use Up on the Control Pad to jump high in the shallow water.") : !press_a
+	!text("When you stomp on an enemy, you can jump high if you hold the jump button.") : !press_button : !clear
+	!text("Use Up on the Control Pad to jump high in the shallow water.") : !press_button
 
 %vwf_message_end()
 
@@ -697,7 +697,7 @@
 	%vwf_header(text_alignment(TextAlignment.Centered))
 
 	!macro("PointOfAdvice")
-	!text("The big coins are Dragon Coins. If you pick up five of these in one area, you get an extra Mario.") : !press_a
+	!text("The big coins are Dragon Coins. If you pick up five of these in one area, you get an extra Mario.") : !press_button
 
 %vwf_message_end()
 
@@ -710,8 +710,8 @@
 
 	!edit_pal(!text_color_6, rgb_15(0, 31, 0), rgb_15(0, 0, 0))
 	
-	!text("Hello! Sorry I'm not home, but I have gone to rescue my friends who were captured by Bowser.") : !press_a : !clear
-	!new_line : !set_pal($06) : !text("- Yoshi ") : !chr($AC) : !press_a
+	!text("Hello! Sorry I'm not home, but I have gone to rescue my friends who were captured by Bowser.") : !press_button : !clear
+	!new_line : !set_pal($06) : !text("- Yoshi ") : !chr($AC) : !press_button
 
 %vwf_message_end()
 
@@ -722,8 +722,8 @@
 
 	%vwf_header()
 
-	!text("It is possible to fill in the dotted line blocks.") : !press_a : !clear
-	!text("To fill in the yellow ones, just go west then north to the top of the mountain.") : !press_a
+	!text("It is possible to fill in the dotted line blocks.") : !press_button : !clear
+	!text("To fill in the yellow ones, just go west then north to the top of the mountain.") : !press_button
 
 %vwf_message_end()
 
@@ -734,8 +734,8 @@
 	%vwf_header(text_alignment(TextAlignment.Centered))
 
 	!macro("PointOfAdvice")
-	!text("You can hold an extra item in the box at the top of the screen.") : !press_a : !clear
-	!text("To use it, press the SELECT Button.") : !press_a
+	!text("You can hold an extra item in the box at the top of the screen.") : !press_button : !clear
+	!text("To use it, press the SELECT Button.") : !press_button
 
 
 %vwf_message_end()
@@ -747,8 +747,8 @@
 	%vwf_header(text_alignment(TextAlignment.Centered))
 
 	!macro("PointOfAdvice")
-	!text("To pick up a shell, use the X or Y Button.") : !press_a : !clear
-	!text("To throw a shell upwards, look up and let go of the button.") : !press_a
+	!text("To pick up a shell, use the X or Y Button.") : !press_button : !clear
+	!text("To throw a shell upwards, look up and let go of the button.") : !press_button
 
 %vwf_message_end()
 
@@ -758,8 +758,8 @@
 
 	%vwf_header()
 
-	!text("To do a spin jump, press the A Button.") : !press_a : !clear
-	!text("A Super Mario spin jump can break some of the blocks and defeat some of the tougher enemies.") : !press_a
+	!text("To do a spin jump, press the A Button.") : !press_button : !clear
+	!text("A Super Mario spin jump can break some of the blocks and defeat some of the tougher enemies.") : !press_button
 
 %vwf_message_end()
 
@@ -770,8 +770,8 @@
 	%vwf_header(text_alignment(TextAlignment.Centered))
 
 	!macro("PointOfAdvice")
-	!text("This gate marks the middle of this area.") : !press_a : !clear
-	!text("By cutting the tape here, you can continue from close to this point.") : !press_a
+	!text("This gate marks the middle of this area.") : !press_button : !clear
+	!text("By cutting the tape here, you can continue from close to this point.") : !press_button
 
 %vwf_message_end()
 
@@ -1355,8 +1355,8 @@
 
 	%vwf_header()
 
-	!text("Amazing! Few have made it this far. Beyond lies the Special Zone.") : !press_a : !clear
-	!text("Complete it and you can explore a strange new world. GOOD LUCK!") : !press_a
+	!text("Amazing! Few have made it this far. Beyond lies the Special Zone.") : !press_button : !clear
+	!text("Complete it and you can explore a strange new world. GOOD LUCK!") : !press_button
 
 %vwf_message_end()
 

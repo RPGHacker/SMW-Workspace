@@ -40,14 +40,30 @@ macro vwf_define_enums(prefix)
 	; has switched to using the macro system, binary compatibility no longer matters as much, so we can
 	; decide to add right-aligned text to version 1.4 or later if we desire.
 	%define_enum(<prefix>TextAlignment, Left, Centered)
-	%define_enum(<prefix>AutoWait, None, WaitForA)
+	%define_enum(<prefix>AutoWait, None, WaitForA, WaitForButton)
 	%define_enum(<prefix>ExitToOwMode, NoExit, PrimaryExit, SecondaryExit)
 	
 	%define_enum_with_values(<prefix>ColorID, Text, 2, Outline, 3)
 	
+	%define_enum_with_values(<prefix>ControllerButton,
+								DpadRight,	$0001,
+								DpadLeft,	$0002,
+								DpadDown,	$0004,
+								DpadUp,		$0008,
+								Start,		$0010,
+								Select,		$0020,
+								Y,			$0040,
+								B,			$0080,
+								
+								R,			$1000,
+								L,			$2000,
+								X,			$4000,
+								A,			$8000)
+	
 	struct WaitFrames extends <prefix>AutoWait
+		.Start: skip 1
 		!temp_i #= 1
-		while !temp_i < $FF
+		while !temp_i <= $FF
 			.!temp_i: skip 1
 		
 			!temp_i #= !temp_i+1
@@ -55,7 +71,7 @@ macro vwf_define_enums(prefix)
 		undef "temp_i"
 	endstruct
 	
-	!enum_<prefix>AutoWait_last #= <prefix>AutoWait.WaitFrames.254
+	!enum_<prefix>AutoWait_last #= <prefix>AutoWait.WaitFrames.255
 endmacro
 
 %vwf_define_enums("VWF_")
@@ -238,10 +254,10 @@ macro vwf_define_invalid_message_handlers(text_file_id)
 	!temp_message_id #= !temp_message_id+1
 	
 	HandleUndefinedMessage!vwf_num_text_files:
-		%vwf_header(vwf_x_pos(1), vwf_y_pos(1), vwf_width(14), vwf_height(3), vwf_freeze_game(true), vwf_text_speed(0), vwf_auto_wait(VWF_AutoWait.WaitForA), vwf_enable_skipping(false), vwf_enable_message_asm(false))
+		%vwf_header(vwf_x_pos(1), vwf_y_pos(1), vwf_width(14), vwf_height(3), vwf_freeze_game(true), vwf_text_speed(0), vwf_auto_wait(VWF_AutoWait.WaitForButton), vwf_enable_skipping(false), vwf_enable_message_asm(false))
 		
 		%vwf_text("Message ") : %vwf_hex(!vwf_message+1) : %vwf_hex(!vwf_message) : %vwf_text(" isn't defined. Please contact the hack author to report this oversight.")
-		%vwf_wait_for_a()
+		%vwf_wait_for_button()
 	
 	%vwf_message_end()
 	
@@ -250,11 +266,11 @@ macro vwf_define_invalid_message_handlers(text_file_id)
 	!temp_message_id #= !temp_message_id+1
 	
 	HandleTextMacroBufferOverflow!vwf_num_text_files:
-		%vwf_header(vwf_x_pos(1), vwf_y_pos(1), vwf_width(14), vwf_height(3), vwf_freeze_game(true), vwf_text_speed(0), vwf_auto_wait(VWF_AutoWait.WaitForA), vwf_enable_skipping(false), vwf_enable_message_asm(false))
+		%vwf_header(vwf_x_pos(1), vwf_y_pos(1), vwf_width(14), vwf_height(3), vwf_freeze_game(true), vwf_text_speed(0), vwf_auto_wait(VWF_AutoWait.WaitForButton), vwf_enable_skipping(false), vwf_enable_message_asm(false))
 		
 	HandleTextMacroBufferOverflow!{vwf_num_text_files}_Content:
 		%vwf_clear() : %vwf_text("Text macro buffer overflow while calling AddToBufferedTextMacro. This is a bug, please contact the hack author.")
-		%vwf_wait_for_a()
+		%vwf_wait_for_button()
 	
 	%vwf_message_end()
 	
@@ -263,11 +279,11 @@ macro vwf_define_invalid_message_handlers(text_file_id)
 	!temp_message_id #= !temp_message_id+1
 	
 	HandleTextMacroIdOverflow!vwf_num_text_files:
-		%vwf_header(vwf_x_pos(1), vwf_y_pos(1), vwf_width(14), vwf_height(3), vwf_freeze_game(true), vwf_text_speed(0), vwf_auto_wait(VWF_AutoWait.WaitForA), vwf_enable_skipping(false), vwf_enable_message_asm(false))
+		%vwf_header(vwf_x_pos(1), vwf_y_pos(1), vwf_width(14), vwf_height(3), vwf_freeze_game(true), vwf_text_speed(0), vwf_auto_wait(VWF_AutoWait.WaitForButton), vwf_enable_skipping(false), vwf_enable_message_asm(false))
 		
 	HandleTextMacroIdOverflow!{vwf_num_text_files}_Content:
 		%vwf_clear() : %vwf_text("Trying to use too many buffered text macros. This is a bug, please contact the hack author.")
-		%vwf_wait_for_a()
+		%vwf_wait_for_button()
 	
 	%vwf_message_end()
 	
@@ -740,12 +756,23 @@ macro vwf_header(...)
 		db (!vwf_header_argument_space_width_value<<6)|!vwf_header_argument_text_speed_value
 		
 		; db $aa,%bbbb--cd
-		; $aa:     Auto wait options
+		; $aa:     Auto wait mode
+		;   If auto wait mode is any WaitFrames setting:
+		;   $ee:   The number of frames to wait
 		; %bbbb:   Text box creation animation
 		; %c:      Enable message box skip
 		; %d:      Enable MessageASM
-		db !vwf_header_argument_auto_wait_value
+		if !vwf_header_argument_auto_wait_value >= VWF_AutoWait.WaitFrames.Start
+			db VWF_AutoWait.WaitFrames.Start
+			db !vwf_header_argument_auto_wait_value-VWF_AutoWait.WaitFrames.Start
+		else		
+			db !vwf_header_argument_auto_wait_value
+		endif
 		db (!vwf_header_argument_box_animation_value<<4)|(!vwf_header_argument_enable_skipping_value<<1)|!vwf_header_argument_enable_message_asm_value
+		
+		if !vwf_header_argument_auto_wait_value == VWF_AutoWait.WaitForA
+			warn "The ""VWF_AutoWait.WaitForA"" mode of the vwf_auto_wait() header setting is deprecated. Use ""VWF_AutoWait.WaitForButton"" instead."
+		endif
 		
 		; dw $aaaa,$bbbb
 		; $aaaa    Text palette's third color (text color)
@@ -938,12 +965,27 @@ macro vwf_set_text_pointer(pointer)
 	endif
 endmacro
 
-macro vwf_wait_for_a()
+macro vwf_wait_for_custom_button(button_mask)		
+	if <button_mask>&$FFFF == 0
+		error "%vwf_wait_for_custom_button(): ""button_mask"" needs to contain at least one valid button."
+	endif
+		
 	if !vwf_message_command_error_condition
 		%vwf_print_message_command_error()
 	else
 		%vwf_generate_command_table($FA)
+		dw <button_mask>
 	endif
+endmacro
+
+macro vwf_wait_for_button()
+	%vwf_wait_for_custom_button(!vwf_default_advance_button_mask)
+endmacro
+
+macro vwf_wait_for_a()
+	warn "The ""%vwf_wait_for_a()"" text command is deprecated. Use ""%vwf_wait_for_button()"" instead."
+	
+	%vwf_wait_for_button()
 endmacro
 
 macro vwf_wait_frames(num_frames)
@@ -1312,6 +1354,8 @@ if !vwf_enable_short_aliases != false
 	!close = %vwf_close()
 	
 	!press_a = %vwf_wait_for_a()
+	!press_button = %vwf_wait_for_button()
+	!press_custom_button = %vwf_wait_for_custom_button
 	!wait_frames = %vwf_wait_frames
 	!set_speed = %vwf_set_text_speed
 	

@@ -10,7 +10,7 @@ incsrc shared/shared.asm
 
 
 print ""
-print "VWF Dialogues Patch - (c) 2010-2023 RPG Hacker"
+print "VWF Dialogues Patch - (c) 2010-2024 RPG Hacker"
 print ""
 
 
@@ -40,6 +40,12 @@ assert floor($0700/!vwf_clear_screen_duration_in_frames)*!vwf_clear_screen_durat
 
 
 %define_enum(VWF_BitMode, 8Bit, 16Bit)
+
+
+; Sanitize a few defines that have a likelihood of being problematic so that don't have to use parentheses everywhere.
+!vwf_default_advance_button_mask := (!vwf_default_advance_button_mask)
+!vwf_select_choice_button_mask := (!vwf_select_choice_button_mask)
+!vwf_skip_message_button_mask := (!vwf_skip_message_button_mask)
 
 
 !vwf_palette_backup_ram = $7E0703
@@ -104,6 +110,7 @@ endmacro
 %vwf_claim_varram(sound_disabled, 1)         ; Flag that disables all the normal textbox sounds
 %vwf_claim_varram(speed_up, 1)               ; Flag indicating that the current textbox can be sped up when A is held.
 %vwf_claim_varram(auto_wait, 1)
+%vwf_claim_varram(auto_wait_num_frames, 1)
 
 %vwf_claim_varram(vram_pointer, 2)
 %vwf_claim_varram(clear_box_remaining_bytes, 2)
@@ -183,8 +190,10 @@ endmacro
 %vwf_claim_varram(tm_buffers_text_pointers, !vwf_num_reserved_text_macros*3)    ; 24-bit pointer table for the buffered text macros.
 %vwf_claim_varram(tm_buffers_text_buffer, !vwf_buffered_text_macro_buffer_size) ; Buffer dedicated for uploading VWF text to in order to display variable text.
 
-%vwf_claim_varram(create_window_start_pos, 2) ; Start position and length for CreateWindow DMA
+%vwf_claim_varram(create_window_start_pos, 2) ; Start position and length for CreateWindow DMA.
 %vwf_claim_varram(create_window_length, 2)
+
+%vwf_claim_varram(wait_for_button_mask, 2)    ; Button mask for "wait for button" command.
 
 !vwf_buffer_empty_tile = !vwf_gfx_ram
 !vwf_buffer_bg_tile = !vwf_gfx_ram+$10
@@ -287,7 +296,6 @@ endif
 	
 	undef "temp_currently_on_sa1_cpu"
 endmacro
-
 
 
 
@@ -401,6 +409,28 @@ macro vwf_label_name_ascii_table()
 	'x' = $78
 	'y' = $79
 	'z' = $7A
+endmacro
+	
+	
+	
+; Handles checking if any of the allowed buttons is pressed in stuff like the "!press_button" commands or options.
+	
+macro vwf_check_if_any_button_pressed(button_mask)	
+	lda $18
+	xba
+	
+	; RPG Hacker: Not sure, if this part is really necessary. From what I understand, the highest two bits of $16
+	; are set if either of (A/B) or (X/Y) is pressed. I want to get X or Y separately, though, so I clear out these
+	; bits if $18 indicates that either A or X are currently pressed. I feel like there should be a more
+	; straight-forward way of querying the B and Y buttons specifically?
+	lda $18
+	eor.b #%11000000
+	ora.b #%00111111
+	and $16
+	
+	rep #$20
+	and<button_mask>
+	sep #$20	
 endmacro
 
 
@@ -908,13 +938,6 @@ LoadHeader:
 	sta $01
 	lda !vwf_text_source+2
 	sta $02
-if !vwf_bit_mode == VWF_BitMode.8Bit
-	lda #$0C
-elseif !vwf_bit_mode == VWF_BitMode.16Bit
-	lda #$0B
-endif
-	sta $03
-	stz $04
 
 	ldy #$00
 
@@ -970,8 +993,18 @@ endif
 	sta !vwf_frames
 	iny
 
-	lda [$00],y	; Auto wait
+	lda.b #$00	; Auto wait
+	sta !vwf_auto_wait_num_frames
+	lda [$00],y
 	sta !vwf_auto_wait
+	cmp.b #VWF_AutoWait.WaitFrames.Start
+	bcc .NoAutoWaitFrames
+	
+	iny
+	lda [$00],y
+	sta !vwf_auto_wait_num_frames
+	
+.NoAutoWaitFrames
 	iny
 
 	lda [$00],y	; Box creation style
@@ -1076,11 +1109,6 @@ endif
 	sta !vwf_beep_choice
 	iny
 
-	lda $03
-	clc
-	adc #$05
-	sta $03
-
 .NoSounds
 	lda !vwf_skip_message_flag
 	beq .NoMessageSkipPointer
@@ -1093,10 +1121,6 @@ endif
 	lda [$00],y		; Message skip location (bank)
 	sta !vwf_skip_message_loc+2
 	iny
-	lda $03
-	clc
-	adc #$03
-	sta $03
 	
 .NoMessageSkipPointer
 	lda !vwf_message_asm_enabled
@@ -1110,12 +1134,11 @@ endif
 	lda [$00],y		; Message ASM location (bank)
 	sta !vwf_message_asm_loc+2
 	iny
-	lda $03
-	clc
-	adc #$03
-	sta $03
 
 .NoMessageASMPointer
+	tya
+	sta $03
+	stz $04
 	rep #$21
 	lda $00
 	adc $03
@@ -2341,26 +2364,7 @@ endif
 	lda #$01
 	sta !vwf_clear_box
 
-	lda !vwf_auto_wait
-	beq .NoClearBox
-	cmp #$01
-	beq .ButtonWait
-	lda !vwf_auto_wait
-	dec
-	sta !vwf_wait
-	bra .NoClearBox
-
-.ButtonWait
-	jsr EndBeep
-if !vwf_bit_mode == VWF_BitMode.8Bit
-	lda #$FA
-	sta !vwf_char
-elseif !vwf_bit_mode == VWF_BitMode.16Bit
-	rep #$20
-	lda #$FFFA
-	sta !vwf_char
-	sep #$20
-endif
+	jsr ApplyAutoWait
 
 .NoClearBox
 	rep #$20
@@ -2417,6 +2421,46 @@ endif
 	sta !vwf_cursor_move
 
 .End
+	rts
+	
+	
+ApplyAutoWait:
+	lda !vwf_auto_wait
+	beq .Return
+	cmp.b #VWF_AutoWait.WaitForA
+	beq .ButtonAWait
+	cmp.b #VWF_AutoWait.WaitForButton
+	beq .ButtonDefaultWait
+	lda !vwf_auto_wait_num_frames
+	sta !vwf_wait
+	bra .Return
+
+.ButtonAWait
+	lda.b #VWF_ControllerButton.A
+	sta !vwf_wait_for_button_mask
+	lda.b #VWF_ControllerButton.A>>8
+	sta !vwf_wait_for_button_mask+1
+	bra .ButtonWait
+	
+.ButtonDefaultWait
+	lda.b #!vwf_default_advance_button_mask
+	sta !vwf_wait_for_button_mask
+	lda.b #!vwf_default_advance_button_mask>>8
+	sta !vwf_wait_for_button_mask+1
+
+.ButtonWait
+	jsr EndBeep
+if !vwf_bit_mode == VWF_BitMode.8Bit
+	lda #$FA
+	sta !vwf_char
+elseif !vwf_bit_mode == VWF_BitMode.16Bit
+	rep #$20
+	lda #$FFFA
+	sta !vwf_char
+	sep #$20
+endif
+
+.Return
 	rts
 
 
@@ -2536,12 +2580,14 @@ TextCreation:
 
 .NoInitClearBox	
 	lda !vwf_skip_message_flag
-	beq .DontSkip
+	bne .CheckSkipLocationReached
+	jmp .DontSkip
 	
 	; RPG Hacker: If skipping is enabled, check if we're about to cross the skip location.
 	; If so, disable skipping for the current message. This is so that if someone presses
 	; start after reaching the skip location, it won't loop around and display the skip
 	; text again.
+.CheckSkipLocationReached
 	lda !vwf_text_source
 	cmp !vwf_skip_message_loc
 	bne .SkipLocationNotReached
@@ -2562,10 +2608,9 @@ TextCreation:
 	beq .DontSkip
 	cmp #$FF
 	beq .DontSkip
-	lda $15				; Did the player press start?
-	and #$10			;
-	cmp #$10			; If so, allow the message to be closed early
-	bne .DontSkip			;
+	; Check if we're trying to skip this message.
+	%vwf_check_if_any_button_pressed(".w #!vwf_skip_message_button_mask")
+	beq .DontSkip			;
 	rep #$20
 	lda !vwf_skip_message_loc
 	sta !vwf_text_source
@@ -2617,10 +2662,8 @@ endif
 	lda $16
 	and #$0C
 	bne .CursorMove
-	lda $18
-	and #$80
-	cmp #$80
-	beq .ChoicePressed
+	%vwf_check_if_any_button_pressed(".w #!vwf_select_choice_button_mask")
+	bne .ChoicePressed
 	jmp .End
 
 .ChoicePressed
@@ -3268,26 +3311,7 @@ endif
 	sta !vwf_current_choice
 
 .F0ClearOptions
-	lda !vwf_auto_wait
-	beq .F0NoAutoWait
-	cmp #$01
-	beq .F0ButtonWait
-	lda !vwf_auto_wait
-	dec
-	sta !vwf_wait
-	bra .F0NoAutoWait
-
-.F0ButtonWait
-	jsr EndBeep
-if !vwf_bit_mode == VWF_BitMode.8Bit
-	lda #$FA
-	sta !vwf_char
-elseif !vwf_bit_mode == VWF_BitMode.16Bit
-	rep #$20
-	lda #$FFFA
-	sta !vwf_char
-	sep #$20
-endif
+	jsr ApplyAutoWait
 
 .F0NoAutoWait
 	jmp TextCreation
@@ -3590,8 +3614,17 @@ endif
 	jsr IncPointer
 	jmp .End
 
-.FA_WaitButton
+.FA_WaitButton	
+	ldy #$01
+	rep #$20
+	lda [$00],y
+	sta !vwf_wait_for_button_mask
+	sep #$20
+	
 	jsr EndBeep
+	
+	jsr IncPointer	
+	jsr IncPointer
 	jsr IncPointer
 	jmp .End
 
@@ -4767,6 +4800,8 @@ endif
 	jmp .Begin
 
 .FA_WaitButton
+	jsr IncPointer
+	jsr IncPointer
 	jmp .Begin
 
 .FB_TextPointer
@@ -5458,6 +5493,9 @@ CreateWindow:
 	jmp VBlank_End
 
 
+
+
+
 TextUpload:
 	lda !vwf_cursor_fix
 	beq .SkipCursor
@@ -5593,10 +5631,8 @@ endif
 	jmp .CheckClearBox
 
 .CheckButton
-	lda $18
-	and #$80
-	cmp #$80
-	bne .NotPressed
+	%vwf_check_if_any_button_pressed(" !vwf_wait_for_button_mask")
+	beq .NotPressed
 	jsr ButtonBeep
 	lda #$00
 	sta !vwf_char

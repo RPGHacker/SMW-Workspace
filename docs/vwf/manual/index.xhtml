@@ -186,7 +186,9 @@
 									<li><a href="#text-commands-vwf_set_skip_location"><code>%vwf_set_skip_location()</code></a></li>
 									<li><a href="#text-commands-vwf_close"><code>%vwf_close()</code></a></li>
 									
+									<li><a href="#text-commands-vwf_wait_for_button"><code>%vwf_wait_for_button()</code></a></li>
 									<li><a href="#text-commands-vwf_wait_for_a"><code>%vwf_wait_for_a()</code></a></li>
+									<li><a href="#text-commands-vwf_wait_for_custom_button"><code>%vwf_wait_for_custom_button()</code></a></li>
 									<li><a href="#text-commands-vwf_wait_frames"><code>%vwf_wait_frames()</code></a></li>
 									<li><a href="#text-commands-vwf_set_text_speed"><code>%vwf_set_text_speed()</code></a></li>
 									
@@ -376,8 +378,9 @@
 							</tr>
 						</table>
 						When set to <code>false</code>, SMW message boxes and VWF Dialogues can coexist within the same ROM. In this case, you need VWF Dialogue compatible custom sprites or custom blocks in order to use them. One example of those would be wye's NPC sprites.
-						</li>
-					<li><code>!vwf_enable_short_aliases</code>: When set to <code>true</code>, the patch defines a number of short aliases for most text commands. For example, you may use <code class="65c816_asar">!str("Hello!")</code> or <code class="65c816_asar">!text("Hello!")</code> instead of <code class="65c816_asar">%vwf_text("Hello!")</code>, <code class="65c816_asar">!font($01)</code> instead of <code class="65c816_asar">%vwf_font($01)</code> or <code class="65c816_asar">!press_a</code> instead of <code class="65c816_asar">%vwf_wait_for_a()</code>. These short aliases are intended for convenience and to make VWF Dialogues easier to read in code. It's very unlikely that you'll ever need to set this to <code>false</code>. The only conceivable scenario would be when you include <code>vwf_dialogues.asm</code> from within another patch via an <code>incsrc</code>. In that case, disabling this feature might make sense to reduce the likelihood of naming conflicts occuring. Further details on available short aliases will be provided along with the documentation of each text command.</li>
+					</li>
+					<li><code>!vwf_default_advance_button_mask</code>, <code>!vwf_select_choice_button_mask</code>, <code>!vwf_skip_message_button_mask</code>: These settings control which buttons the patch uses for specific functionality. Check the comments on each setting for details. See <a href="#text-commands-vwf_wait_for_custom_button"><code>%vwf_wait_for_custom_button()</code></a> for a list of possible buttons, as well as an explanation on how to specify multiple buttons.</li>
+					<li><code>!vwf_enable_short_aliases</code>: When set to <code>true</code>, the patch defines a number of short aliases for most text commands. For example, you may use <code class="65c816_asar">!str("Hello!")</code> or <code class="65c816_asar">!text("Hello!")</code> instead of <code class="65c816_asar">%vwf_text("Hello!")</code>, <code class="65c816_asar">!font($01)</code> instead of <code class="65c816_asar">%vwf_font($01)</code> or <code class="65c816_asar">!press_button</code> instead of <code class="65c816_asar">%vwf_wait_for_button()</code>. These short aliases are intended for convenience and to make VWF Dialogues easier to read in code. It's very unlikely that you'll ever need to set this to <code>false</code>. The only conceivable scenario would be when you include <code>vwf_dialogues.asm</code> from within another patch via an <code>incsrc</code>. In that case, disabling this feature might make sense to reduce the likelihood of naming conflicts occuring. Further details on available short aliases will be provided along with the documentation of each text command.</li>
 				</ul>
 			</p>
 			
@@ -980,14 +983,15 @@ AutoWait = VWF_AutoWait</code></pre></td>
 								<table class="parameter-list">
 									<tr><th>Value</th><th>Description</th></tr>
 									<tr><td><code>VWF_AutoWait.None</code></td><td>Do "nothing" (just clears the text box and continues).</td></tr>
-									<tr><td><code>VWF_AutoWait.WaitForA</code></td><td>Automatically pause the text box until the A button is pressed, in a similar manner to the <a href="#text-command-vwf_wait_for_a"><code>%vwf_wait_for_a()</code></a> text command.</td></tr>
-									<tr><td><code>VWF_AutoWait.WaitFrames.1</code><br/><code>VWF_AutoWait.WaitFrames.2</code><br/>[...]<br/><code>VWF_AutoWait.WaitFrames.254</code></td><td>Automatically pause the text box for the specified number of frames, before clearing it and continuing.</td></tr>
+									<tr><td><code>VWF_AutoWait.WaitForA</code></td><td>Automatically pause the text box until the A button is pressed, in a similar manner to the <a href="#text-commands-vwf_wait_for_a"><code>%vwf_wait_for_a()</code></a> text command. Deprecated. Use <code>VWF_AutoWait.WaitForButton</code> instead.</td></tr>
+									<tr><td><code>VWF_AutoWait.WaitForButton</code></td><td>Automatically pause the text box until the default text box advance button is pressed, in a similar manner to the <a href="#text-commands-vwf_wait_for_button"><code>%vwf_wait_for_button()</code></a> text command.</td></tr>
+									<tr><td><code>VWF_AutoWait.WaitFrames.1</code><br/><code>VWF_AutoWait.WaitFrames.2</code><br/>[...]<br/><code>VWF_AutoWait.WaitFrames.255</code></td><td>Automatically pause the text box for the specified number of frames, before clearing it and continuing.</td></tr>
 								</table>
 								</li>
 							</ul></td>
 						</tr>
 					</table>
-					Specifies the action to take when text exceeds the available space of a text box. Compatibility note: In all pre-macro versions of this patch, due to a programming oversight, the minimum number of frames to wait with the <code>WaitFrames</code> setting was <code>2</code> and the maximum was <code>255</code>, whereas in current versions the supported range is <code>1</code> to <code>254</code> frames. Keep this in mind if you plan to port text data from an older version to a newer one. Slight adjustments to text box headers might be necessary.
+					Specifies the action to take when text exceeds the available space of a text box. Compatibility note: In all pre-macro versions of this patch, due to a programming oversight, the minimum number of frames to wait with the <code>WaitFrames</code> setting was <code>2</code> and the maximum was <code>255</code>, whereas in current versions the supported range is <code>1</code> to <code>255</code> frames. Keep this in mind if you plan to port text data from an older version to a newer one. Slight adjustments to text box headers might be necessary (you might have to add a frame to all auto-wait settings if frame-perfect timing matters).
 				</p></dd>
 				
 				<dt id="header-settings-vwf_button_speedup"><code>vwf_button_speedup()</code></dt>
@@ -1179,15 +1183,15 @@ AutoWait = VWF_AutoWait</code></pre></td>
 	
 	; One command per line
 	%vwf_text("You can write each text command on a separate line like this.")
-	%vwf_wait_for_a()
+	%vwf_wait_for_button()
 	%vwf_clear()
 	
 	; Multiple commands on a single line
-	%vwf_text("But you can also chain them together on one line via a colon.") : %vwf_wait_for_a() : %vwf_clear()
+	%vwf_text("But you can also chain them together on one line via a colon.") : %vwf_wait_for_button() : %vwf_clear()
 	
 	; These two lines are equivalent, but one uses short aliases, the other doesn't.
-	%vwf_text("Hello?") : %vwf_wait_for_a() : %vwf_line_break()
-	!str("Hello?") : !press_a : !n
+	%vwf_text("Hello?") : %vwf_wait_for_button() : %vwf_line_break()
+	!str("Hello?") : !press_button : !n
 
 %vwf_message_end()</code></pre>
 
@@ -1533,6 +1537,21 @@ AddressSize = VWF_AddressSize</code></pre></td>
 					Closes the text box, restores backed up layer 3 and palette data, and resumes gameplay. It's normally not necessary to call this command explicitly, as each <code>%vwf_message_end()</code> already does so automatically. You only need to use it when you want to close a text box early (for example: from a specific choice of a <a href="#text-commands-vwf_display_options"><code>%vwf_display_options()</code></a>).
 				</p></dd>
 				
+				<dt id="text-commands-vwf_wait_for_button"><code>%vwf_wait_for_button()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code class="65c816_asar">%vwf_wait_for_button()</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code class="65c816_asar">!press_button = %vwf_wait_for_button()</code></pre></td>
+						</tr>
+					</table>
+					Pauses the text box until the player presses any of the default text box advance buttons (defined by the <code>!vwf_default_advance_button_mask</code> setting).
+				</p></dd>
+				
 				<dt id="text-commands-vwf_wait_for_a"><code>%vwf_wait_for_a()</code></dt>
 				<dd><p>
 					<table class="api-documentation">
@@ -1545,7 +1564,46 @@ AddressSize = VWF_AddressSize</code></pre></td>
 							<td><pre><code class="65c816_asar">!press_a = %vwf_wait_for_a()</code></pre></td>
 						</tr>
 					</table>
-					Pauses the text box until the player presses the A button.
+					Pauses the text box until the player presses the A button. Deprecated. Use <a href="#text-commands-vwf_wait_for_button"><code>%vwf_wait_for_button()</code></a> or <a href="#text-commands-vwf_wait_for_custom_button"><code>%vwf_wait_for_custom_button()</code></a> instead.
+				</p></dd>
+				
+				<dt id="text-commands-vwf_wait_for_custom_button"><code>%vwf_wait_for_custom_button()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code class="65c816_asar">%vwf_wait_for_custom_button(button_mask)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code class="65c816_asar">!press_custom_button = %vwf_wait_for_custom_button()
+ControllerButton = VWF_ControllerButton</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>button_mask: VWF_ControllerButton (bit-mask):</code> Defines which buttons can advance the text box. Valid values:
+								<table class="parameter-list">
+									<tr><th>Value</th><th>Description</th></tr>
+									<tr><td><code>VWF_ControllerButton.A</code></td><td>A button.</td></tr>
+									<tr><td><code>VWF_ControllerButton.B</code></td><td>B button.</td></tr>
+									<tr><td><code>VWF_ControllerButton.X</code></td><td>X button.</td></tr>
+									<tr><td><code>VWF_ControllerButton.Y</code></td><td>Y button.</td></tr>
+									<tr><td><code>VWF_ControllerButton.Start</code></td><td>Start button.</td></tr>
+									<tr><td><code>VWF_ControllerButton.Select</code></td><td>Select button.</td></tr>
+									<tr><td><code>VWF_ControllerButton.L</code></td><td>L button.</td></tr>
+									<tr><td><code>VWF_ControllerButton.R</code></td><td>R button.</td></tr>
+									<tr><td><code>VWF_ControllerButton.DpadRight</code></td><td>D-Pad right.</td></tr>
+									<tr><td><code>VWF_ControllerButton.DpadLeft</code></td><td>D-Pad left.</td></tr>
+									<tr><td><code>VWF_ControllerButton.DpadDown</code></td><td>D-Pad down.</td></tr>
+									<tr><td><code>VWF_ControllerButton.DpadUp</code></td><td>D-Pad up.</td></tr>
+								</table>
+								</li>
+							</ul></td>
+						</tr>
+					</table>
+					Pauses the text box until the player presses any of the buttons defined by the <code>button_mask</code> parameter. Multiple buttons can be specified as a bit-mask by using the <code>|</code> (or) operator. Example:
+					<pre><code class="65c816_asar">%vwf_wait_for_custom_button(VWF_ControllerButton.A|VWF_ControllerButton.B)</code></pre>
 				</p></dd>
 				
 				<dt id="text-commands-vwf_wait_frames"><code>%vwf_wait_frames()</code></dt>
@@ -2074,7 +2132,7 @@ ExitToOwMode = VWF_ExitToOwMode</code></pre></td>
 	
 	!str("My name is ") : !macro("Mario") : !str(" ") : !macro("Mario")
 	!str(", and this here is my brother ") : !macro("Luigi") : !str(" ") : !macro("Mario") : !str("!")
-	!press_a
+	!press_button
 	
 %vwf_message_end()</code></pre>
 
@@ -2179,7 +2237,7 @@ ExitToOwMode = VWF_ExitToOwMode</code></pre></td>
 	; Let's assume you're currently playing as Luigi and have a Cape power-up. Then this message will read:
 	; "Hey, aren't you Luigi? Cape Luigi, to be specific."
 	!str("Hey, aren't you ") : !macro("CurrentPlayer") : !str("? ") : !macro("CurrentPlayerWithPowerup") : !str(", to be specific.")
-	!press_a
+	!press_button
 	
 %vwf_message_end()</code></pre>
 			</p>
@@ -2327,7 +2385,7 @@ endif</code></pre>
 			
 			<h3 id="problem-solving-migration" class="text-center">Migration</h3>
 			<p>
-				When I originally started refactoring this patch to make use of Asar 1.90 variadic macros, backwards-compatibility with older patch versions was still one of my main goals. I wanted to make it easy for all version 1.2 (or earlier) users of the patch to migrate to version 1.3. Over time, as I kept adding more and more improvements to 1.3, this goal kept moving further and further out of reach.
+				When I originally started refactoring this patch to make use of Asar 1.90 variadic macros, backwards-compatibility with older patch versions was still one of my main goals. I wanted to make it easy for all version 1.2 (or earlier) users of the patch to migrate to version 1.3+. Over time, as I kept adding more and more improvements to 1.3, this goal kept moving further and further out of reach.
 			</p>
 			
 			<p>
@@ -2439,7 +2497,7 @@ endif</code></pre>
 			<h2 id="history" class="text-center">Version History</h2>
 
 			<dl>
-				<dt><h5>Version 1.XX - <span data-date="2023-07-12">xx/xx/xxxx</span></h5></dt>
+				<dt><h5>Version 1.4 - <span data-date="2024-02-23">02/23/2024</span></h5></dt>
 				<dd><p>
 					<h6>Contributors:</h6>
 					<ul>
@@ -2454,13 +2512,15 @@ endif</code></pre>
 						<li>Added a tab to vwftable.asm (it maps to the same character as a space).</li>
 						<li>Fixed: Word-wrapping could break when combining text macros with centered text.</li>
 						<li>Fixed: A bug with how the main screen register was being written could lead to (essentially) random layer priorities. The bug was noticed in a level using level mode 0E, but could have affected other modes as well.</li>
-						<li>Added note another known bug that as recently discovered.</li>
+						<li>Added note on another known bug that as recently discovered.</li>
 						<li>Optimized performance of patch in V-Blank to reduce the chance of graphical bugs occurring from the interaction with other patches.</li>
 						<li>Optimized performance of some VWF core functionality, including text generation.</li>
 						<li>Added new <code>!vwf_backup_duration_in_frames</code> setting, which allows reducing the patch's V-Blank duration in the initialization step at the cost of longer start-up times for text boxes.</li>
 						<li>Reduced the amount of time the patch spends in V-Blank for smaller text boxes during the text box animation phase. This is achieved by only copying enough tiles to VRAM to cover the visible area of the text box (previous versions always copied an entire screen worth of tiles).</li>
 						<li>Added new <code>!vwf_clear_screen_duration_in_frames</code> setting, which can reduce the amount of time the patch spends in V-Blank during text box clears at the cost of extending their duration to multiple frames.</li>
 						<li>Fixed: The patch wrote to the color math register mirror in incorrect ways. In levels using transparent layers, this could lead to layers becoming non-transparent and staying that way even after a text box closed. The bug was noticed in a level using level mode 1E, but could have affected other modes as well.</li>
+						<li>Added the <code>%vwf_wait_for_button()</code> and <code>%vwf_wait_for_custom_button()</code> text commands, the <code>VWF_AutoWait.WaitForButton</code> auto-wait mode, as well as the <code>!vwf_default_advance_button_mask</code>, <code>!vwf_select_choice_button_mask</code> and <code>!vwf_skip_message_button_mask</code> settings, which give finer control over which buttons affect the patch. These features replace the <code>%vwf_wait_for_a()</code> text command and the <code>VWF_AutoWait.WaitForA</code> auto-wait mode, which are now deprecated.</li>
+						<li>The maximum value for the <code>VWF_AutoWait.WaitFrames</code> auto-wait mode has been extended from <code>254</code> to <code>255</code>.</li>
 					</ul>
 				</p></dd>
 				

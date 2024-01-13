@@ -109,7 +109,7 @@ elseif !vwf_bit_mode == VWF_BitMode.16Bit
 	ldy.w !vwf_char+1
 	sty.w !vwf_font
 	jsr .GetFont
-	ldy.b $05
+	ldy.b $05			; Required here because .GetFont overwrites $0E
 	sty.b $0E
 	lda.b $03
 	clc
@@ -298,21 +298,12 @@ endif
 ; made it incompatible with the other one, and this is simply the easiest way to fix that.
 if !vwf_bit_mode == VWF_BitMode.16Bit
 .GetFont:
-	sep #$20
-	lda.b #$06	; Multiply font number with 6
-	sta.l select(!use_sa1_mapping,$2251,$211B)
-	lda.b #$00
-	sta.l select(!use_sa1_mapping,$2252,$211B)
-	sta.l select(!use_sa1_mapping,$2250,$211C)
 	lda.w !vwf_font
-	sta.l select(!use_sa1_mapping,$2253,$211C)
-if !use_sa1_mapping
-	lda.b #$00
-	sta.l $2254
-	nop
-endif
-	rep #$20
-	lda.l select(!use_sa1_mapping,$2306,$2134)
+	and.w #$00FF
+	asl				; This essentially multiplies by 6 (implemented as a 4n + 2n)
+	sta $0E
+	asl
+	adc $0E	
 	clc
 	adc.w #FontTable	; Add starting address
 	sta.b $00

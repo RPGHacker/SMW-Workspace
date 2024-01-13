@@ -3932,6 +3932,7 @@ endif
 
 .End
 	jmp Buffer_End
+		
 
 HandleVWFStackByte1:
 .Pull
@@ -3950,7 +3951,8 @@ HandleVWFStackByte1:
 	sta !vwf_tm_stack_index_1
 	pla
 	sta !vwf_tm_stack_1,x
-	rts
+	rts	
+	
 
 HandleVWFStackByte2:
 .Pull
@@ -3970,20 +3972,16 @@ HandleVWFStackByte2:
 	pla
 	sta !vwf_tm_stack_2,x
 	rts
+		
 
 GetFont:
-	lda #$06	; Multiply font number with 6
-	sta.w select(!use_sa1_mapping,$2251,$211B)
-	stz.w select(!use_sa1_mapping,$2252,$211B)
-	stz.w select(!use_sa1_mapping,$2250,$211C)
-	lda !vwf_font
-	sta.w select(!use_sa1_mapping,$2253,$211C)
-if !use_sa1_mapping
-	stz $2254
-	nop
-endif
 	rep #$21
-	lda.w select(!use_sa1_mapping,$2306,$2134)
+	lda !vwf_font
+	and.w #$00FF
+	asl					; This essentially multiplies by 6 (implemented as a 4n + 2n)
+	sta $00
+	asl
+	adc $00
 	adc.w #FontTable	; Add starting address
 	sta $00
 	sep #$20
@@ -3997,13 +3995,7 @@ endif
 	iny
 	cpy #$06
 	bne .Loop
-	rts
-	
-; RPG Hacker: This might make 16-bit builds notably slower.
-; Though maybe not, since VWF_GenerateVWF isn't usually called for more than one character.
-GetFontLong:
-	jsr GetFont
-	rtl
+	rts	
 
 
 GetDestination:

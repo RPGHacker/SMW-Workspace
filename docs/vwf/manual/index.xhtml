@@ -2521,6 +2521,7 @@ endif</code></pre>
 						<li>Fixed: The patch wrote to the color math register mirror in incorrect ways. In levels using transparent layers, this could lead to layers becoming non-transparent and staying that way even after a text box closed. The bug was noticed in a level using level mode 1E, but could have affected other modes as well.</li>
 						<li>Added the <code>%vwf_wait_for_button()</code> and <code>%vwf_wait_for_custom_button()</code> text commands, the <code>VWF_AutoWait.WaitForButton</code> auto-wait mode, as well as the <code>!vwf_default_advance_button_mask</code>, <code>!vwf_select_choice_button_mask</code> and <code>!vwf_skip_message_button_mask</code> settings, which give finer control over which buttons affect the patch. These features replace the <code>%vwf_wait_for_a()</code> text command and the <code>VWF_AutoWait.WaitForA</code> auto-wait mode, which are now deprecated.</li>
 						<li>The maximum value for the <code>VWF_AutoWait.WaitFrames</code> auto-wait mode has been extended from <code>254</code> to <code>255</code>.</li>
+						<li>Simplified many multiplications in the patch. For most of them, this slightly boosts performance. More importantly, this removes any dependency on the mode 7 registers for multiplication, which avoids a potential rare bug that could be caused by HDMA.</li>
 					</ul>
 				</p></dd>
 				

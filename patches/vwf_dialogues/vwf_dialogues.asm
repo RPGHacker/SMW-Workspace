@@ -273,10 +273,9 @@ if sizeof(...) > 0
 		; RPG Hacker: The multiplier is logarithmic - we can use a number of ASL to do the multiplication.
 		; If the exponent gets too large, this might be less performant than an actual multiplication,
 		; but I don't think we'll ever get to those severe dimensions, so I won't optimize for them.
-		lda.b #$00
-		xba
-		lda !temp_start_index
 		rep #$31
+		lda !temp_start_index
+		and.w #$00FF
 		asl #!temp_log2
 		adc.w #<source>
 		tax
@@ -295,6 +294,7 @@ if sizeof(...) > 0
 		tax
 	else
 		; If none of the above is possible, fall back to a generic solution.
+		; NOTE: This code path will currently only be taken in SA-1 ROMs.
 		lda.b #<bytes>	; Calculate starting index
 		sta.w select(!temp_currently_on_sa1_cpu,$2251,$211B)
 		lda.b #<bytes>>>8
@@ -2413,34 +2413,21 @@ endif
 	lda.b #!vwf_buffer_empty_tile>>16
 	sta $0B
 
-if !use_sa1_mapping
-	lda #$01
-	sta $2250
-endif
 	lda !vwf_current_pixel
-	sta.w select(!use_sa1_mapping,$2251,$4204)
-
-.NoNewTile
-	stz.w select(!use_sa1_mapping,$2252,$4205)
-	lda #$08
-	sta.w select(!use_sa1_mapping,$2253,$4206)
-if !use_sa1_mapping
-	stz $2254
-	nop
-	bra $00
-else
-	nop #8
-endif
-	lda.w select(!use_sa1_mapping,$2308,$4216)
+	pha							; Compute remainder of division by 8
+	and.b #%00000111
 	sta !vwf_current_pixel
+	pla
+	lsr #3						; Compute quotient of division by 8
 	rep #$20
-	lda.w select(!use_sa1_mapping,$2306,$4214)
+	and.w #$00FF
+	pha
 	asl
 	clc
 	adc !vwf_tile
 	sta !vwf_tile
+	pla
 	sep #$20
-	lda.w select(!use_sa1_mapping,$2306,$4214)
 	clc
 	adc !vwf_current_x
 	sta !vwf_current_x
@@ -2530,7 +2517,7 @@ ClearBox:
 
 
 GetMessage:
-	rep #$20
+	rep #$21
 	lda !vwf_message
 	cmp.w #(PointersEnd-Pointers)/3
 	bcc .IdOkay
@@ -2544,20 +2531,9 @@ GetMessage:
 	rts
 
 .IdOkay
-	sep #$20
-	lda !vwf_message
-	sta.w select(!use_sa1_mapping,$2251,$211B)
-	lda !vwf_message+1
-	sta.w select(!use_sa1_mapping,$2252,$211B)
-	stz.w select(!use_sa1_mapping,$2250,$211C)
-	lda #$03
-	sta.w select(!use_sa1_mapping,$2253,$211C)
-if !use_sa1_mapping
-	stz $2254
-	nop
-endif
-	rep #$21
-	lda.w select(!use_sa1_mapping,$2306,$2134)
+	lda !vwf_message		; Multiply message ID by 3
+	asl
+	adc !vwf_message
 	adc.w #Pointers
 	sta $00
 	lda.w #Pointers>>16
@@ -3764,40 +3740,30 @@ endif
 	sbc !vwf_space
 	sta !vwf_max_width
 
-if !use_sa1_mapping
-	lda #$01
-	sta $2250
-endif
 	lda !vwf_current_pixel
 	clc
 	adc !vwf_space
-	sta select(!use_sa1_mapping,$2251,$4204)
+	pha
 	cmp #$08
 	bcc .NoNewTile
 	lda #$01
 	sta !vwf_first_tile
 
 .NoNewTile
-	stz.w select(!use_sa1_mapping,$2252,$4205)
-	lda #$08
-	sta.w select(!use_sa1_mapping,$2253,$4206)
-if !use_sa1_mapping
-	stz $2254
-	nop
-	bra $00
-else
-	nop #8
-endif
-	lda.w select(!use_sa1_mapping,$2308,$4216)
+	lda $01,s					; Compute remainder of division by 8
+	and.b #%00000111
 	sta !vwf_current_pixel
+	pla
+	lsr #3						; Compute quotient of division by 8
 	rep #$20
-	lda.w select(!use_sa1_mapping,$2306,$4214)
+	and.w #$00FF
+	pha
 	asl
 	clc
 	adc !vwf_tile
 	sta !vwf_tile
+	pla
 	sep #$20
-	lda.w select(!use_sa1_mapping,$2306,$4214)
 	clc
 	adc !vwf_current_x
 	sta !vwf_current_x

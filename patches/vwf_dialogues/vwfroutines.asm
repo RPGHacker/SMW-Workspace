@@ -76,6 +76,7 @@ endmacro
 ;      During processing: Pointer (24-bit) to font, offset by two 8x8 tile (to access right half of 16x16 tiles)
 ; $0E: Current pixel offset into destination memory buffer
 ; $0F: #$01 if this is writing first tile in the current buffer, otherwise #$00
+;      Used as temporary memory during processing
 %vwf_register_shared_routine(VWF_GenerateVWF)
 	!vwf_var_ram_and_gfx_ram_in_same_bank #= equal(bank(!vwf_var_ram), bank(!vwf_gfx_ram))
 
@@ -195,28 +196,30 @@ endif
 	dex
 	bpl.b ..Check2
 .Skip:
-if !use_sa1_mapping
-	lda.b #$01
-	sta.l $2250
-endif
 if !vwf_var_ram_and_gfx_ram_in_same_bank != false
 	ldy.b #$00
 else
 	ldx.b #$00
 	txy
 endif
+	lda.b #$00
+	pha
+	
 	lda.w !vwf_current_pixel	; Adjust destination address
 	clc
 	adc.w !vwf_char_width
-	sta.l select(!use_sa1_mapping,$2251,$4204)
+	sta $0F
+	
+	lsr #3						; Compute quotient of division by 8
+	pha
+	
 	lda.b #$00
-	sta.l select(!use_sa1_mapping,$2252,$4205)
-	lda.b #$08
-	sta.l select(!use_sa1_mapping,$2253,$4206)
-if !use_sa1_mapping
-	lda.b #$00
-	sta.l $2254
-endif
+	pha	
+	
+	lda $0F						; Compute remainder of division by 8
+	and.b #%00000111
+	pha
+
 	lda.w !vwf_first_tile		; Skip one step if first tile in line
 	beq .Combine
 	stz.w !vwf_first_tile
@@ -255,7 +258,7 @@ endif
 	iny
 	cpy.b #$60
 	bne.b .Copy
-	lda.l select(!use_sa1_mapping,$2306,$4214)
+	lda $03,s
 	asl
 	pha
 	clc
@@ -266,25 +269,18 @@ endif
 	sep #$20
 	adc.w !vwf_buffer_index
 	sta.w !vwf_buffer_index
-if !use_sa1_mapping
-	lda.b #$00
-	sta.l $2250
-endif
-	lda.l select(!use_sa1_mapping,$2308,$4216)
+	lda $01,s
 	sta.w !vwf_current_pixel
-	lda.b #$20
-	sta.l select(!use_sa1_mapping,$2251,$4202)
-	lda.l select(!use_sa1_mapping,$2306,$4214)
-	sta.l select(!use_sa1_mapping,$2253,$4203)
+	lda $03,s
 	clc
 	adc.w !vwf_current_x
 	sta.w !vwf_current_x
-if !use_sa1_mapping
-	lda.b #$00
-	sta.l $2254
-endif
 	rep #$21
-	lda.l select(!use_sa1_mapping,$2308,$4216)
+	pla
+	pla
+	; The XBA here is necessary, because bytes are stored on the stack in reverse order
+	; due to the fact we use stack-relative indexing to access them.
+	xba
 	adc.b $09
 	sta.b $09
 	dec.w !vwf_num_bytes		; Adjust number of bytes

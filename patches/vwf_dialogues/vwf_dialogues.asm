@@ -266,22 +266,55 @@ macro vwf_mvn_transfer(bytes, source, destination, current_cpu, ...)
 
 	phb
 if sizeof(...) > 0
-	lda.b #<bytes>	; Calculate starting index
-	sta.w select(!temp_currently_on_sa1_cpu,$2251,$211B)
-	lda.b #<bytes>>>8
-	sta.w select(!temp_currently_on_sa1_cpu,$2252,$211B)
-	stz.w select(!temp_currently_on_sa1_cpu,$2250,$211C)
-	lda <...[0]>
-	sta.w select(!temp_currently_on_sa1_cpu,$2253,$211C)
-	if !temp_currently_on_sa1_cpu
-		stz $2254
-		nop
+	!temp_start_index := <...[0]>
+	!temp_log2 #= floor(log2(<bytes>))
+	
+	if 2**!temp_log2 == <bytes>
+		; RPG Hacker: The multiplier is logarithmic - we can use a number of ASL to do the multiplication.
+		; If the exponent gets too large, this might be less performant than an actual multiplication,
+		; but I don't think we'll ever get to those severe dimensions, so I won't optimize for them.
+		lda.b #$00
+		xba
+		lda !temp_start_index
+		rep #$31
+		asl #!temp_log2
+		adc.w #<source>
+		tax
+	elseif !temp_currently_on_sa1_cpu == !vwf_cpu_snes && <bytes> < $100
+		; If the number of bytes is representable as a single byte (we assume the start index to always be
+		; representable as a single byte), and we're currently on the SNES CPU, do the multiplication via the
+		; regular multiplication registers instead of the mode 7 registers (this can prevent certain quirks).
+		lda.b #<bytes>	; Calculate starting index
+		sta $4202
+		lda !temp_start_index
+		sta $4203
+		rep #$31
+		lda.w #<source>
+		nop #2
+		adc $4216
+		tax
+	else
+		; If none of the above is possible, fall back to a generic solution.
+		lda.b #<bytes>	; Calculate starting index
+		sta.w select(!temp_currently_on_sa1_cpu,$2251,$211B)
+		lda.b #<bytes>>>8
+		sta.w select(!temp_currently_on_sa1_cpu,$2252,$211B)
+		stz.w select(!temp_currently_on_sa1_cpu,$2250,$211C)
+		lda !temp_start_index
+		sta.w select(!temp_currently_on_sa1_cpu,$2253,$211C)
+		if !temp_currently_on_sa1_cpu
+			stz $2254
+			nop
+		endif
+		
+		rep #$31
+		lda.w select(!temp_currently_on_sa1_cpu,$2306,$2134)	; Add source address
+		adc.w #<source>	; to get new source address
+		tax
 	endif
 	
-	rep #$31
-	lda.w select(!temp_currently_on_sa1_cpu,$2306,$2134)	; Add source address
-	adc.w #<source>	; to get new source address
-	tax
+	undef "temp_log2"
+	undef "temp_start_index"
 else
 	rep #$30
 	ldx.w #<source>
@@ -5710,7 +5743,7 @@ endif
 	sep #$20
 	
 	%configure_vram_access(VRamAccessMode.Write, VRamIncrementMode.OnHighByte, VRamIncrementSize.1Byte, VRamAddressRemap.None, $02)
-	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, dma_source_indirect_word($00, bank(!vwf_buffer_text_box_tilemap)), dma_size_indirect($04))
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteOnce, $2118, dma_source_indirect_word($00, bank(!vwf_buffer_text_box_tilemap)), dma_size_indirect_dp($04))
 	
 	rep #$20
 	lda !vwf_clear_box_remaining_bytes

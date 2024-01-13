@@ -201,6 +201,12 @@ function dma_source_indirect_word(address, bank) = ((bank&$FF)<<24)|(address&$FF
 function dma_size_indirect(address) = $01000000|(address&$FFFFFF)
 
 
+; Same as above, but also indicates that the passed in address lies in the direct page.
+; This lets the %dma_transfer() macro know to use an LDA.b instead of another LDA.
+
+function dma_size_indirect_dp(address) = $02000000|(address&$FFFFFF)
+
+
 ; A simple macro for preparing access to VRAM.
 
 macro configure_vram_access(access_mode, increment_mode, increment_size, address_remap, vram_address)
@@ -254,12 +260,14 @@ macro dma_transfer(channel, dma_settings, destination, source, num_bytes)
 	!temp_num_bytes_resolved #= <num_bytes>
 	!temp_dma_num_bytes_mode #= ((!temp_num_bytes_resolved>>24)&$FF)
 	
-	assert !temp_dma_num_bytes_mode <= 1, "Invalid argument passed to num_bytes of %dma_transfer()."
+	assert !temp_dma_num_bytes_mode <= 2, "Invalid argument passed to num_bytes of %dma_transfer()."
 	
 	if !temp_dma_num_bytes_mode == 0	
 		!temp_dma_num_bytes = "lda.w #<num_bytes>"
 	elseif !temp_dma_num_bytes_mode == 1
 		!temp_dma_num_bytes = "lda <num_bytes>"
+	elseif !temp_dma_num_bytes_mode == 2
+		!temp_dma_num_bytes = "lda.b <num_bytes>"
 	endif
 
 	lda.b #<dma_settings>

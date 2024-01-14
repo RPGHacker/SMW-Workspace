@@ -937,19 +937,8 @@ macro vwf_display_message(message_id, ...)
 		
 		%vwf_generate_command_table($FC)
 		
-		if !temp_show_open_animation == false && !temp_show_close_animation == false
-			; RPG Hacker: Legacy format. This branch should be removed once
-			; we get rid of the backwards-compatibility hack.
-			dw $<message_id>
-		else
-			; RPG Hacker: For backwards compatibility, we use a magic hex
-			; to determine if this is a new format command.
-			; Once version 1.3 has been out for a considerable amount of time,
-			; we can remove this.
-			dw $FFFF
-			dw $<message_id>
-			db !temp_show_open_animation|(!temp_show_close_animation<<1)
-		endif
+		dw $<message_id>
+		db !temp_show_open_animation|(!temp_show_close_animation<<1)
 		
 		undef "temp_show_close_animation"
 		undef "temp_show_open_animation"

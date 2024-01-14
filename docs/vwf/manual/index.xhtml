@@ -250,7 +250,10 @@
 					</ul></li>
 					<li><a href="#problem-solving">Problem Solving</a><ul>
 						<li><a href="#problem-solving-error-messages">Better Error Messages</a></li>
-						<li><a href="#problem-solving-migration">Migration</a></li>
+						<li><a href="#problem-solving-migration">Migration</a><ul>
+							<li><a href="#problem-solving-migration-1-2-or-earlier">From Version 1.2 or Earlier</a></li>
+							<li><a href="#problem-solving-migration-1-3-or-later">From Version 1.3 or Later</a></li>
+						</ul></li>
 						<li><a href="#problem-solving-bank-limits">Bank Limits</a></li>
 						<li><a href="#problem-solving-hdma-conflicts">Conflicts With HDMA Effects</a></li>
 						<li><a href="#problem-solving-compatibility">Compatibility With Other Patches</a></li>
@@ -2384,6 +2387,13 @@ endif</code></pre>
 			</p>
 			
 			<h3 id="problem-solving-migration" class="text-center">Migration</h3>
+			
+			<p>
+				This section attempts to walk you through the process of migrating from older versions of the patch to the current version. This is typically necessary if you have a WIP hack that is already using an older version of VWF Dialogues, but want to use features only found in a newer version.
+			</p>
+			
+			<h4 id="problem-solving-migration-1-2-or-earlier" class="text-center">From Version 1.2 or Earlier</h4>
+			
 			<p>
 				When I originally started refactoring this patch to make use of Asar 1.90 variadic macros, backwards-compatibility with older patch versions was still one of my main goals. I wanted to make it easy for all version 1.2 (or earlier) users of the patch to migrate to version 1.3+. Over time, as I kept adding more and more improvements to 1.3, this goal kept moving further and further out of reach.
 			</p>
@@ -2398,6 +2408,16 @@ endif</code></pre>
 			
 			<p>
 				As I said, there's unfortunately no easy way of migrating to newer patch versions. However, on the positive side, version 1.3 of the patch was designed in a way that makes it a lot easier to extend in the future without breaking compatibility, so once you go through the effort of migrating, you'll hopefully never have to do it again to that degree for newer versions.
+			</p>			
+			
+			<h4 id="problem-solving-migration-1-3-or-later" class="text-center">From Version 1.3 or Later</h4>
+			
+			<p>
+				To migrate from version 1.3+ to a newer version of the patch, first open the <code>vwfconfig.cfg</code> files of both patch versions. Search the newer version for settings missing in the older version and copy all of them over (a diffing tool could help with finding the differences here). Next, take all the contents of the old patch version's <code>data</code> directory and and copy them into the <code>data</code> directory of the new version, overwriting all existing files.
+			</p>
+			
+			<p>
+				You should now be able to continue working in the new version of the patch.
 			</p>
 
 			<h3 id="problem-solving-bank-limits" class="text-center">Bank Limits</h3>

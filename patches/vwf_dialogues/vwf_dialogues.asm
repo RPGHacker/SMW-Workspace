@@ -78,9 +78,9 @@ endmacro
 %vwf_claim_varram(mode, 1)          ; Contains the current state of the text box.
 %vwf_claim_varram(message, 2)       ; The 16-bit message number to display
 
-%vwf_claim_varram(box_bg, 1)
-%vwf_claim_varram(box_color, 6)
-%vwf_claim_varram(box_frame, 1)
+%vwf_claim_varram(chosen_box_bg, 1)
+%vwf_claim_varram(chosen_box_color, 2)
+%vwf_claim_varram(chosen_box_frame, 1)
 
 ; RPG Hacker: RAM addresses defined above this point won't automatically get cleared on opening message boxes.
 !vwf_ram_clear_start_pos #= !vwf_var_rampos
@@ -194,6 +194,10 @@ endmacro
 %vwf_claim_varram(create_window_length, 2)
 
 %vwf_claim_varram(wait_for_button_mask, 2)    ; Button mask for "wait for button" command.
+
+%vwf_claim_varram(current_box_bg, 1)
+%vwf_claim_varram(current_box_color, 6)
+%vwf_claim_varram(current_box_frame, 1)
 
 !vwf_buffer_empty_tile = !vwf_gfx_ram
 !vwf_buffer_bg_tile = !vwf_gfx_ram+$10
@@ -598,14 +602,14 @@ InitDefaults:
 	sta !vwf_message+1
 
 	lda #!vwf_default_text_box_bg_pattern	; Set default values
-	sta !vwf_box_bg
+	sta !vwf_chosen_box_bg
 	lda #!vwf_default_text_box_frame
-	sta !vwf_box_frame
+	sta !vwf_chosen_box_frame
 
 	lda.b #!vwf_default_text_box_bg_color
-	sta !vwf_box_color
+	sta !vwf_chosen_box_color
 	lda.b #!vwf_default_text_box_bg_color>>8
-	sta !vwf_box_color+1
+	sta !vwf_chosen_box_color+1
 	rts
 	
 	
@@ -1063,17 +1067,17 @@ endif
 	iny
 
 	lda [$00],y	; Letter color
-	sta !vwf_box_color+2
+	sta !vwf_current_box_color+2
 	iny
 	lda [$00],y
-	sta !vwf_box_color+3
+	sta !vwf_current_box_color+3
 	iny
 
 	lda [$00],y	; Shading color
-	sta !vwf_box_color+4
+	sta !vwf_current_box_color+4
 	iny
 	lda [$00],y
-	sta !vwf_box_color+5
+	sta !vwf_current_box_color+5
 	iny
 
 	lda [$00],y	; Freeze sprites?
@@ -1169,6 +1173,15 @@ endif
 	iny
 
 .NoMessageASMPointer
+	lda !vwf_chosen_box_bg
+	sta !vwf_current_box_bg
+	lda !vwf_chosen_box_frame
+	sta !vwf_current_box_frame
+	lda !vwf_chosen_box_color
+	sta !vwf_current_box_color
+	lda !vwf_chosen_box_color+1
+	sta !vwf_current_box_color+1
+
 	tya
 	sta $03
 	stz $04
@@ -1291,8 +1304,8 @@ BufferGraphics:
 
 	; Copy text box graphics over to RAM
 
-	%vwf_bwram_transfer($0010, !vwf_box_bg, BgPatterns, !vwf_buffer_bg_tile)
-	%vwf_bwram_transfer($0090, !vwf_box_frame, Frames, !vwf_buffer_frame)
+	%vwf_bwram_transfer($0010, !vwf_current_box_bg, BgPatterns, !vwf_buffer_bg_tile)
+	%vwf_bwram_transfer($0090, !vwf_current_box_frame, Frames, !vwf_buffer_frame)
 
 	rts
 
@@ -2248,7 +2261,7 @@ endif
 	sta $02
 
 .BoxColorLoop
-	lda !vwf_box_color+2,x
+	lda !vwf_current_box_color+2,x
 	sta [$00],y
 	inx
 	iny
@@ -3375,9 +3388,9 @@ endif
 	asl #2
 	ora !vwf_property
 	sta !vwf_property
-	lda !vwf_box_color
+	lda !vwf_current_box_color
 	sta !vwf_palette_backup_ram,x
-	lda !vwf_box_color+1
+	lda !vwf_current_box_color+1
 	sta !vwf_palette_backup_ram+1,x
 	lda #$01
 	sta !vwf_palette_upload
@@ -3653,26 +3666,7 @@ endif
 	lda #$00
 	sta !vwf_message_asm_enabled
 	ldy #$01
-	lda [$00],y
-	sta !vwf_swap_message_id
-	iny
-	lda [$00],y
-	sta !vwf_swap_message_id+1
-	lda #%10000000
-	sta !vwf_swap_message_settings
-	jsr IncPointer
-	jsr IncPointer
-	
-	; RPG Hacker: Backwards compatibility hack. Uses a magic hex to determine
-	; if this is the new command format. Can be removed once version 1.3 has
-	; been released for a considerable amount of time.
-	lda !vwf_swap_message_id
-	and !vwf_swap_message_id+1
-	cmp #$FF
-	bne .Legacy
-	
-	iny
-	lda [$00],y
+	lda [$00],y		; Message ID
 	sta !vwf_swap_message_id
 	iny
 	lda [$00],y
@@ -3685,7 +3679,6 @@ endif
 	jsr IncPointer
 	jsr IncPointer
 	
-.Legacy
 	; RPG Hacker: If we don't have the "show close animation" flag set, prepare the next message right now.
 	lda !vwf_swap_message_settings
 	and.b #%10000010
@@ -5322,7 +5315,7 @@ LoadBoxPalette:
 	sta $02
 
 .BoxColorLoop
-	lda !vwf_box_color,x
+	lda !vwf_current_box_color,x
 	sta [$00],y
 	iny
 	inx
@@ -5340,7 +5333,7 @@ LoadBoxPalette:
 	sta $02
 	lda #$00
 	xba
-	lda !vwf_box_frame
+	lda !vwf_current_box_frame
 	rep #$21
 	asl #3
 	adc.w #FramePalettes+2
@@ -6066,9 +6059,9 @@ undef "temp_i"
 print ""
 print "VWF State register at address $",hex(!vwf_mode),"."
 print "Message register at address $",hex(!vwf_message),"."
-print "BG GFX register at address $",hex(!vwf_box_bg),"."
-print "BG Color register at address $",hex(!vwf_box_color),"."
-print "Frame GFX register at address $",hex(!vwf_box_frame),"."
+print "BG GFX register at address $",hex(!vwf_chosen_box_bg),"."
+print "BG Color register at address $",hex(!vwf_chosen_box_color),"."
+print "Frame GFX register at address $",hex(!vwf_chosen_box_frame),"."
 print "Abort Dialogue Processing register at address $",hex(!vwf_end_dialog),"."
 ;print "Active VWF Message Flag at address $",hex(!vwf_active_flag),"."
 

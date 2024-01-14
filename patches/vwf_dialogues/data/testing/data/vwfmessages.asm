@@ -138,7 +138,7 @@ endif
 		!str("Mario's X pos: ") : !dec(remap_ram($7E00D1), AddressSize.16Bit) : !new_line
 		!str("Current X speed (unsigned dec): ") : !dec(remap_ram($7E007B)) : !new_line
 		!str("Current X speed (hex): $") : !hex(remap_ram($7E007B)) : !new_line
-		!str("Current text box color: $") : !hex(!vwf_box_color+1) : !hex(!vwf_box_color) : !new_line
+		!str("Current text box color: $") : !hex(!vwf_chosen_box_color+1) : !hex(!vwf_chosen_box_color) : !new_line
 		!str("Current timer: ") : !ram_char(remap_ram($7E0F31)) : !ram_char(remap_ram($7E0F32)) : !ram_char(remap_ram($7E0F33)) : !new_line
 		!press_button : !clear		
 		
@@ -684,7 +684,7 @@ endmacro
 
 	%vwf_header(x_pos(10), y_pos(10), width(5), height(1), text_alignment(TextAlignment.Centered), enable_sfx(false), enable_message_asm(true), box_animation(BoxAnimation.Instant))
 	
-	!char($93) : !nbsp : !hex(!vwf_box_frame) : !nbsp : !char($94) : !freeze
+	!char($93) : !nbsp : !hex(!vwf_chosen_box_frame) : !nbsp : !char($94) : !freeze
 	
 .Refresh
 	!open_message(0021, false, true)
@@ -695,7 +695,7 @@ endmacro
 %vwf_message_end()
 
 MessageASM0021:
-	%message_box_design_change_logic(0021, !vwf_box_frame, !num_frames)
+	%message_box_design_change_logic(0021, !vwf_chosen_box_frame, !num_frames)
 
 ;-------------------------------------------------------
 
@@ -703,7 +703,7 @@ MessageASM0021:
 
 	%vwf_header(x_pos(10), y_pos(10), width(5), height(1), text_alignment(TextAlignment.Centered), enable_sfx(false), enable_message_asm(true), box_animation(BoxAnimation.Instant))
 	
-	!char($93) : !nbsp : !hex(!vwf_box_bg) : !nbsp : !char($94) : !freeze
+	!char($93) : !nbsp : !hex(!vwf_chosen_box_bg) : !nbsp : !char($94) : !freeze
 	
 .Refresh
 	!open_message(0022, false, true)
@@ -714,7 +714,7 @@ MessageASM0021:
 %vwf_message_end()
 
 MessageASM0022:
-	%message_box_design_change_logic(0022, !vwf_box_bg, !num_bg_patterns)
+	%message_box_design_change_logic(0022, !vwf_chosen_box_bg, !num_bg_patterns)
 
 ;-------------------------------------------------------
 
@@ -732,16 +732,16 @@ vwf_box_colorStuff:
 	
 	rep #$20
 	
-	lda !vwf_box_color
+	lda !vwf_chosen_box_color
 	and.w #%00011111
 	sta !vwf_edit_color_r
 	
-	lda !vwf_box_color
+	lda !vwf_chosen_box_color
 	lsr #5
 	and.w #%00011111
 	sta !vwf_edit_color_g
 	
-	lda !vwf_box_color
+	lda !vwf_chosen_box_color
 	lsr #10
 	sta !vwf_edit_color_b
 	
@@ -758,7 +758,7 @@ vwf_box_colorStuff:
 	asl #5
 	ora !vwf_edit_color_r
 	
-	sta !vwf_box_color
+	sta !vwf_chosen_box_color
 	
 	sep #$20
 

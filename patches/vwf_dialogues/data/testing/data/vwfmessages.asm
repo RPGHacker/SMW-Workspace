@@ -105,7 +105,7 @@ endif
 		!clear()
 		!options(TestSelectionPage2,
 			!str("Wait for Buttons"),
-			!str("-"),
+			!str("Text box overrides"),
 			!str("-"),
 			!str("-"),
 			!str("-"),
@@ -338,6 +338,8 @@ endif
 			!jump(.Page2Start)
 			
 	!opt_loc(TestSelectionPage2, 1)
+		!display_message(0062, false, false)
+	
 	!opt_loc(TestSelectionPage2, 2)
 	!opt_loc(TestSelectionPage2, 3)
 	!opt_loc(TestSelectionPage2, 4)
@@ -2071,7 +2073,10 @@ BufferOverflowTest:
 
 %vwf_message_start(0062)	; Message 10D-1
 
-	; Message header & text go here
+	%vwf_header(text_box_bg_pattern($07))
+	
+	!str("This text box overrides the text box background.") : !press_button
+	!display_message(0063)
 
 %vwf_message_end()
 
@@ -2079,7 +2084,10 @@ BufferOverflowTest:
 
 %vwf_message_start(0063)	; Message 10D-2
 
-	; Message header & text go here
+	%vwf_header(text_box_bg_color(rgb_15(15, 0, 0)))
+	
+	!str("This text box overrides the text box color.") : !press_button
+	!display_message(0064)
 
 %vwf_message_end()
 
@@ -2087,7 +2095,10 @@ BufferOverflowTest:
 
 %vwf_message_start(0064)	; Message 10E-1
 
-	; Message header & text go here
+	%vwf_header(text_box_frame($01))
+	
+	!str("This text box overrides the text box frame.") : !press_button
+	!display_message(0065)
 
 %vwf_message_end()
 
@@ -2095,7 +2106,10 @@ BufferOverflowTest:
 
 %vwf_message_start(0065)	; Message 10E-2
 
-	; Message header & text go here
+	%vwf_header(text_box_bg_pattern($05), text_box_bg_color(rgb_15(0, 15, 0)), text_box_frame($02))
+	
+	!str("This text box overrides all three text box properties.") : !press_button
+	!display_message(0050)
 
 %vwf_message_end()
 

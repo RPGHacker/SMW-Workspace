@@ -120,6 +120,10 @@
 									<li><a href="#header-settings-vwf_width"><code>vwf_width()</code></a></li>
 									<li><a href="#header-settings-vwf_height"><code>vwf_height()</code></a></li>
 									
+									<li><a href="#header-settings-vwf_text_box_bg_pattern"><code>vwf_text_box_bg_pattern()</code></a></li>
+									<li><a href="#header-settings-vwf_text_box_bg_color"><code>vwf_text_box_bg_color()</code></a></li>
+									<li><a href="#header-settings-vwf_text_box_frame"><code>vwf_text_box_frame()</code></a></li>
+									
 									<li><a href="#header-settings-vwf_box_animation"><code>vwf_box_animation()</code></a></li>									
 								</ul></details>
 								
@@ -451,8 +455,8 @@
 				<ul>
 					<li>Each 8×8 tile represents one BG pattern. The tile is simply repeated horizontally and vertically to fill up the entire background of a text box.</li>
 					<li>The file size of <code>vwfbgpatterns.bin</code> must be divisible by 16. That's exactly the size of one 8x8 tiles in 2BPP GB graphics format in YY-CHR.</li>
-					<li>The default background color is defined via <code>!vwf_default_text_box_bg_color</code> in <code>data/vwfconfig.cfg</code>. Currently, to switch to a different BG color at run-time, custom code is needed.</li>
-					<li>The default background pattern is defined via <code>!vwf_default_text_box_bg_pattern</code> in <code>data/vwfconfig.cfg</code>. A value of <code>$00</code> represents the first tile in <code>vwfbgpatterns.bin</code>, a value of <code>$01</code> the second tile and so forth. Currently, to switch to a different BG pattern at run-time, custom code is needed.</li>
+					<li>The default background color is defined via <code>!vwf_default_text_box_bg_color</code> in <code>data/vwfconfig.cfg</code>. In theory, players can override this default setting in-game, but the patch doesn't provide any built-in menu for doing so. Additionally, the setting can be overridden by a message header.</li>
+					<li>The default background pattern is defined via <code>!vwf_default_text_box_bg_pattern</code> in <code>data/vwfconfig.cfg</code>. A value of <code>$00</code> represents the first tile in <code>vwfbgpatterns.bin</code>, a value of <code>$01</code> the second tile and so forth. In theory, players can override this default setting in-game, but the patch doesn't provide any built-in menu for doing so. Additionally, the setting can be overridden by a message header.</li>
 					<li>You should only every use color <code>$01</code> of a palette for BG patterns (that is "the second color from left" in a typical 2BPP four-color palette).
 						The reason for this is that colors <code>$02</code> and <code>$03</code> are reserved for fonts.</li>
 				</ul>
@@ -474,7 +478,7 @@
 						<img class="d-block m-1 my-2 ir-crisp" src="screenshots/frames-1.png" alt="Screenshot" width="588" height="355"/>
 					</li>
 					<li>The file size of <code>vwfframes.bin</code> must be divisible by 144. That's exactly the size of nine 8x8 tile in 2BPP GB graphics format in YY-CHR.</li>
-					<li>The default text box frame is defined via <code>!vwf_default_text_box_frame</code> in <code>data/vwfconfig.cfg</code>. A value of <code>$00</code> represents the first nine tiles in <code>vwfframes.bin</code>, a value of <code>$01</code> the second nine tiles and so forth. Currently, to switch to a different text box frame at run-time, custom code is needed.</li>
+					<li>The default text box frame is defined via <code>!vwf_default_text_box_frame</code> in <code>data/vwfconfig.cfg</code>. A value of <code>$00</code> represents the first nine tiles in <code>vwfframes.bin</code>, a value of <code>$01</code> the second nine tiles and so forth. In theory, players can override this default setting in-game, but the patch doesn't provide any built-in menu for doing so. Additionally, the setting can be overridden by a message header.</li>
 					<li>The define <code>!vwf_frame_palette</code> in <code>data/vwfconfig.cfg</code> dictates which section of CGRAM text box frames use for their palette. To give you a better idea of what this means: This define controls which parts of the Lunar Magic palette get overwritten by the text box frame palette while a VWF text box is on screen. Usable values are <code>$00</code> to <code>$07</code>. This image illustrates how these values map onto the palette from Lunar Magic:					
 						<img class="d-block m-1 my-2 ir-crisp" src="screenshots/lm-palette-1.png" alt="Screenshot" width="530" height="329"/>
 					</li>
@@ -721,6 +725,69 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 					Specifies the height of the inside area (aka the text area) of the text box in 16x16 tile increments. A value of 1 means one 16x16 tile (=16 pixels), a value of 2 two 16x16 tiles etc. To get the total height of the entire text box, add two 8x8 tiles for the text box frame to this.
 				</p></dd>
 				
+				<dt id="header-settings-vwf_text_box_bg_pattern"><code>vwf_text_box_bg_pattern()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code class="65c816_asar">vwf_text_box_bg_pattern(pattern_id)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code class="65c816_asar">text_box_bg_pattern(pattern_id) = vwf_text_box_bg_pattern(pattern_id)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>pattern_id: number:</code> The index of the pattern to use. (min: <code>$00</code>, max: <code>[total number of patterns] - 1</code>)</li>
+							</ul></td>
+						</tr>
+					</table>
+					Overrides the setting for the text box background pattern used by this text box. NOTE: For technical reasons, the patch can't properly bound-check this setting for the maximum value. Going beyond the maximum will produce glitched text box backgrounds.
+				</p></dd>
+				
+				<dt id="header-settings-vwf_text_box_bg_color"><code>vwf_text_box_bg_color()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code class="65c816_asar">vwf_text_box_bg_color(color)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code class="65c816_asar">text_box_bg_color(color) = vwf_text_box_bg_color(color)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>color: rgb15-color:</code> The color to use, in RGB15 format.</li>
+							</ul></td>
+						</tr>
+					</table>
+					Overrides the setting for the text box background color used by this text box.
+				</p></dd>
+				
+				<dt id="header-settings-vwf_text_box_frame"><code>vwf_text_box_frame()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code class="65c816_asar">vwf_text_box_frame(frame_id)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Short Aliases</th>
+							<td><pre><code class="65c816_asar">text_box_frame(frame_id) = vwf_text_box_frame(frame_id)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>frame_id: number:</code> The index of the frame to use. (min: <code>$00</code>, max: <code>[total number of frames] - 1</code>)</li>
+							</ul></td>
+						</tr>
+					</table>
+					Overrides the setting for the text box frame used by this text box. NOTE: For technical reasons, the patch can't properly bound-check this setting for the maximum value. Going beyond the maximum will produce glitched text box frames.
+				</p></dd>
+				
 				<dt id="header-settings-vwf_box_animation"><code>vwf_box_animation()</code></dt>
 				<dd><p>
 					<table class="api-documentation">
@@ -769,7 +836,7 @@ BoxAnimation = VWF_BoxAnimation</code></pre></td>
 						<tr>
 							<th>Parameters</th>
 							<td><ul class="parameter-list">
-								<li><code>font_id: number:</code> The ID of the font to use. (min: <code>0</code>, max: <code>[number of total fonts] - 1</code>)</li>
+								<li><code>font_id: number:</code> The ID of the font to use. (min: <code>0</code>, max: <code>[total number of fonts] - 1</code>)</li>
 							</ul></td>
 						</tr>
 					</table>
@@ -1697,7 +1764,8 @@ ControllerButton = VWF_ControllerButton</code></pre></td>
 						</tr>
 						<tr>
 							<th>Short Aliases</th>
-							<td><pre><code class="65c816_asar">!open_message(message_no, show_close_anim, show_open_anim) = %vwf_display_message(message_no, show_close_anim, show_open_anim)</code></pre></td>
+							<td><pre><code class="65c816_asar">!open_message(message_no, show_close_anim, show_open_anim) = %vwf_display_message(message_no, show_close_anim, show_open_anim)
+!display_message(message_no, show_close_anim, show_open_anim) = %vwf_display_message(message_no, show_close_anim, show_open_anim)</code></pre></td>
 						</tr>
 						<tr>
 							<th>Parameters</th>
@@ -2542,6 +2610,7 @@ endif</code></pre>
 						<li>Added the <code>%vwf_wait_for_button()</code> and <code>%vwf_wait_for_custom_button()</code> text commands, the <code>VWF_AutoWait.WaitForButton</code> auto-wait mode, as well as the <code>!vwf_default_advance_button_mask</code>, <code>!vwf_select_choice_button_mask</code> and <code>!vwf_skip_message_button_mask</code> settings, which give finer control over which buttons affect the patch. These features replace the <code>%vwf_wait_for_a()</code> text command and the <code>VWF_AutoWait.WaitForA</code> auto-wait mode, which are now deprecated.</li>
 						<li>The maximum value for the <code>VWF_AutoWait.WaitFrames</code> auto-wait mode has been extended from <code>254</code> to <code>255</code>.</li>
 						<li>Simplified many multiplications in the patch. For most of them, this slightly boosts performance. More importantly, this removes any dependency on the mode 7 registers for multiplication, which avoids a potential rare bug that could be caused by HDMA.</li>
+						<li>Text box properties (background pattern, background color and frame) can now be overridden by message headers. This functionality is available via the <a href="#header-settings-vwf_text_box_bg_pattern"><code>vwf_text_box_bg_pattern()</code></a>, <a href="#header-settings-vwf_text_box_bg_color"><code>vwf_text_box_bg_color()</code></a> and <a href="#header-settings-vwf_text_box_frame"><code>vwf_text_box_frame()</code></a> header settings.</li>
 					</ul>
 				</p></dd>
 				

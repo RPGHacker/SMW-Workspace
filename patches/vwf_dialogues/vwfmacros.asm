@@ -704,6 +704,19 @@ endmacro
 
 %vwf_define_header_setter_generic("enable_message_asm", false, false, true)
 
+; These three are special, as they don't directly map onto the settings from vwfconfig.cfg.
+; We'll use a bit of trickery here to handle everything while also remaning backwards-compatible.
+!vwf_default_text_box_bg_pattern_internal := !vwf_default_text_box_bg_pattern
+!vwf_default_text_box_bg_color_internal := !vwf_default_text_box_bg_color
+!vwf_default_text_box_frame_internal := !vwf_default_text_box_frame
+
+!vwf_default_text_box_bg_pattern = $100
+!vwf_default_text_box_bg_color = $10000
+!vwf_default_text_box_frame = $100
+
+%vwf_define_header_setter_generic("text_box_bg_pattern", true, $00, $100)
+%vwf_define_header_setter_generic("text_box_bg_color", true, $0000, $10000)
+%vwf_define_header_setter_generic("text_box_frame", true, $00, $100)
 
 macro vwf_header(...)
 	if !vwf_current_message_id == $10000
@@ -827,6 +840,38 @@ macro vwf_header(...)
 		if !vwf_header_argument_enable_message_asm_value
 			dl !vwf_current_message_asm_name
 		endif
+		
+		; db %-----abc
+		; %a:      BG pattern override enabled
+		; %b:      BG color override enabled
+		; %c:      Frame override enabled
+		!temp_has_bg_pattern #= not(equal(!vwf_header_argument_text_box_bg_pattern_value, $100))
+		!temp_has_bg_color #= not(equal(!vwf_header_argument_text_box_bg_color_value, $10000))
+		!temp_has_frame #= not(equal(!vwf_header_argument_text_box_frame_value, $100))
+		
+		db (!temp_has_bg_pattern<<2)|(!temp_has_bg_color<<1)|(!temp_has_frame)
+		
+		; db $aa       (skip if BG pattern override disabled)
+		; $aa:     BG pattern override
+		if !temp_has_bg_pattern
+			db !vwf_header_argument_text_box_bg_pattern_value
+		endif
+		
+		; dw $aaaa     (skip if BG color override disabled)
+		; $aaaa:   BG color override
+		if !temp_has_bg_color
+			dw !vwf_header_argument_text_box_bg_color_value
+		endif
+		
+		; db $aa       (skip if frame override disabled)
+		; $aa:     Frame override
+		if !temp_has_frame
+			db !vwf_header_argument_text_box_frame_value
+		endif
+		
+		undef "temp_has_bg_pattern"
+		undef "temp_has_bg_color"
+		undef "temp_has_frame"
 	endif
 endmacro
 
@@ -1350,8 +1395,9 @@ if !vwf_enable_short_aliases != false
 	
 	!freeze = %vwf_freeze()
 	!halt = %vwf_freeze()
-	!jump = %vwf_set_text_pointer	
+	!jump = %vwf_set_text_pointer
 	!open_message = %vwf_display_message
+	!display_message = %vwf_display_message
 	
 	!font = %vwf_set_font
 	!edit_pal = %vwf_change_colors

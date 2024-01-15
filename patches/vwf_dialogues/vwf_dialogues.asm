@@ -601,14 +601,14 @@ InitDefaults:
 	sta !vwf_message
 	sta !vwf_message+1
 
-	lda #!vwf_default_text_box_bg_pattern	; Set default values
+	lda #!vwf_default_text_box_bg_pattern_internal	; Set default values
 	sta !vwf_chosen_box_bg
-	lda #!vwf_default_text_box_frame
+	lda #!vwf_default_text_box_frame_internal
 	sta !vwf_chosen_box_frame
 
-	lda.b #!vwf_default_text_box_bg_color
+	lda.b #!vwf_default_text_box_bg_color_internal
 	sta !vwf_chosen_box_color
-	lda.b #!vwf_default_text_box_bg_color>>8
+	lda.b #!vwf_default_text_box_bg_color_internal>>8
 	sta !vwf_chosen_box_color+1
 	rts
 	
@@ -1181,6 +1181,45 @@ endif
 	sta !vwf_current_box_color
 	lda !vwf_chosen_box_color+1
 	sta !vwf_current_box_color+1
+		
+	lda [$00],y		; Text box property override settings
+	iny
+	pha
+	
+	bit.b #%00000100
+	beq .DontOverrideBg
+
+	lda [$00],y		; Text box BG pattern override
+	sta !vwf_current_box_bg
+	iny
+
+	pla
+	pha
+.DontOverrideBg
+	
+	bit.b #%00000010
+	beq .DontOverrideColor
+
+	lda [$00],y		; Text box BG color override
+	sta !vwf_current_box_color
+	iny
+	lda [$00],y
+	sta !vwf_current_box_color+1
+	iny
+
+	pla
+	pha
+.DontOverrideColor
+	
+	bit.b #%00000001
+	beq .DontOverrideFrame
+
+	lda [$00],y		; Text box frame override
+	sta !vwf_current_box_frame
+	iny
+	
+.DontOverrideFrame
+	pla
 
 	tya
 	sta $03
@@ -1191,6 +1230,13 @@ endif
 	sta !vwf_text_source
 	sep #$20
 
+	; Now that the header can override text box properties, we are forced
+	; to re-run these steps every time we load a header. I guess we COULD
+	; optimize this to detect a changed property and only then call these
+	; routines, but I really don't think this optimization is worth it.
+	jsr BufferGraphics_Start	
+	jsr LoadBoxPalette
+	
 
 .ValidationChecks
 	lda !vwf_width	; Validate all inputs

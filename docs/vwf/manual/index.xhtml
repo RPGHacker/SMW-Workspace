@@ -227,6 +227,8 @@
 							
 								<details><summary><a href="#helper-functions-colors">Colors</a></summary><ul>
 									<li><a href="#helper-functions-rgb_15"><code>rgb_15()</code></a></li>
+									<li><a href="#helper-functions-rgb_15_from_24"><code>rgb_15_from_24()</code></a></li>
+									<li><a href="#helper-functions-rgb_15_from_f"><code>rgb_15_from_f()</code></a></li>
 									<li><a href="#helper-functions-vwf_get_color_index_2bpp"><code>vwf_get_color_index_2bpp()</code></a></li>
 								</ul></details>
 							
@@ -2049,6 +2051,44 @@ ExitToOwMode = VWF_ExitToOwMode</code></pre></td>
 					Defines a 16-bit color value in RGB15 format by separately specifying the values for the <code>red</code>, <code>green</code> and <code>blue</code> color channels.
 				</p></dd>
 				
+				<dt id="helper-functions-rgb_15_from_24"><code>rgb_15_from_24()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code class="65c816_asar">rgb_15_from_24(r, g, b)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>r: number:</code> The value of the <code>red</code> color channel. (min: <code>0</code>, max: <code>255</code>)</li>
+								<li><code>g: number:</code> The value of the <code>green</code> color channel. (min: <code>0</code>, max: <code>255</code>)</li>
+								<li><code>b: number:</code> The value of the <code>blue</code> color channel. (min: <code>0</code>, max: <code>255</code>)</li>
+							</ul></td>
+						</tr>
+					</table>
+					Defines a 16-bit color value in RGB15 format by separately specifying the values for the <code>red</code>, <code>green</code> and <code>blue</code> color channels as 8-bit values. This is useful since RGB24 (which uses 8-bit color channels) is the most common color format around today, so you can easily take color values from existing apps (like Microsoft Paint) and copy them directly into the patch. Note that not all RGB24 color values are expressible in RGB15, so in a lot of cases, the function will pick the closest matching color.
+				</p></dd>
+				
+				<dt id="helper-functions-rgb_15_from_f"><code>rgb_15_from_f()</code></dt>
+				<dd><p>
+					<table class="api-documentation">
+						<tr>
+							<th>Usage</th>
+							<td><pre><code class="65c816_asar">rgb_15_from_f(r, g, b)</code></pre></td>
+						</tr>
+						<tr>
+							<th>Parameters</th>
+							<td><ul class="parameter-list">
+								<li><code>r: number:</code> The value of the <code>red</code> color channel. (min: <code>0.0</code>, max: <code>1.0</code>)</li>
+								<li><code>g: number:</code> The value of the <code>green</code> color channel. (min: <code>0.0</code>, max: <code>1.0</code>)</li>
+								<li><code>b: number:</code> The value of the <code>blue</code> color channel. (min: <code>0.0</code>, max: <code>1.0</code>)</li>
+							</ul></td>
+						</tr>
+					</table>
+					Defines a 16-bit color value in RGB15 format by separately specifying the values for the <code>red</code>, <code>green</code> and <code>blue</code> color channels as decimal values. This is useful in cases where you want to express color channels as a percentage. The function will pick the closest matching color expressible in RGB15 for the given color channel values.
+				</p></dd>
+				
 				<dt id="helper-functions-vwf_get_color_index_2bpp"><code>vwf_get_color_index_2bpp()</code></dt>
 				<dd><p>
 					<table class="api-documentation">
@@ -2611,6 +2651,7 @@ endif</code></pre>
 						<li>The maximum value for the <code>VWF_AutoWait.WaitFrames</code> auto-wait mode has been extended from <code>254</code> to <code>255</code>.</li>
 						<li>Simplified many multiplications in the patch. For most of them, this slightly boosts performance. More importantly, this removes any dependency on the mode 7 registers for multiplication, which avoids a potential rare bug that could be caused by HDMA.</li>
 						<li>Text box properties (background pattern, background color and frame) can now be overridden by message headers. This functionality is available via the <a href="#header-settings-vwf_text_box_bg_pattern"><code>vwf_text_box_bg_pattern()</code></a>, <a href="#header-settings-vwf_text_box_bg_color"><code>vwf_text_box_bg_color()</code></a> and <a href="#header-settings-vwf_text_box_frame"><code>vwf_text_box_frame()</code></a> header settings.</li>
+						<li>Added the <a href="#helper-functions-rgb_15_from_24"><code>rgb_15_from_24()</code></a> and <a href="#helper-functions-rgb_15_from_f"><code>rgb_15_from_f()</code></a> helper functions.</li>
 					</ul>
 				</p></dd>
 				

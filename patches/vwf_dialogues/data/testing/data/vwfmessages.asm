@@ -2084,7 +2084,7 @@ BufferOverflowTest:
 
 %vwf_message_start(0063)	; Message 10D-2
 
-	%vwf_header(text_box_bg_color(rgb_15(15, 0, 0)))
+	%vwf_header(text_box_bg_color(rgb_15_from_24(128, 0, 0)))
 	
 	!str("This text box overrides the text box color.") : !press_button
 	!display_message(0064)
@@ -2106,7 +2106,7 @@ BufferOverflowTest:
 
 %vwf_message_start(0065)	; Message 10E-2
 
-	%vwf_header(text_box_bg_pattern($05), text_box_bg_color(rgb_15(0, 15, 0)), text_box_frame($02))
+	%vwf_header(text_box_bg_pattern($05), text_box_bg_color(rgb_15_from_f(0.0, 0.5, 0.0)), text_box_frame($02))
 	
 	!str("This text box overrides all three text box properties.") : !press_button
 	!display_message(0050)

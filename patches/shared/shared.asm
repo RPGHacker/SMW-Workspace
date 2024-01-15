@@ -580,7 +580,37 @@ endmacro
 
 ; Misc color functions
 
+; Private section
+
+{
+	; Converts an 8-bit color channel to a 5-bit color channel.
+	; Requires math rounding mode to be off.
+
+	function rs_8_bit_to_5_bit_color(channel_value) = round((channel_value/255)*31, 0)&%11111
+	
+	
+	; Converts a float color channel to a 5-bit color channel.
+	; Requires math rounding mode to be off.
+
+	function rs_f_to_5_bit_color(channel_value) = round(channel_value*31, 0)&%11111
+}
+
+
+
+; Public section
 
 ; Creates an RGB15 16-bit value from the three different colors channels. Each channel value can be in the range of 0 to 31.
 
 function rgb_15(red, green, blue) = (red&%11111)|((green&%11111)<<5)|((blue&%11111)<<10)
+
+
+; Creates an RGB15 16-bit value from the three different color channels comprising an RGB24 24-bit color value.
+; Each channel value can be in the range of 0 to 255. For color values not representable as RGB15, the closest match is used.
+
+function rgb_15_from_24(red, green, blue) = rs_8_bit_to_5_bit_color(red)|(rs_8_bit_to_5_bit_color(green)<<5)|(rs_8_bit_to_5_bit_color(blue)<<10)
+
+
+; Creates an RGB15 16-bit value from the three different color channels expressed as decimal percentages.
+; Each channel value can be in the range of 0.0 to 1.0. For color values not representable as RGB15, the closest match is used.
+
+function rgb_15_from_f(red, green, blue) = rs_f_to_5_bit_color(red)|(rs_f_to_5_bit_color(green)<<5)|(rs_f_to_5_bit_color(blue)<<10)

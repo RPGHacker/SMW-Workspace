@@ -104,9 +104,9 @@ endif
 		.Page2Start
 		!clear()
 		!options(TestSelectionPage2,
-			!str("Wait for Buttons"),
-			!str("Text box overrides"),
-			!str("-"),
+			%vwf_wrap( !set_pal($05), !char($00AC), !reset_color, !str(" Wait for Buttons") ),
+			%vwf_wrap( !set_pal($05), !char($00AC), !reset_color, !str(" Text box overrides") ),
+			%vwf_wrap( !set_pal($05), !char($00AC), !reset_color, !str(" Shared headers") ),
 			!str("-"),
 			!str("-"),
 			!str("-"),
@@ -341,6 +341,8 @@ endif
 		!display_message(0062, false, false)
 	
 	!opt_loc(TestSelectionPage2, 2)
+		!display_message(0066, false, false)
+		
 	!opt_loc(TestSelectionPage2, 3)
 	!opt_loc(TestSelectionPage2, 4)
 	!opt_loc(TestSelectionPage2, 5)
@@ -2117,7 +2119,10 @@ BufferOverflowTest:
 
 %vwf_message_start(0066)	; Message 10F-1
 
-	; Message header & text go here
+	%vwf_shared_header(0062)
+	
+	!str("Copying text box background pattern setting from message 0062 header.") : !press_button
+	!display_message(0067)
 
 %vwf_message_end()
 
@@ -2125,7 +2130,10 @@ BufferOverflowTest:
 
 %vwf_message_start(0067)	; Message 10F-2
 
-	; Message header & text go here
+	%vwf_shared_header(0063)
+	
+	!str("Copying text box background color setting from message 0063 header.") : !press_button
+	!display_message(0068)
 
 %vwf_message_end()
 
@@ -2133,7 +2141,10 @@ BufferOverflowTest:
 
 %vwf_message_start(0068)	; Message 110-1
 
-	; Message header & text go here
+	%vwf_shared_header(0064)
+	
+	!str("Copying text box frame setting from message 0064 header.") : !press_button
+	!display_message(0069)
 
 %vwf_message_end()
 
@@ -2141,7 +2152,10 @@ BufferOverflowTest:
 
 %vwf_message_start(0069)	; Message 110-2
 
-	; Message header & text go here
+	%vwf_shared_header(0065)
+	
+	!str("Copying multiple text box property settings from message 0065 header.") : !press_button
+	!display_message(0050)
 
 %vwf_message_end()
 

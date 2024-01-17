@@ -977,7 +977,69 @@ LoadHeader:
 	sta $02
 
 	ldy #$00
+	
+	lda [$00],y	; Check if we're using a shared header
+	iny
+	bit.b #%00000001
+	beq .NoSharedHeader
+	
+	lda $00
+	pha
+	lda $01
+	pha
+	lda $02
+	pha	
+	phy
+	
+	rep #$21
+	lda [$00],y
+	
+	cmp.w #$FFFF
+	bne .NotDefaultHeader
+	
+	lda.w #DefaultHeaderMessage0
+	sta !vwf_text_source
+	sep #$20
+	lda.w #DefaultHeaderMessage0>>16
+	sta !vwf_text_source+2
+	
+	bra .ReadSharedHeader
+	
+.NotDefaultHeader
+	lda !vwf_message
+	pha
+	
+	lda [$00],y
+	sta !vwf_message	
+	sep #$20
+	
+	jsr GetMessage
+	
+	pla
+	sta !vwf_message+1
+	pla
+	sta !vwf_message
 
+.ReadSharedHeader
+	jsr LoadHeader
+	
+	ply
+	pla
+	sta $02
+	pla
+	sta $01
+	pla
+	sta $00
+	
+	iny #2
+	
+	jsr .UpdateTextSource
+	
+	rts
+
+.NoSharedHeader
+	; Not using a shared header, so read in header properties directly.
+	
 if !vwf_bit_mode == VWF_BitMode.8Bit
 	lda [$00],y	; Font
 	sta !vwf_font
@@ -1220,15 +1282,8 @@ endif
 	
 .DontOverrideFrame
 	pla
-
-	tya
-	sta $03
-	stz $04
-	rep #$21
-	lda $00
-	adc $03
-	sta !vwf_text_source
-	sep #$20
+	
+	jsr .UpdateTextSource
 
 	; Now that the header can override text box properties, we are forced
 	; to re-run these steps every time we load a header. I guess we COULD
@@ -1319,6 +1374,19 @@ endif
 	sta !vwf_box_create
 
 .StyleOK
+	rts
+
+.UpdateTextSource
+	tya
+	sta $03
+	stz $04
+	rep #$21
+	lda $00
+	adc $03
+	sta !vwf_text_source
+	sep #$20
+	lda $02
+	sta !vwf_text_source+2
 	rts
 
 

@@ -214,6 +214,7 @@ macro vwf_text_start(table_file)
 	cleartable
 	incsrc "<table_file>"
 	
+	!vwf_current_header_name = ""
 	!vwf_current_message_name = ""
 	!vwf_current_message_asm_name = ""
 	!vwf_current_message_id = $10000
@@ -233,7 +234,8 @@ macro vwf_text_end()
 		error "A %vwf_message_start() (message !vwf_current_message_id) seems to be missing a %vwf_message_end()."		
 	elseif defined("vwf_current_text_macro_group")
 		error "A %vwf_start_text_macro_group() (group '!vwf_current_text_macro_group') seems to be missing a %vwf_end_text_macro_group()."	
-	else		
+	else
+		!vwf_current_header_name = ""
 		!vwf_current_message_name = ""
 		!vwf_current_message_asm_name = ""
 		!vwf_current_message_id = $10000
@@ -250,6 +252,8 @@ macro vwf_define_invalid_message_handlers(text_file_id)
 	!temp_message_id #= ((<text_file_id>+1)*10000)+1
 	
 	
+	; Error message for opening a message with an ID that wasn't defined yet.
+	
 	%vwf_message_start(!temp_message_id)
 	!temp_message_id #= !temp_message_id+1
 	
@@ -262,30 +266,47 @@ macro vwf_define_invalid_message_handlers(text_file_id)
 	%vwf_message_end()
 	
 	
-	%vwf_message_start(!temp_message_id)
-	!temp_message_id #= !temp_message_id+1
-	
-	HandleTextMacroBufferOverflow!vwf_num_text_files:
-		%vwf_header(vwf_x_pos(1), vwf_y_pos(1), vwf_width(14), vwf_height(3), vwf_freeze_game(true), vwf_text_speed(0), vwf_auto_wait(VWF_AutoWait.WaitForButton), vwf_enable_skipping(false), vwf_enable_message_asm(false))
+	if <text_file_id> == 0
+		; Error message for overflowing the buffered text macro buffer.
 		
-	HandleTextMacroBufferOverflow!{vwf_num_text_files}_Content:
-		%vwf_clear() : %vwf_text("Text macro buffer overflow while calling AddToBufferedTextMacro. This is a bug, please contact the hack author.")
-		%vwf_wait_for_button()
-	
-	%vwf_message_end()
-	
-	
-	%vwf_message_start(!temp_message_id)
-	!temp_message_id #= !temp_message_id+1
-	
-	HandleTextMacroIdOverflow!vwf_num_text_files:
-		%vwf_header(vwf_x_pos(1), vwf_y_pos(1), vwf_width(14), vwf_height(3), vwf_freeze_game(true), vwf_text_speed(0), vwf_auto_wait(VWF_AutoWait.WaitForButton), vwf_enable_skipping(false), vwf_enable_message_asm(false))
+		%vwf_message_start(!temp_message_id)
+		!temp_message_id #= !temp_message_id+1
 		
-	HandleTextMacroIdOverflow!{vwf_num_text_files}_Content:
-		%vwf_clear() : %vwf_text("Trying to use too many buffered text macros. This is a bug, please contact the hack author.")
-		%vwf_wait_for_button()
-	
-	%vwf_message_end()
+		HandleTextMacroBufferOverflow!vwf_num_text_files:
+			%vwf_header(vwf_x_pos(1), vwf_y_pos(1), vwf_width(14), vwf_height(3), vwf_freeze_game(true), vwf_text_speed(0), vwf_auto_wait(VWF_AutoWait.WaitForButton), vwf_enable_skipping(false), vwf_enable_message_asm(false))
+			
+		HandleTextMacroBufferOverflow!{vwf_num_text_files}_Content:
+			%vwf_clear() : %vwf_text("Text macro buffer overflow while calling AddToBufferedTextMacro. This is a bug, please contact the hack author.")
+			%vwf_wait_for_button()
+		
+		%vwf_message_end()
+		
+		
+		; Error message for trying to use more buffered text macros than were reserved.
+		
+		%vwf_message_start(!temp_message_id)
+		!temp_message_id #= !temp_message_id+1
+		
+		HandleTextMacroIdOverflow!vwf_num_text_files:
+			%vwf_header(vwf_x_pos(1), vwf_y_pos(1), vwf_width(14), vwf_height(3), vwf_freeze_game(true), vwf_text_speed(0), vwf_auto_wait(VWF_AutoWait.WaitForButton), vwf_enable_skipping(false), vwf_enable_message_asm(false))
+			
+		HandleTextMacroIdOverflow!{vwf_num_text_files}_Content:
+			%vwf_clear() : %vwf_text("Trying to use too many buffered text macros. This is a bug, please contact the hack author.")
+			%vwf_wait_for_button()
+		
+		%vwf_message_end()
+		
+		
+		; The message containing our default header for when no arguments were specified.
+		
+		%vwf_message_start(!temp_message_id)
+		!temp_message_id #= !temp_message_id+1
+		
+		DefaultHeaderMessage!vwf_num_text_files:
+			%vwf_header()
+		
+		%vwf_message_end()
+	endif
 	
 	
 	undef "temp_message_id"
@@ -304,7 +325,9 @@ macro vwf_message_start(id)
 	elseif not(defined("vwf_defining_internal_message")) && $<id> > $FFFF
 		error "Message IDs must be between 0000 and FFFF (current: <id>)."
 	else
-		!vwf_current_message_name = "Message<id>"		
+		; Used specifically for shared headers - !vwf_current_message_name actually points to the exact same location.
+		!vwf_current_header_name = "PhysicalHeader<id>"
+		!vwf_current_message_name = "Message<id>"
 		!vwf_current_message_asm_name = "MessageASM<id>"
 		!vwf_current_message_id = $<id>
 		!vwf_header_present = false
@@ -350,7 +373,8 @@ macro vwf_message_end()
 			; fall through to whatever %vwf_header() or %vwf_text_start() is being called next.
 			!vwf_current_message_name:
 		endif
-			
+		
+		!vwf_current_header_name = ""
 		!vwf_current_message_name = ""
 		!vwf_current_message_id = $10000
 		!vwf_header_present = false
@@ -725,153 +749,214 @@ macro vwf_header(...)
 		!temp_id_num #= !vwf_current_message_id
 		!{vwf_message_!{temp_id_num}_has_header} = true
 		undef "temp_id_num"
-	
-	!vwf_current_message_name:
-	
-		%vwf_clear_header_arguments()
-		
-		!temp_i #= 0
-		while !temp_i < sizeof(...)
-			%vwf_extract_header_agrument(<...[!temp_i]>)
-			!temp_i #= !temp_i+1
-		endwhile
-		undef "temp_i"
-			
+				
 		!vwf_header_present = true
 		
-		
-		; RPG Hacker: We could do some more validation on header arguments here.
-		; For example: Verify that the X/Y pos is valid against the chosen width/height.
-		; That way, we could remove a lot of the runtime-side checks.
-		; However, for now, I'm leaving things as they are.
-		; I don't want too end up rewriting absolutely everything.		
-		
-		
-		; Header format:
-		
-		; db $aa
-		; $aa:    Font number
-		if !vwf_bit_mode == VWF_BitMode.8Bit
-			db !vwf_header_argument_font_value
+		; RPG Hacker: Workaround for bugs in Asar versions before 2.0.
+		; "undef" in untaken branches is executed. Remove these once Asar 2.0 has been released.
+		if !assembler_ver < 20000
+			!temp_i = 0
+			!temp_has_bg_pattern = 0
+			!temp_has_bg_color = 0
+			!temp_has_frame = 0
 		endif
 		
-		; db %aaaaabbb,%bbccccdd,%ddeeeeff,%ffgggggg
-		; %aaaaa:  Text box X pos
-		; %bbbbb:  Text box Y pos
-		; %cccc:   Text box width
-		; %dddd:   Text box height
-		; %eeee:   Text margin (free space at left and right edge of text box) in pixels
-		; %ffff:   Width of a space in pixels
-		; %gggggg: Text speed (number of frames between letters)		
-		db (!vwf_header_argument_x_pos_value<<3)|(!vwf_header_argument_y_pos_value>>2)
-		db (!vwf_header_argument_y_pos_value<<6)|(!vwf_header_argument_width_value<<2)|(!vwf_header_argument_height_value>>2)
-		db (!vwf_header_argument_height_value<<6)|(!vwf_header_argument_text_margin_value<<2)|(!vwf_header_argument_space_width_value>>2)
-		db (!vwf_header_argument_space_width_value<<6)|!vwf_header_argument_text_speed_value
+		!vwf_current_header_name:
+		!vwf_current_message_name:
 		
-		; db $aa,%bbbb--cd
-		; $aa:     Auto wait mode
-		;   If auto wait mode is any WaitFrames setting:
-		;   $ee:   The number of frames to wait
-		; %bbbb:   Text box creation animation
-		; %c:      Enable message box skip
-		; %d:      Enable MessageASM
-		if !vwf_header_argument_auto_wait_value >= VWF_AutoWait.WaitFrames.Start
-			db VWF_AutoWait.WaitFrames.Start
-			db !vwf_header_argument_auto_wait_value-VWF_AutoWait.WaitFrames.Start
+		if sizeof(...) == 0 && !vwf_current_message_id < $10000
+			; No arguments were provided - we use our default header.
+			
+			; Default header format:
+			
+			; db %-------a
+			; %a:      A one, indicating that we are using a shared header.
+			db %00000001
+			
+			; dw $aaaa
+			; $aaaa    The ID of the message whose header we're using (FFFF means the default header).
+			dw $FFFF
 		else		
-			db !vwf_header_argument_auto_wait_value
+			%vwf_clear_header_arguments()
+			
+			!temp_i #= 0
+			while !temp_i < sizeof(...)
+				%vwf_extract_header_agrument(<...[!temp_i]>)
+				!temp_i #= !temp_i+1
+			endwhile
+			undef "temp_i"
+			
+			
+			; RPG Hacker: We could do some more validation on header arguments here.
+			; For example: Verify that the X/Y pos is valid against the chosen width/height.
+			; That way, we could remove a lot of the runtime-side checks.
+			; However, for now, I'm leaving things as they are.
+			; I don't want too end up rewriting absolutely everything.		
+			
+			
+			; Header format:
+					
+			; db %-------a
+			; %a:      A zero, indicating that we aren't using a shared header.
+			db %00000000
+			
+			; db $aa   (skip in 16-bit mode)
+			; $aa:    Font number
+			if !vwf_bit_mode == VWF_BitMode.8Bit
+				db !vwf_header_argument_font_value
+			endif
+			
+			; db %aaaaabbb,%bbccccdd,%ddeeeeff,%ffgggggg
+			; %aaaaa:  Text box X pos
+			; %bbbbb:  Text box Y pos
+			; %cccc:   Text box width
+			; %dddd:   Text box height
+			; %eeee:   Text margin (free space at left and right edge of text box) in pixels
+			; %ffff:   Width of a space in pixels
+			; %gggggg: Text speed (number of frames between letters)		
+			db (!vwf_header_argument_x_pos_value<<3)|(!vwf_header_argument_y_pos_value>>2)
+			db (!vwf_header_argument_y_pos_value<<6)|(!vwf_header_argument_width_value<<2)|(!vwf_header_argument_height_value>>2)
+			db (!vwf_header_argument_height_value<<6)|(!vwf_header_argument_text_margin_value<<2)|(!vwf_header_argument_space_width_value>>2)
+			db (!vwf_header_argument_space_width_value<<6)|!vwf_header_argument_text_speed_value
+			
+			; db $aa,%bbbb--cd
+			; $aa:     Auto wait mode
+			;   If auto wait mode is any WaitFrames setting:
+			;   $ee:   The number of frames to wait
+			; %bbbb:   Text box creation animation
+			; %c:      Enable message box skip
+			; %d:      Enable MessageASM
+			if !vwf_header_argument_auto_wait_value >= VWF_AutoWait.WaitFrames.Start
+				db VWF_AutoWait.WaitFrames.Start
+				db !vwf_header_argument_auto_wait_value-VWF_AutoWait.WaitFrames.Start
+			else		
+				db !vwf_header_argument_auto_wait_value
+			endif
+			db (!vwf_header_argument_box_animation_value<<4)|(!vwf_header_argument_enable_skipping_value<<1)|!vwf_header_argument_enable_message_asm_value
+			
+			if !vwf_header_argument_auto_wait_value == VWF_AutoWait.WaitForA
+				warn "The ""VWF_AutoWait.WaitForA"" mode of the vwf_auto_wait() header setting is deprecated. Use ""VWF_AutoWait.WaitForButton"" instead."
+			endif
+			
+			; dw $aaaa,$bbbb
+			; $aaaa    Text palette's third color (text color)
+			; $bbbb    Text palette's fourth color (outlines color)
+			dw !vwf_header_argument_text_color_value
+			dw !vwf_header_argument_outline_color_value
+			
+			; db %abbbcd-e
+			; %a:      Freeze gameplay
+			; %bbb:    Text palette number
+			; %c:      Text alignment (left/centered)
+			; %d:      Allow button speedup
+			; %e:      Disable all sound effects
+			db (!vwf_header_argument_freeze_game_value<<7)|(!vwf_header_argument_text_palette_value<<4)|(!vwf_header_argument_text_alignment_value<<3)\
+				|(!vwf_header_argument_button_speedup_value<<2)|not(!vwf_header_argument_enable_sfx_value)
+			
+			; db %aabbccdd   (skip if sounds disabled)
+			; %aa      Letter sound bank (-$1DF9)
+			; %bb      Wait for A button sound bank (-$1DF9)
+			; %cc      Cursor sound bank (-$1DF9)
+			; %dd      Continue sound bank (-$1DF9)
+			if !vwf_header_argument_enable_sfx_value
+				db ((!vwf_header_argument_letter_sound_bank-$1DF9)<<6)|((!vwf_header_argument_wait_sound_bank-$1DF9)<<4)\
+					|((!vwf_header_argument_cursor_sound_bank-$1DF9)<<2)|(!vwf_header_argument_continue_sound_bank-$1DF9)
+			endif
+			
+			; db $aa,$bb,$cc,$dd   (skip if sounds disabled)
+			; $aa      Letter sound ID
+			; $bb      Wait for A button sound ID
+			; $cc      Cursor sound ID
+			; $dd      Continue sound ID
+			if !vwf_header_argument_enable_sfx_value
+				db !vwf_header_argument_letter_sound_id
+				db !vwf_header_argument_wait_sound_id
+				db !vwf_header_argument_cursor_sound_id
+				db !vwf_header_argument_continue_sound_id
+			endif
+			
+			; dl $aaaaaa   (skip if message skip disabled)
+			; $aaaaaa: Message skip location
+			if !vwf_header_argument_enable_skipping_value
+				dl .SkipLocation
+				!vwf_message_skip_enabled = true
+				!vwf_message_skip_location_default = true
+			else
+				!vwf_message_skip_enabled = false
+				!vwf_message_skip_location_default = false
+			endif
+			
+			; dl $aaaaaa   (skip if MessageASM disabled)
+			; $aaaaaa: MessageASM location
+			if !vwf_header_argument_enable_message_asm_value
+				dl !vwf_current_message_asm_name
+			endif
+			
+			; db %-----abc
+			; %a:      BG pattern override enabled
+			; %b:      BG color override enabled
+			; %c:      Frame override enabled
+			!temp_has_bg_pattern #= not(equal(!vwf_header_argument_text_box_bg_pattern_value, $100))
+			!temp_has_bg_color #= not(equal(!vwf_header_argument_text_box_bg_color_value, $10000))
+			!temp_has_frame #= not(equal(!vwf_header_argument_text_box_frame_value, $100))
+			
+			db (!temp_has_bg_pattern<<2)|(!temp_has_bg_color<<1)|(!temp_has_frame)
+			
+			; db $aa       (skip if BG pattern override disabled)
+			; $aa:     BG pattern override
+			if !temp_has_bg_pattern
+				db !vwf_header_argument_text_box_bg_pattern_value
+			endif
+			
+			; dw $aaaa     (skip if BG color override disabled)
+			; $aaaa:   BG color override
+			if !temp_has_bg_color
+				dw !vwf_header_argument_text_box_bg_color_value
+			endif
+			
+			; db $aa       (skip if frame override disabled)
+			; $aa:     Frame override
+			if !temp_has_frame
+				db !vwf_header_argument_text_box_frame_value
+			endif
+		
+			undef "temp_has_bg_pattern"
+			undef "temp_has_bg_color"
+			undef "temp_has_frame"
 		endif
-		db (!vwf_header_argument_box_animation_value<<4)|(!vwf_header_argument_enable_skipping_value<<1)|!vwf_header_argument_enable_message_asm_value
+	endif
+endmacro
+
+macro vwf_shared_header(header_message_id)
+	if !vwf_current_message_id == $10000
+		error "You must call %vwf_message_start() before calling %vwf_shared_header()."
+	else
+		!temp_id_num #= !vwf_current_message_id
+		!{vwf_message_!{temp_id_num}_has_header} = true
+		undef "temp_id_num"
+				
+		!vwf_header_present = true
 		
-		if !vwf_header_argument_auto_wait_value == VWF_AutoWait.WaitForA
-			warn "The ""VWF_AutoWait.WaitForA"" mode of the vwf_auto_wait() header setting is deprecated. Use ""VWF_AutoWait.WaitForButton"" instead."
-		endif
+		; Intentionally commented out, so that we can't recursively link shared headers.
+		; People should link to the actual target header instead.
+		; !vwf_current_header_name:
+		!vwf_current_message_name:		
+			
+		; Shared header format:
+			
+		; db %-------a
+		; %a:      A one, indicating that we are using a shared header.
+		db %00000001
+			
+		; dw $aaaa
+		; $aaaa    The ID of the message whose header we're using (FFFF means the default header).
 		
-		; dw $aaaa,$bbbb
-		; $aaaa    Text palette's third color (text color)
-		; $bbbb    Text palette's fourth color (outlines color)
-		dw !vwf_header_argument_text_color_value
-		dw !vwf_header_argument_outline_color_value
+		; These +/- shenanigans are here to force Asar to throw an error when referencing a non-existent
+		; header, without actually writing any extra data for it.
 		
-		; db %abbbcd-e
-		; %a:      Freeze gameplay
-		; %bbb:    Text palette number
-		; %c:      Text alignment (left/centered)
-		; %d:      Allow button speedup
-		; %e:      Disable all sound effects
-		db (!vwf_header_argument_freeze_game_value<<7)|(!vwf_header_argument_text_palette_value<<4)|(!vwf_header_argument_text_alignment_value<<3)\
-			|(!vwf_header_argument_button_speedup_value<<2)|not(!vwf_header_argument_enable_sfx_value)
-		
-		; db %aabbccdd   (skip if sounds disabled)
-		; %aa      Letter sound bank (-$1DF9)
-		; %bb      Wait for A button sound bank (-$1DF9)
-		; %cc      Cursor sound bank (-$1DF9)
-		; %dd      Continue sound bank (-$1DF9)
-		if !vwf_header_argument_enable_sfx_value
-			db ((!vwf_header_argument_letter_sound_bank-$1DF9)<<6)|((!vwf_header_argument_wait_sound_bank-$1DF9)<<4)\
-				|((!vwf_header_argument_cursor_sound_bank-$1DF9)<<2)|(!vwf_header_argument_continue_sound_bank-$1DF9)
-		endif
-		
-		; db $aa,$bb,$cc,$dd   (skip if sounds disabled)
-		; $aa      Letter sound ID
-		; $bb      Wait for A button sound ID
-		; $cc      Cursor sound ID
-		; $dd      Continue sound ID
-		if !vwf_header_argument_enable_sfx_value
-			db !vwf_header_argument_letter_sound_id
-			db !vwf_header_argument_wait_sound_id
-			db !vwf_header_argument_cursor_sound_id
-			db !vwf_header_argument_continue_sound_id
-		endif
-		
-		; dl $aaaaaa   (skip if message skip disabled)
-		; $aaaaaa: Message skip location
-		if !vwf_header_argument_enable_skipping_value
-			dl .SkipLocation
-			!vwf_message_skip_enabled = true
-			!vwf_message_skip_location_default = true
-		else
-			!vwf_message_skip_enabled = false
-			!vwf_message_skip_location_default = false
-		endif
-		
-		; dl $aaaaaa   (skip if MessageASM disabled)
-		; $aaaaaa: MessageASM location
-		if !vwf_header_argument_enable_message_asm_value
-			dl !vwf_current_message_asm_name
-		endif
-		
-		; db %-----abc
-		; %a:      BG pattern override enabled
-		; %b:      BG color override enabled
-		; %c:      Frame override enabled
-		!temp_has_bg_pattern #= not(equal(!vwf_header_argument_text_box_bg_pattern_value, $100))
-		!temp_has_bg_color #= not(equal(!vwf_header_argument_text_box_bg_color_value, $10000))
-		!temp_has_frame #= not(equal(!vwf_header_argument_text_box_frame_value, $100))
-		
-		db (!temp_has_bg_pattern<<2)|(!temp_has_bg_color<<1)|(!temp_has_frame)
-		
-		; db $aa       (skip if BG pattern override disabled)
-		; $aa:     BG pattern override
-		if !temp_has_bg_pattern
-			db !vwf_header_argument_text_box_bg_pattern_value
-		endif
-		
-		; dw $aaaa     (skip if BG color override disabled)
-		; $aaaa:   BG color override
-		if !temp_has_bg_color
-			dw !vwf_header_argument_text_box_bg_color_value
-		endif
-		
-		; db $aa       (skip if frame override disabled)
-		; $aa:     Frame override
-		if !temp_has_frame
-			db !vwf_header_argument_text_box_frame_value
-		endif
-		
-		undef "temp_has_bg_pattern"
-		undef "temp_has_bg_color"
-		undef "temp_has_frame"
+		; If you get an error on this line, it means you're trying to reference a header of a message
+		; that doesn't actually have a header yet.
+		dw $<header_message_id>+(PhysicalHeader<header_message_id>-PhysicalHeader<header_message_id>)
 	endif
 endmacro
 

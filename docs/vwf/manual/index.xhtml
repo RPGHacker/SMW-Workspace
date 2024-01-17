@@ -113,6 +113,7 @@
 						<li><a href="#message-format">Message Format</a></li>
 						<details>
 							<summary><a href="#header-settings">Header Settings</a></summary><ul>
+								<li><a href="#header-settings-shared-headers">Shared Headers</a></li>
 							
 								<details><summary><a href="#header-settings-text-box-properties">Text Box Properties</a></summary><ul>									
 									<li><a href="#header-settings-vwf_x_pos"><code>vwf_x_pos()</code></a></li>
@@ -630,7 +631,7 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 				
 				<pre><code class="65c816_asar">%vwf_header(vwf_x_pos(0), vwf_y_pos(0), vwf_width(15), vwf_height(13))</code></pre>
 				
-				When any argument is omitted, its value will be pulled from the default values defined in <code>vwfconfig.cfg</code>. For example, when you omit the <code>vwf_x_pos</code> argument, the patch will use the <code>!vwf_default_x_pos</code> define in its place.
+				When any argument is omitted, its value will be pulled from the default values defined in <code>vwfconfig.cfg</code>. For example, when you omit the <code>vwf_x_pos</code> argument, the patch will use the <code>!vwf_default_x_pos</code> define in its place. Providing no arguments at all will automatically replace the header by a <a href="#header-settings-shared-headers">shared header</a> containing all the default values, reducing the total size of your message.
 			</p>
 			
 			<p>
@@ -639,7 +640,41 @@ incsrc "vwftable_for_my_font.asm"</code></pre>
 				<pre><code class="65c816_asar">%vwf_header(x_pos(0), y_pos(0), width(15), height(13))</code></pre>
 				
 				What follows is a list of all header arguments along with a brief explanation.
-			</p>			
+			</p>
+			
+			<h4 id="header-settings-shared-headers" class="text-center">Shared Headers</h4>
+			
+			<p>
+				Shared headers allow you to define a header in one message and then reuse it in arbitrarily many other other messages. This has a few key advantages:
+				<ul>
+					<li>It reduces the overall size of messages. Every reused header only requires a few bytes of memory per message, whereas custom headers occupy space for every possible header setting.</li>
+					<li>It makes it easier to achieve a consistent look with your text boxes. Let's say you have a type of text box that you use in many different places. Maybe you want one of your characters to stand out and thus want their text box to look special, yet also consistent every time they appear. You could achieve this via shared headers. Instead of needing to manually specify your text box settings every time this character appears and thus running the risk of overlooking some settings in specific places, shared headers allow you to define the text box settings just once and then reuse them every time this character appears. While the same thing could be achieved using Asar macros or defines, only shared headers also have the benefit of reduced message size.</li>
+				</ul>
+				To make use of shared headers, simply replace the
+				<pre><code class="65c816_asar">%vwf_header()</code></pre>
+				line in one of your mesages by
+				<pre><code class="65c816_asar">%vwf_shared_header(message_id)</code></pre>
+				where <code>message_id</code> is the ID of the message whose header you want to reuse. Here is a complete example:
+					
+				<pre><code class="65c816_asar">%vwf_message_start(001B)
+
+	%vwf_shared_header(001A)
+	
+	!str("Hey, Mario! Nice to see you again!")
+
+%vwf_message_end()</code></pre>
+				Note that you can only point a shared header to a message that has a physical header itself (aka a message that uses <code class="65c816_asar">%vwf_header()</code> instead of <code class="65c816_asar">%vwf_shared_header()</code>). While it's technically possible to point shared headers to other shared headers, there's very little use to it over pointing to the origin header directly, and it only runs the risk of causing stack overflows or infinite recursion at run-time, so the patch prevents this use case entirely.
+			</p>
+			
+			<p>
+				When you try to point a shared header to a message that doesn't have a physical header, you will get an error message similar to the following:
+				<pre><code class="powershell">error: (Elabel_not_found): Label 'PhysicalHeader001A' wasn't found. [dw $001A+(PhysicalHeader001A-PhysicalHeader001A)]</code></pre>
+				The error message is a bit cryptic, because it abuses Asar functionality to work at all. In this example case, it's saying that message <code>001A</code> doesn't have a physical header, so it's impossible to use it as a shared header via <code class="65c816_asar">%vwf_shared_header(001A)</code>. Fixing this error requires giving either message (<code>001A</code> or the message referencing it) a physical header.
+			</p>
+			
+			<p>
+				As a special case, using <code class="65c816_asar">%vwf_header()</code> in a message without any arguments will automatically turn the header into a shared header that points to a built-in message containing all your default header settings. This greatly reduces the size of all messages that only use default settings. If you want to use one of your own headers as a shared header, it thus needs to contain at least a single argument to override any header setting and prevent this automatic replacement.
+			</p>
 			
 			<h4 id="header-settings-text-box-properties" class="text-center">Text Box Properties</h4>
 			<dl>				
@@ -2652,6 +2687,7 @@ endif</code></pre>
 						<li>Simplified many multiplications in the patch. For most of them, this slightly boosts performance. More importantly, this removes any dependency on the mode 7 registers for multiplication, which avoids a potential rare bug that could be caused by HDMA.</li>
 						<li>Text box properties (background pattern, background color and frame) can now be overridden by message headers. This functionality is available via the <a href="#header-settings-vwf_text_box_bg_pattern"><code>vwf_text_box_bg_pattern()</code></a>, <a href="#header-settings-vwf_text_box_bg_color"><code>vwf_text_box_bg_color()</code></a> and <a href="#header-settings-vwf_text_box_frame"><code>vwf_text_box_frame()</code></a> header settings.</li>
 						<li>Added the <a href="#helper-functions-rgb_15_from_24"><code>rgb_15_from_24()</code></a> and <a href="#helper-functions-rgb_15_from_f"><code>rgb_15_from_f()</code></a> helper functions.</li>
+						<li>Implemented <a href="#header-settings-shared-headers">shared headers</a>, which provide a means of reusing message headers, reducing the size of a message in the process.</li>
 					</ul>
 				</p></dd>
 				

@@ -66,7 +66,7 @@
 	
 .Start
 !opt_loc(TestSelectionPage2, 11)
-	!clear()
+	!clear
 
 	!edit_pal(!text_color_4, rgb_15(15, 15, 31), rgb_15(0, 0, 0))
 	!edit_pal(!text_color_5, rgb_15(6, 31, 6), rgb_15(0, 0, 0))
@@ -102,7 +102,7 @@ endif
 		
 	!opt_loc(TestSelection, 10)
 		.Page2Start
-		!clear()
+		!clear
 		!options(TestSelectionPage2,
 			%vwf_wrap( !set_pal($05), !char($00AC), !reset_color, !str(" Wait for Buttons") ),
 			%vwf_wrap( !set_pal($05), !char($00AC), !reset_color, !str(" Text box overrides") ),
@@ -1704,7 +1704,7 @@ MessageASM0044:
 
 %vwf_message_start(0046)	; Message 023-1
 
-	%vwf_header(freeze_game(false))
+	%vwf_header(freeze_game(false), vwf_enable_skipping(false))
 	
 	!str("Exit level via Start + Select?")
 		

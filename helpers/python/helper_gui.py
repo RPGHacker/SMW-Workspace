@@ -13,8 +13,19 @@ import tempfile
 from pathlib import Path
 import stat
 import shutil
+import platformdirs
+import pathlib
+import configparser
 import patching_utility
 
+
+_config_dir_path = platformdirs.user_data_dir('Patch Manager', 'RPG Hacker')
+_config_file_path = os.path.join(_config_dir_path, 'session.ini')
+
+_config_section_main_name = 'Main'
+_config_section_last_patch_name = 'Last Patch'
+_config_key_last_patch_name = 'Last Patch'
+_config_key_last_emulator_name = 'Last Emulator'
 
 _default_start_command = 'xdg-open'
 _default_start_is_shell_command = False
@@ -25,6 +36,7 @@ if platform.system() == 'Windows':
 
 
 _sensible_terminal_path = os.path.normpath(os.path.join(os.path.dirname(__file__), '../shell/i3-sensible-terminal'))
+
 
 
 class MainWindow(tkinter.Tk):
@@ -113,16 +125,55 @@ class MainWindow(tkinter.Tk):
 		self._run_button = ttk.Button(self._run_frame, text='Run', command=self._run_button_clicked)
 		self._run_button.grid(column=1, row=1, padx=5, pady=5)
 		
-		# We only initialize combo boxes at the end. This is to assure that all dependent widgets already exists,
+		self._init_conifg_file()
+		
+		# Need to retrieve settings before updating combo boxes, because otherwise they'll get overwritten.
+		last_patch: str = self._config_section_main.get(_config_key_last_patch_name, '')
+		last_emulator: str = self._config_section_main.get(_config_key_last_emulator_name, '')
+		
+		# We only initialize combo boxes at the end. This is to assure that all dependent widgets already exist,
 		# since changing some of those values will affect contents of other widgets.
 		self._patch_combo_box.current(0)
 		self._run_combo_box.current(0)
 		
+		if last_patch != '':
+			for index, patch_name in enumerate(self._patch_names):
+				if patch_name == last_patch:
+					self._patch_combo_box.current(index)
+					break
+		
+		if last_emulator != '':
+			for index, emulator_name in enumerate(self._emulator_names):
+				if emulator_name == last_emulator:
+					self._run_combo_box.current(index)
+					break
+		
+	def _init_conifg_file(self):
+		pathlib.Path(_config_dir_path).mkdir(parents = True, exist_ok = True)
+
+		self._config_parser = configparser.ConfigParser()
+		self._config_parser.read(_config_file_path)
+		if not self._config_parser.has_section(_config_section_main_name):
+			self._config_parser.add_section(_config_section_main_name)
+		if not self._config_parser.has_section(_config_section_last_patch_name):
+			self._config_parser.add_section(_config_section_last_patch_name)
+		
+		self._config_section_main = self._config_parser[_config_section_main_name]
+		self._config_section_last_patch = self._config_parser[_config_section_last_patch_name]
+		
+	
+	def _update_config_file(self):
+		with open(_config_file_path, 'w') as config_file:
+			self._config_parser.write(config_file)
+		
 	def _patch_combo_box_value_changed(self, event):
 		self._rebuild_options()
+		self._config_section_main[_config_key_last_patch_name] = self._patch_combo_box.get()
+		self._update_config_file()
 		
 	def _emulator_combo_box_value_changed(self, event):
-		pass
+		self._config_section_main[_config_key_last_emulator_name] = self._run_combo_box.get()
+		self._update_config_file()
 		
 	def _options_inner_frame_configure(self, event):
 		self._options_canvas.configure(scrollregion=self._options_canvas.bbox('all'))
@@ -245,10 +296,28 @@ class MainWindow(tkinter.Tk):
 			self._current_option_widgets[option_name].append(option_label)
 			
 			option_combobox = MainWindow.BetterComboBox(self._options_inner_frame, state='readonly', values=values)
-			option_combobox.grid(column=1, row=index, sticky='new', padx=5, pady=5)
-			option_combobox.current(current_module.patcher.get_option_default_index(option_name))
+			option_combobox.grid(column=1, row=index, sticky='new', padx=5, pady=5)	
 			
 			self._current_option_widgets[option_name].append(option_combobox)
+			
+			last_value: str = self._config_section_last_patch.get(option_name, '')
+			
+			option_combobox.bind('<<ComboboxSelected>>', self._option_combo_box_value_changed)
+			option_combobox.current(current_module.patcher.get_option_default_index(option_name))
+			
+			if last_value != '':
+				for index, value_name in enumerate(values):
+					if value_name == last_value:
+						option_combobox.current(index)
+						break						
+		
+	def _option_combo_box_value_changed(self, event):
+		for option_name, widgets in self._current_option_widgets.items():
+			combo_box = widgets[1]
+			if combo_box == event.widget:
+				self._config_section_last_patch[option_name] = combo_box.get()
+				self._update_config_file()
+				break
 			
 	def _parse_tools(self, tools_path: str) -> None:
 		executables: List[str] = glob.glob(os.path.join(tools_path, '**/*.exe'), recursive = True)

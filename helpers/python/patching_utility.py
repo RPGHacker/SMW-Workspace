@@ -194,6 +194,7 @@ class Patch(Action):
 		
 		if asar_ver_as_number >= 2.0:
 			command_line.append('--full-error-stack')
+			command_line.append('--error-limit=500')
 			
 		command_line.append('--symbols=wla')
 			

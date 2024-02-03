@@ -40,7 +40,7 @@ Back:	LDA $2307			;
 	STA $02				;
 	PLY				;
 	RTS				;
-	warnpc $00CC5C			;
+	assert pc() <= $00CC5C			;
 	
 pullpc
 

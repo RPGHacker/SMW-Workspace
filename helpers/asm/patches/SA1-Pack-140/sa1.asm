@@ -83,7 +83,7 @@ Reset2:						;  |
 	JML SA1_Loop				; This points to SA-1 main loop.
 						; Needed so the Dual ROM system can locate SA-1 main loop easier.
 
-warnpc $8A78
+assert pc() <= $8A78
 
 ORG $8069					; \ Restore old code
 	INC $10					; /

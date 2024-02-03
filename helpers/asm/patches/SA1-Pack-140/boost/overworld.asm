@@ -27,7 +27,7 @@ org $0494B2
 	NOP #38
 mulfixv2_back:
 
-warnpc $0494DC
+assert pc() <= $0494DC
 
 org $048576
 	JSL events
@@ -85,7 +85,7 @@ org $0482ED
 	NOP #22
 mulfix2v2_back:
 
-warnpc $048307
+assert pc() <= $048307
 
 pullpc
 

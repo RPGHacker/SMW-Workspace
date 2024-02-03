@@ -75,7 +75,7 @@ ORG $008494
     ; $0084C4 - Unused
     NOP #4
 
-warnpc $0084C8
+assert pc() <= $0084C8
 
 ; This is one of favorite hijacks that many patches
 ; likes editing. Because of that, I'll NOP the entire
@@ -100,7 +100,7 @@ oam_transfer_clear_invoker:
 	PLB
 	
 	; PC is now $00:804A, aligned with the original code.
-warnpc $00804A
+assert pc() <= $00804A
 
 ; Some routines uses the "RTL" byte as JSL->RTS support byte,
 ; we can't modify it for safety reasons.
@@ -154,7 +154,7 @@ candles:
 ++  ASL #4
     TSB $788C
 
-warnpc $0283C4
+assert pc() <= $0283C4
 
 org $028307
     NOP
@@ -167,7 +167,7 @@ org $028307
     BEQ candles
 candles_back:
 
-warnpc $02831A
+assert pc() <= $02831A
 
 pullpc
 

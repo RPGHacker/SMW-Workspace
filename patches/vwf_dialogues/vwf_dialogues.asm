@@ -1000,7 +1000,7 @@ LoadHeader:
 	lda.w #DefaultHeaderMessage0
 	sta !vwf_text_source
 	sep #$20
-	lda.w #DefaultHeaderMessage0>>16
+	lda.b #DefaultHeaderMessage0>>16
 	sta !vwf_text_source+2
 	
 	bra .ReadSharedHeader

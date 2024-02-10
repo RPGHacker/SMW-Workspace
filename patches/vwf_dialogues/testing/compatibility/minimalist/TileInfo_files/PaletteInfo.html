@@ -1,0 +1,101 @@
+<html>
+	<head>
+		<style>
+			html {
+			background-color: white;
+			color: black;
+			font-family: sans-serif;
+			}
+			
+			table, th, td {
+			border: 1px solid black;
+			border-collapse: collapse;
+			}
+			
+			span.NoLineBreak {
+				white-space: nowrap;
+			}
+		</style>
+	</head>
+<body onload="Calculate()">
+<a href="../GHB_Readme.html#PaletteInfo">Back</a>
+<h1>Palette data format (2BPP (2 bits per pixel))</h1>
+What color group does the 8x8 tiles uses is based on the <kbd>CCC</kbd> bits in <kbd>YXPCCCTT</kbd>:
+<ul>
+<li><kbd>CCC = 000</kbd>: Palette 0 (Stored in RAM <kbd>!status_palette</kbd> in <kbd>!status_palette</kbd> to <kbd>!status_palette+$07</kbd></li>
+<li><kbd>CCC = 001</kbd>: Palette 1 (Stored in RAM <kbd>!status_palette</kbd> in <kbd>!status_palette+$08</kbd> to <kbd>!status_palette+$0F</kbd><kbd></kbd></li>
+<li><kbd>CCC = 010</kbd>: Palette 2 (Stored in RAM <kbd>!status_palette</kbd> in <kbd>!status_palette+$10</kbd> to <kbd>!status_palette+$17</kbd><kbd></kbd></li>
+<li><kbd>CCC = 011</kbd>: Palette 3 (Stored in RAM <kbd>!status_palette</kbd> in <kbd>!status_palette+$18</kbd> to <kbd>!status_palette+$1F</kbd><kbd></kbd></li>
+<li><kbd>CCC = 100</kbd>: Palette 4 (Not included in the RAM)</li>
+<li><kbd>CCC = 101</kbd>: Palette 5 (Not included in the RAM)</li>
+<li><kbd>CCC = 110</kbd>: Palette 6 (Not included in the RAM)</li>
+<li><kbd>CCC = 111</kbd>: Palette 7 (Not included in the RAM)</li>
+</ul><br>
+
+Each palette number refers to what groups of 4 colors (first one of the 4 being transparent) to use:<br>
+<a href="PaletteGroupNumber.png" target="_blank"><img width="255" src="PaletteGroupNumber.png"></a><br><br>
+
+Each individual color possess 2 bytes, stored in binary as RGB format: [<kbd>%0bbbbbgggggrrrrr</kbd>] (stored in memory as [<kbd>%gggrrrrr, %0bbbbbgg</kbd>] due to little-endian).<br><br>
+
+To locate the RAM address you want to modify a particular palette, use <a href="https://github.com/devinacker/bsnes-plus/releases">Bsnes+</a>, be in a level (you may have to breakpoint as stated in asar's console window), go to
+Tools &rightarrow; Debugger &rightarrow; S-PPU &rightarrow; Palette viewer, and select a palette you want to change. Once selected, information is presented (showing the index, the RGB value and individual 3 color values). What
+you want is the index number:<br>
+<img src="PaletteIndex.png"><br>
+Then back onto this HTML file, CTRL+F that number and you should find what RAM address to edit.<br><br>
+
+In case your ROM is sa-1 or have relocated the RAM address, you can adjust the RAM address in the input box below to match with the patch you've modified.
+<hr>
+<kbd>!status_palette = $</kbd><input list="RAMAddressList" type="text" id="PaletteRAM" value="B85" onchange="Calculate()" maxlength="6"><button type="button" onclick="IncreaseDecreaseHexInput(1, 'PaletteRAM', 0, parseInt('FFFFFF', 16))">+</button><button type="button" onclick="IncreaseDecreaseHexInput(-1, 'PaletteRAM', 0, parseInt('FFFFFF', 16))">-</button><br>
+<datalist id="RAMAddressList">
+<option value="B85">B85 (default)</option>
+<option value="6B85">6B85 (default SA-1)</option>
+</datalist>
+<hr>
+<span id="Output"></span>
+<script>
+	function clamp(num, min, max) {
+		//Restrict a number within a specified range.
+		if (isNaN(num) == true) {
+			num = 0
+		}
+		return num <= min ? min : num >= max ? max : num;
+	}
+	function IncreaseDecreaseHexInput(ChangeBy, WhatInput, Min, Max) {
+		//To be used along with a hex input the user enters.
+		//This function is for the increment/decrement buttons since
+		//only the "number" input (only allows characters 0-9) allows
+		//the increment/decrement action (up/down button when selected,
+		//and pressing up and down)
+		document.getElementById(WhatInput).value = clamp((parseInt(document.getElementById(WhatInput).value, 16) + ChangeBy), Min, Max).toString(16).toUpperCase()
+		Calculate()
+	}
+	function Calculate() {
+		document.getElementById("Output").innerHTML = ""
+		var Output = ""
+		var PaletteRAM = clamp(parseInt(document.getElementById("PaletteRAM").value, 16), 0, parseInt("FFFFFF", 16))
+		document.getElementById("PaletteRAM").value = PaletteRAM.toString(16).toUpperCase()
+		
+		Output += "<table>"
+		Output += "<tr><td><kbd>!status_palette</kbd> range:</td><td><kbd>$" + PaletteRAM.toString(16).toUpperCase() + "</kbd> to <kbd>$" + (PaletteRAM + (32-1)).toString(16).toUpperCase() + "</kbd></td></tr>"
+		Output += "</table><br><br>"
+		
+		var PaletteCount = 0
+		Output += "<table>"
+		Output += "<tr><th>Palette group</th><th>Palette number (index)</th><th>RAM address</th></tr>"
+		for (PaletteCount = 0; PaletteCount < (16*2); PaletteCount++) {
+			Output += "<tr>"
+			if ((PaletteCount % 4) == 0) {
+				Output += "<td rowspan='4'>Group " + (Math.floor(PaletteCount/4)).toString(10) + "</td>"
+			}
+			Output += "<td><kbd>" + PaletteCount.toString(10) + "</kbd> (<kbd>$" + PaletteCount.toString(16).toUpperCase() + "</kbd>)</td>"
+			if (PaletteCount < 16) {
+				Output += "<td><kbd>$" + (PaletteRAM + (PaletteCount*2)).toString(16).toUpperCase() + "</kbd> to <kbd>$" + (PaletteRAM + (PaletteCount*2)+1).toString(16).toUpperCase() + "</kbd></td>"
+			} else {
+				Output += "<td>N/A</td>"
+			}
+			Output += "</tr>"
+		}
+		Output += "</table>"
+		document.getElementById("Output").innerHTML = Output
+	}
+</script>

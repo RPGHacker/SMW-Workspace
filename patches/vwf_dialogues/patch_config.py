@@ -11,6 +11,7 @@ patcher.add_option('--messages_file', values=['testing', 'smw'], default_index=0
 patcher.add_option('--bit_mode', values=['8-bit', '16-bit'], default_index=0)
 patcher.add_option('--message_box_hijack', values=['enable', 'disable'], default_index=0)
 patcher.add_option('--debug_vblank', values=['false', 'true'], default_index=0)
+patcher.add_option('--compatibility_test', values=['none', 'smb3', 'super', 'minimalist', 'dkcr'], default_index=0)
 
 	
 patch_config = patching_utility.PatchConfig( os.path.dirname(__file__),
@@ -65,6 +66,17 @@ def main() -> None:
 		
 	if options.debug_vblank == 'true':
 		vwf_dialogues_asm.defines.append('vwf_debug_vblank_time=true')
+		
+	compatibility_test: str = options.compatibility_test
+	
+	if compatibility_test == 'smb3':
+		patch_config.actions.append(patching_utility.Patch(os.path.join(os.path.dirname(__file__), 'testing/compatibility/smb3_statusbar_v1.53.1/smb3_status.asm')))
+	elif compatibility_test == 'super':
+		patch_config.actions.append(patching_utility.Patch(os.path.join(os.path.dirname(__file__), 'testing/compatibility/SuperStatusBar_2_2/SuperStatusBar_Advancedv2.asm')))
+	elif compatibility_test == 'minimalist':
+		patch_config.actions.append(patching_utility.Patch(os.path.join(os.path.dirname(__file__), 'testing/compatibility/minimalist/status_double.asm')))
+	elif compatibility_test == 'dkcr':
+		patch_config.actions.append(patching_utility.Patch(os.path.join(os.path.dirname(__file__), 'testing/compatibility/dkcr_sprite_status_bar/status_bar.asm')))
 		
 	patcher.create_rom(patch_config, options)
 	

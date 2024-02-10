@@ -1,0 +1,112 @@
+<html>
+	<head>
+		<style>
+			table, th, td {
+			border: 1px solid black;
+			border-collapse: collapse;
+			}
+		</style>
+	</head>
+
+<div style="max-width:588px;">You may be wondering why I made this even though there is a readme stating the tile you want to edit can be calculated via <tt>AddressOffset = (X * $02) + (Y * $40) + P</tt> and that
+the default RAM address to use have zeroes in the lower bytes ($7fA<b>000</b>, which makes adding as replacing the zeros with the offset), this is here to make it even easier in the case
+of:
+<ul>
+<li>You have moved the RAM address to another location in which the starting address is no longer a row of zeroes in the last nth digits.</li>
+<li>You don't want to use the calculator all the time and re-calculating every time you want to use the status bar.</li>
+</ul>
+
+Notes:
+<ul>
+<li>If you get <tt>NaN</tt>, you've entered a blank box or had invalid characters in it.</li>
+<li>Numbers prefixed with a dollar sign <tt>$</tt> means the number is a hexadecimal value, a number without any prefix is a decimal number.</li>
+<li><b>Tile x ($x)</b> refers to what tile in the order from left to right and top to bottom (the same way text are being read and written in most countries). As there are a total of 160 tiles (numbered from 0 to 159).</li>
+<li>The &ldquo;<b>Coordinate</b>&rdquo; refers to the position (<tt>(XPosition, YPosition)</tt>, in units of 8x8 tiles) of the tile on-screen, relative to the top-left corner. X moves right as it increases, and Y moves
+downwards as it increases.</li>
+</ul>
+
+Protip: To find exactly the tile you want to modify in your game without re-calculating the tiles, use <a href="https://github.com/devinacker/bsnes-plus/releases">BSNES plus debugger</a>:
+<ol>
+<li>Run the game and play any level you are making custom tiles</li>
+<li>Open <tt>Tools</tt> (Menubar) &rightarrow; <tt>Debugger ...</tt> &rightarrow; <tt>S-PPU</tt> (Menubar) &rightarrow; <tt>Tilemap Viewer</tt>.</li>
+<li>Select &ldquo;3&rdquo; for BG (this will view the layer 3 BG, the status bar and other layer 3 stuff). Now enable &ldquo;Show Grid&rdquo; (provided you are using the
+latest version of BSNES plus; version 04 (jun 18, 2018, github says &ldquo;Jun 23, 2018&rdquo;) is what I'm using) and &ldquo;Auto Update&rdquo;, and select the tile to
+find its coordinate (click image to expand, sorry for big resolution, I'm using a TV as a monitor):<br>
+<span id="StatusBarTileGrid"><img onclick="ExpandImage()" width="200" src="RAM_BAR_MemoryLocater_files/StatusBarGridMap.png"></span><br>
+Oh, and by the way, regardless of the tilemap size (1x1, 1x2, 2x1 and 2x2 screen), the status bar is always at the top left, and the coordinates are always the same, so don't
+worry.<br><br>
+Currently, these numbers are decimal, in the case the newer version is a different radix number (say, hex), pay attention to the prefix (<tt>0x</tt>, for example).</li>
+<li>Enter the RAM address used in the patch labeled <tt>!RAM_BAR</tt> in the box on the very bottom of this HTML and hit submit (this will generate the memory statics including
+the regions and tile locations table following the input you entered).</li>
+<li>CTRL+F and type the coordinates you got from the debugger (note that leading zeros and spaces are nonexistent, so if you are looking for <tt>5, 1</tt>, you should type
+&ldquo;(5,1)&rdquo;, and if they are in hex in the debugger (in the future version), use &ldquo;<tt>$</tt>&rdquo; instead of <tt>0x</tt>.)</li>
+<li>After finding the coordinate in the generated table, you now have the address(es) of that particular tile (in this example, it is address <tt>$7FA04A</tt> and <tt>$7FA04B</tt> provided you
+didn't change the default RAM address and are not using SA-1).</li>
+</ol>
+</div>
+<tt>!RAM_BAR = $<input type="text" list="StatusBarRAMTileList" id="FreeramRamBar" value ="" maxlength="6"></tt><button type="button" onclick="Calculate()">Submit</button>
+
+<datalist id="StatusBarRAMTileList">
+<option value="7FA000">Default RAM address</option>
+<option value="404000">Default SA-1 RAM address</option>
+</datalist>
+<hr>
+<span id="RAMTable"></span>
+
+<script>
+	function Calculate() {
+		var TileCount = 0
+		var StartingRAMAddress = parseInt(document.getElementById("FreeramRamBar").value, 16)
+		
+		//Due to how [.innerHTML] works, it automatically closes any unclosed HTML tags, so a way around it is
+		//to put the entire HTML code into a variable, then .innerHTML that variable.
+			var OutputHTML = "" //Reset so it doesn't add even more stuff when pressing submit again.
+		//Display entire memory range
+			OutputHTML += "<tt>Entire RAM range: $" + (StartingRAMAddress).toString(16) + " (!RAM_BAR+$0) to $" + (StartingRAMAddress + 319).toString(16) + " (!RAM_BAR+$13F)</tt>"
+			
+		//Obtain subrange divided into each row.
+			var RowCount = 0
+			OutputHTML += "<table><tr><th>what row</th><th>Starting address</th><th>Ending address</th></tr>"
+			while (RowCount < 5) {
+				OutputHTML += "<tr>"
+				OutputHTML += "<td>Row " + RowCount + "</td>"
+				OutputHTML += "<td><tt>$" + (StartingRAMAddress+(RowCount*64)).toString(16) + " (!RAM_BAR+$" + (RowCount*64).toString(16) +")</tt></td>"
+				OutputHTML += "<td><tt>$" + (StartingRAMAddress+((RowCount+1)*64)-1).toString(16) + " (!RAM_BAR+$" + (((RowCount+1)*64)-1).toString(16) + ")</tt></td>"
+				OutputHTML += "</tr>"
+				RowCount++
+			}
+			OutputHTML += "</table><br>"
+		
+		var RAMAddress = document.getElementById("FreeramRamBar").value
+		
+		OutputHTML += "<table><tr><th>Tile location</th><th>Tile number byte (TTTTTTTT)</th><th>Tile properties byte (YXPCCCTT)</th></tr>"
+		while (TileCount < 160) {
+			if ((TileCount % 32) == 0) {
+				OutputHTML += "<tr><th colspan='3'><center>Row " + (Math.floor(TileCount/32)) + "</center></th></tr>"
+			}
+			OutputHTML += "<tr>"
+			OutputHTML += "<td><tt>Tile: " + TileCount + " ($" + TileCount.toString(16) + ")"
+			OutputHTML += " Coordinate: (" + (TileCount % 32) + "," + (Math.floor(TileCount/32)) + ") (($" + (TileCount % 32).toString(16) + ",$" + (Math.floor(TileCount/32)).toString(16) + "))</tt></td>"
+			OutputHTML += "<td><tt>$" + (StartingRAMAddress + (TileCount*2)).toString(16) + " (!RAM_BAR+$" + (TileCount*2).toString(16) + ")</tt></td>"
+			OutputHTML += "<td><tt>$" + (StartingRAMAddress + (TileCount*2) + 1).toString(16) + " (!RAM_BAR+$" + ((TileCount*2) + 1).toString(16) + ")</tt></td>"
+			OutputHTML += "</tr>"
+			
+			
+			TileCount++
+		}
+		OutputHTML += "</table>"
+		
+		document.getElementById("RAMTable").innerHTML = (OutputHTML)
+	}
+	
+	function ExpandImage() {
+		document.getElementById("StatusBarTileGrid").innerHTML = '<img onclick="ShrinkImage()" src="RAM_BAR_MemoryLocater_files/StatusBarGridMap.png">'
+	}
+	
+	function ShrinkImage() {
+		document.getElementById("StatusBarTileGrid").innerHTML = '<img onclick="ExpandImage()" width="100" src="RAM_BAR_MemoryLocater_files/StatusBarGridMap.png">'
+	}
+
+
+
+</script>

@@ -1,0 +1,153 @@
+If the tab spacing looks ugly, open this in notepad++ and go to Settings -> Preferences -> Language, and set [Tab size]
+to 8.
+
+This is a tip made by GreenHammerBro to ASM-mers on how to use the Advanced super status bar (ASSB) with other codes/ASM.
+
+Contents:
+	1: The ASSB's RAM format and how to adopt codes to it
+	2: Hex-edit patches
+	3: Other notes
+-------------------------------------------------------------------------------------------------------------------
+1: The ASSB's RAM format and how to adopt codes to it
+	SMW's status bar format is formated like this:
+		$7E0EF9		;>Top row leftmost editable tile number
+		$7E0EFA		;>Top row second leftmost editable tile number
+		$7E0EFB		;>Top row third leftmost editable tile number
+		...
+	SMW's default tile properties and numbers are stored at ROM address
+	$008C81 to $008CFE, yes, I said ROM address, meaning you cannot change
+	the tile properties themselves in-game.
+
+	The super status bar patch's data is formated like this:
+		!RAM_BAR+0 ($7FA000/$404000 default)	;>Topmost and leftmost tile number
+		!RAM_BAR+1 ($7FA001/$404001 default)	;>Same as above, but properties (YXPCCCTT)
+		!RAM_BAR+2 ($7FA002/$404002 default)	;>Topmost, second leftmost tile
+		!RAM_BAR+3 ($7FA003/$404003 default)	;>Same as above, but tile properties
+		!RAM_BAR+4 ($7FA004/$404004 default)	;>Topmost, third leftmost tile
+		!RAM_BAR+5 ($7FA005/$404005 default)	;>Same as above, but tile properties
+		...					;>Will keep going rightwards and the next row downwards.
+
+	check out [ASSB_map.png] and [RAM_BAR_MemoryLocater.html] for more information.
+	
+	-Please be aware that most ASM resources (patches and sprites, for example) still
+	 uses SMW's vanilla status bar ($7E0EF9-$7E0F2F), you need to make it use ASSB's
+	 ram and edit the way they write the tiles.
+	 Here is an example of writing "123" on the status bar:
+		-------------------------------------------------------
+		!StatusBarLocation = $7FA000
+		
+		LDA #$01
+		STA !StatusBarLocation
+		LDA #$02
+		STA !StatusBarLocation+1
+		LDA #$03
+		STA !StatusBarLocation+2
+		-------------------------------------------------------
+	That must be converted to this:
+		-------------------------------------------------------
+		!StatusBarLocation = $7FA000
+		LDA #$01
+		STA !StatusBarLocation
+		LDA #$02
+		STA !StatusBarLocation+2 ;>Multiply the displacement by 2 (2*2)
+		LDA #$03
+		STA !StatusBarLocation+4 ;>Multiply the displacement by 2 (4*2)
+		-------------------------------------------------------
+	Here is an example of a loop writing to the status bar (write "000"):
+		-------------------------------------------------------
+		!StatusBarLocation = $7FA000
+
+		LDX #$03-1		;>loop 3 times, minus 1 (Indexes from 0 to 2)
+		LDA #$00
+
+		.Loop
+		STA !StatusBarLocation,x	;>Write at [!StatusBarLocation, +1, +2]
+		DEX
+		BPL .Loop
+		-------------------------------------------------------
+	To be converted to this:
+		-------------------------------------------------------
+		!StatusBarLocation = $7FA000
+
+		LDX #($03-1)*2		;>loop 3 times, minus 1 (Indexes from 0 to 2, now 0 to 4)
+		LDA #$00
+
+		.Loop
+		STA !StatusBarLocation,x	;>Write at [!StatusBarLocation, +2, +4]
+		DEX #2				;>Every loop, subtract X by 2 (Moves a full tile back, instead of a "half-tile")
+		BPL .Loop
+		-------------------------------------------------------
+	If you are making hybrid compatibility codes that write to the status bar, I recommend using the
+	define !StatusBarFormat and inform the user to set this to $01 or $02:
+		$01 = SMW/SMB3/Minimalistic status bar patches. Each subsequent bytes is each tile.
+		$02 = Super Status Bar/Overworld border plus patch.
+	and have the code that writes (STA) also use the define:
+		-------------------------------------------------------
+		;Write "123"
+		!StatusBarFormat = $02
+		!StatusBarLocation = $7FA000
+		
+		LDA #$01
+		STA !StatusBarLocation
+		LDA #$02
+		STA !StatusBarLocation+(1*!StatusBarFormat)
+		LDA #$03
+		STA !StatusBarLocation+(2*!StatusBarFormat)
+		
+		;!StatusBarLocation+(x*!StatusBarFormat) where x is what tile.
+		-------------------------------------------------------
+	And for loops (again, writes "000"):
+		-------------------------------------------------------
+		!StatusBarFormat = $02
+		!StatusBarLocation = $7FA000
+
+		LDX #($03-1)*!StatusBarFormat	;>loop 3 times, minus 1 (Indexes from 0 to 2, or 0 to 4 depending on the format)
+		LDA #$00
+
+		.Loop
+		STA !StatusBarLocation,x	;>write at [!StatusBarLocation+0, +1, +2] or [!StatusBarLocation+0, +2, +4], depends on format.
+		DEX #!StatusBarFormat		;>Every loop, subtract X by 1 or 2 (Always moves a full tile back), if X is FF or FE, end loop.
+		BPL .Loop
+		-------------------------------------------------------
+	and now you're done. Of course, !StatusBarLocation can be at !RAM_BAR+x where X is the even number (so it
+	writes to tile numbers and not properties).
+
+	Another note is be aware on ORG-based patches that add hijacks smw's status bar code at a code at address
+	$008E1A to $008FF9 for the purpose of adding new displays, just move their code to uberasm tool (call it
+	in gamemode 14) and make them not hijack code potentially hijacked by this patch, since this is merely a
+	heads-up-*DISPLAY*. For codes that move the counter around or disabling certain things, you have to disable
+	or edit them *ON THIS PATCH*. A good example is the Metroid and SMB2 (titled
+	"SMW Health Bar - Bugfix and Alternative") health patch. Mine however, have codes already based on uberasm
+	tool and does not hijacks any of SMW's status bar code (most of them are already used the hybrid define).
+-------------------------------------------------------------------------------------------------------------------
+2: Patches that does hex-edits tiles that are not controlled by a routine.
+
+	This shouldn't be too hard, since most of it doesn't use indexed storing, for "hex edits" of the status
+	bar, simply remove the block that has org $xxxxxx where x is around $008C81. For example from the metroid HP
+	patch:
+
+		org $8C89 ; Status bar rearangeing
+			db $FC, $2C, $3E, $2C, $3E, $2C, $3E, $2C, $3E, $2C, $3E, $2C, $3E, $2C, $3E, $2C
+			db $FC, $2C, $42, $38, $40, $38, $41, $38, $4A, $38, $FC, $38, $FC, $38, $4A, $78
+			db $76, $38, $26, $38, $FC, $38, $27, $3C, $27, $3C, $27, $3C, $FC, $38, $2E, $3C
+			db $26, $38, $FC, $38, $27, $38, $27, $38, $30, $38, $31, $38, $32, $38, $33, $38
+			db $FC, $38, $FC, $38, $FC, $38, $FC, $38, $43, $38, $27, $38, $27, $38, $4A, $38
+			db $FC, $38, $FC, $38, $4A, $78, $FC, $3C, $FC, $3C, $FC, $3C, $FC, $3C, $FC, $38
+			db $FC, $38, $FC, $38, $FC, $38, $FC, $38, $FC, $38, $FC, $38
+
+	^this is the hex edit to move the "constant" or "frozen" tiles of the status bar, remove that (or put
+	semicolons ";" on the beginning of each line, including the [org $8C89 ; Status bar rearangeing]).
+
+	Your new status bar tile editing is now in ASSB file, so edit the tables labeled "DATA_TILES:", and/or
+	"DATA_TILESx:" where x is each data tiles or use the "Status Effect" tool in smwcentral.
+
+	You might want to remove some other hijacks that controls the counters implemented into the HUD, because
+	ASSB uses the hijacks that other HUD-effecting patches use also.
+-------------------------------------------------------------------------------------------------------------------
+3: Other notes:
+
+	-[fixed] There is something going on with the luigi's name on the ASSB, If you play as luigi and are in a
+	 level, the last tile of the name, the letter "I" will glitch and show a top-half portion of the large
+	 number 0 (that was used for the bonus stars counter). I check the tile properties table for that tile and
+	 couldn't find why that is happening. If you found a fix for that, please PM me (GreenHammerBro) on smw
+	 central, thanks. Edit: Thanks goes to DiscoTheBat for fixing that issue.

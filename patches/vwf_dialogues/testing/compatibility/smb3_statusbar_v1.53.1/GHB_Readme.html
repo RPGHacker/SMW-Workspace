@@ -1,0 +1,71 @@
+<html>
+	<head>
+		<style>
+			html {
+			background-color: white;
+			color: black;
+			font-family: sans-serif;
+			}
+			
+			table, th, td {
+			border: 1px solid black;
+			border-collapse: collapse;
+			}
+			
+			span.NoLineBreak {
+				white-space: nowrap;
+			}
+		</style>
+	</head>
+<h1>GHB's notes</h1>
+This document illustrates the data format on how to edit SMB3 status bar RAM to be able to modify the status bar to add custom heads-up display (HUD) elements and
+other things. Most of the counters included in this package can be moved or disabled in <kbd>smb3_status_defines.asm</kbd>. So far, this covers on how to edit tile
+number (, properties) and palette. When patching <kbd>smb3_status.asm</kbd>, you should get something like this displayed on the Asar console window:
+<table><tr><td><pre>RAM address ranges:
+l1y_end:             $7FB540 to $7FB541
+l1y_mirror:          $7FB542 to $7FB543
+l1y_mirror_alt:      $7FB544 to $7FB545
+l2y_mirror:          $7FB546 to $7FB547
+l2y_mirror_alt:      $7FB548 to $7FB549
+l3_line1:            $7FB54A to $7FB54B
+l3_line2:            $7FB54C to $7FB54D
+hdmatbl:             $7FB54E to $7FB571
+
+status_tile:         $7FB600 to $7FB67F
+-Tile number ranges (32 bytes each):
+--Row 0:              $7FB600 to $7FB61F
+--Row 1:              $7FB620 to $7FB63F
+--Row 2:              $7FB640 to $7FB65F
+--Row 3:              $7FB660 to $7FB67F
+
+status_prop:         $7FB680 to $7FB6FF
+-Tile properties ranges (32 bytes each):
+--Row 0:              $7FB680 to $7FB69F
+--Row 1:              $7FB6A0 to $7FB6BF
+--Row 2:              $7FB6C0 to $7FB6DF
+--Row 3:              $7FB6E0 to $7FB6FF
+
+status_palette:      $7FB500 to $7FB53F
+-Palette ranges (8 bytes each):
+--Palette 0:          $7FB500 to $7FB507
+--Palette 1:          $7FB508 to $7FB50F
+--Palette 2:          $7FB510 to $7FB517
+--Palette 3:          $7FB518 to $7FB51F
+--Palette 4:          $7FB520 to $7FB527
+--Palette 5:          $7FB528 to $7FB52F
+--Palette 6:          $7FB530 to $7FB537
+--Palette 7:          $7FB538 to $7FB53F
+
+status_OAM:          $EFC to $EFF
+</pre></td></tr></table>
+This is important, because if you wanted to edit tiles and other stuff without that, it can be difficult to locate what RAM to edit, not to mention, if you insert other patches,
+you should keep track of RAM addresses reserved by other patches (they are often referred to as &ldquo;freeram&rdquo;) so you don't end up with two or more patches conflicting.
+You can select and copy text from the console window (you may have to &ldquo;mark&rdquo; (rightclick the top title bar of the window &rightarrow; Edit &rightarrow; Mark and/or Copy))
+and paste it in a <kbd>.txt</kbd> file for future references.<br><br>
+
+I've provided instructions below and included javascript code that generates a table to find what data is associated to another. If you have edited the defines to relocate the RAM address,
+make sure you enter the starting RAM address of the WHOLE thing, not any address in the sub-ranges marked with two dashes (&ldquo;--&rdquo;).
+<ul>
+<li><a href="GHB_ReadmeFiles/GHB_TileInfo.html" id="TileData">Tile and properties documentation</a></li>
+<li><a href="GHB_ReadmeFiles/GHB_PaletteInfo.html" id="PaletteData">Palette documentation</a></li>
+</ul>

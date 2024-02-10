@@ -1,0 +1,122 @@
+<html>
+	<head>
+		<style>
+			html {
+			background-color: white;
+			color: black;
+			font-family: sans-serif;
+			}
+			
+			table, th, td {
+			border: 1px solid black;
+			border-collapse: collapse;
+			}
+			
+			span.NoLineBreak {
+				white-space: nowrap;
+			}
+		</style>
+	</head>
+<body onload="Calculate()">
+<a href="../GHB_Readme.html#TileInfo">Back</a>
+<h1>Tile data format</h1>
+Each tile have 2 bytes of information stored in RAM: <kbd>TTTTTTTT</kbd> and <kbd>YXPCCCTT</kbd>. Unlike <i>Super Status Bar</i> or OWB+ patch, these patches have <kbd>TTTTTTTT</kbd> and
+<kbd>YXPCCCTT</kbd> stored in separate tables (TileNumberTable: <kbd>TTTTTTTT (tile 0), TTTTTTTT (tile 1), ... TilePropertiesTable: YXPCCCTT (tile 0), YXPCCCTT (tile 1), ...</kbd>).<br><br>
+
+To find out the best way on finding their tiles on-screen is by using <a href="https://github.com/devinacker/bsnes-plus/releases">Bsnes+ debugger</a>, &rightarrow;
+Tools &rightarrow; Debugger &rightarrow; S-PPU &rightarrow; Tilemap Viewer and selecting &ldquo;3&rdquo; to view the layer 3 tilemap:<br>
+<a href="L3TileMap.png" target="_blank"><img width="256" src="L3TileMap.png"></a><br><br>
+
+However, for <kbd>status_top.asm</kbd> and <kbd>status_double.asm</kbd>, you cannot see top HUD due to the code handles it is based on timing of when
+they write the HUD. Thus, you need to use the &ldquo;Auto Update&rdquo; and set a breakpoint (Debugger window &rightarrow; Tools &rightarrow; Breakpoint Editor, write
+the address you want the execution to pause at, and check the checkbox labled &ldquo;X&rdquo;) mentioned in the Asar console window during patching in order to
+view the top bar:<br>
+<a href="L3TileMap_BreakPointed.png" target="_blank"><img width="256" src="L3TileMap_BreakPointed.png"></a><br><br>
+
+The debugger does display the tile coordinate on the &ldquo;Tilemap Viewer&rdquo; when selecting a tile. Use that in conjunction of CTRL+F
+to search for the corresponding RAM address below here (note that coordinates here doesn't use leading zeroes to force a 2-digit display), just ignore
+the Y position since the status bar is only 1 line tall:<br>
+<a href="Debugger_TilePosDisplay.png" target="_blank"><img width="256" src="Debugger_TilePosDisplay.png"></a><br><br>
+<input type="radio" name="TopOrBottomStatusBar" id="OneLineStatusBar" onclick="Compute()" onchange="Calculate()" checked><label for="OneLineStatusBar">Using <kbd>status_bottom.asm</kbd> or <kbd>status_top.asm</kbd></label><br>
+<input type="radio" name="TopOrBottomStatusBar" id="DoubleStatusBar"  onclick="Compute()" onchange="Calculate()"><label for="DoubleStatusBar">Using <kbd>status_double.asm</kbd></label><br>
+<kbd>!status_tile = $</kbd><input type="text" id="TileNumberRAM" value="B05" onchange="Calculate()" maxlength="6"><button type="button" onclick="IncreaseDecreaseHexInput(1, 'TileNumberRAM', 0, parseInt('FFFFFF', 16))">+</button><button type="button" onclick="IncreaseDecreaseHexInput(-1, 'TileNumberRAM', 0, parseInt('FFFFFF', 16))">-</button><br>
+<kbd>!status_prop = $</kbd><input type="text" id="TilePropertiesRAM" value="B45" onchange="Calculate()" maxlength="6"><button type="button" onclick="IncreaseDecreaseHexInput(1, 'TilePropertiesRAM', 0, parseInt('FFFFFF', 16))">+</button><button type="button" onclick="IncreaseDecreaseHexInput(-1, 'TilePropertiesRAM', 0, parseInt('FFFFFF', 16))">-</button><br><br>
+
+<button type="button" onclick="AutoFillSA1()">Autofill SA-1 address</button><button type="button" onclick="Reset()">Reset</button>
+<hr>
+<span id="Output"></span>
+<script>
+	function AutoFillSA1() {
+		document.getElementById("TileNumberRAM").value = "6B05"
+		document.getElementById("TilePropertiesRAM").value = "6B45"
+		Calculate()
+	}
+	function Reset() {
+		document.getElementById("OneLineStatusBar").checked = true
+		document.getElementById("TileNumberRAM").value = "B05"
+		document.getElementById("TilePropertiesRAM").value = "B45"
+		Calculate()
+	}
+	function clamp(num, min, max) {
+		//Restrict a number within a specified range.
+		if (isNaN(num) == true) {
+			num = 0
+		}
+		return num <= min ? min : num >= max ? max : num;
+	}
+	function IncreaseDecreaseHexInput(ChangeBy, WhatInput, Min, Max) {
+		//To be used along with a hex input the user enters.
+		//This function is for the increment/decrement buttons since
+		//only the "number" input (only allows characters 0-9) allows
+		//the increment/decrement action (up/down button when selected,
+		//and pressing up and down)
+		document.getElementById(WhatInput).value = clamp((parseInt(document.getElementById(WhatInput).value, 16) + ChangeBy), Min, Max).toString(16).toUpperCase()
+		Calculate()
+	}
+	function Calculate() {
+		document.getElementById("Output").innerHTML = ""
+		var Output = ""
+		var NumbOfTiles = 32
+		if (document.getElementById("DoubleStatusBar").checked == true) {
+			NumbOfTiles = 64
+		}
+		var TileNumbRAM = clamp(parseInt(document.getElementById("TileNumberRAM").value, 16), 0, parseInt("FFFFFF", 16))
+		document.getElementById("TileNumberRAM").value = TileNumbRAM.toString(16).toUpperCase()
+		var TilePropRAM = clamp(parseInt(document.getElementById("TilePropertiesRAM").value, 16), 0, parseInt("FFFFFF", 16))
+		document.getElementById("TilePropertiesRAM").value = TilePropRAM.toString(16).toUpperCase()
+		
+		Output += "<table>"
+		Output += "<tr><td><kbd>!status_tile</kbd> range:</td><td><kbd>$" + TileNumbRAM.toString(16).toUpperCase() + "</kbd> to <kbd>$" + (TileNumbRAM + (NumbOfTiles-1)).toString(16).toUpperCase() + "</kbd> (" + NumbOfTiles.toString(10) + " bytes)</td></tr>"
+		Output += "<tr><td><kbd>!status_tile</kbd> range:</td><td><kbd>$" + TilePropRAM.toString(16).toUpperCase() + "</kbd> to <kbd>$" + (TilePropRAM + (NumbOfTiles-1)).toString(16).toUpperCase() + "</kbd> (" + NumbOfTiles.toString(10) + " bytes)</td></tr>"
+		Output += "</table><br><br>"
+		
+		Output += "<table>"
+		Output += "<tr><th>Tile number and X position</th><th>Tile number (TTTTTTTT)</th><th>Tile properties (YXPCCCTT)</th></tr>"
+		
+		var TileCount = 0
+		
+		for (TileCount = 0; (TileCount < NumbOfTiles); TileCount++) {
+			if (((TileCount % 32) == 0) && (NumbOfTiles == 64)) {
+			Output += "<tr>"
+				if (Math.floor(TileCount/32) == 0) {
+					Output += "<th colspan='3'>Top line</th>"
+				} else {
+					Output += "<th colspan='3'>Bottom line</th>"
+				}
+			Output += "</tr>"
+			}
+			Output += "<tr>"
+			Output += "<td><kbd>" + TileCount.toString(10) + "</kbd> (<kbd>$" + TileCount.toString(16).toUpperCase() + "</kbd>), <kbd>X = " + (TileCount % 32).toString(10) + "</kbd> (<kbd>$" + (TileCount % 32).toString(16).toUpperCase() + "</kbd>)</td>"
+			Output += "<td><kbd>$" + (TileNumbRAM + TileCount).toString(16).toUpperCase() + "</kbd></td>"
+			Output += "<td><kbd>$" + (TilePropRAM + TileCount).toString(16).toUpperCase() + "</kbd></td>"
+			Output += "</tr>"
+		}
+		
+		
+		Output += "</table>"
+		
+		
+		document.getElementById("Output").innerHTML = Output
+	}
+
+</script>

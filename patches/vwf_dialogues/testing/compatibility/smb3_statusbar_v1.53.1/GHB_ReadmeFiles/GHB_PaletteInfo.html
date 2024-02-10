@@ -1,0 +1,102 @@
+<html>
+	<head>
+		<style>
+			html {
+			background-color: white;
+			color: black;
+			font-family: sans-serif;
+			}
+			
+			table, th, td {
+			border: 1px solid black;
+			border-collapse: collapse;
+			}
+			
+			span.NoLineBreak {
+				white-space: nowrap;
+			}
+		</style>
+	</head>
+<a href="../GHB_Readme.html#PaletteData">back</a>
+<h1>Palette documentation</h1>
+<h2 id="PaletteSelection">Palette selection from the tile properties</h2>
+You probably be wondering, where does the <kbd>CCC</kbd> bits in <kbd>YXPCCCTT</kbd> point to what color in the palette editor? Well, the <kbd>CCC</kbd> refers to <b>what groups of color</b>
+on the palette editor, numbered from 0-7 inclusive. On a 2BPP (2 bits per pixel) format (which the status bar graphic uses), each 8x8 tile possess 4 colors (with the first of the 4 being the
+transparent).
+Information is better displayed as visual than mere text:
+<img src="PaletteInfo.png"><br><br>
+
+<h2>How color data are stored</h2>
+Each color (or each &ldquo;square&rdquo; on the palette editor) occupies 2 bytes, stored in 16-bit binary as [<kbd>%0bbbbbgggggrrrrr</kbd>] (r g and b means the red, green and blue colors,
+each ranging from $00-$1F (%00000-%11111) inclusive, the higher the number of any of the 3 groups, the &ldquo;brighter&rdquo; towards the color, up to white when all 3 are maxed),
+Therefore, each palette groups containing 4 colors occupies a total of 8 bytes. Remember, the SNES have multi-bytes stored as little-endian, meaning
+[<kbd>%0bbbbbgggggrrrrr</kbd>] is stored as [<kbd>gggrrrrr, 0bbbbbgg</kbd>] in memory.<br><br>
+
+I've programmed a javascript below that makes it easier to find the RAM of a given color palette. Again, using <a href="https://github.com/devinacker/bsnes-plus/releases">Bsnes+</a>, this time going to
+debugger &rightarrow; S-PPU &rightarrow; Palette Viewer. Also again that the palette is loaded during processing the status bar, so a possible chance that the debugger won't show the status bar palette, so enable &ldquo;Auto Update&rdquo;
+and go to the breakpoint editor (Debugger window &rightarrow; Tools &rightarrow; Breakpoint Editor) and &ldquo;step&rdquo; around address $0082A4.<br><br>
+
+When you select any color, thankfully, the debugger displays what color by &ldquo;Index&rdquo;. Use that number and CTRL+F to find it on the table here:<br>
+<img src="PaletteIndex.png">
+<br><br>
+
+To edit the default palette, they are stored in <kbd>smb3_status_pal.bin</kbd>; data there are stored the same way how RAM stored the palette. Open that up with a hex editor to see and modify that. Most hex editors display the offset (an &ldquo;address&rdquo;
+from the first byte), make use of that.<br><br>
+
+
+<kbd>!status_palette = $</kbd><input type="text" list="PaletteList" id="RAM_paletteData" value ="7FB500" maxlength="6" onchange="Calculate()"><button type="button" onclick="IncreaseDecreaseRAM(1, 'RAM_paletteData')">+</button><button type="button" onclick="IncreaseDecreaseRAM(-1, 'RAM_paletteData')">-</button><button type="button" onclick="IncreaseDecreaseRAM(2, 'RAM_paletteData')">+2</button><button type="button" onclick="IncreaseDecreaseRAM(-2, 'RAM_paletteData')">-2</button>
+<datalist id="PaletteList">
+<option value="7FB500">Default RAM address</option>
+<option value="40C600">Default RAM address (SA-1)</option>
+</datalist>
+<button onclick="Reset()">Reset</button><br><br>
+
+<span id="Output"></span>
+<body onload="Calculate()">
+<script>
+	function Reset() {
+		document.getElementById("RAM_paletteData").value = "7FB500"
+		Calculate()
+	}
+	function IncreaseDecreaseRAM(ChangeBy, WhatInput) {
+		document.getElementById(WhatInput).value = clamp((parseInt(document.getElementById(WhatInput).value, 16) + parseInt(ChangeBy, 10)), 0, parseInt("FFFFFF", 16)).toString(16).toUpperCase()
+		Calculate()
+	}
+	function clamp(num, min, max) {
+		if (isNaN(num) == true) {
+			num = 0
+		}
+		return num <= min ? min : num >= max ? max : num;
+	}
+	
+	function Calculate() {
+		//Clear output
+			document.getElementById("Output").innerHTML = ""
+			var Output = ""
+		//Main code
+			var PaletteAddress = clamp(parseInt(document.getElementById("RAM_paletteData").value, 16), 0, parseInt("FFFFFF", 16))
+			document.getElementById("RAM_paletteData").value = PaletteAddress.toString(16).toUpperCase()
+			
+			Output += "Entire palette RAM range: <kbd>$" + PaletteAddress.toString(16).toUpperCase() + "</kbd> to <kbd>$" + (PaletteAddress+63).toString(16).toUpperCase() + "</kbd> (<kbd>!status_palette</kbd> to <kbd>!status_palette+$3F</kbd>)<br><br>"
+			
+			var IndexCount = 0
+			Output += "<table>"
+			Output += "<tr><th>What palette group</th><th>Index</th><th>Palette RAM</th><th>&ldquo;smb3_status_pal.bin&rdquo; Location offset</th></tr>"
+			for (IndexCount = 0; IndexCount < 32; IndexCount++) {
+				Output += "<tr>"
+				if ((IndexCount % 4) == 0) {
+					Output += "<td rowspan='4'>Palette " + (Math.floor(IndexCount/4)).toString(10) + "</td>"
+				}
+				Output += "<td>Index: <kbd>" + IndexCount.toString(10) + "</kbd> (<kbd>$" + IndexCount.toString(16).toUpperCase() + "</kbd>)</td>"
+				Output += "<td><kbd>$" + (PaletteAddress+(IndexCount*2)).toString(16).toUpperCase() + "</kbd> to <kbd>$" + (PaletteAddress+(IndexCount*2)+1).toString(16).toUpperCase() +"</kbd> (<kbd>!status_palette+$" + (IndexCount*2).toString(16).toUpperCase() + "</kbd> to <kbd>!status_palette+$" + ((IndexCount*2)+1).toString(16).toUpperCase() + "</kbd>)</td>"
+				Output += "<td><kbd>" + (IndexCount*2).toString(10) + "</kbd> to <kbd>" + ((IndexCount*2)+1).toString(10) + "</kbd> (<kbd>$" + (IndexCount*2).toString(16).toUpperCase() + "</kbd> to <kbd>$" + ((IndexCount*2)+1).toString(16).toUpperCase() + "</kbd>)</td>"
+				Output += "</tr>"
+			}
+			
+			Output += "</table>"
+			
+			document.getElementById("Output").innerHTML = Output
+	
+	}
+
+</script>

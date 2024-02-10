@@ -1,0 +1,160 @@
+<html>
+	<head>
+		<style>
+			html {
+			background-color: white;
+			color: black;
+			font-family: sans-serif;
+			}
+			
+			table, th, td {
+			border: 1px solid black;
+			border-collapse: collapse;
+			}
+			
+			span.NoLineBreak {
+				white-space: nowrap;
+			}
+		</style>
+	</head>
+	<a href="../GHB_Readme.html#TileData">back</a>
+<h1>GHB's tilemap documentation</h1>
+Unlike most other layer 3 status bar patches, tile conversion to coordinates is completely different. Instead of having all the tiles all together in the tilemap, each horizontal lines of 8x8 tiles are split into each
+of the 4 &ldquo;screens&rdquo; of the tilemap:<br>
+<a href="SMB3_Statusbar_Tilemap.png" target="_blank"><img width="256" src="SMB3_Statusbar_Tilemap.png"></a><br>
+Thankfully, <a href="https://github.com/devinacker/bsnes-plus/releases">Bsnes+ v4</a> (or higher) tile coordinate system is updated to show its position
+relative to each one of the 4 screens instead of the top-left corner of all 4 screens. The map number can be used as the &ldquo;row number/Y position&rdquo;.<br><br>
+
+<h2>How tile data are stored</h2>
+Each 8x8 tile contains 2 bytes of information, the &ldquo;tile number&rdquo; (TTTTTTTT) and the &ldquo;tile properties&rdquo;:
+<ul>
+<li>Tile Number: Refers to what tile to use that is stored in the tile S-PPU. This can be seen by using YYCHR on <kbd>smb3_status_gfx.bin</kbd> and looking at the status bar at the bottom labeled
+&ldquo;Pattern&rdquo;:<br>
+<img src="YYCHR_TileNumb.png"><br>
+Obviously this ranges from <kbd>$00</kbd> to <kbd>$FF</kbd> since all 8 bits are used.</li>
+<li>Tile Properties: Attributes of the tile. Stored in binary as follows:
+<ul>
+<li><kbd><u>Y</u>XPCCCTT</kbd>: Y-flip (<kbd>%0</kbd> = no, <kbd>%1</kbd> = yes)</li>
+<li><kbd>Y<u>X</u>PCCCTT</kbd>: X-flip (<kbd>%0</kbd> = no, <kbd>%1</kbd> = yes)</li>
+<li><kbd>YX<u>P</u>CCCTT</kbd>: Priority (<kbd>%0</kbd> = behind things, <kbd>%1</kbd> = in front of things)</li>
+<li><kbd>YXP<u>CCC</u>TT</kbd>: Palette:
+<ul>
+<li><kbd>%000</kbd>: Palette 0</li>
+<li><kbd>%001</kbd>: Palette 1</li>
+<li><kbd>%010</kbd>: Palette 2</li>
+<li><kbd>%011</kbd>: Palette 3</li>
+<li><kbd>%100</kbd>: Palette 4</li>
+<li><kbd>%101</kbd>: Palette 5</li>
+<li><kbd>%110</kbd>: Palette 6</li>
+<li><kbd>%111</kbd>: Palette 7</li><br>
+</ul>
+See <a href="GHB_PaletteInfo.html#PaletteSelection">here</a> for more info.</li><br><br>
+<li><kbd>YXPCCC<u>TT</u></kbd>: Page number (akin to LM when going to Overworld Editor &rightarrow; File &rightarrow; Layer 3 Level &rightarrow; Load layer 3 of Level &rightarrow;
+Open &quot;8x8 Overworld tile selector&quot; Window and pressing up/down on the arrow keys):
+<ul>
+<li><kbd>%00</kbd>: Page 0 (you most likely only use this page)</li>
+<li><kbd>%01</kbd>: Page 1</li>
+<li><kbd>%10</kbd>: Page 2</li>
+<li><kbd>%11</kbd>: Page 3</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+Unlike the <a href="https://www.smwcentral.net/?p=section&a=details&id=19247"><i>Super Status Bar</i></a> or <a href="https://www.smwcentral.net/?p=section&a=details&id=19297"><i>Overworld Border plus</i></a> patch, the tile number and properties are
+stored in RAM in separate tables instead of each tile having the 2 bytes placed together (this patch's format: tile number table: [<kbd>TTTTTTTT (tile 0), TTTTTTTT (tile 1), ...</kbd>],
+Tile properties table: [<kbd>YXPCCCTT (tile 0), YXPCCCTT (tile 1), ...</kbd>]).
+<h2>Locating tiles</h2>
+To obtain the coordinate of the selected tile, run Bsnes+, and on any level, go to Tools &rightarrow; Debugger &rightarrow; S-PPU &rightarrow; Tilemap Viewer and 
+select &ldquo;3&rdquo; on the BG layer, and enable &ldquo;Auto Update&rdquo;. Because the status bar writing is timing-based when drawing the screen, there is
+a chance that the tilemap will only display layer 3 non-status bar (layer 3 backgrounds, for example) as the debugger only displayed it during non-status bar write,
+therefore a breakpoint and &ldquo;stepping&rdquo; around $0082A4 will help. After that, select any status bar tile, you should get the map number (Y position for this table)
+and the first number in &ldquo;Position&rdquo; (X position for this table):<br>
+<a href="SMB3_Statusbar_TileCoord.png" target="_blank"><img width="256" src="SMB3_Statusbar_TileCoord.png"></a><br>
+Then on this HTML file, CTRL+F and enter <kbd>(&lt;X_position&gt;,&lt;MapNumber&gt;)</kbd> (including the quotes) with no leading zeroes.<br><br>
+
+The following is two address, enter the RAM address presented on the Asar console window (the starting address, of <b>all tiles</b>, not ending) if you have edited the RAM addresses or use SA-1.
+I made this JS table-er to make it easy to locate what RAM of a given tile without using a calculator.<br><br>
+
+To edit the default tile and properties, they are stored in <kbd>smb3_status_map.bin</kbd>. NOTE: default tile data are stored the same format as the SSB and OWB+ patch (those patches format: [<kbd>TTTTTTTT (tile 0),
+YXPCCCTT (tile 0), TTTTTTTT (tile 1), YXPCCCTT (tile 1),...</kbd>], unlike how the RAM format this patch uses. You'll need a hex editor to see and modify that. Most hex editors display the offset (an
+&ldquo;address&rdquo; from the first byte), make use of that.<br><br>
+
+<kbd>!status_tile = $<input type="text" list="StatusBarRAMTileList" id="RAM_TTTTTTTT_Addr" value ="7FB600" maxlength="6" onchange="Calculate()"></kbd><button type="button" onclick="IncreaseDecreaseRAM(1, 'RAM_TTTTTTTT_Addr')">+</button><button type="button" onclick="IncreaseDecreaseRAM(-1, 'RAM_TTTTTTTT_Addr')">-</button>
+<datalist id="StatusBarRAMTileList">
+<option value="7FB600">Default RAM address</option>
+<option value="40C700">Default RAM address (SA-1)</option>
+</datalist><br>
+<kbd>!status_prop = $<input type="text" list="StatusBarRAMPropertiesList" id="RAM_YXPCCCTT_Addr" value ="7FB680" maxlength="6" onchange="Calculate()"></kbd></kbd><button type="button" onclick="IncreaseDecreaseRAM(1, 'RAM_YXPCCCTT_Addr')">+</button><button type="button" onclick="IncreaseDecreaseRAM(-1, 'RAM_YXPCCCTT_Addr')">-</button>
+<datalist id="StatusBarRAMPropertiesList">
+<option value="7FB680">Default RAM address</option>
+<option value="40C780">Default RAM address (SA-1)</option>
+</datalist><br>
+
+<button onclick="AutoFillSa1()">Autofill SA-1 addresses</button>
+<button onclick="Reset()">Reset</button>
+<hr>
+<body onload="Calculate()">
+<span id="Output"></span>
+<script>
+	function AutoFillSa1() {
+		document.getElementById("RAM_TTTTTTTT_Addr").value = "40C700"
+		document.getElementById("RAM_YXPCCCTT_Addr").value = "40C780"
+		Calculate()
+	}
+	function IncreaseDecreaseRAM(ChangeBy, WhatInput) {
+		document.getElementById(WhatInput).value = clamp((parseInt(document.getElementById(WhatInput).value, 16) + parseInt(ChangeBy, 10)), 0, parseInt("FFFFFF", 16)).toString(16).toUpperCase()
+		Calculate()
+	}
+	function clamp(num, min, max) {
+		if (isNaN(num) == true) {
+			num = 0
+		}
+		return num <= min ? min : num >= max ? max : num;
+	}
+	function Reset() {
+		document.getElementById("RAM_TTTTTTTT_Addr").value = "7FB600"
+		document.getElementById("RAM_YXPCCCTT_Addr").value = "7FB680"
+		Calculate()
+	}
+	function Calculate() {
+		//Clear output
+			document.getElementById("Output").innerHTML = ""
+			var Output = ""
+		//DisplayOutput
+			var RAM_TileNumbAddr = clamp(parseInt(document.getElementById("RAM_TTTTTTTT_Addr").value, 16), 0, parseInt("FFFFFF", 16))
+			document.getElementById("RAM_TTTTTTTT_Addr").value = (RAM_TileNumbAddr).toString(16).toUpperCase()
+			var RAM_TilePropAddr = clamp(parseInt(document.getElementById("RAM_YXPCCCTT_Addr").value, 16), 0, parseInt("FFFFFF", 16))
+			document.getElementById("RAM_YXPCCCTT_Addr").value = (RAM_TilePropAddr).toString(16).toUpperCase()
+			
+			Output += "<table>"
+			Output += "<tr><td>Tile number RAM address range:</td><td><kbd>$" + RAM_TileNumbAddr.toString(16).toUpperCase() + "</kbd> to <kbd>$" + (RAM_TileNumbAddr+(32*4)-1).toString(16).toUpperCase() + "</kbd> (<kbd>!status_tile</kbd> to <kbd>!status_tile+$7F</kbd>)</td></tr>"
+			Output += "<tr><td>Tile properties RAM address range:</td><td><kbd>$" + RAM_TilePropAddr.toString(16).toUpperCase() + "</kbd> to <kbd>$" + (RAM_TilePropAddr+(32*4)-1).toString(16).toUpperCase() + "</kbd> (<kbd>!status_prop</kbd> to <kbd>!status_prop+$7F</kbd>)</td></tr>"
+			Output += "</table><br>"
+			
+			var TileCount = 0
+			var Xpos = 0
+			var YPos = 0
+			Output += "<table>"
+			Output += "<tr><th>Tile number and coordinates</th><th>Tile number (TTTTTTTT)</th><th>Tile properties (YXPCCCTT)</th><th>&ldquo;smb3_status_map.bin&rdquo; tile number location offset</th><th>&ldquo;smb3_status_map.bin&rdquo; tile properties location offset</th></tr>"
+			for (TileCount = 0; TileCount < (32*4); TileCount++) {
+				Xpos = (TileCount % 32)
+				YPos = Math.floor(TileCount/32)
+				if (Xpos == 0) {
+					Output += "<tr><th colspan='5'>Map/Screen " + YPos.toString(10) + "</th></tr>"
+				}
+				Output += "<tr>"
+				Output += "<td><kbd>" + TileCount.toString(10) + "</kbd> (<kbd>$" + TileCount.toString(16).toUpperCase() + "</kbd>), position: <kbd>(" + Xpos.toString(10) + "," + YPos.toString(10) + ")</kbd>" + " (<kbd>($" + Xpos.toString(16).toUpperCase() + ",$" + YPos.toString(16).toUpperCase() + ")</kbd>)</td>"
+				Output += "<td><kbd>$" + (RAM_TileNumbAddr + TileCount).toString(16).toUpperCase() + "</kbd> (<kbd>!status_tile+$" + TileCount.toString(16).toUpperCase() + "</kbd>)</td>"
+				Output += "<td><kbd>$" + (RAM_TilePropAddr + TileCount).toString(16).toUpperCase() + "</kbd> (<kbd>!status_prop+$" + TileCount.toString(16).toUpperCase() + "</kbd>)</td>"
+				Output += "<td><kbd>" + (TileCount*2).toString(10) + "</kbd> (<kbd>$" + (TileCount*2).toString(16).toUpperCase() + "</kbd>)</td>"
+				Output += "<td><kbd>" + ((TileCount*2)+1).toString(10) + "</kbd> (<kbd>$" + ((TileCount*2)+1).toString(16).toUpperCase() + "</kbd>)</td>"
+				Output += "</tr>"
+			}
+			Output += "</table>"
+
+			document.getElementById("Output").innerHTML = Output
+	}
+
+
+</script>

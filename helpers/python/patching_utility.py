@@ -116,6 +116,7 @@ class ActionOutput:
 	"""Defines all outputs of a patching_utility.Action that the patcher
 	requires for further processing."""
 	output_symbols_path: Optional[str] = None
+	gfx_to_insert: Dict[int, str] = dataclasses.field(default_factory=lambda: {})
 	
 	
 @dataclass
@@ -366,6 +367,65 @@ class InsertMap16(Action):
 		
 		return output
 		
+		
+@dataclass
+class InsertGfx(Action):
+	"""Defines a GFX file to insert with Lunar Magic."""
+	path: str
+	slot_number: int
+	
+	def run(self, args: ActionArgs) -> ActionOutput:
+		output = ActionOutput()
+			
+		output.gfx_to_insert[self.slot_number] = self.path
+		
+		return output
+		
+		
+@dataclass
+class InsertSharedPalette(Action):
+	"""Defines a shared palette file to insert with Lunar Magic."""
+	path: str
+	
+	def run(self, args: ActionArgs) -> ActionOutput:
+		output = ActionOutput()
+		
+		command_line: List[str] = [_lm_path]
+			
+		command_line.append('-ImportSharedPalette')
+			
+		command_line.append(args.output_rom_path)
+			
+		command_line.append(self.path)
+		
+		self._run_command_line(command_line, "Inserting shared palette data (Lunar Magic)", "Running Lunar Magic failed! Please check Lunar Magic's message boxes and any error output above.")
+		
+		return output
+		
+		
+@dataclass
+class InsertCustomPalette(Action):
+	"""Defines a shared palette file to insert with Lunar Magic."""
+	path: str
+	level_number: int
+	
+	def run(self, args: ActionArgs) -> ActionOutput:
+		output = ActionOutput()
+		
+		command_line: List[str] = [_lm_path]
+			
+		command_line.append('-ImportCustomPalette')
+			
+		command_line.append(args.output_rom_path)
+			
+		command_line.append(self.path)
+			
+		command_line.append(str(self.level_number))
+		
+		self._run_command_line(command_line, "Inserting custom palette data (Lunar Magic)", "Running Lunar Magic failed! Please check Lunar Magic's message boxes and any error output above.")
+		
+		return output
+		
 	
 # ROM size is controlled via an option, so probably no good reason to expose this class.
 @dataclass
@@ -378,6 +438,25 @@ class _ExpandRom(Action):
 
 	def run(self, args: ActionArgs) -> ActionOutput:
 		return self.patch.run(args)
+		
+@dataclass
+class _InsertGfxFinalize(Action):
+	gfx_to_insert: Dict[int, str] = dataclasses.field(default_factory=lambda: {})
+	
+	def run(self, args: ActionArgs) -> ActionOutput:
+		output = ActionOutput()		
+		
+		self._run_command_line([_lm_path, '-ExportGFX', args.output_rom_path], "Exporting GFX data (Lunar Magic)", "Running Lunar Magic failed! Please check Lunar Magic's message boxes and any error output above.")
+		
+		# Copy over GFX file to ROM's GFX directory.
+		gfx_output_dir: str = os.path.join(args.output_temp_path, 'Graphics')
+		for slot_number, path in self.gfx_to_insert.items():
+			print(os.path.join(gfx_output_dir, 'GFX{slot_number:02X}.bin'.format(slot_number=slot_number)))
+			shutil.copyfile(path, os.path.join(gfx_output_dir, 'GFX{slot_number:02X}.bin'.format(slot_number=slot_number)))
+			
+		self._run_command_line([_lm_path, '-ImportGFX', args.output_rom_path], "Importing GFX data (Lunar Magic)", "Running Lunar Magic failed! Please check Lunar Magic's message boxes and any error output above.")
+		
+		return output
 
 	
 class PatchingUtility:
@@ -487,10 +566,20 @@ class PatchingUtility:
 		
 		action_list.extend(patch_config.actions)
 		
+		gfx_to_insert: Dict[int, str] = {}
+		
 		action_args = ActionArgs(patch_config, options, output_temp_rom_path, output_temp_path)
 	
 		for action in action_list:
 			output = action.run(action_args)
+			
+			# Check if the action wants us to insert gfx, and if so, merge request into gfx_to_insert.
+			if len(output.gfx_to_insert) > 0:
+				for slot_number, path in output.gfx_to_insert.items():
+					if slot_number in gfx_to_insert and gfx_to_insert[slot_number] != output.gfx_to_insert[slot_number]:						
+						raise ValueError('Multiple files assigned to GFX slot {slot_number:02X}: "{path_1}" and "{path_2}".'.format(slot_number=slot_number, path_1=gfx_to_insert[slot_number], path_2=output.gfx_to_insert[slot_number]))
+						
+					gfx_to_insert[slot_number] = path			
 			
 			# Do some processing on symbol files, so that we can merge outputs of symbol files further below
 			# and also so that we can get rid of stuff we don't really want.
@@ -552,6 +641,10 @@ class PatchingUtility:
 								symbols_output.setdefault(current_group, []).append(line.strip())
 							
 					source_file_base_id += num_source_files_in_symbols_file
+					
+		# Finalize GFX insertions
+		if len(gfx_to_insert) > 0:
+			_InsertGfxFinalize(gfx_to_insert).run(action_args)
 		
 		# Output new merged symbols file.
 		with open(output_symbols_path, 'w') as symbols_file:
@@ -568,7 +661,7 @@ class PatchingUtility:
 						
 				symbols_file.write('\n')
 				
-		shutil.copyfile(output_symbols_path, output_cpu_symbols_path)			
+		shutil.copyfile(output_symbols_path, output_cpu_symbols_path)
 			
 		if options.rom_type == 'sa-1':
 			shutil.copyfile(output_symbols_path, output_sa1_symbols_path)

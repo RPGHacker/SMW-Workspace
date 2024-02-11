@@ -77,6 +77,10 @@ def main() -> None:
 		patch_config.actions.append(patching_utility.Patch(os.path.join(os.path.dirname(__file__), 'testing/compatibility/minimalist/status_double.asm')))
 	elif compatibility_test == 'dkcr':
 		patch_config.actions.append(patching_utility.Patch(os.path.join(os.path.dirname(__file__), 'testing/compatibility/dkcr_sprite_status_bar/status_bar.asm')))
+		patch_config.actions.append(patching_utility.InsertGfx(os.path.join(os.path.dirname(__file__), 'testing/compatibility/dkcr_sprite_status_bar/GFX00.bin'), 0x00))
+		# Currently breaks... the included palette doesn't seem to be shared.
+		#patch_config.actions.append(patching_utility.InsertSharedPalette(os.path.join(os.path.dirname(__file__), 'testing/compatibility/dkcr_sprite_status_bar/paletteF.pal')))
+		patch_config.actions.append(patching_utility.InsertCustomPalette(os.path.join(os.path.dirname(__file__), 'testing/compatibility/dkcr_sprite_status_bar/paletteF.pal'), 104))
 		
 	patcher.create_rom(patch_config, options)
 	

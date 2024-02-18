@@ -89,7 +89,7 @@ def main() -> None:
 		patch_config.actions.append(patching_utility.InsertCustomPalette(os.path.join(os.path.dirname(__file__), 'testing/compatibility/dkcr_sprite_status_bar/paletteF.pal'), 105))
 		patch_config.actions.append(patching_utility.InsertCustomPalette(os.path.join(os.path.dirname(__file__), 'testing/compatibility/dkcr_sprite_status_bar/paletteF.pal'), 106))
 	elif compatibility_test == 'nuke':
-		patch_config.actions.append(patching_utility.Patch(os.path.join(os.path.dirname(__file__), 'testing/compatibility/nuke_statusbar/nuke_statusbar.asm')))
+		patch_config.actions.insert(0, patching_utility.Patch(os.path.join(os.path.dirname(__file__), 'testing/compatibility/nuke_statusbar/nuke_statusbar.asm')))
 		
 	patcher.create_rom(patch_config, options)
 	

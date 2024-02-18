@@ -797,7 +797,11 @@ NMIHijack:
 	tax
 	lda.l .NMITable,x
 	bne .SpecialNMI	; If NMITable = $00 load regular NMI
+if !vwf_enable_remove_status_bar_compatibility_fix_hack != false
+	jml remap_rom($008C81)
+else
 	jml remap_rom($008292)
+endif
 
 .SpecialNMI
 	cmp.b #$02

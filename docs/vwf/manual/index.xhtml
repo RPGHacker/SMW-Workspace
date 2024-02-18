@@ -2606,6 +2606,12 @@ endif</code></pre>
 						</div>
 						This happens because the SMB3 Status Bar patch uses an HDMA effect to modify the layer 3 scroll offsets on certain scanlines, which stays active even while a dialogue is open. To eliminate this issue, change the <code>!vwf_enable_smb3_status_bar_layer_3_hdma_fix_hack</code> setting in <code>vwfconfig.cfg</code> to <code>true</code>. Alternatively, changing the <code>!vwf_main_dma_channel_sa1</code> setting to <code>0</code> will also eliminate the issue, since VWF Dialogues now use the same channel for their DMA transfers as the SMB3 Status Bar patch uses for its HDMA effect. However, this might cause some (currently unknown) side effects, so it's recommended to use the <code>!vwf_enable_smb3_status_bar_layer_3_hdma_fix_hack</code> solution instead.
 					</dd>
+					<li class="font-weight-bold">Remove Status Bar</li>
+					<dd>
+						VWF Dialogues and Remove Status Bar share a hijack at location <code>$008275</code>. If you patch VWF Dialogues before Remove Status Bar, text boxes will glitch up the screen as demonstrated here:						
+						<img class="d-block m-1 my-2" src="screenshots/status-bar-compat-4.png" alt="Screenshot" width="256" height="224" />
+						In order to make VWF Dialogues work, the patch needs to be applied after Remove Status Bar. This alone seems to already produce the intended behavior, however, certain code in the Remove Status Bar patch will never be called in this case. To work around this issue, you can change the <code>!vwf_enable_remove_status_bar_compatibility_fix_hack</code> setting in <code>vwfconfig.cfg</code> to <code>true</code>, which will make the VWF Dialogues patch execute Remove Status Bar's missing code.
+					</dd>
 				</ul>
 				The following patches have a few compatibility quirks which can be easily worked around:
 				<ul>
@@ -2701,7 +2707,7 @@ endif</code></pre>
 						<li>Added the <a href="#helper-functions-rgb_15_from_24"><code>rgb_15_from_24()</code></a> and <a href="#helper-functions-rgb_15_from_f"><code>rgb_15_from_f()</code></a> helper functions.</li>
 						<li>Implemented <a href="#header-settings-shared-headers">shared headers</a>, which provide a means of reusing message headers, reducing the size of a message in the process.</li>
 						<li>Added a version of <code>vwfsharedroutines.asm</code> that's compatible with Asar 1.81 and can be used with NPCs v4.3.</li>
-						<li>Improved compatibility with several status bar replacement patches. <b>Super Status Bar</b> and <b>Sprite Status Bar</b> are confirmed to work out of the box. <b>DKCR Styled Sprite Status Bar</b> also works out of the box and no longer requires its VWF Dialogues compatibility mode to be enabled. <b>SMB3 Status Bar</b> and <b>Minimalist Status Bars</b> both work out of the box, but produce some graphical glitches that can be eliminated by tweaking certain settings in <code>vwfconfig.cfg</code>. See section <a href="#problem-solving-compatibility">Compatibility With Other Patches</a> for further information.</li>
+						<li>Improved compatibility with several status bar replacement patches. <b>Super Status Bar</b> and <b>Sprite Status Bar</b> are confirmed to work out of the box. <b>DKCR Styled Sprite Status Bar</b> also works out of the box and no longer requires its VWF Dialogues compatibility mode to be enabled. <b>SMB3 Status Bar</b> and <b>Minimalist Status Bars</b> both work out of the box, but produce some graphical glitches that can be eliminated by tweaking certain settings in <code>vwfconfig.cfg</code>. <b>Remove Status Bar</b> requires a compatibility setting and needs to be patched before VWF Dialogues. See section <a href="#problem-solving-compatibility">Compatibility With Other Patches</a> for further information.</li>
 					</ul>
 				</p></dd>
 				

@@ -11,7 +11,7 @@ patcher.add_option('--messages_file', values=['testing', 'smw'], default_index=0
 patcher.add_option('--bit_mode', values=['8-bit', '16-bit'], default_index=0)
 patcher.add_option('--message_box_hijack', values=['enable', 'disable'], default_index=0)
 patcher.add_option('--debug_vblank', values=['false', 'true'], default_index=0)
-patcher.add_option('--compatibility_test', values=['none', 'super', 'sprite', 'smb3', 'minimalist', 'dkcr'], default_index=0)
+patcher.add_option('--compatibility_test', values=['none', 'super', 'sprite', 'smb3', 'minimalist', 'dkcr', 'nuke'], default_index=0)
 
 	
 patch_config = patching_utility.PatchConfig( os.path.dirname(__file__),
@@ -88,6 +88,8 @@ def main() -> None:
 		patch_config.actions.append(patching_utility.InsertCustomPalette(os.path.join(os.path.dirname(__file__), 'testing/compatibility/dkcr_sprite_status_bar/paletteF.pal'), 104))
 		patch_config.actions.append(patching_utility.InsertCustomPalette(os.path.join(os.path.dirname(__file__), 'testing/compatibility/dkcr_sprite_status_bar/paletteF.pal'), 105))
 		patch_config.actions.append(patching_utility.InsertCustomPalette(os.path.join(os.path.dirname(__file__), 'testing/compatibility/dkcr_sprite_status_bar/paletteF.pal'), 106))
+	elif compatibility_test == 'nuke':
+		patch_config.actions.append(patching_utility.Patch(os.path.join(os.path.dirname(__file__), 'testing/compatibility/nuke_statusbar/nuke_statusbar.asm')))
 		
 	patcher.create_rom(patch_config, options)
 	

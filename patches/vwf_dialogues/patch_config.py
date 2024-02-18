@@ -11,7 +11,7 @@ patcher.add_option('--messages_file', values=['testing', 'smw'], default_index=0
 patcher.add_option('--bit_mode', values=['8-bit', '16-bit'], default_index=0)
 patcher.add_option('--message_box_hijack', values=['enable', 'disable'], default_index=0)
 patcher.add_option('--debug_vblank', values=['false', 'true'], default_index=0)
-patcher.add_option('--compatibility_test', values=['none', 'smb3', 'super', 'minimalist', 'dkcr'], default_index=0)
+patcher.add_option('--compatibility_test', values=['none', 'super', 'sprite', 'smb3', 'minimalist', 'dkcr'], default_index=0)
 
 	
 patch_config = patching_utility.PatchConfig( os.path.dirname(__file__),
@@ -69,10 +69,15 @@ def main() -> None:
 		
 	compatibility_test: str = options.compatibility_test
 	
-	if compatibility_test == 'smb3':
-		patch_config.actions.append(patching_utility.Patch(os.path.join(os.path.dirname(__file__), 'testing/compatibility/smb3_statusbar_v1.53.1/smb3_status.asm')))
-	elif compatibility_test == 'super':
+	if compatibility_test == 'super':
 		patch_config.actions.append(patching_utility.Patch(os.path.join(os.path.dirname(__file__), 'testing/compatibility/SuperStatusBar_2_2/SuperStatusBar_Advancedv2.asm')))
+	elif compatibility_test == 'sprite':
+		patch_config.actions.append(patching_utility.Patch(os.path.join(os.path.dirname(__file__), 'testing/compatibility/SSB111/ssb.asm')))
+		patch_config.actions.append(patching_utility.InsertCustomPalette(os.path.join(os.path.dirname(__file__), 'testing/compatibility/SSB111/ssb_0F.pal'), 104))
+		patch_config.actions.append(patching_utility.InsertCustomPalette(os.path.join(os.path.dirname(__file__), 'testing/compatibility/SSB111/ssb_0F.pal'), 105))
+		patch_config.actions.append(patching_utility.InsertCustomPalette(os.path.join(os.path.dirname(__file__), 'testing/compatibility/SSB111/ssb_0F.pal'), 106))
+	elif compatibility_test == 'smb3':
+		patch_config.actions.append(patching_utility.Patch(os.path.join(os.path.dirname(__file__), 'testing/compatibility/smb3_statusbar_v1.53.1/smb3_status.asm')))
 	elif compatibility_test == 'minimalist':
 		patch_config.actions.append(patching_utility.Patch(os.path.join(os.path.dirname(__file__), 'testing/compatibility/minimalist/status_double.asm')))
 	elif compatibility_test == 'dkcr':
@@ -81,6 +86,8 @@ def main() -> None:
 		# Currently breaks... the included palette doesn't seem to be shared.
 		#patch_config.actions.append(patching_utility.InsertSharedPalette(os.path.join(os.path.dirname(__file__), 'testing/compatibility/dkcr_sprite_status_bar/paletteF.pal')))
 		patch_config.actions.append(patching_utility.InsertCustomPalette(os.path.join(os.path.dirname(__file__), 'testing/compatibility/dkcr_sprite_status_bar/paletteF.pal'), 104))
+		patch_config.actions.append(patching_utility.InsertCustomPalette(os.path.join(os.path.dirname(__file__), 'testing/compatibility/dkcr_sprite_status_bar/paletteF.pal'), 105))
+		patch_config.actions.append(patching_utility.InsertCustomPalette(os.path.join(os.path.dirname(__file__), 'testing/compatibility/dkcr_sprite_status_bar/paletteF.pal'), 106))
 		
 	patcher.create_rom(patch_config, options)
 	

@@ -2477,7 +2477,7 @@ MessageASM0050:
 			</p>
 			
 			<p>
-				First of all, to use shared routines in other resources, you need to copy the file <code>code/external/vwfsharedroutines.asm</code> next to them and then <code>incsrc</code> it. However, since that file reads the locations of routines from ROM, this requires the VWF Dialogues Patch to always be patched to it before the other resources. If you plan to release a resource accessing a shared routine, it's a good idea to mention this fact in your readme. As an additional safety measure, your resources can check for the existence of specific defines, which indicate that a shared routine has been found. Here is a simple example. It demonstrates how to display text boxes from custom code (probably 99% of use cases for shared routines):
+				First of all, to use shared routines in another resource, you need to copy the file <code>code/external/vwfsharedroutines.asm</code> next to it. If the resource in question is for a tool that doesn't use Asar 1.90 or newer yet, copy the file <code>code/external/old_asar/vwfsharedroutines.asm</code> instead (confirmed to work in Asar 1.81). Now <code>incsrc</code> the file you copied into your resource. However, since this file reads the locations of routines from ROM, this requires the VWF Dialogues Patch to always be patched to it before the other resource. If you plan to release a resource accessing a shared routine, it's a good idea to mention this fact in your Readme. As an additional safety measure, your resource can check for the existence of specific defines, which indicate that a shared routine has been found. Here is a simple example. It demonstrates how to display text boxes from custom code (probably 99% of use cases for shared routines):
 				
 				<pre><code class="65c816_asar">incsrc "vwfsharedroutines.asm"
 				
@@ -2578,36 +2578,48 @@ endif</code></pre>
 
 			<h3 id="problem-solving-hdma-conflicts" class="text-center">Conflicts With HDMA Effects</h3>
 			<p>
-				This patch makes use of DMA transfers. DMA transfers share their channels with HDMA. This means they will influence any HDMA effects that use the same channels. In non-SA-1 ROMs, the DMA transfers use channel <code>0</code> (<code>%00000001</code>). In SA-1 ROMs, they use both channels <code>0</code> (<code>%00000001</code>) and <code>2</code> (<code>%00000100</code>). If you experience problems with an HDMA effect while displaying a dialogue box, just make sure not to use channel 0 (and in SA-1 ROMs also channel 2) for that effect. Read an HDMA tutorial for further information on this subject.
+				This patch makes use of DMA transfers. DMA transfers share their channels with HDMA. This means they will influence any HDMA effects that use the same channels as them. In non-SA-1 ROMs, the DMA transfers in this patch use channel <code>0</code> (<code>%00000001</code>) by default. In SA-1 ROMs, they use channel <code>2</code> (<code>%00000100</code>). If you experience problems with HDMA effects while a text box is open, you might be able to resolve them by avoiding to use the respective channels in other patches. If that doesn't help or isn't possible, you can also try tweaking the <code>!vwf_main_dma_channel</code> and <code>!vwf_main_dma_channel_sa1</code> settings to move VWF Dialogues DMAs to a different channel (though this could potentially cause conflicts in other places). Possible channels are <code>0</code> to <code>7</code>. Read an HDMA tutorial for further information on this subject.
 			</p>
 
 			<h3 id="problem-solving-compatibility" class="text-center">Compatibility With Other Patches</h3>
 			<p>
-				The following patches are known to be compatible:
+				The following patches are expected to be compatible:
 				<ul class="font-weight-bold">
 					<li>All patches made by RPG Hacker</li>
-					<li>Kaijyuu’s Super Status Bar</li>
+					<li>SA-1 Pack 1.40</li>
+					<li>Super Status Bar</li>
+					<li>DKCR Styled Sprite Status Bar</li>
+				</ul>
+				The following patches require specific settings to work around compatibility issues:
+				<ul>
+					<li class="font-weight-bold">Minimalist Status Bars</li>
+					<dd>
+						At default <code>vwfconfig.cfg</code> settings, this patch breaks the first two rows of the palette whenever a dialogue is open, usually leading to glitched background colors as demonstrated on this screenshot:
+						<img class="d-block m-1 my-2" src="screenshots/status-bar-compat-1.png" alt="Screenshot" width="256" height="224" />
+						To prevent this glitch, open your <code>vwfconfig.cfg</code> file and change the <code>!vwf_enable_bottom_status_bar_color_fix_hack</code> setting to <code>true</code>.
+					</dd>
+					<li class="font-weight-bold">SMB3 Status Bar</li>
+					<dd>
+						Has the same palette quirk as the <b>Minimalist Status Bars</b> patch, so change the <code>!vwf_enable_bottom_status_bar_color_fix_hack</code> setting to <code>true</code>. In addition to this, when using an SA-1 ROM, you might experience your dialogues breaking entirely, as demonstrated on these screenshots:
+						<div class="row">
+							<img class="d-block m-1 my-2" src="screenshots/status-bar-compat-2.png" alt="Screenshot" width="256" height="224" /> <img class="d-block m-1 my-2" src="screenshots/status-bar-compat-3.png" alt="Screenshot" width="256" height="224" />
+						</div>
+						This happens because the SMB3 Status Bar patch uses an HDMA effect to modify the layer 3 scroll offsets on certain scanlines, which stays active even while a dialogue is open. To eliminate this issue, change the <code>!vwf_enable_smb3_status_bar_layer_3_hdma_fix_hack</code> setting in <code>vwfconfig.cfg</code> to <code>true</code>. Alternatively, changing the <code>!vwf_main_dma_channel_sa1</code> setting to <code>0</code> will also eliminate the issue, since VWF Dialogues now use the same channel for their DMA transfers as the SMB3 Status Bar patch uses for its HDMA effect. However, this might cause some (currently unknown) side effects, so it's recommended to use the <code>!vwf_enable_smb3_status_bar_layer_3_hdma_fix_hack</code> solution instead.
+					</dd>
 				</ul>
 				The following patches have a few compatibility quirks which can be easily worked around:
 				<ul>
 					<li class="font-weight-bold">Sprite Status Bar</li>
 					<dd>
-						The sprite status bar doesn’t disappear when a text box is opened, but you probably shouldn’t be using both the Sprite Status Bar and the Layer 3 dialogue box in the same level anyway, since the Sprite Status Bar’s purpose is to allow full usage of the Layer 3, which the dialogue box completely hides while it’s shown.
+						The Sprite Status Bar doesn’t disappear when a text box is opened. This isn't a problem per se, since text boxes go in front of the status bar and remain readable. However, if you only use the Sprite Status Bar in some levels and use the default status bar in others, this can lead to consistency issues where text boxes make the status bar disappear only sometimes. That being said, you probably shouldn’t be using both the Sprite Status Bar and VWF dialogues in the same level anyway, since the Sprite Status Bar’s purpose is to allow full usage of layer 3, which VWF dialogues completely overwrite when visible. This ultimately leaves you with two easy workarounds for the issue:
+						<ul>
+							<li>Enable the Sprite Status Bar in every level, thus avoiding the inconsistent behavior.</li>
+							<li>Avoid displaying VWF dialogues in levels that use the Sprite Status Bar, thus preventing them from ever going in front of it.</li>
+						</ul>
 					</dd>
-					<li class="font-weight-bold">Any patches eating up larger amounts of V-Blank time</li>
+					<li class="font-weight-bold">Any patches consuming notable amounts of V-Blank time</li>
 					<dd>
 						Can cause HDMA effects to explode while a text box is open. See known bugs for details on this issue, along with potential workarounds.
-					</dd>
-				</ul>
-				The following patches are known to be incompatible:
-				<ul>
-					<li class="font-weight-bold">SMB3 Status Bar</li>
-					<dd>
-						Causes graphical corruption and displays garbage.
-					</dd>
-					<li class="font-weight-bold">Minimalist Status Bar</li>
-					<dd>
-						Flashes the whole screen during dialogue transitions.
 					</dd>
 				</ul>
 			</p>
@@ -2689,6 +2701,7 @@ endif</code></pre>
 						<li>Added the <a href="#helper-functions-rgb_15_from_24"><code>rgb_15_from_24()</code></a> and <a href="#helper-functions-rgb_15_from_f"><code>rgb_15_from_f()</code></a> helper functions.</li>
 						<li>Implemented <a href="#header-settings-shared-headers">shared headers</a>, which provide a means of reusing message headers, reducing the size of a message in the process.</li>
 						<li>Added a version of <code>vwfsharedroutines.asm</code> that's compatible with Asar 1.81 and can be used with NPCs v4.3.</li>
+						<li>Improved compatibility with several status bar replacement patches. <b>Super Status Bar</b> and <b>Sprite Status Bar</b> are confirmed to work out of the box. <b>DKCR Styled Sprite Status Bar</b> also works out of the box and no longer requires its VWF Dialogues compatibility mode to be enabled. <b>SMB3 Status Bar</b> and <b>Minimalist Status Bars</b> both work out of the box, but produce some graphical glitches that can be eliminated by tweaking certain settings in <code>vwfconfig.cfg</code>. See section <a href="#problem-solving-compatibility">Compatibility With Other Patches</a> for further information.</li>
 					</ul>
 				</p></dd>
 				

@@ -37,6 +37,8 @@ assert !vwf_backup_duration_in_frames >= 8, "\!vwf_backup_duration_in_frames mus
 assert floor($4000/!vwf_backup_duration_in_frames)*!vwf_backup_duration_in_frames == $4000, "$4000 is not divisible by the value of \!vwf_backup_duration_in_frames (currently ",dec(!vwf_backup_duration_in_frames),"). Try a diffrent value."
 assert !vwf_clear_screen_duration_in_frames >= 1, "\!vwf_clear_screen_duration_in_frames must have a value of at least 1."
 assert floor($0700/!vwf_clear_screen_duration_in_frames)*!vwf_clear_screen_duration_in_frames == $0700, "$700 is not divisible by the value of \!vwf_clear_screen_duration_in_frames (currently ",dec(!vwf_clear_screen_duration_in_frames),"). Try a diffrent value."
+assert !vwf_main_dma_channel >= 0 && !vwf_main_dma_channel <= 7, "\!vwf_main_dma_channel must have a value from 0 to 7 (current value: !vwf_main_dma_channel)."
+assert !vwf_main_dma_channel_sa1 >= 0 && !vwf_main_dma_channel_sa1 <= 7, "\!vwf_main_dma_channel_sa1 must have a value from 0 to 7 (current value: !vwf_main_dma_channel_sa1)."
 
 
 %define_enum(VWF_BitMode, 8Bit, 16Bit)
@@ -54,7 +56,8 @@ if !use_sa1_mapping
 	!vwf_var_ram	= !vwf_var_ram_sa1
 	!vwf_backup_ram	= !vwf_backup_ram_sa1
 	!vwf_gfx_ram	= !vwf_gfx_ram_sa1
-	!vwf_palette_backup_ram	= !vwf_palette_backup_ram_sa1
+	!vwf_palette_backup_ram = $400703
+	!vwf_main_dma_channel = !vwf_main_dma_channel_sa1
 endif
 
 !vwf_debug_vblank_time ?= false
@@ -169,10 +172,6 @@ endmacro
 %vwf_claim_varram(active_flag, 1)               ; Flag indicating that a VWF Message is active. Used to tell the VWF system to close the current text box before opening the new one.
 %vwf_claim_varram(skip_message_flag, 1)         ; Flag indicating that the message skip function is enabled for the current textbox.
 %vwf_claim_varram(skip_message_loc, 3)          ; 24-bit pointer to the text data that will be jumped to if start is pressed and message skipping is enabled.
-%vwf_claim_varram(l3_priority_flag, 1)          ; Backup of the layer 3 priority bit in register $2105
-%vwf_claim_varram(l3_transparency_flag, 1)      ; Backup of the layer 3 color math settings from RAM address $40 (mirror of $2131) 
-%vwf_claim_varram(l3_main_screen_flag, 1)       ; Backup of the layer 3 main screen bit from RAM address $0D9D (mirror of $212C)
-%vwf_claim_varram(l3_sub_screen_flag, 1)        ; Backup of the layer 3 sub screen bit from RAM address $0D9E (mirror of $212D)
 %vwf_claim_varram(at_start_of_text, 1)   		; Flag indicating that the text box has not been cleared yet. Intended to provide an easy way to sync up MessageASM code with the start of a new textbox.
 %vwf_claim_varram(message_was_skipped, 1)       ; Flag indicating whether the message was skipped by the player pressing Start
 %vwf_claim_varram(buffer_dest, 3)               ; 24-bit pointer to the location in the tile buffer to read from when uploading text graphics.
@@ -228,14 +227,7 @@ endmacro
 
 !vwf_prev_freespace = AutoFreespaceCleaner
 
-if !use_sa1_mapping
-	!vwf_dma_channel_nmi = 2
-	!vwf_dma_channel_non_nmi = 0
-else
-	; RPG Hacker: I don't know if this distinction is actually necessary, but I don't even want to risk breaking compatibility.
-	!vwf_dma_channel_nmi = 0
-	!vwf_dma_channel_non_nmi = 0
-endif
+!vwf_dma_channel_nmi := !vwf_main_dma_channel
 
 !vwf_cpu_snes = 0
 !vwf_cpu_sa1 = 1
@@ -485,19 +477,13 @@ org remap_rom($008064)
 	nop
 
 ; V-Blank code goes here
-org remap_rom($0081F2)
+org remap_rom($0081EC)
 	jml VBlank
-	nop
 
 ; Hijack NMI for various things
-org remap_rom($008297)
-if !use_sa1_mapping
-	ldx #$A1
+org remap_rom($008275)
 	jml NMIHijack
-else
-	jml NMIHijack
-	nop #$2
-endif
+	nop
 
 ; Restore hijacked code from older versions of the patch
 ; This hijack location was highly questionable to begin with.
@@ -637,6 +623,10 @@ InitRAM:
 	lda #$00
 	sta !vwf_message_asm_enabled
 .End
+if !vwf_enable_bottom_status_bar_color_fix_hack != false
+	%vwf_mvn_transfer($0040, !vwf_palette_backup_ram, !vwf_palette_backup, !vwf_cpu_snes)
+endif
+
 	plx
 	rts
 
@@ -798,46 +788,96 @@ CheckHideReserveItem:
 ; dialogues.
 
 NMIHijack:
-	stz $11
+	lda remap_ram($0D9B)
+	beq .NoSpecialIrqMode
+	jml remap_rom($00827A)
+
+.NoSpecialIrqMode
 	lda !vwf_mode
 	tax
 	lda.l .NMITable,x
 	bne .SpecialNMI	; If NMITable = $00 load regular NMI
-	sty $4209
-	stz $420A
-	stz $2111
-	stz $2111
-	stz $2112
-	stz $2112
-	ldx #$A1
-	bra .End
+	jml remap_rom($008292)
 
 .SpecialNMI
-	stz $2111	; Set layer 3 X scroll to $0100
-	lda #$01
-	sta $2111
-	lda #$1F	; Set layer 3 Y scroll to $011F
-	sta $2112
-	lda #$01
-	sta $2112
-	ldx #$81	; Disable IRQ
+	cmp.b #$02
+	beq .SpecialNMIMode2
 	
-.End
-if !use_sa1_mapping
-	pha
-	txa
-	sta $01,s
-	pla
-else
+	; Force layer 3 to main screen
+	lda remap_ram($0D9D)
+	ora.b #%00000100
+	sta $212C
+	lda remap_ram($0D9E)
+	and.b #%11111011
+	sta $212D
+	
+	lda $3E
+	ora.b #%00001000
+	sta $2105
+	lda $40
+	and.b #%11111011
+	sta $2131
+	
+	bra .SpecialNMIShared
+	
+.SpecialNMIMode2
+	; Hide layer 3 entirely
+	lda remap_ram($0D9D)
+	and.b #%11111011
+	sta $212C
+	lda remap_ram($0D9E)
+	and.b #%11111011
+	sta $212D
+	
+	lda $3E
+	sta $2105
+	lda $40
+	sta $2131
+	
+if !vwf_enable_bottom_status_bar_color_fix_hack != false
+	lda !vwf_mode
+	cmp.b #$03
+	bne .SkipPaletteHack
+	stz $2121
+	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteTwice, $2122, !vwf_palette_backup, $0040)
+	
+.SkipPaletteHack
+endif
+	
+.SpecialNMIShared
+	; Required for certain patches that modify the status bar (confirmed for SMB3 and Minimalist).
+	; Some of them relocate the layer 3 VRAM area while inside the status bar, which will persist
+	; even after disabling the status bar for a dialog, leading to a screen full of garbage.
+	lda.b #$53
+	sta $2109
+
+	stz $11
+	stz $2111	; Set layer 3 X scroll to $0100
+	lda.b #$01
+	sta $2111
+	lda.b #$1F	; Set layer 3 Y scroll to $011F
+	sta $2112
+	lda.b #$01
+	sta $2112
+	
+	lda remap_ram($0DAE)
+	sta $2100
+	lda remap_ram($0D9F)	
+if !vwf_enable_smb3_status_bar_layer_3_hdma_fix_hack != false
+	and.b #%11111110
+endif
+	sta $420C
+	
+	ldx.b #$81	; Disable IRQ	
+if !use_sa1_mapping == false	
 	stx $4200
 endif
-	jml remap_rom($0082B0)
+	jml remap_rom($0082BC)
 
 .NMITable
-	db $00,$00,$00,$00,$01
-	db $01,$01,$01,$01,$01
-	db $01,$01,$01,$01,$00
-	db $00
+	db $00,$00,$02,$02,$02,$02
+	db $02,$01,$01,$01,$01
+	db $02,$02,$02,$00,$00
 
 
 
@@ -961,7 +1001,7 @@ endif
 
 
 
-VWFSetup:
+VWFSetup:	
 	lda #$00	;\ Ensure that the !vwf_end_dialog flag gets properly cleared
 	sta !vwf_end_dialog	;/
 	jsr GetMessage
@@ -1393,7 +1433,7 @@ endif
 
 
 
-BufferGraphics:
+BufferGraphics:	
 	lda !vwf_sub_step
 	bne .Return
 
@@ -5081,7 +5121,13 @@ endif
 
 ; This loads up graphics and tilemaps to VRAM.
 
-VBlank:	
+VBlank:
+	lda remap_ram($0D9B)
+	lsr
+	beq .NoSpecialIrqMode
+	jml remap_rom($008222)
+
+.NoSpecialIrqMode
 	phx
 	phy
 	pha
@@ -5118,14 +5164,19 @@ if !vwf_debug_vblank_time != false
 	%vwf_debug_waste_time()
 endif
 
-	lda !vwf_palette_upload	; This code takes care of palette upload requests
-	beq .skip
+	; This code takes care of palette upload requests
+	; We also check for !vwf_mode here to assure we don't upload palettes before we've made a backup.
+	lda !vwf_mode
+	cmp.b #$06
+	bcc .SkipPaletteUpload
+	lda !vwf_palette_upload
+	beq .SkipPaletteUpload
 	lda #$00
 	sta !vwf_palette_upload
 	sta $2121
 	%dma_transfer(!vwf_dma_channel_nmi, DmaMode.WriteTwice, $2122, !vwf_palette_backup_ram, $0040)
-.skip
-
+	
+.SkipPaletteUpload
 	lda !vwf_mode
 	asl
 	tax
@@ -5141,13 +5192,7 @@ endif
 
 	lda !vwf_mode	; Skip Status Bar in dialogues
 	bne .SkipStatusBar
-	lda remap_ram($0D9B)
-	lsr
-	bcs .SkipStatusBar
-	phk	; Display Status Bar
-	per $0006
-	pea $84CE
-	jml remap_rom($008DAC)
+	jml remap_rom($0081F2)
 
 .SkipStatusBar
 	jml remap_rom($0081F7)
@@ -5255,29 +5300,10 @@ PrepareBackup:
 	lda #$0000
 	sta !vwf_vram_pointer
 	sep #$20
-
-	lda !vwf_mode
-	cmp #$02
-	bne .DontPreserveL3
-	lda $3E
-	sta !vwf_l3_priority_flag
-	lda remap_ram($0D9E)
-	sta !vwf_l3_sub_screen_flag
-	lda $40
-	sta !vwf_l3_transparency_flag
-	lda remap_ram($0D9D)
-	sta !vwf_l3_main_screen_flag
-
-.DontPreserveL3
-	lda #$04	; Hide layer 3
-	trb remap_ram($0D9D)
-	trb remap_ram($0D9E)
-	lda remap_ram($0D9D)
-	sta $212C
-	lda remap_ram($0D9E)
-	sta $212D
-
-.End
+	
+	lda.b #$01
+	sta !vwf_palette_backup
+	
 	lda !vwf_mode
 	inc
 	sta !vwf_mode
@@ -5343,39 +5369,20 @@ Backup:
 BackupEnd:
 	lda !vwf_mode
 	cmp #$06
-	bne .Layer3Subscreen
-	lda #$08
-	tsb $3E
+	beq .End
+
+	; Restore the level's main screen & sub screen settings.
+	; SMW only does this at level load, so we need to do this explicitly here.
 	lda remap_ram($0D9D)
-	ora #$04
 	sta $212C
-	lda.b #$04
-	trb $40
+	lda remap_ram($0D9E)
+	sta $212D
 
 .End
 	lda !vwf_mode
 	inc
 	sta !vwf_mode
 	jmp VBlank_End
-
-.Layer3Subscreen
-	lda !vwf_l3_sub_screen_flag
-	and #$04
-	ora remap_ram($0D9E)
-	sta remap_ram($0D9E)
-	sta $212D
-	lda !vwf_l3_main_screen_flag
-	and #$04
-	ora remap_ram($0D9D)
-	sta remap_ram($0D9D)
-	sta $212C
-	lda !vwf_l3_priority_flag
-	sta $3E
-	lda !vwf_l3_transparency_flag
-	and #$04
-	ora $40
-	sta $40
-	bra .End
 
 
 

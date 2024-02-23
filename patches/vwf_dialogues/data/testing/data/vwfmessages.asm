@@ -355,7 +355,7 @@ endif
 	!opt_loc(TestSelection, 11)	
 	!opt_loc(TestSelectionPage2, 12)
 	!skip_loc
-		!str("Thank you for using VWF Dialogues Patch by RPG Hacker!") : !press_button
+		!str("Thank you for using VWF Dialogues by RPG Hacker!") : !press_button
 
 %vwf_message_end()
 

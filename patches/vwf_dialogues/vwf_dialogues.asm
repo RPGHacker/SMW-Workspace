@@ -1,8 +1,8 @@
 asar 1.90
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;VWF Dialogues Patch by RPG Hacker;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;VWF Dialogues by RPG Hacker;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 incsrc data/vwfconfig.cfg
@@ -10,7 +10,7 @@ incsrc shared/shared.asm
 
 
 print ""
-print "VWF Dialogues Patch - (c) 2010-2024 RPG Hacker"
+print "VWF Dialogues - (c) 2010-2024 RPG Hacker"
 print ""
 
 

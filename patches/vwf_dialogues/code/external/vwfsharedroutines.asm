@@ -153,13 +153,13 @@ if not(defined("vwf_shared_routines_parsed"))
 		!vwf_hijack_location = $00A1DA
 		
 		; First sanity check: Is there a JML at the hijack location?
-		; If not, VWF Dialogues Patch can't be installed, so nothing else to do here.
+		; If not, VWF Dialogues can't be installed, so nothing else to do here.
 		; Generate a note, just in case.
 		if read1(!vwf_hijack_location) == $5C
 			; Now get the free code location from the hijack.
 			!vwf_freecode_location #= read3(!vwf_hijack_location+1)
 			
-			print "Detected VWF Dialogues Patch message box hijack at $",hex(!vwf_freecode_location),". Searching for shared routines table."		
+			print "Detected VWF Dialogues message box hijack at $",hex(!vwf_freecode_location),". Searching for shared routines table."		
 		
 					
 			; Second sanity check. The pointer to the shared routines table is marked with a "VWFR". Check if it's present.
@@ -200,7 +200,7 @@ if not(defined("vwf_shared_routines_parsed"))
 				print "No FourCC detected at $",hex(!vwf_freecode_location-7),". Must either be a different patch, or an unknown version of VWF Dialogues."
 			endif
 		else
-			print "No JML found at address $00A1DA. VWF Dialogues Patch is either not patched to this ROM, or is a version prior to v1.3."
+			print "No JML found at address $00A1DA. VWF Dialogues is either not patched to this ROM, or is a version prior to v1.3."
 		endif
 	endmacro
 	

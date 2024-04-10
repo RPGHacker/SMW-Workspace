@@ -57,6 +57,8 @@ def main() -> None:
 	
 	if options.messages_file == 'smw':
 		vwf_dialogues_asm.include_paths[0] = os.path.join(os.path.dirname(__file__), 'data/smw')
+	else:
+		vwf_dialogues_asm.defines.append('vwf_enable_test_suite=true')
 	
 	if options.bit_mode == '16-bit':
 		vwf_dialogues_asm.defines.append('vwf_bit_mode=VWF_BitMode.16Bit')

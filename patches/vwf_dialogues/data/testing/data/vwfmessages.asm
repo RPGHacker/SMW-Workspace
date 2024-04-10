@@ -55,6 +55,30 @@
 %vwf_claim_varram(box_anim_test_show_close, 1)
 
 
+%vwf_register_test_suite_category("BasicCommands", "Basic Commands")
+%vwf_register_test("BasicCommands", "Hub", $0050)
+%vwf_register_test("BasicCommands", "Test 1", $0050)
+%vwf_register_test("BasicCommands", "Test 2", $0050)
+%vwf_register_test("BasicCommands", "Test 3", $0050)
+%vwf_register_test("BasicCommands", "Test 4", $0050)
+%vwf_register_test("BasicCommands", "Test 5", $0050)
+%vwf_register_test("BasicCommands", "Test 6", $0050)
+%vwf_register_test("BasicCommands", "Test 7", $0050)
+%vwf_register_test("BasicCommands", "Test 8", $0050)
+%vwf_register_test("BasicCommands", "Test 9", $0050)
+%vwf_register_test("BasicCommands", "Test 10", $0050)
+%vwf_register_test("BasicCommands", "Test 11", $0050)
+%vwf_register_test("BasicCommands", "Test 12", $0050)
+%vwf_register_test("BasicCommands", "Test 13", $0050)
+%vwf_register_test("BasicCommands", "Test 14", $0050)
+%vwf_register_test("BasicCommands", "Test 15", $0050)
+%vwf_register_test("BasicCommands", "Test 16", $0050)
+%vwf_register_test("BasicCommands", "Test 17", $0050)
+%vwf_register_test("BasicCommands", "Test 18", $0050)
+%vwf_register_test("BasicCommands", "Test 19", $0050)
+%vwf_register_test("BasicCommands", "Test 20", $0050)
+
+
 ; Messages:
 
 ; RPG Hacker: Really, message $0050 (Yoshi's House) is the most important one for us, since it's the quickest one to get to.

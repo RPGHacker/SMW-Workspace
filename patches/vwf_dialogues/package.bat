@@ -26,6 +26,7 @@ IF EXIST "./%patchname%.zip" (
 
 "C:\Program Files\7-Zip\7z.exe" rn ./%patchname%.zip code/external/vwfsharedroutines.asm code/blocks/display_once_on_touch/vwfsharedroutines.asm 
 "C:\Program Files\7-Zip\7z.exe" a ./%patchname%.zip code/external/vwfsharedroutines.asm 
+"C:\Program Files\7-Zip\7z.exe" d ./%patchname%.zip vwftestsuite.asm
 
 cd ..\..
 

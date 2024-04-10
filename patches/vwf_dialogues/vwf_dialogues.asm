@@ -61,6 +61,7 @@ if !use_sa1_mapping
 endif
 
 !vwf_debug_vblank_time ?= false
+!vwf_enable_test_suite ?= false
 
 
 !vwf_var_rampos #= 0
@@ -197,6 +198,11 @@ endmacro
 %vwf_claim_varram(current_box_bg, 1)
 %vwf_claim_varram(current_box_color, 6)
 %vwf_claim_varram(current_box_frame, 1)
+
+if !vwf_enable_test_suite != false
+	%vwf_claim_varram(current_test_suite_page, 1)
+	%vwf_claim_varram(current_test_suite_row, 1)
+endif
 
 !vwf_buffer_empty_tile = !vwf_gfx_ram
 !vwf_buffer_bg_tile = !vwf_gfx_ram+$10
@@ -749,8 +755,13 @@ endif
 .NoOriginalMessageBoxRequested
 	; New code: If our own message box is open, also don't simulate frame.
 	lda !vwf_freeze_sprites
-	beq .RunGameFrame
+if !vwf_enable_test_suite != false
+	bne .FreezeGame
+	lda !vwf_current_test_suite_page
+endif
+	beq .RunGameFrame	
 	
+.FreezeGame
 	jml remap_rom($00A1E3)	; Skip frame simulation
 	
 .RunGameFrame
@@ -793,6 +804,16 @@ NMIHijack:
 	jml remap_rom($00827A)
 
 .NoSpecialIrqMode
+if !vwf_enable_test_suite != false
+	lda !vwf_current_test_suite_page
+	beq .NoTestSuiteNMI
+	
+	jsr TestSuiteNMI
+	
+	bra .NMIEndWithoutHDMA
+.NoTestSuiteNMI
+endif
+
 	lda !vwf_mode
 	tax
 	lda.l .NMITable,x
@@ -864,13 +885,16 @@ endif
 	lda.b #$01
 	sta $2112
 	
-	lda remap_ram($0DAE)
-	sta $2100
+.NMIEnd
 	lda remap_ram($0D9F)	
 if !vwf_enable_smb3_status_bar_layer_3_hdma_fix_hack != false
 	and.b #%11111110
 endif
 	sta $420C
+	
+.NMIEndWithoutHDMA
+	lda remap_ram($0DAE)
+	sta $2100
 	
 	ldx.b #$81	; Disable IRQ	
 if !use_sa1_mapping == false	
@@ -986,6 +1010,15 @@ endif
 	jmp (.Routinetable,x)
 
 .End
+if !vwf_enable_test_suite != false
+	lda !vwf_mode
+	bne .RealEnd
+	
+	jsr ProcessTestSuiteInput
+	
+.RealEnd
+endif
+
 if !use_sa1_mapping
 else
 	plp	; Return
@@ -6069,6 +6102,12 @@ BackupTilemap:
 
 Emptytile:
 	db $00,$20
+	
+	
+	
+if !vwf_enable_test_suite != false
+	incsrc vwftestsuite.asm
+endif
 
 
 
@@ -6135,6 +6174,12 @@ MainDataStart:
 %vwf_next_bank()
 
 %vwf_generate_pointers()
+
+if !vwf_enable_test_suite != false
+	%vwf_next_bank()
+	%vwf_generate_test_suite_tables()
+	%vwf_generate_test_suite_stripe_images()
+endif
 	
 	
 ; Shared routine tables go here.

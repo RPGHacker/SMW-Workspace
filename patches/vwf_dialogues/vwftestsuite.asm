@@ -420,10 +420,18 @@ StartMessage:
 assert !vwf_test_suite_scanline_stop > !vwf_test_suite_scanline_start
 	
 OpenTestSuite:
-	lda.b #$01
-	sta !vwf_current_test_suite_page
+	lda !vwf_last_test_suite_page
+	beq .ResetPageNo
+	cmp TestSuiteNumPages
+	bcc .DontResetPageNo
+
+.ResetPageNo
 	lda.b #$00
 	sta !vwf_current_test_suite_row
+	lda.b #$01
+	
+.DontResetPageNo
+	sta !vwf_current_test_suite_page
 	
 	; Set up background window
 	rep #$30
@@ -443,6 +451,9 @@ OpenTestSuite:
 	rts
 	
 CloseTestSuite:
+	lda !vwf_current_test_suite_page
+	sta !vwf_last_test_suite_page
+
 	lda.b #$00
 	sta !vwf_current_test_suite_page
 	

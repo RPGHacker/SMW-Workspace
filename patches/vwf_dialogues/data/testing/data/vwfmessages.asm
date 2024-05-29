@@ -55,28 +55,11 @@
 %vwf_claim_varram(box_anim_test_show_close, 1)
 
 
-%vwf_register_test_suite_category("BasicCommands", "Basic Commands")
-%vwf_register_test("BasicCommands", "Hub", $0050)
-%vwf_register_test("BasicCommands", "Test 1", $0050)
-%vwf_register_test("BasicCommands", "Test 2", $0050)
-%vwf_register_test("BasicCommands", "Test 3", $0050)
-%vwf_register_test("BasicCommands", "Test 4", $0050)
-%vwf_register_test("BasicCommands", "Test 5", $0050)
-%vwf_register_test("BasicCommands", "Test 6", $0050)
-%vwf_register_test("BasicCommands", "Test 7", $0050)
-%vwf_register_test("BasicCommands", "Test 8", $0050)
-%vwf_register_test("BasicCommands", "Test 9", $0050)
-%vwf_register_test("BasicCommands", "Test 10", $0050)
-%vwf_register_test("BasicCommands", "Test 11", $0050)
-%vwf_register_test("BasicCommands", "Test 12", $0050)
-%vwf_register_test("BasicCommands", "Test 13", $0050)
-%vwf_register_test("BasicCommands", "Test 14", $0050)
-%vwf_register_test("BasicCommands", "Test 15", $0050)
-%vwf_register_test("BasicCommands", "Test 16", $0050)
-%vwf_register_test("BasicCommands", "Test 17", $0050)
-%vwf_register_test("BasicCommands", "Test 18", $0050)
-%vwf_register_test("BasicCommands", "Test 19", $0050)
-%vwf_register_test("BasicCommands", "Test 20", $0050)
+%vwf_register_test_suite_category("TextCommands", "Text Commands")
+%vwf_register_test_suite_category("HeaderSettings", "Header Settings")
+%vwf_register_test_suite_category("Advanced", "Advanced")
+%vwf_register_test_suite_category("ErrorHandling", "Error Handling")
+%vwf_register_test_suite_category("BugCases", "Bug Cases")
 
 
 ; Messages:
@@ -2670,49 +2653,78 @@ MessageBoxAnimTestInit:
 
 ;-------------------------------------------------------
 
-%vwf_message_start(0090)	; Message 124-1
+%vwf_register_test("TextCommands", "Wait for Button", $0092)
+%vwf_message_start(0092)
 
-	; Message header & text go here
+	%vwf_header()
 
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(0091)	; Message 124-2
-
-	; Message header & text go here
+	!text("Please press A.")
+	!press_button
+	!text(" Thanks for pressing A!")
+	!press_button
 
 %vwf_message_end()
 
 ;-------------------------------------------------------
 
-%vwf_message_start(0092)	; Message 125-1
+%vwf_register_test("TextCommands", "Line Breaks", $0091)
+%vwf_message_start(0091)
 
-	; Message header & text go here
+	%vwf_header()
 
-%vwf_message_end()
-
-;-------------------------------------------------------
-
-%vwf_message_start(0093)	; Message 125-2
-
-	; Message header & text go here
+	!text("Line of text.") : !new_line
+	!text("Second line of text.") : !n
+	!text("Third line of text.")
+	!press_button
 
 %vwf_message_end()
 
 ;-------------------------------------------------------
 
+%vwf_register_test("TextCommands", "Clear", $0093)
+%vwf_message_start(0093)
+
+	%vwf_header()
+
+	!text("A line of text, followed by a clear...")
+	!press_button : !clear
+	!text("...and then another line of text.")
+	!press_button
+
+%vwf_message_end()
+
+;-------------------------------------------------------
+
+%vwf_register_test("TextCommands", "Auto Line Break 1", $0094)
 %vwf_message_start(0094)	; Message 126-1
 
-	; Message header & text go here
+	%vwf_header()
+
+	!str("This doesn't contain manual line breaks. This doesn't contain manual line breaks.")
+	!press_button
 
 %vwf_message_end()
 
 ;-------------------------------------------------------
 
+%vwf_register_test("TextCommands", "Auto Line Break 2", $0095)
 %vwf_message_start(0095)	; Message 126-2
 
-	; Message header & text go here
+	%vwf_header()
+
+	!str("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	!press_button
+
+%vwf_message_end()
+
+;-------------------------------------------------------
+
+;%vwf_register_test("TextCommands", "Simple Text", $0090)
+%vwf_message_start(0090)
+
+	;%vwf_header()
+	;
+	;!text("This is a simple line of text.")
 
 %vwf_message_end()
 

@@ -86,6 +86,11 @@ endmacro
 %vwf_claim_varram(chosen_box_color, 2)
 %vwf_claim_varram(chosen_box_frame, 1)
 
+if !vwf_enable_test_suite != false
+	%vwf_claim_varram(current_test_suite_row, 1)
+	%vwf_claim_varram(last_test_suite_page, 1)
+endif
+
 ; RPG Hacker: RAM addresses defined above this point won't automatically get cleared on opening message boxes.
 !vwf_ram_clear_start_pos #= !vwf_var_rampos
 
@@ -201,7 +206,6 @@ endmacro
 
 if !vwf_enable_test_suite != false
 	%vwf_claim_varram(current_test_suite_page, 1)
-	%vwf_claim_varram(current_test_suite_row, 1)
 endif
 
 !vwf_buffer_empty_tile = !vwf_gfx_ram
@@ -601,7 +605,14 @@ InitDefaults:
 	lda.b #!vwf_default_text_box_bg_color_internal
 	sta !vwf_chosen_box_color
 	lda.b #!vwf_default_text_box_bg_color_internal>>8
-	sta !vwf_chosen_box_color+1
+	sta !vwf_chosen_box_color+1	
+
+if !vwf_enable_test_suite != false
+	lda.b #$00
+	sta !vwf_current_test_suite_row
+	sta !vwf_last_test_suite_page
+endif
+	
 	rts
 	
 	
